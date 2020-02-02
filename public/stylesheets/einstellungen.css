@@ -1,0 +1,28 @@
+
+#main_content {
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    color: black;
+    background-color: #fafafa;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+tr:nth-child(even) {
+    background-color: #e2e2e2;
+}
+

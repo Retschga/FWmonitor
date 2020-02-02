@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Titel</title>
+    
+        <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/alarm.css">
+		<link rel="stylesheet" type="text/css" href="stylesheets/leaflet.css">
+
+		<script src="/javascripts/leaflet.js"></script>
+
+    </head>
+    <body>
+        <header>
+            <div id="menu">
+                <ul>
+                  <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">MENÜ</a>
+                    <div class="dropdown-content">
+                      <a href="/">Standbyansicht</a>
+                      <a href="/einstell">Einstellungen</a>                       
+                      <a onclick="alert('F11 drücken')">Vollbild</a>
+                    </div>
+                  </li>
+                </ul>
+            </div>        
+			<div id="time">--:--:-- - --.--.----</div>
+			<div id="elapsedtime">00m 00s</div>
+        </header>
+
+        <div id="main_content">
+            
+            <div id="top">
+                <div id="einsatzstichw">
+					<%= alarmdata["EINSATZSTICHWORT"] %> - 
+					<%= alarmdata["SCHLAGWORT"] %><br>
+					<%= alarmdata["OBJEKT"] %>
+                </div>
+				<div id="bemerk">
+					<%= alarmdata["BEMERKUNG"] %>
+                </div>
+            </div>           
+            
+            <div id="ort">
+				<%= alarmdata["STRASSE"] %>, 
+				<%= alarmdata["ORTSTEIL"] %>, 
+				<%= alarmdata["ORT"] %>
+            </div>
+            
+            <div id="center">
+                <div id="fahrzeuge">
+                    <div id="fz_eigen">
+						<% for(i in alarmdata["cars1"]) { %>
+							<p><%= alarmdata["cars1"][i] %></p>
+						<% } %>
+                    </div>
+                    <div id="fz_andere">
+                        <% for(i in alarmdata["cars2"]) { %>
+							<p><%= alarmdata["cars2"][i] %></p>
+						<% } %>
+                    </div>
+                </div>
+                <div id="karte">
+                    <div id="mapid"></div>
+                </div>
+                <div id="status">
+					<div id="st_numbers">
+						<div id="count_komme">0</div>
+						<div id="count_nicht">0</div>
+						<div id="count_später">0</div>
+					</div>
+                    <div id="st_komme">
+
+                    </div>
+                    <div id="st_nicht">
+						 <% for(i in alarmdata["st_nichtverf"]) { %>
+								<div class="stdiv st_telegram" id="<%= alarmdata["st_nichtverfID"][i] %>">Telegram: <%= alarmdata["st_nichtverf"][i] %></div>
+						<% } %>
+                    </div>
+                    <div id="st_später">
+
+                    </div>
+                </div>
+            </div>       
+        </div> 
+
+        
+    
+
+        <script>       
+			// GET Parameter
+			var parts = window.location.search.substr(1).split("&");
+			var $_GET = {};
+			for (var i = 0; i < parts.length; i++) {
+				var temp = parts[i].split("=");
+				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+			}
+		
+		
+			// Bemerkung Schriftgröße
+			var lvalue=document.getElementById("bemerk").innerHTML.length;
+			if(lvalue>200)
+				document.getElementById("bemerk").style.fontSize = "1em";
+			if(lvalue>400)
+				document.getElementById("bemerk").style.fontSize = "0.8em";
+				
+			// Karte
+			var center = [<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>];
+			var map = L.map('mapid').setView(center, 16);
+
+			L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+			//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+						
+			var overlay;
+			L.tileLayer('http://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png').addTo(map);
+			overlay = L.tileLayer('{z}/{x}/{y}.png', {
+				opacity: 1.5
+			  }).addTo(map);
+
+			// URL Overpass-API für Hydranten    siehe Ovepass turbo
+			var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"node[%22emergency%22=%22fire_hydrant%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				"node[%22emergency%22=%22water_tank%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				");out;%3E;out%20skel%20qt;";
+			var overpassTimestamp = "";
+			var features = [];
+			
+			var icons = {
+				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
+				'underground': L.icon({iconUrl: "/images/Ofm_hydrant_u_17.png",iconSize: [24,32]}),
+				'pond': L.icon({iconUrl: "/images/Ofm_openwater_17.png",iconSize: [24,32]}),
+				'water_tank': L.icon({iconUrl: "/images/Ofm_water_tank_17.png",iconSize: [24,32]}),
+				'rettPkt': L.icon({iconUrl: "/images/rettPkt.png",iconSize: [24,30]})
+			}
+			
+			function loadHydrantenData() {
+				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						// Timestamp der aktualisierung
+						overpassTimestamp = responseJSON["osm3s"]["timestamp_osm_base"];
+						
+						// Hydranten ausgeben
+						var dataIn = responseJSON["elements"];
+						features = [];
+						
+						for (i = 0; i < dataIn.length; i++) {
+						
+							var dataElement = dataIn[i];
+							var name = "";
+							
+							if(dataElement["tags"]["emergency"] == "water_tank")
+								name = "water_tank"
+							else 							
+								name = dataElement["tags"]["fire_hydrant:type"];								
+							
+							
+							features.push({
+								"type": "Feature",
+								"geometry": {
+									"type": "Point",
+									"coordinates": [dataElement["lon"], dataElement["lat"]]
+								},
+								"properties": {
+									"title": name,
+									"iconcategory": "icons"
+								}
+							});
+							
+						}
+						//document.getElementById("hydrant_aktual_zeit").innerHTML = overpassTimestamp;
+						L.geoJSON(features, {
+							pointToLayer: function (feature, latlng) {
+							
+								console.log(feature["properties"]["title"]);
+								return L.marker(latlng, {								
+									icon: icons[feature["properties"]["title"]]
+								});
+								
+							}
+						}).addTo(map);
+					}
+				}
+				xmlHttp.open("GET", overpassHydrantenUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			
+			// Forst Rettungspunkte
+			function loadForstRettPkt() {
+				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var geojsonMarkerOptions = {
+							radius: 20,
+							fillColor: "#ff7800",
+							color: "#000",
+							weight: 1,
+							opacity: 1,
+							fillOpacity: 0.8
+						};
+
+						L.geoJSON(responseJSON, {
+							pointToLayer: function (feature, latlng) {
+								//return L.circleMarker(latlng, geojsonMarkerOptions);
+								return L.marker(latlng, {								
+									icon: icons["rettPkt"]
+								}).bindTooltip(feature["properties"]["FIELD1"], 
+								{
+									permanent: true, 
+									direction: 'right',
+									offset: [10,0],
+									opacity: 0.7
+								});
+							}
+						}).addTo(map);
+						
+					}
+				}
+				xmlHttp.open("GET", "/rettPunkte.geojson", true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			
+			// Karte genau ? sonst keine Karte
+			if(<%= alarmdata["noMap"] %> == true) {
+				var imageUrl = '/images/noMap.png',
+				imageBounds = [center, map.getBounds()];
+
+				L.imageOverlay(imageUrl, imageBounds).addTo(map);
+			} else {
+				loadHydrantenData();
+				loadForstRettPkt();
+				
+				var circle = L.circle(center, {
+					color: 'red',
+					fillColor: '#f03',
+					fillOpacity: 0.5,
+					radius: 30
+				}).addTo(map);
+			}
+			
+			// Uhranzeige
+            setInterval(() => {
+                var d = new Date();
+                var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+				var time = d.toLocaleTimeString();
+				var date = d.toLocaleDateString('de-DE', options);
+                document.getElementById('time').innerHTML = time + " - " + date;
+				ticken();
+              }, 1000)            
+
+			// Anzeige Alarmzeit
+			var startDate = new Date("<%= alarmdata["time"] %>");			
+			function ticken(){
+				var stunden, minuten, sekunden;
+				var StundenZahl, MinutenZahl, SekundenZahl;
+				var heute;
+
+				heute = new Date();
+				StundenZahl = startDate.getHours();
+				MinutenZahl = startDate.getMinutes();
+				SekundenZahl = startDate.getSeconds();
+				
+				stunden = StundenZahl+":";
+				if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + ":";}
+					else {minuten = MinutenZahl + "";}
+				zeit = stunden + minuten + " Uhr";
+				var alarmzeit = zeit;
+				
+				
+				var diff = heute.getTime() - startDate.getTime();
+				
+				if($_GET['manuell'] != "true") {
+					var elapsedMinutes = Math.floor(diff / (1000*60));
+					if(elapsedMinutes > <%= alarmdata["VISIBLETIME"] %>)
+					window.location.href = '/';
+				}
+				
+				var tag = Math.floor(diff / (1000*60*60*24));
+				diff = diff % (1000*60*60*24);
+				var std = Math.floor(diff / (1000*60*60));
+				diff = diff % (1000*60*60);
+				var MinutenZahl = Math.floor(diff / (1000*60));
+				diff = diff % (1000*60);
+				var SekundenZahl = Math.floor(diff / 1000);
+				
+				stunden = "";
+				if (std > 0) {stunden = std+"h ";}
+				if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + "m ";}
+					else {minuten = MinutenZahl + "m ";}
+				if (SekundenZahl < 10) {sekunden = "0" + SekundenZahl + "s ";}
+					else {sekunden = SekundenZahl + "s ";}
+				zeit = stunden + minuten + sekunden;
+				
+				//elapsedtime.innerHTML = zeit;
+				elapsedtime.innerHTML = "Alarm: " + alarmzeit +" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "+ zeit;
+			}
+
+            // Anzeige Kommen/Komme Nicht
+            function countNumbers() {
+				document.getElementById('count_komme').innerHTML = document.getElementById("st_komme").childElementCount;
+				document.getElementById('count_nicht').innerHTML = document.getElementById("st_nicht").childElementCount;
+				document.getElementById('count_später').innerHTML = document.getElementById("st_später").childElementCount;
+			}
+			countNumbers();
+            
+			// Websocket Verbindung
+            function connect() {
+                var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+                ws.onopen = function() {
+                    console.log("WebSocketClient connected:");
+                    this.send("WebClient - Alarmdisplay - Alarm");
+                };
+
+				// Daten empfangen
+                ws.onmessage = function(e) {
+                    console.log('Message:', e.data);
+                
+                    var dat = e.data.split('|');
+                    topic = dat[0];
+                    msg = dat[1].split('%');
+
+					// Neuer Alarm
+                    if(topic == 'alarm')
+                        location.reload(); 
+                    
+					// Anzeige Kommen/Komme Nicht
+					var el = undefined;
+                    if(topic == 'st_komme') {
+                        el = document.getElementById('st_komme');                        
+                    };
+
+                    if(topic == 'st_nicht') {
+                        el = document.getElementById('st_nicht');
+                    };
+
+                    if(topic == 'st_später') {
+                        el = document.getElementById('st_später');                        
+                    };
+					
+					if(el != undefined) {						
+						var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
+						var elChild = null;
+						if (myElem !== null) 		
+							elChild = document.getElementById("st_"+msg[0].replace(/ /g,"_")).remove();
+
+						elChild = document.createElement('div');
+						elChild.className = "stdiv";
+
+						if(msg[1] != undefined) {
+							var entry = msg[1].split(',')												
+							if(entry[0] == 1) {
+								elImg = document.createElement('img');	
+								elImg.src = "images/AGT.png"; 
+								elChild.prepend(elImg);
+							}
+							if(entry[2] == 1) {
+								elImg = document.createElement('img');	
+								elImg.src = "images/MA.png"; 
+								elChild.prepend(elImg);
+							}
+							if(entry[1] == 1) {
+								elImg = document.createElement('img');	
+								elImg.src = "images/GRF.png"; 
+								elChild.prepend(elImg);
+							}
+							if(entry[3] == 1) {
+								elImg = document.createElement('img');	
+								elImg.src = "images/ZUGF.png"; 
+								elChild.prepend(elImg);
+							}
+						}
+
+						elChild.innerHTML += msg[0];
+						elChild.id = "st_"+msg[0].replace(/ /g,"_");
+						
+						el.prepend(elChild);
+					}
+					countNumbers();
+                   
+                };
+
+				// Socket geschlossen
+                ws.onclose = function(e) {
+                    console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                    setTimeout(function() {
+                        connect();
+                    }, 1000);
+                };
+
+				// Socket Fehler
+                ws.onerror = function(err) {
+                    console.error('Socket encountered error: ', err.message, 'Closing socket');
+                    ws.close();
+                };
+            }
+            connect();
+
+		</script>
+    </body>
+</html>
+
+<!--
+
+    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
+    [::::::::::::::      ::::::::::::::]
+    [::::::::::::::      ::::::::::::::]
+    [::::::[[[[[[[:      :]]]]]]]::::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[     CODE THE WEB     ]:::::]
+    [:::::[  http://brackets.io  ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [::::::[[[[[[[:      :]]]]]]]::::::]
+    [::::::::::::::      ::::::::::::::]
+    [::::::::::::::      ::::::::::::::]
+    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
+
+-->

@@ -1,0 +1,92 @@
+﻿#  Raspberry Pi Version (true/false)
+RASPIVERSION=false
+
+
+# Telegram Bot API Key
+BOT_TOKEN=
+
+# Geobing API Key (https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)
+GEOBING_KEY=
+
+
+
+# Sende Alarmtelegram (true/false)
+BOT_SENDALARM=false
+
+# Regex Faxfilter (kann leer bleiben) (Groß/Kleinschreibung egal) https://regexr.com/
+FAXFILTER=
+
+#Alarmdruck (true/false)
+ALARMDRUCK=true
+
+#Alarmdrucker Name (Nur bei Rasppi Version / Ghostscript, sonst Standarddrucker)
+DRUCKERNAME=Microsoft Print to PDF
+
+
+# Drucken mit Foxit Reader oder Ghostscript
+#Ghostscript Pfad  mit / und nicht mit \
+#GSPFAD=C:/Programme...
+GSPFAD=
+#Foxit Reader Pfad  mit / und nicht mit \
+#AREADER=C:/Programme...
+AREADER=
+
+
+# Für filter von Fax bei Einsatzmittel
+FW_NAME=Feuerwehr Name 
+
+# Alarm Anzeigezeit
+ALARM_VISIBLE=250
+
+# In Ordner mit / und nicht mit \
+FOLDER_IN=C:\Eingang
+
+# Archiv Ordner mit / und nicht mit \
+FOLDER_ARCHIVE=C:\Archiv
+
+
+
+
+# Telegram Bilderordner
+BOT_IMG=./telegramBilder/
+#BOT_IMG=./public/images/slideshow
+
+
+# DWD Warncellid (https://www.dwd.de/DE/leistungen/opendata/help/warnungen/cap_warncellids_csv.csv)
+DWD_WARCELLID=
+
+#Warnungen anzeigen(true/false)
+DWD_SHOWWARNINGS=true
+
+#Warnungen anzeigen - Posiion (1=links, 2=rechts)
+DWD_WARNINGSPOSITION=1
+
+
+# Kalender (ICAL Link)
+ICAL_LINK=
+
+
+# Für Anzeige bei Standby
+FW_NAME_STANDBY=Freiwillige Feuerwehr Name
+
+# Für Anzeige bei Bot
+FW_NAME_BOT=der Freiwilligen Feuerwehr Name
+
+
+#Diashow Wechselzeit (ms)
+DIASHOW_DELAY=15000
+
+#Diashow Animation (true/false)
+DIASHOW_ANIMATION=true
+
+#Diashow Zufällig (true/false)
+DIASHOW_RANDOM=false
+
+#Verstecke Verfügbare im Standby (zeige nur nicht verfügbare) (true/false)
+ST_VERV_HIDDEN=false
+
+
+
+
+PORT=80
+#WebSocket_PORT=8080

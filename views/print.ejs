@@ -1,0 +1,258 @@
+<html>
+<head>
+	<title>Alarmausdruck</title>
+	<style>
+
+		body	{
+			width: 190mm; 
+			height:  277mm; 
+			margin-top:1cm; margin-bottom:0.5cm; margin-left:1.0cm; margin-right:1.0cm; 
+			font-family: Arial;  
+			border: 2px solid black;
+			overflow: scroll;
+		}
+		img{max-width: 100%; width: 100%}
+		
+		#container {
+			width: 190mm; 
+			height:  277mm; 
+			overflow: hidden;
+		}
+		
+		.stichwort	{		
+			font-size: 18pt; 			
+			font-weight: bold; 
+			vertical-align: top; 
+			background-color: #E8E8E8; 
+			padding-left:15px;
+			padding-right:5px; padding-top:10px; padding-bottom:10px; 
+			border-top: 1px solid black;
+			text-align: center;
+		}
+		#bemerk	{
+			padding-left:15px;
+			padding-right:5px; padding-top:10px; padding-bottom:10px; 
+			border-top: 1px solid black;
+			vertical-align: top; 
+			text-align: center;
+		}		
+		#ort	{
+			padding-left:15px;
+			padding-right:5px; padding-top:10px; padding-bottom:10px; 
+			border-top: 1px solid black;
+			vertical-align: top; 
+			text-align: center;
+		}
+		#mapid	{
+			height: 190mm;
+			border-top: 1px solid black;
+		}
+		p {
+			display: inline;
+		}
+
+
+	</style>
+	
+	<link rel="stylesheet" type="text/css" href="stylesheets/leaflet.css">
+  
+	<script src="/javascripts/leaflet.js"></script>
+</head>
+<body>
+
+	<div id="container">
+
+		<img src='Logo_FFB.jpg'>
+		
+		<div class="stichwort">
+			<p id="varEINSATZSTICHWORT">Stichw</p> - 
+			<p id="varSCHLAGWORT">Schlagw</p>
+			<p id="varOBJEKT">Objekt</p>
+		</div>
+		<div id="bemerk">
+			<p id="varBEMERKUNG">BEMERKUNG</p>
+		</div>
+		<div id="ort">
+			<p id="varSTRASSE">STRASSE</p>
+			<p id="varORTSTEIL">ORTSTEIL</p>
+			<p id="varORT">ORT</p> - 
+			<p id="varTIME">TIME</p>
+		</div>
+		
+		<div id="karte">
+			<div id="mapid">Keine Karte vorhanden.</div>
+		</div>
+		
+	</div>
+	
+	
+	<script>    
+		// Datum und Uhrzeit
+		var d = new Date();
+		var options = { year: 'numeric', month: 'long', day: 'numeric', hour: "2-digit", minute: "2-digit" };		
+		document.getElementById('varTIME').innerHTML = d.toLocaleDateString('de-DE', options);
+	
+		// GET Parameter
+		var parts = window.location.search.substr(1).split("&");
+		var $_GET = {};
+		for (var i = 0; i < parts.length; i++) {
+			var temp = parts[i].split("=");
+			$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+		}
+
+		document.getElementById("varEINSATZSTICHWORT").innerHTML = $_GET['varEINSATZSTICHWORT'];
+		document.getElementById("varSCHLAGWORT").innerHTML = $_GET['varSCHLAGWORT'];
+		document.getElementById("varOBJEKT").innerHTML = $_GET['varOBJEKT'];
+		document.getElementById("varBEMERKUNG").innerHTML = $_GET['varBEMERKUNG'];
+		document.getElementById("varSTRASSE").innerHTML = $_GET['varSTRASSE'];
+		document.getElementById("varORTSTEIL").innerHTML = $_GET['varORTSTEIL'];
+		document.getElementById("varORT").innerHTML = $_GET['varORT'];
+
+		var lvalue=document.getElementById("varBEMERKUNG").innerHTML.length;
+		if(lvalue>200)
+			document.getElementById("varBEMERKUNG").style.fontSize = "1em";
+		if(lvalue>400)
+			document.getElementById("varBEMERKUNG").style.fontSize = "0.8em";
+	
+		// Karte
+		if($_GET['varSTRASSE'] != "") {
+		
+			var map = L.map('mapid', { zoomControl:false }).setView([$_GET['lat'], $_GET['lng']], 16);
+
+			// Tileserver
+			L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+			//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+			
+			// Hillshading
+			var overlay;
+			L.tileLayer('http://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png').addTo(map);
+			overlay = L.tileLayer('{z}/{x}/{y}.png', {
+				opacity: 1.5
+			  }).addTo(map);
+			  
+			// Zielkreis
+			var circle = L.circle([$_GET['lat'], $_GET['lng']], {
+				color: 'red',
+				fillColor: '#f03',
+				fillOpacity: 0.5,
+				radius: 30
+			}).addTo(map);
+			
+
+			// URL Overpass-API für Hydranten    siehe Ovepass turbo
+			var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"node[%22emergency%22=%22fire_hydrant%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
+				"node[%22emergency%22=%22water_tank%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
+				");out;%3E;out%20skel%20qt;";
+			var overpassTimestamp = "";
+			var features = [];
+			
+			var icons = {
+				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
+				'underground': L.icon({iconUrl: "/images/Ofm_hydrant_u_17.png",iconSize: [24,32]}),
+				'pond': L.icon({iconUrl: "/images/Ofm_openwater_17.png",iconSize: [24,32]}),
+				'water_tank': L.icon({iconUrl: "/images/Ofm_water_tank_17.png",iconSize: [24,32]}),
+				'rettPkt': L.icon({iconUrl: "/images/rettPkt.png",iconSize: [24,30]})
+			}
+			
+			function loadHydrantenData() {
+				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						// Timestamp der aktualisierung
+						overpassTimestamp = responseJSON["osm3s"]["timestamp_osm_base"];
+						
+						// Hydranten ausgeben
+						var dataIn = responseJSON["elements"];
+						features = [];
+						
+						for (i = 0; i < dataIn.length; i++) {
+						
+							var dataElement = dataIn[i];
+							var name = "";
+							
+							if(dataElement["tags"]["emergency"] == "water_tank")
+								name = "water_tank"
+							else 							
+								name = dataElement["tags"]["fire_hydrant:type"];								
+							
+							
+							features.push({
+								"type": "Feature",
+								"geometry": {
+									"type": "Point",
+									"coordinates": [dataElement["lon"], dataElement["lat"]]
+								},
+								"properties": {
+									"title": name,
+									"iconcategory": "icons"
+								}
+							});
+							
+						}
+						//document.getElementById("hydrant_aktual_zeit").innerHTML = overpassTimestamp;
+						L.geoJSON(features, {
+							pointToLayer: function (feature, latlng) {
+							
+								return L.marker(latlng, {								
+									icon: icons[feature["properties"]["title"]]
+								});
+								
+							}
+						}).addTo(map);
+					}
+				}
+				xmlHttp.open("GET", overpassHydrantenUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			loadHydrantenData();
+			
+			// Forst Rettungspunkte
+			function loadForstRettPkt() {
+				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var geojsonMarkerOptions = {
+							radius: 20,
+							fillColor: "#ff7800",
+							color: "#000",
+							weight: 1,
+							opacity: 1,
+							fillOpacity: 0.8
+						};
+
+						L.geoJSON(responseJSON, {
+							pointToLayer: function (feature, latlng) {
+								//return L.circleMarker(latlng, geojsonMarkerOptions);
+								return L.marker(latlng, {								
+									icon: icons["rettPkt"]
+								}).bindTooltip(feature["properties"]["FIELD1"], 
+								{
+									permanent: true, 
+									direction: 'right',
+									offset: [10,0],
+									opacity: 0.7
+								});
+							}
+						}).addTo(map);
+						
+					}
+				}
+				xmlHttp.open("GET", "/rettPunkte.geojson", true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			loadForstRettPkt();
+		}
+	</script>
+
+</body>
+</html>

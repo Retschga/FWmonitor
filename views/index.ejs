@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Titel</title>
+    
+        <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
+        <link rel="stylesheet" type="text/css" href="stylesheets/standby.css">
+        
+        <script src="javascripts/jquery.js"></script>
+		
+		<style>		
+			[data-slides] {
+				background-image: url(<%= data["src"][0] %>); /* Default image. */
+				background-repeat: no-repeat;
+				background-position: center top;
+				background-size: cover;
+				
+				<% if(data["diashowAnimation"] == "true") { %> 
+					transition: background-image 1s linear;
+				<% } %>
+				
+			}
+			#myVideo {
+			  position: fixed;
+			  z-index: -1;
+			  bottom: 0;
+			  max-width: 100%;
+			  min-height: 100%;
+			}
+		</style>
+        
+    </head>
+    <body>
+        <header>
+            <div id="menu">
+                <ul>
+                  <li class="dropdown">
+                    <a href="javascript:void(0)" class="dropbtn">MENÜ</a>
+                    <div class="dropdown-content">
+                      <a href="/einstell">Einstellungen</a>
+                      <a href="/alarm?manuell=true">Letzter Alarm</a>
+                      <a onclick="alert('F11 drücken')">Vollbild</a>
+                    </div>
+                  </li>
+                </ul>
+            </div>
+            <div id="time">--:--:-- - --.--.----</div>
+			<div id="fwlogo">
+				<img class="fwlogo_logo" src="images/logo.png" alt=""> 
+				<a><%= data["fw_name"] %></a>
+				<img class="fwlogo_logo" src="images/logo.png" alt=""> 
+			</div>
+        </header>
+		
+		<video autoplay muted id="myVideo" style="display:none;left:0;"> 
+			<source id="myVideoSource" src="/images/slideshow/VID-20190115-WA0010.mp4">
+		</video>
+		
+		<div id="offlinewarning" style="visibility: hidden;">
+			<span>
+				Offline !
+			</span>
+		</div>
+		
+
+        <div id="main_content"	data-slides='[<% for(i in data["src"]){%>"<%= data["src"][i] %>",<%}%>"<%= data["src"][0] %>"]'>
+		
+			
+			<aside id="warnung">
+			<% if(data["dwd_position"] == "1") { %>
+				 <div id="warnung_container"></div> 
+			<% } %>	 
+			</aside>
+			
+            <article>
+                <div class="verfuegbarkeit">
+                    <div style="<% if(data["st_verf_hidden"] == "true") { %>display: none;<% } %>">
+                        <h6>Verfügbar</h6>
+                        <div id="verv_verfuegbar">       
+							<% for(i in data["st_verf"]) { %>
+								<div class="stdiv" id="<%= data["st_vervID"][i] %>"><%= data["st_verf"][i] %></div>
+							<% } %>
+						</div>
+                        <div class="floatclear"></div>
+                    </div>
+                    <div>
+                        <h6>Nicht verfügbar</h6>
+                        <div id="verv_nichtverv">
+                             <% for(i in data["st_nichtverf"]) { %>
+								<div class="stdiv" id="<%= data["st_nichtverfID"][i] %>"><%= data["st_nichtverf"][i] %></div>
+							<% } %>
+						</div>
+                        <div class="floatclear"></div>
+                    </div>
+                </div>
+            </article>        
+            <aside>
+			
+				
+                <div id="warnungRechts" style="visibility: hidden; height: 0; position: absolute;">
+				<% if(data["dwd_position"] == "2") { %>  
+                    <h6 id="warnHeader">Warnungen</h6>
+					<div id="warnung_container" style="margin: 0.5em auto 0.5em; max-height: 40vh; overflow: hidden;"></div>
+				<% } %>
+                </div>
+				
+				
+                <div>
+                    <h6>Termine</h6>
+                    <div id="termine">
+                        <p>lade Kalender...</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        
+        <script>
+		
+			// Diashow
+            /*! slides | https://gist.github.com/mhulse/66bcbb7099bb4beae530 */
+			(function($) {				
+				'use strict';
+				
+				var $slides = $('[data-slides]');
+				var images = $slides.data('slides');
+				var count = images.length;
+				var nextImage = Math.floor(Math.random() * count);
+				
+				// Get the video
+				var video = document.getElementById("myVideo");				
+				var source = document.getElementById("myVideoSource");
+				
+				var slideshow = function() {
+					$slides
+						.css('background-image', 'url("' + images[nextImage] + '")')
+						.show(0, function() {
+						
+							if(images[nextImage].split('.').pop() == "mp4")  {
+								console.log("Video!");
+								video.pause();
+								
+								source.src = images[nextImage];	
+					
+								video.load();								
+								
+								video.style.display = "block";
+								
+								video.onloadedmetadata = function() {
+									video.style.left = ((window.innerWidth-video.videoWidth)/2) + "px"; // ??? Wiso (Rechnung komisch) ???
+									setTimeout(slideshow, video.duration *1000);
+									video.play();
+								};
+							} else {
+								video.style.display = "none";
+								
+								setTimeout(slideshow, <%= data["time"] %>);
+							}
+						
+							if(<%= data["diashowRandom"] %>) {
+								nextImage = Math.floor(Math.random() * count);
+							} else {
+								nextImage += 1;
+								if(nextImage >= count)
+									nextImage = 0;
+							}
+							var img = new Image();
+							img.src = images[nextImage];
+							
+						});
+				};
+				
+				slideshow();				
+			}(jQuery));
+                   
+			// Uhrzeit
+            setInterval(() => {
+                var d = new Date();
+                var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+				var time = d.toLocaleTimeString();
+				var date = d.toLocaleDateString('de-DE', options);
+                document.getElementById('time').innerHTML = time + " - " + date;
+              }, 1000)
+
+			// Kalender
+			function getCalendar() {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						document.getElementById('termine').innerHTML = "<hr>" + xmlHttp.responseText;
+						
+						
+						elems = document.getElementById('termine').getElementsByTagName( 'br' );
+						for ( var i = 0; i < elems.length; i ++ )
+						{
+							br = elems.item( 0 );
+							hr = document.createElement( 'hr' );
+							br.parentNode.replaceChild( hr, br );
+						}
+					}
+				}
+				xmlHttp.open("GET", "/kalender", true); // true for asynchronous 
+				xmlHttp.send(null);
+			}
+			setInterval(getCalendar, 60000*10);
+			getCalendar();
+
+			// Seite neu laden
+			setInterval(function() {
+
+				$.ajax({ 
+					url  : "/", /* or other resource */
+					type : "HEAD"
+				})
+				.done(function() {
+					 location.reload(true)
+				});
+				
+				document.getElementById("offlinewarning").style.visibility = "visible"; 
+				
+			}, 60000*30); 
+			
+        </script>
+		<script>
+			// Daten empfangen
+			function processMessage(data) {
+				console.log('Message:', data);
+			
+				var dat = data.split('|');
+				topic = dat[0];
+				msg = dat[1].split('%');
+	
+				if(topic == 'alarm')
+					window.location.href = '/alarm';
+
+				var el = undefined;
+				if(topic == 'st_verf') {
+					el = document.getElementById('verv_verfuegbar');                        
+				}
+
+				if(topic == 'st_nichtverf') {
+					el = document.getElementById('verv_nichtverv');					   
+				}
+				
+
+				if(el != undefined) {				
+					var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
+					var elChild = null;
+					if (myElem !== null)         
+						elChild = document.getElementById("st_"+msg[0].replace(/ /g,"_")).remove();	
+
+					elChild = document.createElement('div');
+					elChild.className = "stdiv";
+					
+					var elClear = document.createElement('div');
+
+					if(msg[1] != undefined) {
+						var entry = msg[1].split(',')												
+						if(entry[0] == 1) {
+							elImg = document.createElement('img');	
+							elImg.src = "images/AGT.png"; 
+							elChild.prepend(elImg);
+						}
+						if(entry[2] == 1) {
+							elImg = document.createElement('img');	
+							elImg.src = "images/MA.png"; 
+							elChild.prepend(elImg);
+						}
+						if(entry[1] == 1) {
+							elImg = document.createElement('img');	
+							elImg.src = "images/GRF.png"; 
+							elChild.prepend(elImg);
+						}
+						if(entry[3] == 1) {
+							elImg = document.createElement('img');	
+							elImg.src = "images/ZUGF.png"; 
+							elChild.prepend(elImg);
+						}
+					}
+					
+					elChild.prepend(elClear);
+					
+					elChild.prepend(msg[0]);
+
+					elChild.id = "st_"+msg[0].replace(/ /g,"_");
+
+					el.append(elChild);
+				}
+			}
+		
+		
+            // Websocket für Dynamische Inhalte, Alarm
+            function connect() {
+                var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+                ws.onopen = function() {
+                    console.log("WebSocketClient connected:");
+                    this.send("WebClient - Alarmdisplay - Index");
+                };
+
+				// Daten empfangen
+                ws.onmessage = function(e) {
+                    processMessage(e.data);
+                };
+
+				// Socket geschlossen
+                ws.onclose = function(e) {
+                    console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                    setTimeout(function() {
+                        connect();
+                    }, 1000);
+                };
+
+				// Scoket Fehler
+                ws.onerror = function(err) {
+                    console.error('Socket encountered error: ', err.message, 'Closing socket');
+                    ws.close();
+                };
+            }
+            connect();
+
+			document.querySelectorAll('div.stdiv').forEach(function(node) {			
+				processMessage(node.innerHTML);	
+			});
+		</script>	
+		<script>
+			// DWD Warnungen
+
+			function getDWDWarnings() {
+				if(<%= data["dwd_showwarnings"] %>) {
+				
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							var myObj = JSON.parse(this.responseText);
+
+							var htmlStr = "";
+							myObj.features.forEach(function(entry) {					
+								var prop_name = entry.properties.NAME;
+								var prop_event = entry.properties.EVENT;
+								var prop_headline = entry.properties.HEADLINE;
+								var prop_begin = entry.properties.ONSET.replace(/[TZ]/g, ' ');
+								var prop_end = entry.properties.EXPIRES.replace(/[TZ]/g, ' ');
+								var prop_description = entry.properties.DESCRIPTION;
+								
+								htmlStr+= "<div class='warnung_elem'><small>" + prop_name + "<br>" + prop_headline  + "<br>von: " + prop_begin + "<br> bis: " + prop_end + "</small></div>"; 
+							});
+							
+							//document.getElementById("warnung_container").innerHTML  = "<div class='warnung_elem' id='warnung_ueberschrift'>Deutscher Wetterdienst</div>" + htmlStr;
+							document.getElementById("warnung_container").innerHTML  = htmlStr;
+							
+							if(htmlStr != "") {
+								document.getElementById("warnung_container").style.width = "17em"; 
+								document.getElementById("warnung_container").style.visibility = "visible"; 
+								
+								document.getElementById("warnungRechts").style.height = "auto"; 
+								document.getElementById("warnungRechts").style.visibility = "visible"; 
+								document.getElementById("warnungRechts").style.position = "static"; 
+							} else {
+								document.getElementById("warnung_container").style.width = "0"; 
+								document.getElementById("warnung_container").style.visibility = "hidden"; 
+								
+								document.getElementById("warnungRechts").style.height = "0"; 
+								document.getElementById("warnungRechts").style.visibility = "hidden"; 
+								document.getElementById("warnungRechts").style.position = "absolute"; 
+							}
+
+						}
+						
+						<% if(data["dwd_position"] == "2") { %> 
+						rearrangeWarnings();
+						<% } %>	 
+					};
+					xmlhttp.open("GET", 'https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=json&CQL_FILTER=WARNCELLID%20IN%20(%27<%= data["dwd_warncellid"] %>%27)', true);
+					xmlhttp.send(); 
+
+				}
+			}
+			
+			setInterval(getDWDWarnings, 60000*10);
+			getDWDWarnings();
+			
+			var warnNum = 0;
+			function rearrangeWarnings() {
+				$( "#warnung_container > div" ).each(function() {
+				  $( this ).height( 0 );
+				  $( this ).css("margin-bottom", 0);
+				});
+			
+				var test = $("#warnung_container > div");
+				test.last().height("auto");
+				test.last().prependTo("#warnung_container");	
+				
+				warnNum++;
+				if(warnNum > test.length)
+					warnNum = 1;
+				$( "#warnHeader" ).text( "Warnungen   " + warnNum + " / " + test.length );
+
+			}
+			<% if(data["dwd_position"] == "2") { %> 
+				setInterval(rearrangeWarnings, 8123);
+			<% } %>	 
+			
+			
+		 
+		 //
+		</script>
+		
+		
+    </body>
+</html>
+
+<!--
+
+    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
+    [::::::::::::::      ::::::::::::::]
+    [::::::::::::::      ::::::::::::::]
+    [::::::[[[[[[[:      :]]]]]]]::::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[     CODE THE WEB     ]:::::]
+    [:::::[  http://brackets.io  ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [:::::[                      ]:::::]
+    [::::::[[[[[[[:      :]]]]]]]::::::]
+    [::::::::::::::      ::::::::::::::]
+    [::::::::::::::      ::::::::::::::]
+    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
+
+-->

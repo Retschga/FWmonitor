@@ -1,0 +1,72 @@
+body {
+    background-color: #363739;
+    color: white;
+    margin: 0;
+    height: 100vh;
+    font-family: "Arial", "Helvetica", sans-serif;
+    display: grid;
+    grid-template-rows: 1.8em auto;
+    font-size: 1.4em;
+}
+
+
+.floatclear {clear: both;}
+
+img {max-width: 100%}
+
+
+header {background-color: #28292B; padding: 0.4em; border-bottom: 1px solid #090909; font-size: 1em;}
+header #menu {float: left; width: 10em;}
+header #time {float: right; width: 10em;}
+
+/* Navigation */
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #28292B;
+}
+
+li {
+  float: left;
+}
+
+li a, .dropbtn {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+}
+
+li a:hover, .dropdown:hover .dropbtn {
+ /* background-color: #818080;*/
+}
+
+li.dropdown {
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
