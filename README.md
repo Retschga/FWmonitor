@@ -45,7 +45,7 @@ Autostart (Raspberry):
  - `sudo crontab -e` und `@reboot /home/pi/Desktop/start.sh > /home/pi/Desktop/log.txt` hinzufügen
  - Um Browser automatisch im Vollbild zu starten:
    mit `mkdir PFAD` /home/pi/.config/lxsession/LXDE-pi/ erstellen
-   dann `nano autostart` und Inhalt einfügen:
+   dann `nano /home/pi/.config/lxsession/LXDE-pi/autostart` und Inhalt einfügen:
     ```# Bildschirmschoner deaktivieren
 	#@xscreensaver -no-splash
 	@xset s off
