@@ -13,10 +13,6 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt.
 
 ## Installation
 
-Windows: Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/
-
-Benötigte Programme:
-
 Raspberry PI: 
  - `sudo apt-get install git`
  - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
@@ -26,18 +22,45 @@ Raspberry PI:
  - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
  - `sudo apt-get install tesseract-ocr`  (Test mit: tesseract -v)
+ - `cd /home/pi/Desktop/`
  
-Windows:			  
+
+Windows:	
+ - Windows: Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/  
  - NodeJS: https://nodejs.org/de/
  - FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
  - Git: https://git-scm.com/downloads
 
 
-In Konsole:
+Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here):
  - `git clone https://github.com/Retschga/FWMonitor.git`
  - `cd "FWMonitor"`
  - `npm install package.json`
  - `npm i puppeteer`
+ 
+Autostart (Raspberry):
+ - `sudo crontab -e` und `@reboot /home/pi/Desktop/start.sh > /home/pi/Desktop/log.txt` hinzufügen
+ - Um Browser automatisch im Vollbild zu starten:
+   mit `mkdir PFAD` /home/pi/.config/lxsession/LXDE-pi/ erstellen
+   dann `nano autostart` und Inhalt einfügen:
+    ```# Bildschirmschoner deaktivieren
+	#@xscreensaver -no-splash
+	@xset s off
+	@xset -dpms
+	@xset s noblank
+
+	# lädt Chromium im Vollbild bei einem Neustart
+	#@chromium-browser --incognito --kiosk http://localhost
+	#@chromium-browser --start-fullscreen
+	@chromium-browser --incognito  --start-fullscreen --disable-infobars --enable-w$```
+
+Autostart (Windows):
+ - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
+
+
+
+
+
 
 "save.sqlite3 - Leer" zu "save.sqlite3" umbenennen
 
@@ -55,9 +78,10 @@ alle Kommas durch Punkte ersetzen (über suchen und ersetzen), dann mit http://w
 dann unter /public/rettPunkte.geojson speichern
 
 
-## Programmstart
+## Programmstart (manuell)
 
-node app
+In Konsole (Windows: Rechtsklick - Git Bash here):
+ - `node app`
 
 ## Hydrantenfunktion
 
