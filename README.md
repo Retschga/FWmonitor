@@ -18,17 +18,14 @@ Windows: Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/212
 Benötigte Programme:
 
 Raspberry PI: 
- - sudo apt-get install git
- - sudo apt-get install cups 
-   ( siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm ) 
- - sudo apt-get install printer-driver-cups-pdf
+ - `sudo apt-get install git`
+ - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
+ - `sudo apt-get install printer-driver-cups-pdf`
  - im Browser unter 127.0.0.1:631 CUPS konfigurieren: gewünschten Drucker als "Alarmdrucker" (Name) einrichten 
    (Login gleich wie Raspberry); PDF-Printer als "PDFPrint" (Name) einrichten 
  - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
- - curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -  
-   ( siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp )
- - sudo apt-get install -y nodejs  (Test mit: nodejs -v)
- - sudo apt-get install tesseract-ocr  (Test mit: tesseract -v)
+ - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
+ - `sudo apt-get install tesseract-ocr`  (Test mit: tesseract -v)
  
 Windows:			  
  - NodeJS: https://nodejs.org/de/
@@ -37,10 +34,10 @@ Windows:
 
 
 In Konsole:
- - git clone https://github.com/Retschga/FWMonitor.git
- - cd "FWMonitor"
- - npm install package.json
- - npm i puppeteer
+ - `git clone https://github.com/Retschga/FWMonitor.git`
+ - `cd "FWMonitor"`
+ - `npm install package.json`
+ - `npm i puppeteer`
 
 "save.sqlite3 - Leer" zu "save.sqlite3" umbenennen
 
