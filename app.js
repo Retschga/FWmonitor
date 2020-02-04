@@ -311,6 +311,18 @@ setTimeout(function() {
 						  console.log("stderr -> " + stderr);
 						});
 						
+					// Datei ausdrucken
+					delay = 10000;
+					setTimeout(function() {
+						console.log(`${d} PDF Druck: sudo /usr/bin/tiff2ps -a -p ${file} |lpr -P PDFPrint`);
+						exec(`sudo /usr/bin/tiff2ps -a -p ${file} |lpr -P PDFPrint`, function(err, stdout, stderr) {
+						  if (err) {
+							console.log('error:', err)
+						  }
+						  console.log("stdout -> " + stdout);
+						  console.log("stderr -> " + stderr);
+						});
+					}, delay);
 						
 						
 					// Tesseract ausführen

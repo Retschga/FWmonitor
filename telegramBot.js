@@ -42,9 +42,11 @@ module.exports = function (wss) {
 		setTimeout(function () {
 			sendtMessages--;					
 		}, 1000 + delay);	
-		setTimeout(function () {				
-			bot.telegram.sendMessage(chatId, sendtMessages + " -> " + text, extra);						
-		}, delay);			
+//		setTimeout(function () {		
+			console.log(sendtMessages);
+			bot.telegram.sendMessage(chatId, text, extra)
+				.catch(err => console.error("[Telegram] ERROR: " + err))					
+//		}, delay);			
 			
 	}
 
@@ -446,12 +448,12 @@ module.exports = function (wss) {
                 ctx.editMessageText('Benutzer: ' + rows[usernum].name + " " + rows[usernum].vorname + " \nGruppe: " + grupp, Telegraf.Extra.markup((m) =>
                     m.inlineKeyboard([
                         m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
-                        m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),/*
+                        m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
                         m.callbackButton('Gruppe:standard', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-1"),
                         m.callbackButton('Gruppe:1', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-2"),
                         m.callbackButton('Gruppe:2', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-3"),
                         m.callbackButton('Gruppe:3', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-4"),
-                        m.callbackButton('Gruppe:4', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-5"),*/
+                        m.callbackButton('Gruppe:4', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-5"),
                         m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows[usernum].id + "-" + rows[usernum].id)
                     ], { columns: 3 }))).catch((err) => {
                         console.log('[TelegramBot] Telegram Ooops', err)
@@ -632,8 +634,8 @@ module.exports = function (wss) {
     )));  
     onCallback.on('VerfuegbarJA', (ctx) => {
         setVerfuegbar(ctx.from.id, 1).then(() => {
-            ctx.answerCbQuery("🚒 Status -> ⚪  Verfügbar", false);
-            ctx.editMessageText("🚒 Status -> ⚪  Verfügbar");
+            ctx.answerCbQuery("🚒 Status -> 🟩  Verfügbar", false);
+            ctx.editMessageText("🚒 Status -> 🟩  Verfügbar");
             }
         );
 		getUser(ctx.from.id)
@@ -647,8 +649,8 @@ module.exports = function (wss) {
     })
     onCallback.on('VerfuegbarNEIN', (ctx) => {
         setVerfuegbar(ctx.from.id, 2).then(() => {
-            ctx.answerCbQuery("🚒 Status -> 🔴  Nicht Verfügbar", false);
-            ctx.editMessageText("🚒 Status -> 🔴  Nicht Verfügbar");
+            ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar", false);
+            ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar");
         }
         );
 		getUser(ctx.from.id)
@@ -754,33 +756,39 @@ module.exports = function (wss) {
 						alarmMessage = '* 🚧   Kein Einsatz   🚧*\n*Verkehrssicherung*';		
 
 					// Beginn Telegramnachricht
-					bot.telegram.sendMessage(element.telegramid, '❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗', Telegraf.Extra.markdown());
+					sendMessage(element.telegramid, '❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗', Telegraf.Extra.markdown());
 
 					delay += 8000;
 					setTimeout(function () {
-						bot.telegram.sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());					
+						sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());					
 					}, delay);		
 					
 					// Fax PDF
 					if(sendFax) {						
 						delay += 100;
 						setTimeout(function () {							
-							var filePath1 = filePath.replace(/.txt/g, ".pdf");							
+							var filePath1 = filePath.replace(/.txt/g, ".pdf");
+							
 							fs.stat(filePath1, function(err, stat) {
+								
 								if(err == null) {
 									var faxPDF = fs.readFileSync(filePath1);
 									bot.telegram.sendDocument(element.telegramid, { source: faxPDF, filename: filePath1.split(/[/\\]/g).pop() }); 
+								
 								} else {
 									
 									var filePath2 = filePath.replace(/.txt/g, ".tif");							
-									fs.stat(filePath1, function(err, stat) {
+									fs.stat(filePath2, function(err, stat) {
 										if(err == null) {
 											bot.telegram.sendPhoto(element.telegramid, {source: filePath2})
-										} 
+										} else {
+											console.error("[Telegram] Error: PDF/TIFF nicht gefunden.");
+										}
 									});		
 									
 								}
-							});					
+							});			
+							
 							
 						}, delay);	
 					}
@@ -793,7 +801,7 @@ module.exports = function (wss) {
 
 						delay += 4000;
 						setTimeout(function (message) {
-							bot.telegram.sendMessage(element.telegramid, message +" ", Telegraf.Extra.markdown());
+							sendMessage(element.telegramid, message +" ", Telegraf.Extra.markdown());
 						}, delay, text[i]);
 					}
 					
@@ -811,24 +819,25 @@ module.exports = function (wss) {
 						delay += 100;
 						if (lat != undefined && lng != undefined && STRASSE != "")
 							setTimeout(function () {
-								bot.telegram.sendMessage(element.telegramid, "*Hydrantenkarten:*\n[- Link Karte 1](https://wambachers-osm.website/emergency/#zoom=18&lat="+lat+"&lon="+lng+"&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT)\n[- Link Karte 2](http://www.openfiremap.org/?zoom=17&lat="+lat+"&lon="+lng+"&layers=B0000T)", Telegraf.Extra.markdown());
+								sendMessage(element.telegramid, "*Hydrantenkarten:*\n[- Link Karte 1](https://wambachers-osm.website/emergency/#zoom=18&lat="+lat+"&lon="+lng+"&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT)\n[- Link Karte 2](http://www.openfiremap.org/?zoom=17&lat="+lat+"&lon="+lng+"&layers=B0000T)", Telegraf.Extra.markdown());
 							}, delay);
 					}
 					
 					// Komme JaNein
 					delay += 4000;
 					setTimeout(function () {
-						bot.telegram.sendMessage(element.telegramid, 'Komme:', extra );
+						sendMessage(element.telegramid, 'Komme:', extra );
 					}, delay);
 					
 					//Alarmmeldung
 					delay += 8000;
 					setTimeout(function () {
-						bot.telegram.sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());
+						sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());
 					}, delay);
 					
                 });
-            });
+            })
+			.catch(err => console.error("[Telegram] ERROR: " + err))
     }
     onCallback.on('KommenNein', (ctx) => {
         ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);

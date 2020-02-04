@@ -16,10 +16,25 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt.
 Windows: Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/
 
 Benötigte Programme:
- - (Ghostscript: https://www.ghostscript.com/download/gsdnld.html)
+
+Raspberry PI: 
+ - sudo apt-get install git
+ - sudo apt-get install cups 
+   ( siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm ) 
+ - sudo apt-get install printer-driver-cups-pdf
+ - im Browser unter 127.0.0.1:631 CUPS konfigurieren: gewünschten Drucker als "Alarmdrucker" (Name) einrichten 
+   (Login gleich wie Raspberry); PDF-Printer als "PDFPrint" (Name) einrichten 
+ - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
+ - curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -  
+   ( siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp )
+ - sudo apt-get install -y nodejs  (Test mit: nodejs -v)
+ - sudo apt-get install tesseract-ocr  (Test mit: tesseract -v)
+ 
+Windows:			  
  - NodeJS: https://nodejs.org/de/
  - FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
  - Git: https://git-scm.com/downloads
+
 
 In Konsole:
  - git clone https://github.com/Retschga/FWMonitor.git
@@ -41,6 +56,7 @@ Bilder für Diashow im Standby unter "public/images/slideshow" einfügen
 Forst Rettungspunkte Datei  (https://www.kwf-online.de/index.php/wissenstransfer/waldarbeit/84-rettungspunkte-download) Filtern (mit Excel/LibreOffice), dann
 alle Kommas durch Punkte ersetzen (über suchen und ersetzen), dann mit http://www.convertcsv.com/csv-to-geojson.htm zu GeoJSON umwandeln, 
 dann unter /public/rettPunkte.geojson speichern
+
 
 ## Programmstart
 
