@@ -17,16 +17,19 @@ Raspberry PI:
  - `sudo apt-get install git`
  - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
  - `sudo apt-get install printer-driver-cups-pdf`
- - im Browser unter 127.0.0.1:631 CUPS konfigurieren: gewünschten Drucker als "Alarmdrucker" (Name) einrichten 
-   (Login gleich wie Raspberry); PDF-Printer als "PDFPrint" (Name) einrichten 
+ - im Browser unter `127.0.0.1:631` CUPS konfigurieren: gewünschten Drucker als `Alarmdrucker` (Name) einrichten 
+   (Login gleich wie Raspberry); PDF-Printer als `PDFPrint` (Name) einrichten 
  - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
- - `sudo apt-get install tesseract-ocr`  (Test mit: tesseract -v)
+ - `sudo apt-get install tesseract-ocr`  
+   (Test mit: `tesseract -v`)
  - `cd /home/pi/Desktop/`
+ - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405
+              über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
  
 
 Windows:	
- - Windows: Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/  
+ - Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/  
  - NodeJS: https://nodejs.org/de/
  - FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
  - Git: https://git-scm.com/downloads
@@ -62,20 +65,20 @@ Autostart (Windows):
 
 
 
-"save.sqlite3 - Leer" zu "save.sqlite3" umbenennen
+`save.sqlite3 - Leer` zu `save.sqlite3` umbenennen
 
-".env - Leer" Datei zu ".env" umbenennen
+`.env - Leer` Datei zu `.env` umbenennen
 
 Alle relevanten Einstellungen in der .env Datei bearbeiten
 Der Archivordner sollte der gleiche sein, in dem die Orginal Fax PDF´s / TIFF´s abgelegt sind (für Telegram Alarmfaxsendefunktion)
 
-Logo unter "public/images/logo.png" austauschen
+Logo unter `public/images/logo.png` austauschen
 
-Bilder für Diashow im Standby unter "public/images/slideshow" einfügen
+Bilder für Diashow im Standby unter `public/images/slideshow` einfügen
 
-Forst Rettungspunkte Datei  (https://www.kwf-online.de/index.php/wissenstransfer/waldarbeit/84-rettungspunkte-download) Filtern (mit Excel/LibreOffice), dann
+Forst Rettungspunkte Datei  ( https://www.kwf-online.de/index.php/wissenstransfer/waldarbeit/84-rettungspunkte-download ) Filtern (mit Excel/LibreOffice), dann
 alle Kommas durch Punkte ersetzen (über suchen und ersetzen), dann mit http://www.convertcsv.com/csv-to-geojson.htm zu GeoJSON umwandeln, 
-dann unter /public/rettPunkte.geojson speichern
+dann unter `/public/rettPunkte.geojson` speichern
 
 
 ## Programmstart (manuell)
