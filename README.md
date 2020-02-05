@@ -17,15 +17,14 @@ Raspberry PI:
  - `sudo apt-get install git`
  - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
  - `sudo apt-get install printer-driver-cups-pdf`
- - im Browser unter `127.0.0.1:631` CUPS konfigurieren: gewünschten Drucker als `Alarmdrucker` (Name) einrichten 
-   (Login gleich wie Raspberry); PDF-Printer als `PDFPrint` (Name) einrichten 
+ - im Browser unter `127.0.0.1:631` CUPS konfigurieren (Login gleich wie Raspberry): 
+   gewünschten Drucker als `Alarmdrucker` (Name) einrichten; PDF-Printer als `PDFPrint` (Name) einrichten 
  - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
  - `sudo apt-get install tesseract-ocr`  
    (Test mit: `tesseract -v`)
  - `cd /home/pi/Desktop/`
- - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405
-              über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
+ - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405 und https://pypi.org/project/pdf2image/ ; über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
  
 
 Windows:	
@@ -41,7 +40,10 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here):
  - `npm install package.json`
  - `npm i puppeteer`
  
-Autostart (Raspberry):
+ 
+## Autostart 
+
+Raspberry:
  - `sudo crontab -e` und `@reboot /home/pi/Desktop/start.sh > /home/pi/Desktop/log.txt` hinzufügen
  - Um Browser automatisch im Vollbild zu starten:
    mit `mkdir PFAD` /home/pi/.config/lxsession/LXDE-pi/ erstellen
@@ -57,13 +59,11 @@ Autostart (Raspberry):
 	#@chromium-browser --start-fullscreen
 	@chromium-browser --incognito  --start-fullscreen --disable-infobars --enable-w$```
 
-Autostart (Windows):
+Windows:
  - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
 
 
-
-
-
+## Einstellungen
 
 `save.sqlite3 - Leer` zu `save.sqlite3` umbenennen
 
@@ -118,3 +118,8 @@ This project is licensed under the GNU GPLv3  License - see the [LICENSE.md](LIC
 
 Ich übernehme keine Haftung für die Funktion der Software vor Ort. Da über diese Software sensible personenbezogene Daten verarbeitet werden, ist der Datenschutz vor Ort insbesondere zu beachten. Vor allem sollte ein Augenmerk auf die Datensparsamkeit gelegt werden. Damit verbunden ist die strenge Entscheidung, wer welche Daten per E-Mail, SMS oder externen Systemen weitergeleitet bekommt. Im Zweifel ist der Programmcode entsprechend anzupassen.
 
+
+## Screenshots
+
+![Bild](/Screenshot1.PNG "Bild")
+![Bild](/Screenshot2.PNG "Bild")
