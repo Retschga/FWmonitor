@@ -125,7 +125,7 @@ module.exports = function (bot) {
 
 		rows.forEach(function (element) {
 			users.push([element.id, element.name + " " + element.vorname, element.group, 
-			element.allowed, element.stMA, element.stAGT, element.stGRF, element.stZUGF]);      
+			element.allowed, element.stMA, element.stAGT, element.stGRF, element.stZUGF, element.admin]);      
 			if(element.sendRemembers == 1) erinnerungenAktiviert++;
 		});
 		grouprows.forEach(function (element) {
@@ -207,6 +207,11 @@ module.exports = function (bot) {
 	router.get('/changeZUGF', function (req, res) {
 		if (req.query.id != undefined) {
 			changeStAny(req.query.id, "stZUGF", req.query.value).then(() => res.redirect('/einstell' + "?scroll=" + req.query.scroll));
+		}
+	});
+	router.get('/changeADMIN', function (req, res) {
+		if (req.query.id != undefined) {
+			changeStAny(req.query.id, "admin", req.query.value).then(() => res.redirect('/einstell' + "?scroll=" + req.query.scroll));
 		}
 	});
 

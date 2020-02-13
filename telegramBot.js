@@ -449,12 +449,13 @@ module.exports = function (wss) {
                     m.inlineKeyboard([
                         m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
                         m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
-                        m.callbackButton('Gruppe:standard', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-1"),
-                        m.callbackButton('Gruppe:1', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-2"),
-                        m.callbackButton('Gruppe:2', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-3"),
-                        m.callbackButton('Gruppe:3', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-4"),
-                        m.callbackButton('Gruppe:4', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-5"),
-                        m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows[usernum].id + "-" + rows[usernum].id)
+						m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows[usernum].id + "-" + rows[usernum].id),
+                        m.callbackButton('Gruppe: Standard', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-1"),
+                        m.callbackButton('Gruppe: 1', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-2"),
+                        m.callbackButton('Gruppe: 2', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-3"),
+                        m.callbackButton('Gruppe: 3', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-4"),
+                        m.callbackButton('Gruppe: 4', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-5")
+                        
                     ], { columns: 3 }))).catch((err) => {
                         console.log('[TelegramBot] Telegram Ooops', err)
                     });

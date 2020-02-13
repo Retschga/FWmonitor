@@ -40,6 +40,7 @@
 						<th>Gruppenführer</th>
 						<th>Zugführer</th>
 						<th></th>
+						<th>ADMIN</th>
 					 </tr>
 
 					  <% for(i in data["users"]) { %>
@@ -51,6 +52,7 @@
 							<td class="stGRF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][6] %> </td>
 							<td class="stZUGF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][7] %> </td>
 							<td class="allowed" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][3] %> </td>
+							<td class="stADMIN" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][8] %> </td>
 						</tr>
 					  <% } %>
 					 
@@ -148,13 +150,13 @@
         
         <script>
 		
+			// Scrolling
 			var parts = window.location.search.substr(1).split("&");
 			var $_GET = {};
 			for (var i = 0; i < parts.length; i++) {
 				var temp = parts[i].split("=");
 				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-			}
-			
+			}			
 			document.addEventListener('DOMContentLoaded', (event) => {
 				if($_GET['scroll'] != undefined) {
 					window.scrollTo(0, $_GET['scroll']); // values are x,y-offset
@@ -162,6 +164,7 @@
 			})
 			
 			
+			// Nachricht an alle
 			function sendMessage() {
 				var msg = document.getElementById("messagedata").value;
 				
@@ -174,12 +177,13 @@
 				
 			}
 			
-
+			// Pattern speichern
 			function savePattern(id) {
 				var pattern = document.getElementById("pattern_"+id).value;
 				window.location.href = "/changePattern?" + 'id=' + id + '&pattern='+pattern.replace(/\n/g, '<br>');
 			}
 
+			// Person setze ausgewählte Gruppe
 			function setSelectedOption(sel,id){
 				var opt;
 				for ( var i = 0, len = sel.options.length; i < len; i++ ) {
@@ -192,6 +196,7 @@
 				return opt;
 			}
 
+			// Person lese ausgewählte Gruppe
 			function getSelectedOption(sel) {
 				var opt;
 				for ( var i = 0, len = sel.options.length; i < len; i++ ) {
@@ -217,10 +222,18 @@
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 				if(element.innerHTML != 1)
-					element.innerHTML = "<a href='del?id="+element.dataset.id+"' class='button'>löschen</a> / <a href='aktiv?id="+element.dataset.id+"' class='button'>aktivieren</a>";
+					element.innerHTML = "<a href='javascript:delPerson("+element.dataset.id+");' class='button'>löschen</a> / <a href='aktiv?id="+element.dataset.id+"' class='button'>aktivieren</a>";
 				else
-					element.innerHTML = "<a href='del?id="+element.dataset.id+"' class='button'>löschen</a>";
+					element.innerHTML = "<a href='javascript:delPerson("+element.dataset.id+");' class='button'>löschen</a>";
 			};
+			
+			// Person löschen
+			function delPerson(id) {
+				var check = confirm('Wirklich löschen?'); 
+				if (check == true) {
+					window.location.href = "/del?" + 'id=' + id + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
+				}
+			}
 
 			// Person group
 			x = document.getElementsByClassName("group")
@@ -245,10 +258,9 @@
 			console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
-				if(element.innerHTML != 1)
-					element.innerHTML = "<input id='stMA_"+element.dataset.id+"' type='checkbox' name='stMA' value='"+element.dataset.id+"'>";
-				else
-					element.innerHTML = "<input id='stMA_"+element.dataset.id+"' type='checkbox' name='stMA' value='"+element.dataset.id+"' checked>";
+				
+				element.innerHTML = "<input id='stMA_"+element.dataset.id+"' type='checkbox' name='stMA' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
 			
 			// Person atemschutz
@@ -256,10 +268,9 @@
 			console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
-				if(element.innerHTML != 1)
-					element.innerHTML = "<input id='stAGT_"+element.dataset.id+"' type='checkbox' name='stAGT' value='"+element.dataset.id+"'>";
-				else
-					element.innerHTML = "<input id='stAGT_"+element.dataset.id+"' type='checkbox' name='stAGT' value='"+element.dataset.id+"' checked>";
+				
+				element.innerHTML = "<input id='stAGT_"+element.dataset.id+"' type='checkbox' name='stAGT' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
 			
 			// Person gruppenführer
@@ -267,10 +278,9 @@
 			console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
-				if(element.innerHTML != 1)
-					element.innerHTML = "<input id='stGRF_"+element.dataset.id+"' type='checkbox' name='stGRF' value='"+element.dataset.id+"'>";
-				else
-					element.innerHTML = "<input id='stGRF_"+element.dataset.id+"' type='checkbox' name='stGRF' value='"+element.dataset.id+"' checked>";
+				
+				element.innerHTML = "<input id='stGRF_"+element.dataset.id+"' type='checkbox' name='stGRF' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
 			
 			// Person zugführer
@@ -278,15 +288,29 @@
 			console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
-				if(element.innerHTML != 1)
-					element.innerHTML = "<input id='stZUGF_"+element.dataset.id+"' type='checkbox' name='stZUGF' value='"+element.dataset.id+"'>";
-				else
-					element.innerHTML = "<input id='stZUGF_"+element.dataset.id+"' type='checkbox' name='stZUGF' value='"+element.dataset.id+"' checked>";
+				
+				element.innerHTML = "<input id='stZUGF_"+element.dataset.id+"' type='checkbox' name='stZUGF' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
 			
+			// Person ADMIN
+			x = document.getElementsByClassName("stADMIN")
+			console.log(x);
+			for (index = 0; index < x.length; ++index) {
+				var element = x[index];
+				
+				if(element.innerHTML == 1)
+					element.style.background = "orange";
+				
+				element.innerHTML = "<input id='stADMIN_"+element.dataset.id+"' type='checkbox' name='stADMIN' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
+			};
+			
+			// Array aller Checkboxen
 			var checkboxes = document.querySelectorAll('input[type=checkbox]'),
 				checkboxArray = Array.from( checkboxes );
 
+			// Change EventListener
 			function confirmCheck() {
 				if(this.name == "stAGT")
 					window.location.href = "/changeAGT?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
@@ -296,12 +320,15 @@
 					window.location.href = "/changeGRF?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
 				if(this.name == "stZUGF")
 					window.location.href = "/changeZUGF?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
+				if(this.name == "stADMIN")
+					window.location.href = "/changeADMIN?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
 			}
 
 			checkboxArray.forEach(function(checkbox) {
 			  checkbox.addEventListener('change', confirmCheck);
 			});
 		
+			// Uhrzeit
             setInterval(() => {
                 var d = new Date();
                 var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };

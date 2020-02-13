@@ -88,11 +88,7 @@ process.on('uncaughtException', function (err) {
 	console.log("     Diashow Wechselzeit: "+(process.env.DIASHOW_DELAY / 1000)+" Sekunden");
 	console.log("     Diashow Zufällig: "+(process.env.DIASHOW_RANDOM == "true" ? "Ja" : "Nein"));
 	console.log("     FW Name: "+process.env.FW_NAME_STANDBY);
-	
-	// Gebe Telegrammeinstellungen aus
-	console.log("\n    Telegram:                                                      ");
-	console.log("     Sende Alarme: "+(process.env.BOT_SENDALARM == "true" ? "Ja" : "!!! Nein !!!"));
-	
+
 	// Prüfe Diashow Ordner
 	try {
 		var stats  = await stat(process.env.BOT_IMG);
@@ -100,6 +96,11 @@ process.on('uncaughtException', function (err) {
 	} catch (err) {
 		console.error("     Bilderordner: "+process.env.BOT_IMG+" -> Fehler");
 	}	
+	
+	// Gebe Telegrammeinstellungen aus
+	console.log("\n    Telegram:                                                      ");
+	console.log("     Sende Alarme: "+(process.env.BOT_SENDALARM == "true" ? "Ja" : "!!! Nein !!!"));
+	
 	console.log("\n    --------------------------------------------------------------\n\n\n\n");
 })();
 
@@ -108,8 +109,8 @@ process.on('uncaughtException', function (err) {
 // ---------------- Programmstart ----------------
 
 
- const Database = require('sqlite-async');
- Database.open('save.sqlite3')
+const Database = require('sqlite-async');
+Database.open('save.sqlite3')
 	.then(db => {
 		db.all("create table if not exists statistik (date TEXT, aktion INTEGER, user TEXT)").then(rows => {
 			console.error("[APP] Creadted Datatable Statistik");
@@ -155,7 +156,11 @@ const wss = new WebSocket.Server({ port: 8080 });
  
 wss.on('connection', function connection(ws) {
   ws.on('message', function incoming(message) {
-    console.log('[App] received: %s', message);
+    console.log('[App] Websocket received: %s', message);
+  });
+  
+  ws.on('close', function close() {
+    console.log('[App] Websocket disconnect');
   });
  
   ws.send('Hallo|Client', function(error) { console.log("[App] Websocket Err: "+ error) });
@@ -171,7 +176,7 @@ wss.broadcast = function broadcast(topic, data) {
 };
 
 wss.on('error', function(error) {
-	console.log("[App] Websocket Err: "+ + error)
+	console.log("[App] Websocket Err: " + error)
 })
 
 
