@@ -3,7 +3,7 @@
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem Bildschirm darzustellen. 
 Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.
 
-Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt.
+Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmManager.js Datei angepasst werden).
 
 ## Funktionsumfang
 

@@ -17,37 +17,50 @@ module.exports = function (wss, bot) {
         });
     }
 
-	// ---------------- Fax Filter (RegEx) ----------------
+	// ---------------- Fax Suchworte (RegEx) ----------------
+	// Filttetde Teil aus dm Fax zwischen Filter Beinn und Filter Ende (\n ist eu Zeile)
     var EINSATZSTICHWORT = "-/-"; 				// Variable
     var s_EINSATZSTICHWORT = "Stichwort : ";	// Filter Beginn
     var e_EINSATZSTICHWORT = "\n";				// Filter Ende
-    var SCHLAGWORT = "-/-";
-    var s_SCHLAGWORT = "Schlagw. : ";
-    var e_SCHLAGWORT = "\n";
-    var OBJEKT = "-/-";
-    var s_OBJEKT = "Objekt : ";
-    var e_OBJEKT = "\n";
-    var BEMERKUNG = "-/-";
-    var s_BEMERKUNG = "BEMERKUNG";
-    var e_BEMERKUNG = "EINSATZHINWEIS";
-    var STRASSE = "-/-";
-    var s_STRASSE = "Straße : ";
-    var e_STRASSE = "\n";
-    var ORTSTEIL = "-/-";
-    var s_ORTSTEIL = "Ortsteil : ";
-    var e_ORTSTEIL = "\n";
-    var ORT = "-/-";
-    var s_ORT = "Gemeinde : ";
-    var e_ORT = "\n";
-    var EINSATZMITTEL = "";
-    var s_EINSATZMITTEL = "EINSATZMITTEL";
-    var e_EINSATZMITTEL = "BEMERKUNG";
-    var cars1 = [];								// Fahrzeuge eigen
-    var cars2 = [];								// Fahrzeuge andere
-    var s_CAR = "Name : ";
-    var e_CAR = "\n";
-    var CAR1 = process.env.FW_NAME;
+	
+    var SCHLAGWORT = "-/-";						// Variable
+    var s_SCHLAGWORT = "Schlagw. : ";			// Filter Beginn
+    var e_SCHLAGWORT = "\n";					// Filter Ende
+	
+    var OBJEKT = "-/-";							// Variable
+    var s_OBJEKT = "Objekt : ";					// Filter Beginn
+    var e_OBJEKT = "\n";						// Filter Ende
+	
+    var BEMERKUNG = "-/-";						// Variable
+    var s_BEMERKUNG = "BEMERKUNG";				// Filter Beginn
+    var e_BEMERKUNG = "EINSATZHINWEIS";			// Filter Ende
+	
+    var STRASSE = "-/-";						// Variable
+    var s_STRASSE = "Straße : ";				// Filter Beginn
+    var e_STRASSE = "\n";						// Filter Ende
+	
+    var ORTSTEIL = "-/-";						// Variable
+    var s_ORTSTEIL = "Ortsteil : ";				// Filter Beginn
+    var e_ORTSTEIL = "\n";						// Filter Ende
+	
+    var ORT = "-/-";							// Variable
+    var s_ORT = "Gemeinde : ";					// Filter Beginn
+    var e_ORT = "\n";							// Filter Ende
+	
+    var EINSATZMITTEL = "";						// Variable
+    var s_EINSATZMITTEL = "EINSATZMITTEL";		// Filter Beginn
+    var e_EINSATZMITTEL = "BEMERKUNG";			// Filter Ende
+	
+    var cars1 = [];								// Variable Fahrzeuge eigen
+    var cars2 = [];								// Variable Fahrzeuge andere
+    var s_CAR = "Name : ";						// Filter Beginn
+    var e_CAR = "\n";							// Filter Ende
+    var CAR1 = process.env.FW_NAME;				// Filter um als eigenes Fahrzeug erkannt zu weden (aus .env)
 
+	
+	
+	
+	
 	
 	// ---------------- Textsuche ----------------
     function searchElement(start, end, data) {
