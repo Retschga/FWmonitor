@@ -13,6 +13,7 @@ from ws4py.client.threadedclient import WebSocketClient
 import serial, time, sys, socket, datetime
 from reset_timer import RU_Timer
 import RPi.GPIO as GPIO
+import os
 
 
 # -------------- Einstellungen --------------
@@ -168,6 +169,9 @@ class DummyClient(WebSocketClient):
             taus.start_timer()
             schirman()
             schirman()
+        if 'rebootScreen' in str(m):
+            os.system('sudo shutdown -r now')
+
 
 # -------------- Programmstart --------------
 # Prüft irgendwas ??? -> siehe Internet :)

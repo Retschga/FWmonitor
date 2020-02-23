@@ -19,12 +19,13 @@ Raspberry PI:
  - `sudo apt-get install printer-driver-cups-pdf`
  - im Browser unter `127.0.0.1:631` CUPS konfigurieren (Login gleich wie Raspberry): 
    gewünschten Drucker als `Alarmdrucker` (Name) einrichten; PDF-Printer als `PDFPrint` (Name) einrichten 
- - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen
+ - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen (am besten als ganzer Pfad /home/pi/...)
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
  - `sudo apt-get install tesseract-ocr`  
    (Test mit: `tesseract -v`)
  - `cd /home/pi/Desktop/`
- - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405 und https://pypi.org/project/pdf2image/ ; über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
+ - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405 und https://pypi.org/project/pdf2image/ und https://github.com/windele/alarmdisplay-ffw/blob/master/infos/Installation_auf_Raspberry_Pi.md
+ - Faxeingang über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
  
 
 Windows:	

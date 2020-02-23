@@ -7,6 +7,8 @@ module.exports = function (wss) {
     const Database = require('sqlite-async');
     const calendar = require('./calendar')();
 	const axios = require('axios')
+	const fwvv = require('./fwvvAnbindung')();
+	
 
     var bot = new Telegraf(process.env.BOT_TOKEN);
 	
@@ -326,10 +328,18 @@ module.exports = function (wss) {
 	// ---------------- Historie ----------------
     bot.hears('🔥 Einsätze', ctx => {
 
-		ctx.reply('*🔥 Einsätze*', Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
-			m.callbackButton('📜 Letzte Alarme', 'showAlarm:0'),
-			m.callbackButton('📈 Statistik', 'showStatistik')
-		])));
+		if(process.env.FWVV != "true") {
+			ctx.reply('*🔥 Einsätze*', Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
+				m.callbackButton('📜 Letzte Alarme', 'showAlarm:0'),
+				m.callbackButton('📈 Statistik', 'showStatistik')
+			])));
+		} else {
+			ctx.reply('*🔥 Einsätze*', Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
+				m.callbackButton('📜 Letzte Alarme', 'showAlarm:0'),
+				m.callbackButton('📈 Statistik', 'showStatistik'),
+				m.callbackButton('⏱️ Einsatzzeit', 'showEinsatzZeit')
+			])));
+		}
 		
     });
     onCallback.on('showAlarm', (ctx) => {
@@ -390,7 +400,31 @@ module.exports = function (wss) {
            
         });
     })
-    
+    onCallback.on('showEinsatzZeit', (ctx) => {
+		ctx.editMessageText("*⌛ lädt ⌛*", 
+				Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
+					console.log('[TelegramBot] Telegram Ooops', err)
+				});
+		
+		ctx.replyWithChatAction('typing');
+		
+		fwvv.getEinsatzZeit(ctx.from.last_name, ctx.from.first_name).then((arr) => {
+			
+			var d = new Date();	
+			var options = { year: 'numeric' };
+            var date = d.toLocaleDateString('de-DE', options);
+
+			var str = "*⏱️ Einsatzzeit Jahr " +date+ ":* _" + Math.floor(arr[0]/60) + "h " + (arr[0]%60) + "m ( " + arr[1] + " Einsätze )_\n";
+		
+			ctx.editMessageText(str, 
+				Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
+					console.log('[TelegramBot] Telegram Ooops', err)
+				});
+			
+		});
+		
+    })
+    		
 	
 	// ---------------- Mehr ----------------
     bot.hears('️▪️ Mehr', ctx => {
@@ -402,7 +436,8 @@ module.exports = function (wss) {
                         m.callbackButton('📅 Erinnerungen', 'einstell_Kalender'),
 						m.urlButton('🗺️ Karte 1', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
 						m.urlButton('🗺️ Karte 2', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T'),
-						m.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant')
+						m.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant'),
+						m.callbackButton('🖥️ Bildschirm Neustart', 'einstell_rebootScreen')
                     ], {columns: 2})));
                 else
                     ctx.reply('*️▪️ Mehr:*', Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
@@ -513,6 +548,10 @@ module.exports = function (wss) {
                     m.callbackButton('OK', 'einstell_Benutzer:' + (usernum))
                 ])));
         });
+    })
+	onCallback.on('einstell_rebootScreen', (ctx) => {
+        ctx.answerCbQuery("Bildschirm wird neugestartet!", true);		
+        wss.broadcast('rebootScreen', "");
     })
 		
 	function allowUser(userid) {
@@ -891,7 +930,23 @@ module.exports = function (wss) {
 	// ---------------- Kalender ----------------
 	var lastTime = new Date();	
     bot.hears('📅 Kalender', ctx => {
-		calendar.getCalendarString().then(termine => ctx.reply("*Termine:*\n_"+termine+"_", Telegraf.Extra.markdown())); 
+		
+		calendar.getCalendarString().then((termine) => {
+			
+			var str = "";
+			
+			for(var i = 0; i < termine.length; i++) {
+				if(termine[i].toLowerCase().indexOf("mta") != -1)
+					termine[i] = termine[i].replace('-', '- 📖')
+				if(termine[i].toLowerCase().indexOf("übung") != -1)
+					termine[i] = termine[i].replace('-', '- 🚒')
+				
+				str += termine[i] + "\n";
+			}
+			
+			ctx.reply("*Termine:*\n_"+str+"_", Telegraf.Extra.markdown())
+			
+			}); 
 		
 		addStatistik(1, ctx.from.id);
     }); 

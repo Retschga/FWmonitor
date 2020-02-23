@@ -22,7 +22,17 @@ const getStatus = function () {
 }
 
 router.get('/kalender', function (req, res) {
-    calendar.getCalendarString().then(termine => res.send(termine.replace(/\n/g, '<br>')));  
+    calendar.getCalendarString().then((termine) => {
+			
+			var str = "";
+			
+			for(var i = 0; i < termine.length; i++) {
+				str += termine[i] + "<br>";
+			}
+		
+			res.send(str)
+	
+		});  
 });
 
 

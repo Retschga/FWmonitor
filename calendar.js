@@ -40,7 +40,7 @@
                     }
                 });
                 result.sort(sortByDate);
-                var termine = "";
+                var termine = [];
                 for (let i in result) {
                     var k = result[i];
                     if (new Date(k.start) > Date.now()) {                        
@@ -58,7 +58,7 @@
                         var mm = new Date(k.start).getMinutes();
                         if (mm < 10)
                             mm = "0" + mm;
-                        termine += `${d}.${m} ${hh}:${mm} - ${k.summary} ${k.location}\n`;
+                        termine.push(`${d}.${m} ${hh}:${mm} - ${k.summary} ${k.location}`);
                     }
                 }
                 resolve(termine);

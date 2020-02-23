@@ -1,4 +1,6 @@
-﻿#  Raspberry Pi Version (true/false)
+﻿# Um Änderungen zu übernehmen muss das Programm neu gestartet werden
+
+#  Raspberry Pi Version (true/false)
 RASPIVERSION=false
 
 
@@ -24,10 +26,12 @@ DRUCKERNAME=Microsoft Print to PDF
 
 
 # Drucken mit Foxit Reader oder Ghostscript
-#Ghostscript Pfad  mit / und nicht mit \
+#Ghostscript
+# lokaler Pfad C:/ordner/ordner/
 #GSPFAD=C:/Programme...
 GSPFAD=
-#Foxit Reader Pfad  mit / und nicht mit \
+#Foxit Reader
+# lokaler Pfad C:/ordner/ordner/
 #AREADER=C:/Programme...
 AREADER=
 
@@ -38,16 +42,20 @@ FW_NAME=Feuerwehr Name
 # Alarm Anzeigezeit
 ALARM_VISIBLE=250
 
-# In Ordner mit / und nicht mit \
+# In Ordner
+# lokaler Pfad C:/ordner/ordner/
+# bei Netzwerk \\netzwerkpc\ordner\
 FOLDER_IN=C:\Eingang
 
-# Archiv Ordner mit / und nicht mit \
+# Archiv Ordner 
+# lokaler Pfad C:/ordner/ordner/
 FOLDER_ARCHIVE=C:\Archiv
 
 
 
 
 # Telegram Bilderordner
+# lokaler Pfad C:/ordner/ordner/
 BOT_IMG=./telegramBilder/
 #BOT_IMG=./public/images/slideshow
 
@@ -87,6 +95,13 @@ ST_VERV_HIDDEN=false
 
 
 
+# FWVV Anbindung (true/false)
+FWVV=false
+
+# FWVV Datensicherung Ordner 
+# lokaler Pfad C:/ordner/ordner/
+# bei Netzwerk \\netzwerkpc\ordner\
+FWVV_DATENSICHERUNG=
 
 PORT=80
 #WebSocket_PORT=8080
