@@ -936,11 +936,12 @@ module.exports = function (wss) {
 			var str = "";
 			
 			for(var i = 0; i < termine.length; i++) {
+				/*
 				if(termine[i].toLowerCase().indexOf("mta") != -1)
 					termine[i] = termine[i].replace('-', '- 📖')
 				if(termine[i].toLowerCase().indexOf("übung") != -1)
 					termine[i] = termine[i].replace('-', '- 🚒')
-				
+				*/
 				str += termine[i] + "\n";
 			}
 			
