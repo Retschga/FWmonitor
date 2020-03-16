@@ -52,9 +52,11 @@ module.exports = function () {
 		var out = [];
 		
 		files.forEach(function(file) {
-			var stats = fs.statSync(path + "/" +file);
-			if(file.indexOf("FWVVSDAT") != -1 && stats.isFile()) {
-				out.push({"file":file, "mtime": stats.mtime.getTime()});
+			if(file.indexOf("FWVVSDAT") != -1) {
+				var stats = fs.statSync(path + "/" +file);
+				if(stats.isFile()) {
+					out.push({"file":file, "mtime": stats.mtime.getTime()});
+				}
 			}
 		});
 		
@@ -136,7 +138,7 @@ module.exports = function () {
 									
 									
 									//console.log(record);
-									console.log(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));
+									//console.log(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));
 								
 								}
 								

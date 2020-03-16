@@ -118,6 +118,24 @@ Database.open('save.sqlite3')
 			console.error("[APP] Database error: " + err);
 		})
 		
+		db.all('PRAGMA table_info("users")').then( (rows) => {
+			var exists = false;
+			rows.forEach(function (element) {
+				if(element.name == "statusUntil")
+					exists = true;
+			});
+			
+			if(!exists) {
+				db.run('ALTER TABLE users ADD statusUntil TEXT;').then(rows => {
+					console.error("[APP] Creadted Column statusUntil in users");
+				}).catch(err => {
+					console.error("[APP] Database error: " + err);
+				})	
+			}
+
+		}).catch(err => {
+			console.error("[APP] Database error: " + err);
+		})		
 	})
 	.catch(err => {
 		console.error("[APP] Database error: " + err);

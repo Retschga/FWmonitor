@@ -34,12 +34,14 @@
 				  <table>
 					<tr>
 						<th>Name</th>
-						<th>Telegram Gruppe</th>
-						<th>Maschinist</th>
-						<th>Atemschutz</th>
-						<th>Gruppenführer</th>
-						<th>Zugführer</th>
-						<th></th>
+						<th>Gruppe</th>
+						<th>Masch.</th>
+						<th>Atemsch.</th>
+						<th>Gruppenf.</th>
+						<th>Zugf.</th>
+						<th>Erinner.</th>
+						<th>Status</th>
+						<th></th>						
 						<th>ADMIN</th>
 					 </tr>
 
@@ -51,7 +53,9 @@
 							<td class="stAGT" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][5] %> </td>
 							<td class="stGRF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][6] %> </td>
 							<td class="stZUGF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][7] %> </td>
-							<td class="allowed" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][3] %> </td>
+							<td class="erinner" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][9] %> </td>
+							<td class="status" style="font-size: 0.5em;" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][10] %> </td>
+							<td class="allowed" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][3] %> </td>							
 							<td class="stADMIN" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][8] %> </td>
 						</tr>
 					  <% } %>
@@ -210,7 +214,7 @@
 			
 			// Gruppenpattern
 			var x = document.getElementsByClassName("pattern")
-			console.log(x);
+			//console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 			  element.innerHTML = "<textarea name='pattern' id='pattern_"+element.dataset.id+"' rows='10' cols='60'>" + element.innerHTML + "</textarea>";
@@ -218,7 +222,7 @@
 
 			// Person allowed
 			x = document.getElementsByClassName("allowed")
-			console.log(x);
+			//console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 				if(element.innerHTML != 1)
@@ -237,12 +241,13 @@
 
 			// Person group
 			x = document.getElementsByClassName("group")
-			console.log(x);
+			//console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 				var group = element.innerHTML;
 
-					element.innerHTML = "<select name='group' id='group_"+element.dataset.id+"' data-id='"+element.dataset.id+"'><option value='0'>standard</option><option value='1'>gruppe_1</option><option value='2'>gruppe_2</option><option value='3'>gruppe_3</option><option value='4'>gruppe_4</option></select>";
+				element.innerHTML = "<select name='group' id='group_"+element.dataset.id+"' data-id='" +element.dataset.id+ 
+					"'><option value='0'>standard</option><option value='1'>gruppe_1</option><option value='2'>gruppe_2</option><option value='3'>gruppe_3</option><option value='4'>gruppe_4</option></select>";
 			
 				setSelectedOption( document.getElementById("group_"+element.dataset.id), group-1);
 
@@ -253,49 +258,65 @@
 				}
 			};
 			
-			// Person maschinist
-			x = document.getElementsByClassName("stMA")
-			console.log(x);
-			for (index = 0; index < x.length; ++index) {
-				var element = x[index];
+			// Checkboxen
+			function personCheckbox(row) {
+			
+				var x = document.getElementsByClassName(row)
+				//console.log(x);
 				
-				element.innerHTML = "<input id='stMA_"+element.dataset.id+"' type='checkbox' name='stMA' value='"+
-					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
-			};
+				for (index = 0; index < x.length; ++index) {
+					var element = x[index];
+					
+					element.innerHTML = "<label class='container'><input id='"+row+"_"+element.dataset.id+"' type='checkbox' name='"+row+"' value='"+
+						element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + "><span class='checkmark'></span></label>";
+				};
+				
+			}
+			
+			// Person maschinist
+			personCheckbox("stMA");			
 			
 			// Person atemschutz
-			x = document.getElementsByClassName("stAGT")
-			console.log(x);
-			for (index = 0; index < x.length; ++index) {
-				var element = x[index];
-				
-				element.innerHTML = "<input id='stAGT_"+element.dataset.id+"' type='checkbox' name='stAGT' value='"+
-					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
-			};
+			personCheckbox("stAGT");	
 			
 			// Person gruppenführer
-			x = document.getElementsByClassName("stGRF")
-			console.log(x);
-			for (index = 0; index < x.length; ++index) {
-				var element = x[index];
-				
-				element.innerHTML = "<input id='stGRF_"+element.dataset.id+"' type='checkbox' name='stGRF' value='"+
-					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
-			};
+			personCheckbox("stGRF");
 			
 			// Person zugführer
-			x = document.getElementsByClassName("stZUGF")
-			console.log(x);
+			personCheckbox("stZUGF");
+			
+			// Person Erinnerungen
+			x = document.getElementsByClassName("erinner")
+			//console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 				
-				element.innerHTML = "<input id='stZUGF_"+element.dataset.id+"' type='checkbox' name='stZUGF' value='"+
-					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
+				if(element.innerHTML == 1)
+					element.style.background = "orange";
+				
+				element.innerHTML = (element.innerHTML == 1 ? "Ein" : "Aus");
+			};
+			
+			// Person Status
+			x = document.getElementsByClassName("status")
+			//console.log(x);
+			for (index = 0; index < x.length; ++index) {
+				var element = x[index];
+				
+				if(element.innerHTML == 1) {
+					element.style.background = "green";
+					element.innerHTML = "";
+				} else {
+					if(element.innerHTML == 2) 
+						element.innerHTML = "";
+						
+					element.style.background = "red";
+				}
 			};
 			
 			// Person ADMIN
 			x = document.getElementsByClassName("stADMIN")
-			console.log(x);
+			//console.log(x);
 			for (index = 0; index < x.length; ++index) {
 				var element = x[index];
 				
@@ -305,6 +326,7 @@
 				element.innerHTML = "<input id='stADMIN_"+element.dataset.id+"' type='checkbox' name='stADMIN' value='"+
 					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
+			
 			
 			// Array aller Checkboxen
 			var checkboxes = document.querySelectorAll('input[type=checkbox]'),

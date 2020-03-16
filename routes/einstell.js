@@ -124,8 +124,19 @@ module.exports = function (bot) {
 		var erinnerungenAktiviert = 0;
 
 		rows.forEach(function (element) {
+			
+			var bis = element.status;
+			if(element.statusUntil != "") {
+				var result = new Date(element.statusUntil);
+				var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+				var time = result.toLocaleTimeString();
+				var date = result.toLocaleDateString('de-DE', options);
+				bis = date + " " + time;
+			}			
+			
 			users.push([element.id, element.name + " " + element.vorname, element.group, 
-			element.allowed, element.stMA, element.stAGT, element.stGRF, element.stZUGF, element.admin]);      
+			element.allowed, element.stMA, element.stAGT, element.stGRF, element.stZUGF, element.admin,
+			element.sendRemembers, bis]);      
 			if(element.sendRemembers == 1) erinnerungenAktiviert++;
 		});
 		grouprows.forEach(function (element) {
@@ -138,7 +149,7 @@ module.exports = function (bot) {
 			data: {
 				"users": users,
 				"groups": groups,
-				"statistikErinnerungen": (100.0 / users.length * erinnerungenAktiviert) + "% aktiviert",
+				"statistikErinnerungen": Math.round(100.0 / users.length * erinnerungenAktiviert) + "% aktiviert",
 				"statistikKalender31": (stat31.length + " (" + countUses(stat31) + ")"),
 				"statistikKalender365": (stat365.length + " (" + countUses(stat365) + ")"),
 				"statistikVerfZeige31": (verfZeige31.length + " (" + countUses(verfZeige31) + ")"),

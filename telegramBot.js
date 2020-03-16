@@ -39,16 +39,16 @@ module.exports = function (wss) {
 	// ---------------- Send Funktion mit Rate Limiting ----------------
 	const sendMessage = function (chatId, text, extra) {
 		sendtMessages++;
-		var delay = Math.floor(sendtMessages / 30) * 5000;		
+		var delay = Math.floor(sendtMessages / 30) * 1010;		
 		
 		setTimeout(function () {
 			sendtMessages--;					
 		}, 1000 + delay);	
-//		setTimeout(function () {		
-			console.log(sendtMessages);
+		setTimeout(function () {		
+//			console.log(sendtMessages);
 			bot.telegram.sendMessage(chatId, text, extra)
-				.catch(err => console.error("[Telegram] ERROR: " + err))					
-//		}, delay);			
+				.catch(err => console.error("[Telegram] ERROR: " + err));					
+		}, delay);			
 			
 	}
 
@@ -119,7 +119,22 @@ module.exports = function (wss) {
                 })
         });
     }
-    const isAllowed = function (uid) {
+    const getStatus = function (uid) {
+		return new Promise(resolve => {
+			Database.open('save.sqlite3')
+				.then(db => {
+					db.all('SELECT * FROM users' + (uid != "" ? (' WHERE "telegramid"="' + uid + '"') : "")).then(rows => {
+						resolve(rows);
+					}).catch(err => {
+						console.error("Database error: " + err);
+					})
+				})
+				.catch(err => {
+					console.error("Database error: " + err);
+				})
+		});
+	}
+	const isAllowed = function (uid) {
         return new Promise(resolve => {
             getUser(uid)
                 .then((rows) => {
@@ -132,11 +147,11 @@ module.exports = function (wss) {
                 })
         });
     }
-    const setVerfuegbar = function (uid, status) {
+    const setVerfuegbar = function (uid, status, until) {
         return new Promise(resolve => {
             Database.open('save.sqlite3')
                 .then(db => {
-                    db.run('UPDATE "main"."users" SET "status"=' + status + ' WHERE "telegramid"=' + '"' + uid + '"').then(rows => {
+                    db.run('UPDATE "main"."users" SET "status"=' + status + ', "statusUntil"="' + until + '" WHERE "telegramid"=' + '"' + uid + '"').then(rows => {
                         resolve();
                     }).catch(err => {
                         console.error("[TelegramBot] Database error: " + err);
@@ -665,32 +680,77 @@ module.exports = function (wss) {
 	
 
 	// ---------------- Verfügbarkeit ----------------
-    bot.hears('🚒 Verfügbarkeit', ctx => ctx.reply('*🚒 Verfügbarkeit:*', Telegraf.Extra.markdown().markup((m) =>
-        m.inlineKeyboard([
-            m.callbackButton('🟩  Verfügbar', 'VerfuegbarJA'),
-            m.callbackButton('🟥  Nicht Verfügbar', 'VerfuegbarNEIN'),
-            m.callbackButton('📜 Anzeigen', 'VerfuegbarZeige')
-        ], {columns: 2})
-    )));  
-    onCallback.on('VerfuegbarJA', (ctx) => {
-        setVerfuegbar(ctx.from.id, 1).then(() => {
+    bot.hears('🚒 Verfügbarkeit', (ctx) => {
+			getStatus(ctx.from.id)
+            .then((rows) => {
+				
+				var stat = "🟩";
+				if(rows[0].status == 2) {
+					
+					var bis = "";
+											
+					if(rows[0].statusUntil != "") {
+						var result = new Date(rows[0].statusUntil);
+						var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+						var time = result.toLocaleTimeString();
+						var date = result.toLocaleDateString('de-DE', options);
+						bis = "bis _" + date + " " + time + "_";	
+					}
+					
+					stat = "🟥" + "  " + bis;
+				}
+
+				ctx.reply('*🚒 Verfügbarkeit: *' + stat, Telegraf.Extra.markdown().markup((m) =>
+					m.inlineKeyboard([
+						m.callbackButton('🟩  Verfügbar', 'VerfuegbarJA'),
+						m.callbackButton('🟥  Nicht Verfügbar', 'VerfuegbarNEINOptionen'),
+						m.callbackButton('📜 Anzeigen', 'VerfuegbarZeige')
+					], {columns: 2})
+				));
+            });
+		}
+	);  
+    onCallback.on('VerfuegbarJA', (ctx) => {		
+		setVerfuegbar(ctx.from.id, 1, "").then(() => {
             ctx.answerCbQuery("🚒 Status -> 🟩  Verfügbar", false);
             ctx.editMessageText("🚒 Status -> 🟩  Verfügbar");
             }
         );
-		getUser(ctx.from.id)
-            .then((rows) => {
-                if (rows[0] != undefined) {
-                    wss.broadcast('st_verf', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT + "," + rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF);
-                }
-            });
-			
-		addStatistik(3, ctx.from.id);
+		
+		setVervTrue(ctx.from.id);		
     })
-    onCallback.on('VerfuegbarNEIN', (ctx) => {
-        setVerfuegbar(ctx.from.id, 2).then(() => {
-            ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar", false);
-            ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar");
+    onCallback.on('VerfuegbarNEINOptionen', (ctx) => {
+        ctx.editMessageText('*🟥 Dauer (Tage):*', Telegraf.Extra.markdown().markup((m) =>
+			m.inlineKeyboard([
+				m.callbackButton('1', 'VerfuegbarNEIN:1'),
+				m.callbackButton('2', 'VerfuegbarNEIN:2'),
+				m.callbackButton('3', 'VerfuegbarNEIN:3'),
+				m.callbackButton('4', 'VerfuegbarNEIN:4'),
+				m.callbackButton('5', 'VerfuegbarNEIN:5'),
+				m.callbackButton('6', 'VerfuegbarNEIN:6'),
+				m.callbackButton('7', 'VerfuegbarNEIN:7'),
+				m.callbackButton('14', 'VerfuegbarNEIN:14'),
+				m.callbackButton('🔁 Unbegrenzt', 'VerfuegbarNEIN:-1'),
+			], {columns: 4})
+		));
+    })
+	onCallback.on('VerfuegbarNEIN', (ctx) => {
+		
+		var days = parseInt(ctx.state.amount, 10);
+		var result = new Date();
+		result.setDate(result.getDate() + days);
+		var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+		var time = result.toLocaleTimeString();
+		var date = result.toLocaleDateString('de-DE', options);
+		var bis = date + " " + time;
+		if(days == -1) {
+			bis = "unbegrenzt";
+			result = "";
+		}
+		
+        setVerfuegbar(ctx.from.id, 2, result).then(() => {
+            ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
+            ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
         }
         );
 		getUser(ctx.from.id)
@@ -701,7 +761,7 @@ module.exports = function (wss) {
             });
 		
 		addStatistik(3, ctx.from.id);
-    })
+    })	
     onCallback.on('VerfuegbarZeige', (ctx) => {
         getUserAll()
             .then((rows) => {
@@ -735,7 +795,41 @@ module.exports = function (wss) {
 			
 		addStatistik(2, ctx.from.id);
     })
+	var interval = setInterval(() => {    
+		getStatus("")
+            .then((rows) => {
 
+				var dateNow = new Date();
+
+                rows.forEach(function (element) {
+					
+					if(element.statusUntil != "") {
+					
+						var dateUntil = new Date(element.statusUntil);
+						
+						if(dateUntil < dateNow) {
+							
+							setVerfuegbar(element.telegramid, 1, "").then(() => { });
+							setVervTrue(element.telegramid);	
+							
+						}
+					
+					}
+					
+                });
+
+            });
+    }, 90000);
+	function setVervTrue(telID) {		 
+		getUser(telID)
+            .then((rows) => {
+                if (rows[0] != undefined) {
+                    wss.broadcast('st_verf', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT + "," + rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF);
+                }
+            });
+			
+		addStatistik(3, telID);
+	}	
 
 	// ---------------- Alarm ----------------
     var extra = 
@@ -877,7 +971,7 @@ module.exports = function (wss) {
 					
                 });
             })
-			.catch(err => console.error("[Telegram] ERROR: " + err))
+			.catch(err => console.error(element.telegramid + ": [Telegram] ERROR: " + err))
     }
     onCallback.on('KommenNein', (ctx) => {
         ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);

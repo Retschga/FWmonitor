@@ -192,7 +192,8 @@
 						
 						
 						elems = document.getElementById('termine').getElementsByTagName( 'br' );
-						for ( var i = 0; i < elems.length; i ++ )
+						var len = elems.length;
+						for ( var i = 0; i < len; i ++ )
 						{
 							br = elems.item( 0 );
 							hr = document.createElement( 'hr' );
