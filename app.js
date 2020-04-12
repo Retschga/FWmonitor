@@ -173,15 +173,19 @@ app.use('/', alarm);
 const wss = new WebSocket.Server({ port: 8080 });
  
 wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(message) {
-    console.log('[App] Websocket received: %s', message);
-  });
+	ws.on('message', function incoming(message) {
+		if(message == "keepAlive") {
+			ws.send('keepAlive|OK');
+			return;
+		}
+		console.log('[App] Websocket received: %s', message);
+	});
   
-  ws.on('close', function close() {
-    console.log('[App] Websocket disconnect');
-  });
+	ws.on('close', function close() {
+		console.log('[App] Websocket disconnect');
+	});
  
-  ws.send('Hallo|Client', function(error) { console.log("[App] Websocket Err: "+ error) });
+  //ws.send('Hallo|Client', function(error) { console.log("[App] wsSend Websocket Err: "+ error) });
 });
 
 // Broadcast to all.
@@ -194,7 +198,7 @@ wss.broadcast = function broadcast(topic, data) {
 };
 
 wss.on('error', function(error) {
-	console.log("[App] Websocket Err: " + error)
+	console.log("[App] Allgemeiner Websocket Err: " + error)
 })
 
 

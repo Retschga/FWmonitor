@@ -39,7 +39,7 @@ module.exports = function (wss) {
 	// ---------------- Send Funktion mit Rate Limiting ----------------
 	const sendMessage = function (chatId, text, extra) {
 		sendtMessages++;
-		var delay = Math.floor(sendtMessages / 30) * 1010;		
+		var delay = Math.floor(sendtMessages / 30) * 1500;		
 		
 		setTimeout(function () {
 			sendtMessages--;					
@@ -47,7 +47,9 @@ module.exports = function (wss) {
 		setTimeout(function () {		
 //			console.log(sendtMessages);
 			bot.telegram.sendMessage(chatId, text, extra)
-				.catch(err => console.error("[Telegram] ERROR: " + err));					
+				.catch((err) => {
+					console.error("[Telegram] ERROR sendMessage (ChatID "+chatId+"): " + err);
+				});					
 		}, delay);			
 			
 	}
@@ -358,27 +360,37 @@ module.exports = function (wss) {
 		
     });
     onCallback.on('showAlarm', (ctx) => {
-        getAlarmList().then((rows) => {
-            var alarmnum = parseInt(ctx.state.amount, 10);
-            if (ctx.state.amount < 0)
-                alarmnum = rows.length - 1;
-            if (ctx.state.amount >= rows.length)
-                alarmnum = 0;
+		ctx.editMessageText("*⌛ lädt ⌛*", 
+				Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
+					console.log('[TelegramBot] Telegram Ooops', err)
+				}).then( () => {
+		
+		ctx.replyWithChatAction('typing');
 			
-            var d = new Date(rows[alarmnum].date);			
-			var options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-			var time = d.toLocaleTimeString();
-            var date = d.toLocaleDateString('de-DE', options);
+			getAlarmList().then((rows) => {
+				var alarmnum = parseInt(ctx.state.amount, 10);
+				if (ctx.state.amount < 0)
+					alarmnum = rows.length - 1;
+				if (ctx.state.amount >= rows.length)
+					alarmnum = 0;
+				
+				var d = new Date(rows[alarmnum].date);			
+				var options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
+				var time = d.toLocaleTimeString();
+				var date = d.toLocaleDateString('de-DE', options);
 
-            ctx.editMessageText("*📜 " + date + " " + time + "*\n_  " + rows[alarmnum].einsatzstichwort + "\n " + rows[alarmnum].schlagwort
-				+ "\n  " + rows[alarmnum].ort + "_", Telegraf.Extra.markdown().markup((m) =>
-                m.inlineKeyboard([
-                    m.callbackButton('<', 'showAlarm:' + (alarmnum - 1)),
-                    m.callbackButton('>', 'showAlarm:' + (alarmnum + 1))
-                ]))).catch((err) => {
-                    console.log('[TelegramBot] Telegram Ooops', err)
-                });
-        });
+				ctx.editMessageText("*📜 " + date + " " + time + "*\n_  " + rows[alarmnum].einsatzstichwort + "\n " + rows[alarmnum].schlagwort
+					+ "\n  " + rows[alarmnum].ort + "_", Telegraf.Extra.markdown().markup((m) =>
+					m.inlineKeyboard([
+						m.callbackButton('<', 'showAlarm:' + (alarmnum - 1)),
+						m.callbackButton('>', 'showAlarm:' + (alarmnum + 1))
+					]))).catch((err) => {
+						console.log('[TelegramBot] Telegram Ooops', err)
+					});
+			});
+		
+		
+		});
     })
 	onCallback.on('showStatistik', (ctx) => {
         getStatistik().then((rows) => {
@@ -810,7 +822,9 @@ module.exports = function (wss) {
 						if(dateUntil < dateNow) {
 							
 							setVerfuegbar(element.telegramid, 1, "").then(() => { });
-							setVervTrue(element.telegramid);	
+							setVervTrue(element.telegramid);
+
+							bot.telegram.sendMessage(element.telegramid, '🚒 Status -> 🟩  Verfügbar', Telegraf.Extra.markdown());
 							
 						}
 					
@@ -907,7 +921,10 @@ module.exports = function (wss) {
 								
 								if(err == null) {
 									var faxPDF = fs.readFileSync(filePath1);
-									bot.telegram.sendDocument(element.telegramid, { source: faxPDF, filename: filePath1.split(/[/\\]/g).pop() }); 
+									bot.telegram.sendDocument(element.telegramid, { source: faxPDF, filename: filePath1.split(/[/\\]/g).pop() })
+										.catch((err) => {
+											console.error("[Telegram] ERROR sendDocument (ChatID "+element.telegramid+"): " + err);
+										});		 
 								
 								} else {
 									
@@ -915,6 +932,9 @@ module.exports = function (wss) {
 									fs.stat(filePath2, function(err, stat) {
 										if(err == null) {
 											bot.telegram.sendPhoto(element.telegramid, {source: filePath2})
+												.catch((err) => {
+													console.error("[Telegram] ERROR sendPhoto (ChatID "+element.telegramid+"): " + err);
+												});	
 										} else {
 											console.error("[Telegram] Error: PDF/TIFF nicht gefunden.");
 										}
@@ -944,9 +964,15 @@ module.exports = function (wss) {
 						delay += 4000;
 						setTimeout(function () {
 							if (lat != undefined && lng != undefined && STRASSE != "")
-								bot.telegram.sendLocation(element.telegramid, lat, lng);		
+								bot.telegram.sendLocation(element.telegramid, lat, lng)
+									.catch((err) => {
+										console.error("[Telegram] ERROR sendPhoto (ChatID "+element.telegramid+"): " + err);
+									});	
 							else
 								bot.telegram.sendPhoto(element.telegramid, {source: 'public/images/noMap.png'})
+									.catch((err) => {
+										console.error("[Telegram] ERROR sendPhoto (ChatID "+element.telegramid+"): " + err);
+									});	
 						}, delay);
 					}
 					if(sendMapEmg) {	
@@ -971,7 +997,7 @@ module.exports = function (wss) {
 					
                 });
             })
-			.catch(err => console.error(element.telegramid + ": [Telegram] ERROR: " + err))
+			.catch(err => console.error("[Telegram] ERROR: " + err))
     }
     onCallback.on('KommenNein', (ctx) => {
         ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);
@@ -1015,7 +1041,7 @@ module.exports = function (wss) {
         getAllowedUser()
             .then((rows) => {
                 rows.forEach(function (element) {
-					bot.telegram.sendMessage(element.telegramid, msg, Telegraf.Extra.markdown());
+					sendMessage(element.telegramid, msg, Telegraf.Extra.markdown());
                 });
             });
     }
@@ -1072,7 +1098,7 @@ module.exports = function (wss) {
                                 .then((rows) => {
                                     rows.forEach(function (element) {
                                         if (element.sendRemembers == 1)
-                                            bot.telegram.sendMessage(element.telegramid, `*Terminerinnerung:* \n ${d}.${m} ${hh}:${mm} - ${termine[i].summary} ${termine[i].location}`, Telegraf.Extra.markdown());
+                                            sendMessage(element.telegramid, `*Terminerinnerung:* \n ${d}.${m} ${hh}:${mm} - ${termine[i].summary} ${termine[i].location}`, Telegraf.Extra.markdown());
                                     });
                                 });
                         //}

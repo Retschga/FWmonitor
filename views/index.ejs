@@ -220,10 +220,12 @@
 				
 				document.getElementById("offlinewarning").style.visibility = "visible"; 
 				
-			}, 60000*30); 
+			}, 60000*30); // 30min
 			
         </script>
 		<script>
+			var lastKeepAlive = new Date();
+		
 			// Daten empfangen
 			function processMessage(data) {
 				console.log('Message:', data);
@@ -231,6 +233,13 @@
 				var dat = data.split('|');
 				topic = dat[0];
 				msg = dat[1].split('%');
+				
+				if(topic == 'keepAlive') {
+					if(msg == "OK") {
+						lastKeepAlive = new Date();
+						document.getElementById("offlinewarning").style.visibility = "hidden"; 
+					}
+				}
 	
 				if(topic == 'alarm')
 					window.location.href = '/alarm';
@@ -292,11 +301,20 @@
 		
 		
             // Websocket für Dynamische Inhalte, Alarm
-            function connect() {
+            function connect() {			
+				var keepAliveInterval = null;
                 var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+				
                 ws.onopen = function() {
                     console.log("WebSocketClient connected:");
                     this.send("WebClient - Alarmdisplay - Index");
+					
+					keepAliveInterval = setInterval(() => {
+						this.send("keepAlive");
+						if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {
+							document.getElementById("offlinewarning").style.visibility = "visible"; 
+						}
+					}, 10000)
                 };
 
 				// Daten empfangen
@@ -306,6 +324,8 @@
 
 				// Socket geschlossen
                 ws.onclose = function(e) {
+					clearInterval(keepAliveInterval);
+					document.getElementById("offlinewarning").style.visibility = "visible";
                     console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
                     setTimeout(function() {
                         connect();
@@ -314,6 +334,8 @@
 
 				// Scoket Fehler
                 ws.onerror = function(err) {
+					clearInterval(keepAliveInterval);
+					document.getElementById("offlinewarning").style.visibility = "visible";
                     console.error('Socket encountered error: ', err.message, 'Closing socket');
                     ws.close();
                 };
