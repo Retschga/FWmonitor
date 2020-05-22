@@ -56,7 +56,8 @@ router.get('/alarm', function (req, res, alarmMan) {
                             'VISIBLETIME': process.env.ALARM_VISIBLE,
                             "st_nichtverf": st_nichtverf,
                             "st_nichtverfID": st_nichtverfID,
-							"noMap": (rows[0].strasse == "" ? true : false)
+							"noMap": (rows[0].strasse == "" && rows[0].isAddress == false ? true : false),
+							"ISADDRESS": rows[0].isAddress
                         }
                     });
                 });

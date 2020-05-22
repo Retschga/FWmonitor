@@ -3,12 +3,11 @@ module.exports = function (wss, bot) {
 
     const Database = require('sqlite-async');
     const fs = require('fs');
-    var geobing = require('geobing');
+    var geocodeManager = require('./geocodeManager')();
     const moveFile = require('move-file');
 	
 	var RASPIVERSION = process.env.RASPIVERSION;
-    geobing.setKey(process.env.GEOBING_KEY);
-    
+
 	
 	// ---------------- WebSocket Broadcast ----------------
     function broadcast(server, topic, msg) {
@@ -83,145 +82,150 @@ module.exports = function (wss, bot) {
 
 			// Datei in Archiv verschieben
 			var targetPath = process.env.FOLDER_ARCHIVE + "/" + path.split(/[/\\]/g).pop();
-            (async () => {
+            
+			(async () => {
+			
                 await moveFile(path, targetPath);
                 console.log('[AlarmManager] Fax ins Archiv verschoben.');
-            })();
+            
 
-			// Faxfilter anwenden
-			var regex = RegExp(process.env.FAXFILTER,'gi');
-			if(!regex.test(data)) {
-				console.log('[AlarmManager] Faxfilter nicht gefunden -> kein Alarm');
-				return;
-			}
-			console.log('[AlarmManager] Faxfilter OK -> Alarm');
+				// Faxfilter anwenden
+				var regex = RegExp(process.env.FAXFILTER,'gi');
+				if(!regex.test(data)) {
+					console.log('[AlarmManager] Faxfilter nicht gefunden -> kein Alarm');
+					return;
+				}
+				console.log('[AlarmManager] Faxfilter OK -> Alarm');
 
-			// Variablen leeren
-            EINSATZSTICHWORT = "-/-";
-            SCHLAGWORT = "-/-";
-            OBJEKT = "-/-";
-            BEMERKUNG = "-/-";
-            STRASSE = "-/-";
-            ORTSTEIL = "-/-";
-            ORT = "-/-";
-            EINSATZMITTEL = "-/-";
-            cars1 = [];
-            cars2 = [];
-			
-			// Daten bereinigen
-			data = data.replace(/[—_*`]/g, '-');
+				// Variablen leeren
+				EINSATZSTICHWORT = "-/-";
+				SCHLAGWORT = "-/-";
+				OBJEKT = "-/-";
+				BEMERKUNG = "-/-";
+				STRASSE = "-/-";
+				ORTSTEIL = "-/-";
+				ORT = "-/-";
+				EINSATZMITTEL = "-/-";
+				cars1 = [];
+				cars2 = [];
+				
+				// Daten bereinigen
+				data = data.replace(/[—_*`]/g, '-');
 
-			// Daten Filtern
-            EINSATZSTICHWORT = searchElement(s_EINSATZSTICHWORT, e_EINSATZSTICHWORT, data);
-			if(EINSATZSTICHWORT == null) EINSATZSTICHWORT = "";
-			
-            var SCHLAGWORT = searchElement(s_SCHLAGWORT, e_SCHLAGWORT, data);
-			if(SCHLAGWORT == null) SCHLAGWORT = "";
-            SCHLAGWORT = SCHLAGWORT.replace('#', ' ');
-            SCHLAGWORT = SCHLAGWORT.substr(SCHLAGWORT.search('#'));
-            SCHLAGWORT = SCHLAGWORT.replace(/#/g, ' ');
-			
-            OBJEKT = searchElement(s_OBJEKT, e_OBJEKT, data);
-			if(OBJEKT == null) OBJEKT = "";
-			
-            BEMERKUNG = searchElement(s_BEMERKUNG, e_BEMERKUNG, data);
-			if(BEMERKUNG == null) BEMERKUNG = "";
-            BEMERKUNG = BEMERKUNG.replace(/-/g, '');
-			
-            STRASSE = searchElement(s_STRASSE, e_STRASSE, data);
-			if(STRASSE == null) STRASSE = "";
-			
-            ORTSTEIL = searchElement(s_ORTSTEIL, e_ORTSTEIL, data);
-			if(ORTSTEIL == null) ORTSTEIL = "";
-			
-            ORT = searchElement(s_ORT, e_ORT, data);
-			if(ORT == null) ORT = "";
-			
-            EINSATZMITTEL = searchElement(s_EINSATZMITTEL, e_EINSATZMITTEL, data);
-			if(EINSATZMITTEL == null) EINSATZMITTEL = "";
-            EINSATZMITTEL = EINSATZMITTEL.replace(/-/g, '');
+				// Daten Filtern
+				EINSATZSTICHWORT = searchElement(s_EINSATZSTICHWORT, e_EINSATZSTICHWORT, data);
+				if(EINSATZSTICHWORT == null) EINSATZSTICHWORT = "";
+				
+				var SCHLAGWORT = searchElement(s_SCHLAGWORT, e_SCHLAGWORT, data);
+				if(SCHLAGWORT == null) SCHLAGWORT = "";
+				SCHLAGWORT = SCHLAGWORT.replace('#', ' ');
+				SCHLAGWORT = SCHLAGWORT.substr(SCHLAGWORT.search('#'));
+				SCHLAGWORT = SCHLAGWORT.replace(/#/g, ' ');
+				
+				OBJEKT = searchElement(s_OBJEKT, e_OBJEKT, data);
+				if(OBJEKT == null) OBJEKT = "";
+				
+				BEMERKUNG = searchElement(s_BEMERKUNG, e_BEMERKUNG, data);
+				if(BEMERKUNG == null) BEMERKUNG = "";
+				BEMERKUNG = BEMERKUNG.replace(/-/g, '');
+				
+				STRASSE = searchElement(s_STRASSE, e_STRASSE, data);
+				if(STRASSE == null) STRASSE = "";
+				
+				ORTSTEIL = searchElement(s_ORTSTEIL, e_ORTSTEIL, data);
+				if(ORTSTEIL == null) ORTSTEIL = "";
+				
+				ORT = searchElement(s_ORT, e_ORT, data);
+				if(ORT == null) ORT = "";
+				
+				EINSATZMITTEL = searchElement(s_EINSATZMITTEL, e_EINSATZMITTEL, data);
+				if(EINSATZMITTEL == null) EINSATZMITTEL = "";
+				EINSATZMITTEL = EINSATZMITTEL.replace(/-/g, '');
 
-            var cars = EINSATZMITTEL.split("\n");
+				var cars = EINSATZMITTEL.split("\n");
 
-            for (let i in cars) {
-                var c = searchElement(s_CAR, e_CAR, cars[i] + "\n");
-                
-                if (c != null) {                    
-                    if (c.indexOf(CAR1) != -1)
-                        cars1.push(c);
-                    else
-                        cars2.push(c);
-                }
-            }
-
-            // Geocoding (mit GeoBing)
-            geobing.getCoordinates('Germany, Bayern, ' + STRASSE + ", " + ORT, function (err, coordinates) {
-                console.log('[AlarmManager] [GeoBing] lat: ', coordinates.lat, 'lng: ', coordinates.lng);
+				for (let i in cars) {
+					var c = searchElement(s_CAR, e_CAR, cars[i] + "\n");
+					
+					if (c != null) {                    
+						if (c.indexOf(CAR1) != -1)
+							cars1.push(c);
+						else
+							cars2.push(c);
+					}
+				}
+				
+				
+				
+				var geoData = await geocodeManager.geocode('Germany, Bayern, ' + ORT + ", " + ORTSTEIL + ", " + STRASSE, (/\d/.test(STRASSE) ? true : false), OBJEKT, ORT);
+				
 
 				// Daten in Datenbank schreiben
-                Database.open('save.sqlite3')
-                    .then(db => {
-                        db.prepare('INSERT INTO alarms ("date","einsatzstichwort","schlagwort","objekt","bemerkung","strasse","ortsteil","ort", "lat", "lng", "cars1", "cars2") VALUES(?,?,?,?,?,?,?,?,?,?,?,?)')
-                            .then(_statement => {
-                                statement = _statement
-                                var now = new Date();
-                                statement.bind(
-                                    now.toISOString(),
-                                    EINSATZSTICHWORT,
-                                    SCHLAGWORT,
-                                    OBJEKT,
-                                    BEMERKUNG,
-                                    STRASSE,
-                                    ORTSTEIL,
-                                    ORT,
-                                    coordinates.lat,
-                                    coordinates.lng,
-                                    cars1.toString(),
-                                    cars2.toString());
+				Database.open('save.sqlite3')
+					.then(db => {
+						db.prepare('INSERT INTO alarms ("date","einsatzstichwort","schlagwort","objekt","bemerkung","strasse","ortsteil","ort", "lat", "lng", "cars1", "cars2", "isAddress")' +
+	'					VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)')
+							.then(_statement => {
+								statement = _statement
+								var now = new Date();
+								statement.bind(
+									now.toISOString(),
+									EINSATZSTICHWORT,
+									SCHLAGWORT,
+									OBJEKT,
+									BEMERKUNG,
+									STRASSE,
+									ORTSTEIL,
+									ORT,
+									geoData.lat,
+									geoData.lng,
+									cars1.toString(),
+									cars2.toString(),
+									(geoData.isAddress == true ? 1 : 0));
 
-                                statement.run();
+								statement.run();
 
 								// Alarm senden
-                                setTimeout(function () {                                    
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								setTimeout(function () {                                    
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
 									
-                                    bot.sendAlarm(
-                                        EINSATZSTICHWORT,
-                                        SCHLAGWORT,
-                                        OBJEKT,                                        
-                                        STRASSE,
-                                        ORTSTEIL,
-                                        ORT,
-                                        BEMERKUNG,
-                                        cars1.toString(),
-                                        cars2.toString(),
-                                        coordinates.lat,
-                                        coordinates.lng,
+									bot.sendAlarm(
+										EINSATZSTICHWORT,
+										SCHLAGWORT,
+										OBJEKT,                                        
+										STRASSE,
+										ORTSTEIL,
+										ORT,
+										BEMERKUNG,
+										cars1.toString(),
+										cars2.toString(),
+										geoData.lat,
+										geoData.lng,
 										targetPath);
-                                }, 3000);
+								}, 3000);
 								
 								// zur sicherheit noch ein paar mal
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 500);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 700);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 1000);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);                                
-                                }, 1200);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 1500);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 2000);
-                                setTimeout(function () {
-                                    wss.broadcast("alarm", process.env.ALARM_VISIBLE);
-                                }, 2500);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 500);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 700);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 1000);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);                                
+								}, 1200);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 1500);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 2000);
+								setTimeout(function () {
+									wss.broadcast("alarm", process.env.ALARM_VISIBLE);
+								}, 2500);
 								
 								
 								// Ausdruck erzeugen
@@ -242,8 +246,9 @@ module.exports = function (wss, bot) {
 											"&varSTRASSE=" + STRASSE +
 											"&varORTSTEIL=" + ORTSTEIL +
 											"&varORT=" + ORT +
-											"&lat=" + coordinates.lat +
-											"&lng=" + coordinates.lng
+											"&lat=" + geoData.lat +
+											"&lng=" + geoData.lng + 
+											"&isAddress=" + geoData.isAddress
 										);
 										
 										// Ausdruck PDF erstellen
@@ -290,17 +295,15 @@ module.exports = function (wss, bot) {
 									 
 									})();								 
 								}
-                               
-                            }).catch(err => {
-                                console.error("[AlarmManager] Database error: " + err);
-                            })
-                    })
-                    .catch(err => {
-                        console.error("[AlarmManager] Database error: " + err);
-                    })
-
-            }, { key: process.env.GEOBING_KEY});
-
+							   
+							}).catch(err => {
+								console.error("[AlarmManager] Database error: " + err);
+							})
+					})
+					.catch(err => {
+						console.error("[AlarmManager] Database error: " + err);
+					})
+			})();
 
         });
     }

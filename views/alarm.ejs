@@ -129,6 +129,14 @@
 				");out;%3E;out%20skel%20qt;";
 			var overpassTimestamp = "";
 			var features = [];
+			var overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"way[%22name%22=%22<%= alarmdata["STRASSE"] %>%22](around:5000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				");out geom;%3E;out%20skel%20qt;";		
+			var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"way[building](around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				");out geom;%3E;";						
 			
 			var icons = {
 				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
@@ -180,7 +188,7 @@
 						L.geoJSON(features, {
 							pointToLayer: function (feature, latlng) {
 							
-								console.log(feature["properties"]["title"]);
+								//console.log(feature["properties"]["title"]);
 								return L.marker(latlng, {								
 									icon: icons[feature["properties"]["title"]]
 								});
@@ -190,6 +198,63 @@
 					}
 				}
 				xmlHttp.open("GET", overpassHydrantenUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			
+			function loadStrassenData() {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var dataIn = responseJSON["elements"];
+						var polylinePoints = [];
+
+						if(dataIn.length < 1)
+							return;
+
+						for (i = 0; i < dataIn.length; i++) {
+						
+							var dataElement = dataIn[i];
+							
+							if(dataElement.type=="way") {
+							
+								var polyarr = [];
+								for (j = 0; j < dataElement.geometry.length; j++) {
+								
+									polyarr.push([dataElement.geometry[j].lat, dataElement.geometry[j].lon]);
+
+								}
+							
+								polylinePoints.push(polyarr);
+							}
+								
+
+						}
+						console.log(polylinePoints);
+						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);   
+						map.fitBounds(polyline.getBounds());
+					}
+				}
+				xmlHttp.open("GET", overpassStrassenUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			
+			function loadGebaudeData() {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var dataIn = responseJSON["elements"];
+
+						if(dataIn.length < 5)
+							map.setView(center, 13);								
+
+
+					}
+				}
+				xmlHttp.open("GET", overpassGebaudeUrl, true); // Asynchron -> true 
 				xmlHttp.send(null);
 			}
 			
@@ -231,180 +296,194 @@
 				xmlHttp.send(null);
 			}
 			
-			// Karte genau ? sonst keine Karte
-			if(<%= alarmdata["noMap"] %> == true) {
-				var imageUrl = '/images/noMap.png',
-				imageBounds = [center, map.getBounds()];
-
-				L.imageOverlay(imageUrl, imageBounds).addTo(map);
-			} else {
-				loadHydrantenData();
-				loadForstRettPkt();
-				
-				var circle = L.circle(center, {
-					color: 'red',
-					fillColor: '#f03',
-					fillOpacity: 0.5,
-					radius: 30
-				}).addTo(map);
-			}
 			
-			// Uhranzeige
-            setInterval(() => {
-                var d = new Date();
-                var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
-				var time = d.toLocaleTimeString();
-				var date = d.toLocaleDateString('de-DE', options);
-                document.getElementById('time').innerHTML = time + " - " + date;
-				ticken();
-              }, 1000)            
+			 setTimeout(function() {
+						
+				
+				// Karte genau ? sonst keine Karte
+				if(<%= alarmdata["noMap"] %> == true) {
+					var imageUrl = '/images/noMap.png',
+					imageBounds = [center, map.getBounds()];
 
-			// Anzeige Alarmzeit
-			var startDate = new Date("<%= alarmdata["time"] %>");			
-			function ticken(){
-				var stunden, minuten, sekunden;
-				var StundenZahl, MinutenZahl, SekundenZahl;
-				var heute;
-
-				heute = new Date();
-				StundenZahl = startDate.getHours();
-				MinutenZahl = startDate.getMinutes();
-				SekundenZahl = startDate.getSeconds();
-				
-				stunden = StundenZahl+":";
-				if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + ":";}
-					else {minuten = MinutenZahl + "";}
-				zeit = stunden + minuten + " Uhr";
-				var alarmzeit = zeit;
-				
-				
-				var diff = heute.getTime() - startDate.getTime();
-				
-				if($_GET['manuell'] != "true") {
-					var elapsedMinutes = Math.floor(diff / (1000*60));
-					if(elapsedMinutes > <%= alarmdata["VISIBLETIME"] %>)
-					window.location.href = '/';
+					L.imageOverlay(imageUrl, imageBounds).addTo(map);
+				} else {
+					loadHydrantenData();
+					loadForstRettPkt();
+					
+					
+					if(<%= alarmdata["ISADDRESS"] %> == 1) {
+						var circle = L.circle(center, {
+							color: 'red',
+							fillColor: '#f03',
+							fillOpacity: 0.5,
+							radius: 30
+						}).addTo(map);
+						
+						loadGebaudeData();
+					} else {
+						map.setView(center, 15);
+						loadStrassenData();
+					}
 				}
 				
-				var tag = Math.floor(diff / (1000*60*60*24));
-				diff = diff % (1000*60*60*24);
-				var std = Math.floor(diff / (1000*60*60));
-				diff = diff % (1000*60*60);
-				var MinutenZahl = Math.floor(diff / (1000*60));
-				diff = diff % (1000*60);
-				var SekundenZahl = Math.floor(diff / 1000);
-				
-				stunden = "";
-				if (std > 0) {stunden = std+"h ";}
-				if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + "m ";}
-					else {minuten = MinutenZahl + "m ";}
-				if (SekundenZahl < 10) {sekunden = "0" + SekundenZahl + "s ";}
-					else {sekunden = SekundenZahl + "s ";}
-				zeit = stunden + minuten + sekunden;
-				
-				//elapsedtime.innerHTML = zeit;
-				elapsedtime.innerHTML = "Alarm: " + alarmzeit +" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "+ zeit;
-			}
+				// Uhranzeige
+				setInterval(() => {
+					var d = new Date();
+					var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+					var time = d.toLocaleTimeString();
+					var date = d.toLocaleDateString('de-DE', options);
+					document.getElementById('time').innerHTML = time + " - " + date;
+					ticken();
+				  }, 1000);            
 
-            // Anzeige Kommen/Komme Nicht
-            function countNumbers() {
-				document.getElementById('count_komme').innerHTML = document.getElementById("st_komme").childElementCount;
-				document.getElementById('count_nicht').innerHTML = document.getElementById("st_nicht").childElementCount;
-				document.getElementById('count_später').innerHTML = document.getElementById("st_später").childElementCount;
-			}
-			countNumbers();
-            
-			// Websocket Verbindung
-            function connect() {
-                var ws = new WebSocket('ws://'+window.location.hostname+':8080');
-                ws.onopen = function() {
-                    console.log("WebSocketClient connected:");
-                    this.send("WebClient - Alarmdisplay - Alarm");
-                };
+				// Anzeige Alarmzeit
+				var startDate = new Date("<%= alarmdata["time"] %>");			
+				function ticken(){
+					var stunden, minuten, sekunden;
+					var StundenZahl, MinutenZahl, SekundenZahl;
+					var heute;
 
-				// Daten empfangen
-                ws.onmessage = function(e) {
-                    console.log('Message:', e.data);
-                
-                    var dat = e.data.split('|');
-                    topic = dat[0];
-                    msg = dat[1].split('%');
-
-					// Neuer Alarm
-                    if(topic == 'alarm')
-                        location.reload(); 
-                    
-					// Anzeige Kommen/Komme Nicht
-					var el = undefined;
-                    if(topic == 'st_komme') {
-                        el = document.getElementById('st_komme');                        
-                    };
-
-                    if(topic == 'st_nicht') {
-                        el = document.getElementById('st_nicht');
-                    };
-
-                    if(topic == 'st_später') {
-                        el = document.getElementById('st_später');                        
-                    };
+					heute = new Date();
+					StundenZahl = startDate.getHours();
+					MinutenZahl = startDate.getMinutes();
+					SekundenZahl = startDate.getSeconds();
 					
-					if(el != undefined) {						
-						var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
-						var elChild = null;
-						if (myElem !== null) 		
-							elChild = document.getElementById("st_"+msg[0].replace(/ /g,"_")).remove();
-
-						elChild = document.createElement('div');
-						elChild.className = "stdiv";
-
-						if(msg[1] != undefined) {
-							var entry = msg[1].split(',')												
-							if(entry[0] == 1) {
-								elImg = document.createElement('img');	
-								elImg.src = "images/AGT.png"; 
-								elChild.prepend(elImg);
-							}
-							if(entry[2] == 1) {
-								elImg = document.createElement('img');	
-								elImg.src = "images/MA.png"; 
-								elChild.prepend(elImg);
-							}
-							if(entry[1] == 1) {
-								elImg = document.createElement('img');	
-								elImg.src = "images/GRF.png"; 
-								elChild.prepend(elImg);
-							}
-							if(entry[3] == 1) {
-								elImg = document.createElement('img');	
-								elImg.src = "images/ZUGF.png"; 
-								elChild.prepend(elImg);
-							}
-						}
-
-						elChild.innerHTML += msg[0];
-						elChild.id = "st_"+msg[0].replace(/ /g,"_");
-						
-						el.prepend(elChild);
+					stunden = StundenZahl+":";
+					if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + ":";}
+						else {minuten = MinutenZahl + "";}
+					zeit = stunden + minuten + " Uhr";
+					var alarmzeit = zeit;
+					
+					
+					var diff = heute.getTime() - startDate.getTime();
+					
+					if($_GET['manuell'] != "true") {
+						var elapsedMinutes = Math.floor(diff / (1000*60));
+						if(elapsedMinutes > <%= alarmdata["VISIBLETIME"] %>)
+						window.location.href = '/';
 					}
-					countNumbers();
-                   
-                };
+					
+					var tag = Math.floor(diff / (1000*60*60*24));
+					diff = diff % (1000*60*60*24);
+					var std = Math.floor(diff / (1000*60*60));
+					diff = diff % (1000*60*60);
+					var MinutenZahl = Math.floor(diff / (1000*60));
+					diff = diff % (1000*60);
+					var SekundenZahl = Math.floor(diff / 1000);
+					
+					stunden = "";
+					if (std > 0) {stunden = std+"h ";}
+					if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + "m ";}
+						else {minuten = MinutenZahl + "m ";}
+					if (SekundenZahl < 10) {sekunden = "0" + SekundenZahl + "s ";}
+						else {sekunden = SekundenZahl + "s ";}
+					zeit = stunden + minuten + sekunden;
+					
+					//elapsedtime.innerHTML = zeit;
+					elapsedtime.innerHTML = "Alarm: " + alarmzeit +" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "+ zeit;
+				}
 
-				// Socket geschlossen
-                ws.onclose = function(e) {
-                    console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-                    setTimeout(function() {
-                        connect();
-                    }, 1000);
-                };
+				// Anzeige Kommen/Komme Nicht
+				function countNumbers() {
+					document.getElementById('count_komme').innerHTML = document.getElementById("st_komme").childElementCount;
+					document.getElementById('count_nicht').innerHTML = document.getElementById("st_nicht").childElementCount;
+					document.getElementById('count_später').innerHTML = document.getElementById("st_später").childElementCount;
+				}
+				countNumbers();
+				
+				// Websocket Verbindung
+				function connect() {
+					var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+					ws.onopen = function() {
+						console.log("WebSocketClient connected:");
+						this.send("WebClient - Alarmdisplay - Alarm");
+					};
 
-				// Socket Fehler
-                ws.onerror = function(err) {
-                    console.error('Socket encountered error: ', err.message, 'Closing socket');
-                    ws.close();
-                };
-            }
-            connect();
+					// Daten empfangen
+					ws.onmessage = function(e) {
+						console.log('Message:', e.data);
+					
+						var dat = e.data.split('|');
+						topic = dat[0];
+						msg = dat[1].split('%');
+
+						// Neuer Alarm
+						if(topic == 'alarm')
+							location.reload(); 
+						
+						// Anzeige Kommen/Komme Nicht
+						var el = undefined;
+						if(topic == 'st_komme') {
+							el = document.getElementById('st_komme');                        
+						};
+
+						if(topic == 'st_nicht') {
+							el = document.getElementById('st_nicht');
+						};
+
+						if(topic == 'st_später') {
+							el = document.getElementById('st_später');                        
+						};
+						
+						if(el != undefined) {						
+							var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
+							var elChild = null;
+							if (myElem !== null) 		
+								elChild = document.getElementById("st_"+msg[0].replace(/ /g,"_")).remove();
+
+							elChild = document.createElement('div');
+							elChild.className = "stdiv";
+
+							if(msg[1] != undefined) {
+								var entry = msg[1].split(',')												
+								if(entry[0] == 1) {
+									elImg = document.createElement('img');	
+									elImg.src = "images/AGT.png"; 
+									elChild.prepend(elImg);
+								}
+								if(entry[2] == 1) {
+									elImg = document.createElement('img');	
+									elImg.src = "images/MA.png"; 
+									elChild.prepend(elImg);
+								}
+								if(entry[1] == 1) {
+									elImg = document.createElement('img');	
+									elImg.src = "images/GRF.png"; 
+									elChild.prepend(elImg);
+								}
+								if(entry[3] == 1) {
+									elImg = document.createElement('img');	
+									elImg.src = "images/ZUGF.png"; 
+									elChild.prepend(elImg);
+								}
+							}
+
+							elChild.innerHTML += msg[0];
+							elChild.id = "st_"+msg[0].replace(/ /g,"_");
+							
+							el.prepend(elChild);
+						}
+						countNumbers();
+					   
+					};
+
+					// Socket geschlossen
+					ws.onclose = function(e) {
+						console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+						setTimeout(function() {
+							connect();
+						}, 1000);
+					};
+
+					// Socket Fehler
+					ws.onerror = function(err) {
+						console.error('Socket encountered error: ', err.message, 'Closing socket');
+						ws.close();
+					};
+				}
+				connect();
+				
+			}, 10000);
 
 		</script>
     </body>

@@ -8,8 +8,10 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 ## Funktionsumfang
 
 * Standby Display mit Uhrzeit, Diashow, Google Kalender, Verfügbarkeitsanzeige der Einsatzkräfte, DWD Warnungen
-* Telegram Messenger Integration mit Alarminfo (Einstellbar für verschiedene Personengruppen), Google Kalender, Verfügbarkeitsanzeige
+* Telegram Messenger Integration mit Alarminfo (Einstellbar für verschiedene Personengruppen), Google Kalender mit Terminerinnerungen, Verfügbarkeitsanzeige, Einsatzstatistik
 * Alarmdisplay mit allen relevanten Infos aus dem Alarmfax, Kartenanzeige, Verfügbarkeitsanzeige der Einsatzkräfte
+* Kartenausdruck
+* Adress-Koordinaten Suche über Bing, Nominatim, Und OSM Gebäudenamen
 
 ## Installation
 
@@ -100,12 +102,13 @@ in OpenStreetMap eingetragen werden.
 * jquery
 * leaflet
 * Bing Geocode
+* Nominatim Geocode - https://nominatim.openstreetmap.org/
 * openstreetmap - https://www.openstreetmap.org/fixthemap
 *   Hillshading - https://klokantech.github.io/dare-raster-tiles/hillshade/
 * 	Overpass - https://wiki.openstreetmap.org/wiki/DE:Overpass_API
 * 	OpenFireMap - https://wiki.openstreetmap.org/wiki/DE:OpenFireMap
 * Ghostscript https://www.ghostscript.com/download/gsdnld.html
-
+* diff-match-patch https://github.com/google/diff-match-patch [Apache License 2.0]
 
 ## Authors
 

@@ -113,7 +113,7 @@ const Database = require('sqlite-async');
 Database.open('save.sqlite3')
 	.then(db => {
 		db.all("create table if not exists statistik (date TEXT, aktion INTEGER, user TEXT)").then(rows => {
-			console.error("[APP] Creadted Datatable Statistik");
+			console.error("[APP] Created Datatable Statistik");
 		}).catch(err => {
 			console.error("[APP] Database error: " + err);
 		})
@@ -127,7 +127,26 @@ Database.open('save.sqlite3')
 			
 			if(!exists) {
 				db.run('ALTER TABLE users ADD statusUntil TEXT;').then(rows => {
-					console.error("[APP] Creadted Column statusUntil in users");
+					console.error("[APP] Created Column statusUntil in users");
+				}).catch(err => {
+					console.error("[APP] Database error: " + err);
+				})	
+			}
+
+		}).catch(err => {
+			console.error("[APP] Database error: " + err);
+		})		
+		
+		db.all('PRAGMA table_info("alarms")').then( (rows) => {
+			var exists = false;
+			rows.forEach(function (element) {
+				if(element.name == "isAddress")
+					exists = true;
+			});
+			
+			if(!exists) {
+				db.run('ALTER TABLE alarms ADD isAddress INTEGER;').then(rows => {
+					console.error("[APP] Created Column isAddress in alarms");
 				}).catch(err => {
 					console.error("[APP] Database error: " + err);
 				})	

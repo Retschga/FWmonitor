@@ -6,7 +6,7 @@ module.exports = function (wss) {
     const fs = require("fs");
     const Database = require('sqlite-async');
     const calendar = require('./calendar')();
-	const axios = require('axios')
+	const axios = require('axios');
 	const fwvv = require('./fwvvAnbindung')();
 	
 

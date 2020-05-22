@@ -133,12 +133,17 @@
 			  }).addTo(map);
 			  
 			// Zielkreis
-			var circle = L.circle([$_GET['lat'], $_GET['lng']], {
-				color: 'red',
-				fillColor: '#f03',
-				fillOpacity: 0.5,
-				radius: 30
-			}).addTo(map);
+			if($_GET['isAddress']== 1) {			
+				var circle = L.circle([$_GET['lat'], $_GET['lng']], {
+					color: 'red',
+					fillColor: '#f03',
+					fillOpacity: 0.5,
+					radius: 30
+				}).addTo(map);
+				loadGebaudeData();
+			} else {
+				loadStrassenData();
+			}
 			
 
 			// URL Overpass-API für Hydranten    siehe Ovepass turbo
@@ -149,6 +154,14 @@
 				");out;%3E;out%20skel%20qt;";
 			var overpassTimestamp = "";
 			var features = [];
+			var overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"way[%22name%22=%22<%= alarmdata["STRASSE"] %>%22](around:5000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				");out geom;%3E;out%20skel%20qt;";			
+			var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
+				"[out:json][timeout:25];(" + 
+				"way[building](around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				");out geom;%3E;";	
 			
 			var icons = {
 				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
@@ -212,6 +225,63 @@
 				xmlHttp.send(null);
 			}
 			loadHydrantenData();
+			
+			function loadStrassenData() {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var dataIn = responseJSON["elements"];
+						var polylinePoints = [];
+
+						if(dataIn.length < 1)
+							return;
+
+						for (i = 0; i < dataIn.length; i++) {
+						
+							var dataElement = dataIn[i];
+							
+							if(dataElement.type=="way") {
+							
+								var polyarr = [];
+								for (j = 0; j < dataElement.geometry.length; j++) {
+								
+									polyarr.push([dataElement.geometry[j].lat, dataElement.geometry[j].lon]);
+
+								}
+							
+								polylinePoints.push(polyarr);
+							}
+								
+
+						}
+						console.log(polylinePoints);
+						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);   
+						map.fitBounds(polyline.getBounds());
+					}
+				}
+				xmlHttp.open("GET", overpassStrassenUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
+			
+			function loadGebaudeData() {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp.responseText);
+						
+						var dataIn = responseJSON["elements"];
+
+						if(dataIn.length < 5)
+							map.setView(center, 15);								
+
+
+					}
+				}
+				xmlHttp.open("GET", overpassGebaudeUrl, true); // Asynchron -> true 
+				xmlHttp.send(null);
+			}
 			
 			// Forst Rettungspunkte
 			function loadForstRettPkt() {
