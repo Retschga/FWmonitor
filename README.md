@@ -95,6 +95,11 @@ Mit Telegram unter Einstellungen können Positionen von Hydranten gesendet werde
 Diese befinden sich dann im Hydrantenordner. Mithilfe von https://www.osmhydrant.org/de/ können diese
 in OpenStreetMap eingetragen werden.
 
+## Telegram
+
+Falls die Telegram Tastatur nicht mehr angezeigt wird, einfach irgendeinen Text an den Bot senden
+und es sollte wider erscheinen.
+
 ## Built With
 
 * nodejs - The web framework used
@@ -109,10 +114,12 @@ in OpenStreetMap eingetragen werden.
 * 	OpenFireMap - https://wiki.openstreetmap.org/wiki/DE:OpenFireMap
 * Ghostscript https://www.ghostscript.com/download/gsdnld.html
 * diff-match-patch https://github.com/google/diff-match-patch [Apache License 2.0]
+* Diashow - https://gist.github.com/mhulse/66bcbb7099bb4beae530
+* https://gist.github.com/aeroaks/ac4dbed9c184607a330c
 
 ## Authors
 
-*  *Freiwillige Feuerwehr Fischbachau*
+*  *Resch - Freiwillige Feuerwehr Fischbachau*
 
 ## License
 

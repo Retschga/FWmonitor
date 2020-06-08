@@ -60,7 +60,7 @@ router.get('/', function (req, res) {
                             st_verv.push("st_verf|" + element.name + " " + element.vorname + "%" + element.stAGT + "," + element.stGRF + "," + element.stMA + "," + element.stZUGF);
                             st_vervID.push("st_" + (element.name + " " + element.vorname).replace(/ /g, "_"));
                         }
-                        else {
+                        else if (element.status == 2) {
                             st_nichtverf.push("st_nichtverf|" + element.name + " " + element.vorname + "%" + element.stAGT + "," + element.stGRF + "," + element.stMA + "," + element.stZUGF);
                             st_nichtverfID.push("st_" + (element.name + " " + element.vorname).replace(/ /g, "_"));
                         }

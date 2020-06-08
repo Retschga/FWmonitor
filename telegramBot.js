@@ -49,6 +49,17 @@ module.exports = function (wss) {
 			bot.telegram.sendMessage(chatId, text, extra)
 				.catch((err) => {
 					console.error("[Telegram] ERROR sendMessage (ChatID "+chatId+"): " + err);
+					if(err.message.indexOf("blocked") != -1) {
+						setVerfuegbar(ctx.from.id, -1, "").then(() => {
+							ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
+							ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
+						});
+					} else if(err.message.indexOf("disabled") != -2) {
+						setVerfuegbar(ctx.from.id, -1, "").then(() => {
+							ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
+							ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
+						});
+					}
 				});					
 		}, delay);			
 			
@@ -317,7 +328,20 @@ module.exports = function (wss) {
                     }					
                 } else {
                     ctx.reply('Telegram Bot ' + process.env.FW_NAME_BOT);
-                    addUser(ctx.from.id, ctx.from.last_name, ctx.from.first_name);
+					if(ctx.from.last_name == undefined || ctx.from.first_name == undefined){
+						ctx.reply('Bitte zuerst Vor- und Nachnamen in Telegram eintragen (Unter Einstellungen, ..., Name bearbeiten), dann erneut Start drücken.', Telegraf.Extra.HTML().markup((m) =>
+                            m.keyboard([
+                                ['/start']
+                            ]).resize()
+						));
+					} else {
+						addUser(ctx.from.id, ctx.from.last_name, ctx.from.first_name);
+						ctx.reply('Warte auf Freigabe', Telegraf.Extra.HTML().markup((m) =>
+                            m.keyboard([
+                                ['/start']
+                            ]).resize()
+                        ));
+					}
                 }
             });
     });   
@@ -343,6 +367,8 @@ module.exports = function (wss) {
 	
 	
 	// ---------------- Historie ----------------
+	var isLoading = {};
+	
     bot.hears('🔥 Einsätze', ctx => {
 
 		if(process.env.FWVV != "true") {
@@ -360,34 +386,44 @@ module.exports = function (wss) {
 		
     });
     onCallback.on('showAlarm', (ctx) => {
-		ctx.editMessageText("*⌛ lädt ⌛*", 
-				Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
-					console.log('[TelegramBot] Telegram Ooops', err)
-				}).then( () => {
+		if(isLoading[ctx.from.id] == true) return;
 		
-		ctx.replyWithChatAction('typing');
+		ctx.editMessageText("*⌛ lädt ⌛*", 
+			Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
+				console.log('[TelegramBot] Telegram Ooops', err)
+					
+			}).then( () => {	
 			
-			getAlarmList().then((rows) => {
-				var alarmnum = parseInt(ctx.state.amount, 10);
-				if (ctx.state.amount < 0)
-					alarmnum = rows.length - 1;
-				if (ctx.state.amount >= rows.length)
-					alarmnum = 0;
+				ctx.replyWithChatAction('typing');
+				isLoading[ctx.from.id] = true;
 				
-				var d = new Date(rows[alarmnum].date);			
-				var options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
-				var time = d.toLocaleTimeString();
-				var date = d.toLocaleDateString('de-DE', options);
+				setTimeout(function () {                                  
 
-				ctx.editMessageText("*📜 " + date + " " + time + "*\n_  " + rows[alarmnum].einsatzstichwort + "\n " + rows[alarmnum].schlagwort
-					+ "\n  " + rows[alarmnum].ort + "_", Telegraf.Extra.markdown().markup((m) =>
-					m.inlineKeyboard([
-						m.callbackButton('<', 'showAlarm:' + (alarmnum - 1)),
-						m.callbackButton('>', 'showAlarm:' + (alarmnum + 1))
-					]))).catch((err) => {
-						console.log('[TelegramBot] Telegram Ooops', err)
-					});
-			});
+				getAlarmList().then((rows) => {
+					var alarmnum = parseInt(ctx.state.amount, 10);
+					if (ctx.state.amount < 0)
+						alarmnum = rows.length - 1;
+					if (ctx.state.amount >= rows.length)
+						alarmnum = 0;
+					
+					var d = new Date(rows[alarmnum].date);			
+					var options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
+					var time = d.toLocaleTimeString();
+					var date = d.toLocaleDateString('de-DE', options);
+
+					ctx.editMessageText("*📜 " + date + " " + time + "*\n_  " + rows[alarmnum].einsatzstichwort + "\n " + rows[alarmnum].schlagwort
+						+ "\n  " + rows[alarmnum].ort + "_", Telegraf.Extra.markdown().markup((m) =>
+						m.inlineKeyboard([
+							m.callbackButton('<', 'showAlarm:' + (alarmnum - 1)),
+							m.callbackButton('>', 'showAlarm:' + (alarmnum + 1))
+						]))).catch((err) => {
+							console.log('[TelegramBot] Telegram Ooops', err)
+						});
+						
+					isLoading[ctx.from.id] = false;
+				});
+		
+		}, 500);
 		
 		
 		});
@@ -448,7 +484,13 @@ module.exports = function (wss) {
 					console.log('[TelegramBot] Telegram Ooops', err)
 				});
 			
-		});
+		})
+		.catch((error) => {
+				ctx.editMessageText("Fehler: Daten konnten nicht geladen werden.", 
+					Telegraf.Extra.markdown().markup((m) => {} )).catch((err) => {
+						console.log('[TelegramBot] Telegram Ooops', err)
+					});
+			});
 		
     })
     		

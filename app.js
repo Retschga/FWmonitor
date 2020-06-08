@@ -30,7 +30,7 @@ process.on('uncaughtException', function (err) {
 	console.log("\n\n    --------------------------------------------------------------");
 	console.log("    |            Feuerwehr Einsatzmonitor Software               |");
 	console.log("    |                                                            |");
-	console.log("    |                (c) 2019  FF Fischbachau                    |");
+	console.log("    |             (c) 2019 Resch - FF Fischbachau                |");
 	console.log("    |                                                            |");
 	console.log("    |                                                            |");
 	console.log("    |               weitere Infos: siehe Readme                  |");

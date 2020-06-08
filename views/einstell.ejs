@@ -306,11 +306,15 @@
 				if(element.innerHTML == 1) {
 					element.style.background = "green";
 					element.innerHTML = "";
-				} else {
-					if(element.innerHTML == 2) 
-						element.innerHTML = "";
-						
+				} else if(element.innerHTML == 2) {
+					element.innerHTML = "";						
 					element.style.background = "red";
+				} else if(element.innerHTML == -1) {
+					element.innerHTML = "Bot von Benutzer blockiert.";						
+					element.style.background = "DarkOrange";
+				} else if(element.innerHTML == -2) {
+					element.innerHTML = "Telegram Benutzer gelöscht.";						
+					element.style.background = "DarkOrange";
 				}
 			};
 			

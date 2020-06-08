@@ -70,7 +70,7 @@ module.exports = function () {
 	
 	function getEinsatzZeit(name, vorname) {
 		
-		return new Promise(resolve => {
+		return new Promise((resolve, reject) => {
 			
 			console.log("Einsatzzeit:  " + name + "  " + vorname);
 		
@@ -82,7 +82,7 @@ module.exports = function () {
 			console.log("Pfad: " + filepath);
 			
 			fs.readdir(filepath, function(err, files) {
-				if (err) { throw err; }
+				if (err) reject(err);
 				var newestFile = getNewestFile(files, filepath);
 
 				console.log("Datei: " + newestFile);

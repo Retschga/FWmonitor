@@ -33,7 +33,7 @@ router.get('/alarm', function (req, res, alarmMan) {
 
                     rowsVerv.forEach(function (element) {
                         if (element.allowed == 1) {
-                            if (element.status != 1) {
+                            if (element.status == 2) {
                                 st_nichtverf.push(element.name + " " + element.vorname);
                                 st_nichtverfID.push("st_" + (element.name + " " + element.vorname).replace(/ /g, "_"));
                             }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Timer Script von irgendwo ausm Internet 
+# https://gist.github.com/aeroaks/ac4dbed9c184607a330c
 
 
 # Includes
