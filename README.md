@@ -84,6 +84,9 @@ alle Kommas durch Punkte ersetzen (über suchen und ersetzen), dann mit http://w
 dann unter `/public/rettPunkte.geojson` speichern
 
 
+
+Bei Fragen einfach in GitHub oben unter Issues ein Issue erstellen.
+
 ## Programmstart (manuell)
 
 In Konsole (Windows: Rechtsklick - Git Bash here):

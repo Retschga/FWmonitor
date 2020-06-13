@@ -50,14 +50,12 @@ module.exports = function (wss) {
 				.catch((err) => {
 					console.error("[Telegram] ERROR sendMessage (ChatID "+chatId+"): " + err);
 					if(err.message.indexOf("blocked") != -1) {
-						setVerfuegbar(ctx.from.id, -1, "").then(() => {
-							ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
-							ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
+						setVerfuegbar(chatId, -1, "").then(() => {
+							;
 						});
 					} else if(err.message.indexOf("disabled") != -2) {
-						setVerfuegbar(ctx.from.id, -1, "").then(() => {
-							ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
-							ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
+						setVerfuegbar(chatId, -1, "").then(() => {
+							;
 						});
 					}
 				});					
