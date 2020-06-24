@@ -4,7 +4,7 @@
 RASPIVERSION=false
 
 
-# Telegram Bot API Key
+# Telegram Bot API Key (https://core.telegram.org/bots#3-how-do-i-create-a-bot)
 BOT_TOKEN=
 
 # Geobing API Key (https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)

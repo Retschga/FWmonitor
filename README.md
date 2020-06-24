@@ -40,14 +40,19 @@ Windows:
 Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here):
  - `git clone https://github.com/Retschga/FWMonitor.git`
  - `cd "FWMonitor"`
- - `npm install package.json`
+ - `npm install`
  - `npm i puppeteer`
  
+ 
+## Update
+ 
+Einfach die Dateien nochmal herunterladen und die alten ersetzen, dann Software neustarten.
+
  
 ## Autostart 
 
 Raspberry:
- - `sudo crontab -e` und `@reboot /home/pi/Desktop/start.sh > /home/pi/Desktop/log.txt` hinzufügen
+ - `sudo crontab -e` und `@reboot PFAD_ZU_FWMONITOR/start.sh > /home/pi/Desktop/log.txt` hinzufügen (Nur bei Programminstallation auf dem Raspberry)
  - Um Browser automatisch im Vollbild zu starten:
    mit `mkdir PFAD` /home/pi/.config/lxsession/LXDE-pi/ erstellen
    dann `nano /home/pi/.config/lxsession/LXDE-pi/autostart` und Inhalt einfügen:
@@ -63,7 +68,8 @@ Raspberry:
 	@chromium-browser --incognito  --start-fullscreen --disable-infobars --enable-w$```
 
 Windows:
- - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
+ - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen (Nur bei Programminstallation unter Windows)
+ - Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
 
 
 ## Einstellungen
@@ -85,12 +91,15 @@ dann unter `/public/rettPunkte.geojson` speichern
 
 
 
-Bei Fragen einfach in GitHub oben unter Issues ein Issue erstellen.
+Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstellen.
 
 ## Programmstart (manuell)
 
 In Konsole (Windows: Rechtsklick - Git Bash here):
  - `node app`
+ 
+Nun im Webbrowser die IP Adresse des Computers eingeben, auf dem FWmonitor läuft.
+(Herauszufinden in Konsole: Windows: ipconfig; Raspberry: ifconfig; Eigener PC: 127.0.0.1)
 
 ## Hydrantenfunktion
 
@@ -137,3 +146,4 @@ Ich übernehme keine Haftung für die Funktion der Software vor Ort. Da über di
 
 ![Bild](/Screenshot1.PNG "Bild")
 ![Bild](/Screenshot2.PNG "Bild")
+![Bild](/Screenshot3.PNG "Bild")
