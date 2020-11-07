@@ -43,6 +43,9 @@
 					<div class="item" id="submitcontainer">
 						<button class="red-700 radius full" onclick="loginUser()" id="loginbutton">ANMELDEN</button>
 					</div>
+					<div class="item hidden" id="changeusercontainer">
+						<button class="red-700 radius full" onclick="changeUser()" id="changebutton">ANDERER BENUTZER</button>
+					</div>
 				</div>
 
 			</div>
@@ -126,6 +129,11 @@
 				})
 			}
 
+			function changeUser() {
+				document.getElementById("userpasscontainer").classList.remove('hidden');		
+				document.getElementById("changeusercontainer").classList.add('hidden');	
+			}
+
 			// Get Parameter auslesen
 			var parts = window.location.search.substr(1).split("&");
 			var $_GET = {};
@@ -138,7 +146,8 @@
 			document.addEventListener('DOMContentLoaded', (event) => {
 				if(getCookie('token') && getCookie('token') != "") {					
 					if($_GET['manuell'] == 'true') {
-						document.getElementById("userpasscontainer").classList.add('hidden');								
+						document.getElementById("userpasscontainer").classList.add('hidden');		
+						document.getElementById("changeusercontainer").classList.remove('hidden');							
 					} else {
 						document.getElementById("userpasscontainer").classList.add('hidden');		
 						//document.getElementById("submitcontainer").classList.add('hidden');

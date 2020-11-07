@@ -148,6 +148,7 @@ async function createKalenderElement(_response, _id, edit = false, editID) {
 
 function goBack() {
 	window.history.back();
+	closeLoading();	
 }
 
 // Icons Karte
