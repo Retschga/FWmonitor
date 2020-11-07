@@ -1,0 +1,130 @@
+<div class="page">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
+		<h1>Verfügbarkeit</h1>
+	</div>		
+	
+    
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+		<div id="verfuegbarkeit_statusanzeige" class="list">
+			<div class="item small-space grey-300 text-grey-700">
+				<p>
+					Eigener Status
+				</p>
+			</div>
+			<div class="item row">
+				<div class="col-20">
+					<div style="display:table; height: 100%;">
+						<h2 style="display:table-cell; vertical-align: middle;">Status:</h2>
+					</div>
+				</div>
+				<div class="col-34">
+					<div style="display:table; height: 100%;">
+						<h2 id="verfuegbarkeit_status_verf" class="" style="display:table-cell; vertical-align: middle; padding-left:1em; padding-right:1em;">
+							####
+						</h2>
+					</div>
+				</div>
+				
+				<button class="col red-600 border-red-300 radius" onclick="verfuegbarkeit_toggleStatus()">
+					Umschalten
+				</button>
+			</div>	
+			<div id="verfuegbarkeit_status_bis_container" class="item row hidden" style="margin-top: 1em;"> 
+				<div class="col-20">	
+					<h2>Bis</h2>
+				</div>
+				<div class="col">	
+					<h2 id="verfuegbarkeit_status_bis"></h2>
+				</div>
+			</div>
+		</div>
+
+		<div id="verfuegbarkeit_selectDays" class="list hidden">
+			<div class="item small-space grey-300 text-grey-700">
+				<p>
+					Anzahl Tage
+				</p>
+			</div>
+			
+			<div class="buttons-group full">
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 1)">
+					1
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 2)">
+					2
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 3)">
+					3
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 4)">
+					4
+				</button>					
+			</div>
+			<div class="buttons-group full">
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 5)">
+					5
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 6)">
+					6
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 7)">
+					7
+				</button>	
+				<button class="red-600 border-red-300" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, 14)">
+					14
+				</button>					
+			</div>
+			<button class="red-600 border-red-300 full" onclick="verfuegbarkeit_setStatus(verfuegbarkeit_status, -1)">
+				Unbegrenzt
+			</button>	
+			
+		</div>
+		
+		<div class="space"></div>
+		
+		<div class="">
+
+			<div class="list">
+				<div class="item small-space grey-300 text-grey-700">
+					<p>
+						Allgemein
+					</p>
+				</div>
+				<div class="item row">
+					<div class="col-10" style="padding-right: 1em;">		
+						<div class="icon-circle text-red border-red radius-big">
+							<i class="icon ion-close-round"></i>
+						</div>
+					</div>
+					<div id="col">
+						<h2 id="numNVerf">## Personen</h2>
+						<div id="NVerfNamen"></div>
+					</div>
+				</div>
+
+				<div class="item row">
+					<div class="col-10" style="padding-right: 1em;">						
+						<div class="icon-circle text-green border-green radius-big">
+							<i class="icon ion-checkmark-round"></i>
+						</div>
+					</div>
+					<div id="col">
+						<h2 id="numVerf">## Personen</h2>
+						<div id="VerfNamen"></div>
+					</div>
+				</div>
+			</div>			
+
+		</div>
+
+        <div class="space"></div>
+
+   </div>
+
+</div>

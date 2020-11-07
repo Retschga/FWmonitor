@@ -1,0 +1,100 @@
+/* ===================
+    STYLES
+   =================== */
+
+body {
+	/*background: #eee !important;*/
+}
+*:fullscreen, *:-webkit-full-screen, *:-moz-full-screen {
+    background-color: rgba(255,255,255,0);
+}
+::backdrop
+{
+    background-color: white;
+}
+
+ /* Hide scrollbar for Chrome, Safari and Opera */
+.noscrollbar::-webkit-scrollbar {
+    display: none;
+}
+  
+/* Hide scrollbar for IE, Edge and Firefox */
+.noscrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+} 
+
+
+/* ===================
+    HILFSKLASSEN
+   =================== */
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+#mapid {
+    height: 100%;
+}
+#mapid_cont {
+    height: 100%; 
+}
+.hideOnNoPage {
+    display: initial !important;
+}
+.border-bottom-white {
+    border-bottom: 1px solid white;
+}
+.border-top-white {
+    border-top: 1px solid white;
+}
+.border-top-black {
+    border-top: 1px solid black;
+}
+.img-1_5em img {
+    height: 1.5em;
+}
+.selectedButton {
+    opacity: 0.5;
+}		
+.ol-center {
+    top: 4em;
+    right: 0.5em;
+}
+.ol-center2 {
+    top: 8em;
+    right: 0.5em;
+}
+.lineWarpInput {
+    word-break: break-all; 
+    /*word-wrap: break-word;*/
+}
+[contenteditable][placeholder]:empty:before {
+    content: attr(placeholder);
+    position: absolute;
+    color: light-gray;
+    background-color: transparent;
+}
+[contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-user-modify:read-write;
+}
+.clear {
+    float: clear;
+}
+.btnOverflow button {
+    overflow: inherit !important;
+    padding: 3px;
+}
+#mapid  button {
+    overflow: inherit !important;
+    padding: 3px;
+    min-width: 2em;
+}

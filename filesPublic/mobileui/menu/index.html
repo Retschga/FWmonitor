@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css?family=Dosis|Raleway:400,700|Roboto:300,400,900," rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.css">
+    <link rel="stylesheet" href="../base/reset.css">
+    <link rel="stylesheet" href="../base/mobileui.css">
+    <link rel="stylesheet" href="../base/colors.css">
+    <link rel="stylesheet" href="../base/icons.css">
+    <link rel="stylesheet" href="../header/style.css">
+    <link rel="stylesheet" href="../list/style.css">
+    <link rel="stylesheet" href="../button/style.css">
+    <link rel="stylesheet" href="../cover/style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/css/master.css">
+    <style>
+      .content { margin-left:50px}
+    </style>
+    <script type="text/javascript" src="../base/base.js"></script>
+    <script type="text/javascript" src="../menu/script.js"></script>
+  </head>
+  <body class="content">
+    <!-- BEGIN -->
+    <h2 class="title-doc" id="_DOC_GENERATE_SPACE_">Menu</h2>
+    <p>
+      Menu is a side-menu navigation that can be dragged out or toggled to show. The content of a menu will be hidden when the menu is closed.
+      Menu adapts to the appropriate style based on the platform.
+    </p>
+    <p>
+      To use this component you need install with the command:
+    </p>
+    <div class="dependency tooltip">
+      <strong>Dependency:</strong> <code>base</code> and <code>list</code>.
+      <span class="tooltiptext">The dependencies will be installed together with this module</span>
+    </div>
+    <pre>mobileui install menu</pre>
+    <!-- _DOC_GENERATE_CSS_DOC -->
+    <p>
+      Your menu need have <code>id</code> and for you open menu, just call function <code>openMenu('ID_YOUR_MENU')</code>, for close menu just call function <code>closeMenu('ID_YOU_MENU')</code>.
+      By default the menu is created in the left, but you can add class <code>menu-right</code> for create menu in right position.
+    </p>
+    <p>See example:</p>
+<textarea class="bind-code" mode="text/html" header-absolute="true" replace="body,div|grey-200,grey-200 body" height-preview="400px" border="true" multiplatform="true">
+<body class="padding grey-200">
+  <div class="menu purple" id="myFirstMenu">
+    <button class="purple-100 full" onclick="closeMenu('myFirstMenu')">Close menu </button>
+  </div>
+  <div class="menu menu-right green" id="mySecondMenu">
+    <button class="green-100 full" onclick="closeMenu('mySecondMenu')">Close menu</button>
+  </div>
+  <button class="purple" onclick="openMenu('myFirstMenu')">Open menu left</button>
+  <button class="green" onclick="openMenu('mySecondMenu')">Open menu right</button>
+</body></textarea>
+    <p>
+      You can use all features of <a href="#colors">colors theme</a>, <a href="#icons">icons</a> and <a href="#list">list</a> in menu.
+    </p>
+<textarea class="bind-code" mode="text/html" header-absolute="true" replace="body,div|grey-200,grey-200 body" height-preview="400px" border="true" multiplatform="true">
+<body class="padding grey-200">
+  <div class="menu white" id="myMenu">
+    <div class="list no-border">
+      <div class="item blue">
+        <div class="left">
+          <img class="avatar circle" src="../assets/img/80.jpg">
+        </div>
+        <h1>Jeanette Fletcher</h1>
+        <p>jeanette@example.com</p>
+      </div>
+      <a class="item">
+        <div class="left">
+          <i class="icon ion-ios-list-outline"></i>
+        </div>
+        <h1>My projects</h1>
+      </a>
+      <a class="item">
+        <div class="left">
+          <i class="icon ion-ios-chatbubble-outline"></i>
+        </div>
+        <h1>Messages</h1>
+        <div class="right">
+          <span class="text-small red radius padding">6</span>
+        </div>
+      </a>
+      <a class="item">
+        <div class="left">
+          <i class="icon ion-ios-search"></i>
+        </div>
+        <h1>Search projects</h1>
+      </a>
+      <a onclick="closeMenu('myMenu')" class="item">
+        <div class="left">
+          <i class="icon ion-ios-close-outline"></i>
+        </div>
+        <h1>Close menu</h1>
+      </a>
+    </div>
+  </div>
+  <button class="blue" onclick="openMenu('myMenu')">Open menu</button>
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+    irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+    pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
+    deserunt mollit anim id est laborum.
+  </p>
+</body></textarea>
+    <p>
+      You can combinate <a href="#cover">cover</a>, <a href="#badge">badge</a>, <a href="#card">card</a>, <a href="#header">header</a>
+      and <a href="#button">button</a> for create a good apps.
+     </p>
+<textarea class="bind-code" mode="text/html" header-absolute="true" replace="body,div|grey-100,grey-100 body"
+          height-preview="500px" border="true" multiplatform="true">
+<body class="padding grey-100 has-header has-sub-header">
+  <div class="menu teal-900 cover blend-multiply" id="menuDiscover" style="background-image:url(../assets/img/nature1.jpg)">
+    <div class="cover align-center">
+      <img class="avatar circle border-white shadow" src="../assets/img/33.jpg">
+      <h1 class="text-teal-300">Carter Hudson</h1>
+      <p class="text-grey">carter.hudson@mail.com</p>
+    </div>
+    <div class="list no-border">
+      <a class="item space-small">
+        <div class="left">
+          <i class="icon ion-ios-heart-outline grey-300"></i>
+        </div>
+        <h1 class="text-grey-300">My Discoveries</h1>
+      </a>
+      <a class="item space-small">
+        <div class="left">
+          <i class="icon ion-ios-flame-outline grey-300"></i>
+        </div>
+        <h1 class="text-grey-300">Trending</h1>
+        <div class="right">
+          <span class="text-small border-red text-red radius padding">12</span>
+        </div>
+      </a>
+      <a class="item space-small">
+        <div class="left">
+          <i class="icon ion-ios-location-outline grey-300"></i>
+        </div>
+        <h1 class="text-grey-300">Places</h1>
+      </a>
+      <a class="item space-small">
+        <div class="left">
+          <i class="icon ion-ios-person-outline grey-300"></i>
+        </div>
+        <h1 class="text-grey-300">People</h1>
+        <div class="right">
+          <span class="text-small border-green text-green radius padding">7</span>
+        </div>
+      </a>
+      <a class="item space-small">
+        <div class="left">
+          <i class="icon ion-ios-chatbubble-outline grey-300"></i>
+        </div>
+        <h1 class="text-grey-300">Notifications</h1>
+      </a>
+    </div>
+  </div>
+  <div class="header teal">
+    <div class="left">
+      <button class="icon ion-navicon-round" onclick="openMenu('menuDiscover')"></button>
+    </div>
+    <h1 class="title align-center">My Discoveries</h1>
+    <div class="right">
+      <span class="icon-badge text-small red radius padding">3</span>
+      <button class="icon ion-earth"></button>
+    </div>
+  </div>
+  <div class="header sub teal">
+    <div class="buttons-group full small">
+      <button class="teal-700 border-teal radius-left">Latests</button>
+      <button class="teal-600 border-teal">Favorites</button>
+      <button class="teal-600 border-teal radius-right">All</button>
+    </div>
+  </div>
+  <div class="space"></div>
+  <div class="list white no-border radius shadow">
+    <div class="item">
+      <div class="left">
+        <img class="avatar radius" src="../assets/img/33.jpg" />
+      </div>
+      <h2 class="strong">Carter Hudson</h2>
+      <p class="text-red-400">@carterhudson</p>
+      <p class="text-grey">3min ago</p>
+      <div class="right">
+        <button class="white icon ion-ios-heart-outline text-red-400"> 23</button>
+      </div>
+    </div>
+    <div class="item full">
+      <img src="../assets/img/nature2.jpg"/>
+    </div>
+    <div class="item text-grey-600">
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore
+        et dolore magna aliqua.
+      </p>
+    </div>
+  </div>
+</body></textarea>
+    <p>For advanced mode you can listen to the event <code>openMenu</code> and <code>closeMenu</code>.</p>
+<textarea class="bind-just-code" mode="text/javascript">
+document.addEventListener('openMenu', function(e){
+  //It does something when the menu is opened
+  //You can access name of menu in: e.detail.menu
+})
+
+document.addEventListener('closeMenu', function(e){
+  //It does something when the menu is closed.
+  //You can access name of menu in: e.detail.menu
+})</textarea>
+
+  <p>Your can enable the Swiper event (open or close the menu when clicking and dragging horizontally):</p>
+<textarea class="bind-just-code" mode="text/javascript">
+window.menu.enableSwiper('myFirstMenu')
+</textarea>
+
+    <!-- DONE -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/mode/xml/xml.min.js"></script>
+    <script type="text/javascript" src="../assets/js/main.js"></script>
+  </body>
+</html>

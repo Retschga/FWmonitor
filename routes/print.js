@@ -1,17 +1,15 @@
 ﻿'use strict';
+// ----------------  STANDARD LIBRARIES ---------------- 
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/print', function (req, res) {
-    
+
+router.get('/print', function (req, res) {    
 	res.render('print', {
 		page: 'index',
-		data: {
-		   
+		data: {		   
 		}
-	});
-    
+	});    
 });
 
 module.exports = router;

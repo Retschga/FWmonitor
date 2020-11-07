@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+	
+		<% include partials/head %>	
+        <title>FWmonitor - APP</title>	
+        		
+    </head>
+	
+    <body class="grey-200">
+
+
+		<div class="content grey-200" style="z-index: 9999;">
+
+			<div class="row padding red-600">
+				<div class="col-25 padding">
+				  <img class="avatar circle" src="/icons/icon-384x384.png" />
+				</div>
+				<div class="col padding">
+				  <h1 class="text-big text-light">FWmonitor APP</h1>
+				  <p class="text-grey-200"><%= data["INFOTEXT"] %></p>
+				</div>
+			</div>
+
+			<div class="space"></div>
+
+			<div class="padding">
+
+				<h1 class="align-center text-big">OFFLINE</h1>
+
+				<div class="list grey-100">					
+					<div class="item" id="submitcontainer">
+						<button class="red-700 radius full" onclick="window.location.replace('/app/login.html');">VERBINDEN</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+		
+		<% include partials/foot %>	
+
+    </body>
+	
+</html>

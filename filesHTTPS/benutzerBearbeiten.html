@@ -1,0 +1,168 @@
+<div class="page">      
+       
+	<div class="header red-600">
+        <button class="left icon icon ion-close-round" name="button" onclick="benutzer_loadBenutzer(); goBack();"></button>
+        <h2>Benutzer</h2>    
+        <p id="benutzerBearbeiten_name">{{NAME}}</p>
+    </div>		
+	
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+        <div id="benutzerBearbeiten_einstellungen" class="hidden">
+
+            <div class="list">
+
+                <div class="item small-space grey-300 text-grey-700">
+                    <p>
+                        Gruppen / Berechtigungen
+                    </p>
+                </div>
+
+                <div class="item">
+                    <h2>Alarmgruppe</h2>
+                    <div class="right">
+                        <select id="benutzerBearbeiten_alarmgruppe" onChange="benutzerBearbeiten__setEinstellung('gruppe',this.options[this.selectedIndex].value)">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Administrator</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_admin" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('admin', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Kalender bearbeiten</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_kalender" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('kalender', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Drucker Papierinfo</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_drucker" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('drucker', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space"></div>
+            
+            <div class="list">
+
+                <div class="item small-space grey-300 text-grey-700">
+                    <p>
+                        Status
+                    </p>
+                </div>
+
+                <div class="item">
+                    <h2>Terminerinnerungen</h2>
+                    <div class="right">
+                    <input id="benutzerBearbeiten_erinnerung" type="checkbox" class="switch green" disabled>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Verfügbar</h2>
+                    <div class="right">
+                    <input id="benutzerBearbeiten_verfuegbar" type="checkbox" class="switch green" disabled>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space"></div>
+            
+            <div class="list">
+
+                <div class="item small-space grey-300 text-grey-700">
+                    <p>
+                        Ausbildung
+                    </p>
+                </div>
+
+                <div class="item">
+                    <h2>Atemschutz</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_stAGT" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('stAGT', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Maschinist</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_stMA" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('stMA', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Gruppenführer</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_stGRF" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('stGRF', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+                <div class="item">
+                    <h2>Zugführer</h2>
+                    <div class="right">
+                        <input id="benutzerBearbeiten_stZUGF" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('stZUGF', this.checked ? '1' : '0')">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space"></div>
+
+        </div>
+
+        <div class="list">
+
+            <div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Kalendergruppen
+                </p>
+            </div>
+
+            <div id="benutzerBearbeiten_kalendergruppenList" class="item list" style="border: none; padding: 0;">
+               
+            </div>
+
+        </div>
+
+        <div class="space"></div>
+        
+        <div class="list">
+
+            <div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Freigabe
+                </p>
+            </div>
+
+            <div id="benutzerBearbeiten_btnFreigabe" class="item">
+                <button class="item green-600 border-grey-200 radius small" onclick="benutzerBearbeiten__setEinstellung('freigeben', '');">
+                    Benutzer Freigeben
+                </button>
+            </div>
+
+            <div id="benutzerBearbeiten_btnLoeschen" class="item">
+                <button class="item red-600 border-grey-200 radius small" onclick="benutzerBearbeiten__loeschen()">
+                    Benutzer Löschen
+                </button>
+            </div>
+
+        </div>
+            
+            
+        <div class="space"></div>
+
+   </div>
+
+</div>

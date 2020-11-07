@@ -1,0 +1,235 @@
+console.log('Loaded service worker!');
+
+const staticCacheName = 'pages-cache-v2020-10-31-004';
+const filesToCache = [
+//	'/app/404.html',
+	'/app/offline.html',
+//  '/app/index.html',
+	'/stylesheets/normalize.min.css',
+//	'/app/appClient.js',
+//	'/app/filesHTTPS/javascripts/appMain.js',
+
+	'/app/auto/index.html',
+	'/app/filesHTTPS/autoFunk.html',
+	'/app/filesHTTPS/autoGPS.html',
+	'/app/filesHTTPS/autoKarte.html',
+	'/app/filesHTTPS/autoAlarm.html',
+
+	'/images/AGT.png',
+	'/images/MA.png',
+	'/images/GRF.png',
+	'/images/ZUGF.png',
+	'/favicon.ico',	
+	'/icons/icon-384x384.png',
+	'/icons/icon-144x144.png',
+	'/app/filesHTTPS/manifest.json',
+	'/app/filesHTTPS/images/funkstatus.png',
+
+	'/stylesheets/appMain.css',
+	'/mobileui/base/reset.css',
+	'/mobileui/base/mobileui.css',
+	'/mobileui/base/colors.css',
+	'/mobileui/base/font.css',
+	'/mobileui/base/icons.css',
+	'/mobileui/header/style.css',
+	'/mobileui/button/style.css',
+	'/mobileui/list/style.css',
+	'/mobileui/page/style.css',
+	'/mobileui/grid/style.css',
+	'/mobileui/menu/style.css',
+	'/mobileui/input/style.css',
+	'/mobileui/loading/style.css',
+	'/mobileui/alert/style.css',
+	'/mobileui/toast/style.css',
+	'/mobileui/tab/style.css',
+	'/mobileui/base/base.js',
+	'/mobileui/button/script.js',
+	'/mobileui/toast/script.js',
+	'/mobileui/menu/script.js',
+	'/mobileui/input/script.js',
+	'/mobileui/loading/script.js',
+	'/mobileui/alert/script.js',
+	'/mobileui/page/script.js',
+	'/mobileui/tab/script.js',
+	'/mobileui/base/fonts/ionicons.woff?v=2.0.0',
+ 
+	'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css',
+];
+
+
+
+function wait(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
+
+// -------- Service Worker PUSH --------
+self.addEventListener('push', ev => {
+
+	// Notification Daten
+	const data = ev.data.json();  
+	console.log('Got push', data);
+
+	if(Date.parse(data.zeigeBis) <  new Date()) {
+		console.log('Keine Notification: Zeit Überschritten');
+		return;
+	}
+  
+	function notify(data) {
+		return self.registration.showNotification(
+			data.titel, {
+				body: data.text,
+				icon: '/images/alarm.png',
+//				image: '/images/alarm.png',
+				badge: '/images/alarm_badge.png',
+				vibrate: [1000],
+				sound: '/audio/message.mp3',
+				tag: data.tag,
+				renotify: true,
+				silent: (data.silent == true ? true : false),
+				timestamp: Date.parse(data.timestamp),
+				requireInteraction: true,
+				actions: data.actions
+			}
+	)};
+
+	var notQueue = new Array();
+
+	for(let i = 0; i < data.notificationAnzahl ; i++) {
+		let not = wait(i *2000).then(() => notify(data));
+		notQueue.push(not);
+	}	
+	
+	const promiseChain = Promise.all(notQueue);
+	  
+	ev.waitUntil(promiseChain);
+  
+});
+
+self.addEventListener('notificationclick', function(event) {
+
+	const clickedNotification = event.notification;
+	clickedNotification.close();
+	
+	//if (!event.action) {
+		// Was a normal notification click
+		console.log('Notification Click.');
+		
+		
+		const urlToOpen = new URL('/app/index.html', 'https://' + self.location.host).href;
+
+		const promiseChain = clients.matchAll({
+			type: 'window',
+			includeUncontrolled: true
+		}).then((windowClients) => {
+			let matchingClient = null;
+
+			for (let i = 0; i < windowClients.length; i++) {
+				const windowClient = windowClients[i];
+					if (windowClient.url === urlToOpen) {
+					matchingClient = windowClient;
+					break;
+				}
+			}
+
+			if (matchingClient) {
+			console.log(1);
+				return matchingClient.focus();
+			} else {
+			console.log(2);
+				return clients.openWindow(urlToOpen);
+			}
+		});
+
+		event.waitUntil(promiseChain);
+		
+	//	return;
+	//}
+
+	// Knopf gerückt
+	var url = new URL('app/api/notificationResponse', self.location.origin),
+	
+    params = {telegramID: <%= data["telegramID"] %>,value: event.action}
+	Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+	fetch(url, {
+		credentials: 'same-origin',
+		headers: { "Content-Type": "application/json; charset=utf-8" }
+	})
+	.then(res => res.json()) // parse response as JSON (can be res.text() for plain response)
+    .then(response => {
+		console.log(response);
+    })
+    .catch(err => {
+		console.log(err);
+    });
+
+});
+
+
+// -------- Service Worker FETCH --------
+this.addEventListener('fetch', function(event) {
+	console.log('Fetch event for ', event.request.url);
+  	event.respondWith(
+    	caches.match(event.request)
+    	.then(response => {
+      		if (response) {
+       			console.log('Found ', event.request.url, ' in cache');
+        		return response;
+     		}
+			  console.log('Network request for ', event.request.url);
+			  
+      		return fetch(event.request)
+			.then(response => {
+/*				if (response.status === 404) {
+					return caches.match('/app/404.html');
+				}
+*/
+				if(event.request.url.indexOf('/api/alarm?id=') == -1) {
+					return response;
+				}
+				return caches.open(staticCacheName).then(cache => {
+					cache.put(event.request.url, response.clone());
+					return response;
+				});
+			});			  
+
+    	}).catch(error => {
+			console.log('---- OFFLINE ----');
+			return caches.match('/app/offline.html');
+    	})
+ 	);
+});
+
+
+
+this.addEventListener('install', event => {
+	console.log('Attempting to install service worker and cache static assets');
+	event.waitUntil(
+	 	 caches.open(staticCacheName)
+	  	.then(cache => {
+			return cache.addAll(filesToCache);
+	  	})
+	);
+});
+  
+
+self.addEventListener('activate', event => {
+	console.log('Activating new service worker...');
+  
+	const cacheAllowlist = [staticCacheName];
+  
+	event.waitUntil(
+	  	caches.keys().then(cacheNames => {
+			return Promise.all(
+				cacheNames.map(cacheName => {
+					if (cacheAllowlist.indexOf(cacheName) === -1) {
+						return caches.delete(cacheName);
+					}
+				})
+			);
+	  	})
+	);
+});
+  

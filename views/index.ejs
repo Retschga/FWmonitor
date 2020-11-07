@@ -1,26 +1,47 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
     <head>
+
+		<!-- HTML EINSTELLUNGEN -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Titel</title>
-    
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0" />
+		<title>FWmonitor - Standby</title>
+
+		<!-- CSS -->
         <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
-        <link rel="stylesheet" type="text/css" href="stylesheets/standby.css">
-        
-        <script src="javascripts/jquery.js"></script>
+		<link rel="stylesheet" type="text/css" href="stylesheets/standby.css"> 		
+		
+		<!-- MOBILE UI -->
+		<link rel="stylesheet" href="/mobileui/base/reset.css">
+		<link rel="stylesheet" href="/mobileui/base/mobileui.css">
+		<link rel="stylesheet" href="/mobileui/base/colors.css">
+		<link rel="stylesheet" href="/mobileui/base/font.css">
+		<link rel="stylesheet" href="/mobileui/base/icons.css">	
+		<link rel="stylesheet" href="/mobileui/header/style.css">
+		<link rel="stylesheet" href="/mobileui/button/style.css">		
+		<link rel="stylesheet" href="/mobileui/list/style.css">
+		<link rel="stylesheet" href="/mobileui/page/style.css">	
+		<link rel="stylesheet" href="/mobileui/grid/style.css">		
+		<link rel="stylesheet" href="/mobileui/menu/style.css">	
+		<link rel="stylesheet" href="/mobileui/input/style.css">	
+		<link rel="stylesheet" href="/mobileui/loading/style.css">
+		<link rel="stylesheet" href="/mobileui/alert/style.css">
+		<link rel="stylesheet" href="/mobileui/toast/style.css">
+		   
 		
 		<style>		
 			[data-slides] {
 				background-image: url(<%= data["src"][0] %>); /* Default image. */
 				background-repeat: no-repeat;
 				background-position: center top;
-				background-size: cover;
+				background-size: contain;
 				
 				<% if(data["diashowAnimation"] == "true") { %> 
 					transition: background-image 1s linear;
-				<% } %>
-				
+				<% } %>				
 			}
 			#myVideo {
 			  position: fixed;
@@ -29,53 +50,86 @@
 			  max-width: 100%;
 			  min-height: 100%;
 			}
+
+			/* fonts*/
+			@font-face {
+				font-family: "emoji";
+				src: local("Noto Emoji");
+				src: url("NotoEmoji-Regular.ttf");
+			}
+			@font-face {
+				font-family: "color-emoji";
+				src: local("Noto Color Emoji");
+				src: url("NotoColorEmoji.ttf");
+			}
+			.emoji {
+				font-family: 'emoji';
+			}
+			.color-emoji {
+				font-family: 'color-emoji';
+			}
 		</style>
         
     </head>
     <body>
-        <header>
-            <div id="menu">
-                <ul>
-                  <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn">MENÜ</a>
-                    <div class="dropdown-content">
-                      <a href="/einstell">Einstellungen</a>
-                      <a href="/alarm?manuell=true">Letzter Alarm</a>
-                      <a onclick="alert('F11 drücken')">Vollbild</a>
-                    </div>
-                  </li>
-                </ul>
-            </div>
-            <div id="time">--:--:-- - --.--.----</div>
-			<div id="fwlogo">
+		<!-- HEADER -->
+        <header class="header red-600">
+			<div class="left">
+				<button class="icon ion-navicon-round"  name="button"  onclick="openMenu('leftMenu')"></button>
+			</div>		
+            <div class="right" id="time">--:--:-- - --.--.----</div>
+			<div class="right align-center" id="fwlogo">
 				<img class="fwlogo_logo" src="images/logo.png" alt=""> 
-				<a><%= data["fw_name"] %></a>
+				<%= data["fw_name"] %>
 				<img class="fwlogo_logo" src="images/logo.png" alt=""> 
 			</div>
-        </header>
+		</header>
 		
+		<!-- MENÜ -->
+		<div class="menu red-300" id="leftMenu">
+			<div class="cover align-center red-600 border-bottom-white">
+				<div class="space"></div>
+				<img class="avatar circle border-white shadow" src="/icons/icon-384x384.png" style="width: 30%"/>
+				<h1 class="">FWmonitor</h1>
+				<div class="space"></div>
+			</div>
+			<button class="red-600 full border-bottom-white selectedButton" onclick="window.location.href = '/';" >Standby Ansicht</button>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/einstell';" >Einstellungen</button>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/alarm?manuell=true';" >Letzter Alarm</button>
+			<button class="red-600 full border-bottom-white" onclick="alert('F11 drücken')" >Vollbild</button>
+		</div>
+		
+		<!-- DIASHOW VIDEO -->
 		<video autoplay muted id="myVideo" style="display:none;left:0;"> 
-			<source id="myVideoSource" src="/images/slideshow/VID-20190115-WA0010.mp4">
+			<source id="myVideoSource" src="">
 		</video>
 		
+		<!-- OFFLINEWARNUNG -->
 		<div id="offlinewarning" style="visibility: hidden;">
 			<span>
 				Offline !
 			</span>
 		</div>
-		
 
-        <div id="main_content"	data-slides='[<% for(i in data["src"]){%>"<%= data["src"][i] %>",<%}%>"<%= data["src"][0] %>"]'>
+		<!-- CONTENT -->
+		<div 
+			class="content has-header bgcolor"
+			data-slides='[<% for(i in data["src"]){%>"<%= data["src"][i] %>",<%}%>"<%= data["src"][0] %>"]'
+		>
 		
-			
-			<aside id="warnung">
-			<% if(data["dwd_position"] == "1") { %>
-				 <div id="warnung_container"></div> 
-			<% } %>	 
-			</aside>
-			
-            <article>
+			<div class="space"></div>
+					
+            <article class="left" style="max-width: 50vw">
+
+				<% if(data["dwd_position"] == "1") { %>
+				<div id="warnung" class="padding border-grey-200 shadow radius-right orange-300" style="visibility: hidden; margin-bottom: 2em; padding-left: 2em;">
+					<h6 id="warnHeader" style="margin-bottom: 0.8em;">Warnungen</h6>	
+					<div id="warnung_container"></div>
+				</div>
+			    <% } %>	 
+
                 <div class="verfuegbarkeit">
+
                     <div style="<% if(data["st_verf_hidden"] == "true") { %>display: none;<% } %>">
                         <h6>Verfügbar</h6>
                         <div id="verv_verfuegbar">       
@@ -84,7 +138,10 @@
 							<% } %>
 						</div>
                         <div class="floatclear"></div>
-                    </div>
+					</div>
+
+					<div class="space"></div>
+
                     <div>
                         <h6>Nicht verfügbar</h6>
                         <div id="verv_nichtverv">
@@ -93,32 +150,63 @@
 							<% } %>
 						</div>
                         <div class="floatclear"></div>
-                    </div>
-                </div>
-            </article>        
-            <aside>
-			
+					</div>
+					
+				</div>
 				
-                <div id="warnungRechts" style="visibility: hidden; height: 0; position: absolute;">
-				<% if(data["dwd_position"] == "2") { %>  
-                    <h6 id="warnHeader">Warnungen</h6>
-					<div id="warnung_container" style="margin: 0.5em auto 0.5em; max-height: 40vh; overflow: hidden;"></div>
-				<% } %>
-                </div>
+			</article>   
+			     
+            <aside  class="right">
+				<% if(data["dwd_position"] == "2") { %>  						
+                <div id="warnung" class="padding border-grey-200 shadow radius-left orange-300" style="visibility: hidden; margin-bottom: 2em;">
+					<h6 id="warnHeader" style="margin-bottom: 0.8em;">Warnungen</h6>	
+					<div id="warnung_container"></div>
+				</div>
+				<% } %>				
 				
-				
-                <div>
-                    <h6>Termine</h6>
-                    <div id="termine">
-                        <p>lade Kalender...</p>
-                    </div>
-                </div>
+                <div id="kalender"></div>
             </aside>
         </div>
-        
-        <script>
 		
-			// Diashow
+		<!-- JS -->
+		<script src="javascripts/jquery.js"></script>
+        <script>
+
+			/**
+			 * Erstellt ein Cookie
+			 * @param  {String} 	cname   - Cookie Name
+			 * @param  {String} 	cvalue  - Cookie Wert
+			 * @param  {Integer} 	exdays  - Lebesdauer in Tagen
+			 */
+			function setCookie(cname,cvalue,exdays) {
+				var d = new Date();
+				d.setTime(d.getTime() + (exdays*24*60*60*1000));
+				var expires = "expires=" + d.toGMTString();
+				document.cookie = cname + "=" + cvalue + ";" + (exdays ? expires + ";" : "") + "path=/";
+			}
+
+			/**
+			 * Gibt den Wert des Cookies zurück
+			 * @param  {String} 	cname   - Cookie Name
+			 * @return {String}     Cookie Wert
+			 */
+			function getCookie(cname) {
+				var name = cname + "=";
+				var decodedCookie = decodeURIComponent(document.cookie);
+				var ca = decodedCookie.split(';');
+				for(var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+					}
+				}
+				return "";
+			}
+		
+			// -------- Diashow --------
             /*! slides | https://gist.github.com/mhulse/66bcbb7099bb4beae530 */
 			(function($) {				
 				'use strict';
@@ -127,6 +215,7 @@
 				var images = $slides.data('slides');
 				var count = images.length;
 				var nextImage = Math.floor(Math.random() * count);
+				var img;
 				
 				// Get the video
 				var video = document.getElementById("myVideo");				
@@ -165,49 +254,136 @@
 								if(nextImage >= count)
 									nextImage = 0;
 							}
-							var img = new Image();
+							img = null;
+							img = new Image();
 							img.src = images[nextImage];
 							
 						});
-				};
-				
+				};				
 				slideshow();				
 			}(jQuery));
                    
-			// Uhrzeit
+			// -------- Uhrzeit --------
             setInterval(() => {
                 var d = new Date();
                 var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
 				var time = d.toLocaleTimeString();
 				var date = d.toLocaleDateString('de-DE', options);
                 document.getElementById('time').innerHTML = time + " - " + date;
-              }, 1000)
+            }, 1000)
 
-			// Kalender
+			// -------- Kalender --------
 			function getCalendar() {
-				var xmlHttp = new XMLHttpRequest();
-				xmlHttp.onreadystatechange = function() { 
-					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-						document.getElementById('termine').innerHTML = "<hr>" + xmlHttp.responseText;
-						
-						
-						elems = document.getElementById('termine').getElementsByTagName( 'br' );
-						var len = elems.length;
-						for ( var i = 0; i < len; i ++ )
-						{
-							br = elems.item( 0 );
-							hr = document.createElement( 'hr' );
-							br.parentNode.replaceChild( hr, br );
-						}
+				var getUrl = window.location;
+				var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+				var url = new URL('api/kalender', baseUrl);
+				
+				params = {}
+				Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
+
+				fetch(url, {
+					credentials: 'same-origin',
+					headers: { "Content-Type": "application/json; charset=utf-8" }
+				})
+				.then(res => res.json()) // parse response as JSON (can be res.text() for plain response)
+				.then(response => {
+
+					document.getElementById("kalender").innerHTML = "";
+
+					let elemNum = getCookie("kal_elem");
+					if(elemNum == "") {
+						elemNum = 5;
 					}
-				}
-				xmlHttp.open("GET", "/kalender", true); // true for asynchronous 
-				xmlHttp.send(null);
+					elemNum = parseInt(elemNum);
+
+					for(let i = 0; i < response.length && i < elemNum; i++) {
+						
+						let dat = new Date(response[i].start);
+						let m = dat.getMonth();
+						m += 1;
+						if (m < 10)
+							m = "0" + m;
+							let d = dat.getDate();
+						if (d < 10)
+							d = "0" + d;
+
+							let hh = dat.getHours();
+						if (hh < 10)
+							hh = "0" + hh;
+							let mm = dat.getMinutes();
+						if (mm < 10)
+							mm = "0" + mm;
+										
+
+						let text = response[i].summary.substring(2);
+						let icon = response[i].summary.substring(0,2);
+
+						if(icon.match(/[A-Z0-9]/i) != null) {
+							text = icon + text;
+						}
+
+						let badge = "";
+
+						for(let j = 0; j < response[i].group.length; j++) {
+							console.log(response[i].group);
+							if(response[i].group[j].id==1)
+								badge += '<span class="text-small green radius padding">'+response[i].group[j].name+'</span>';
+							else
+							badge += '<span class="text-small green-300 radius padding">'+response[i].group[j].name+'</span>';
+						}
+
+
+
+						let newDiv = document.createElement("div");	
+						newDiv.className = 'padding border-grey-400 shadow radius-left white';
+						newDiv.style.cssText = "margin-bottom: 0.8em;";
+						newDiv.innerHTML += '<div class="row">' +
+												'<div class="col-10" style="margin-right: 0.8em;">' +			
+													'<div class="left">' +
+														'<div class="icon-circle text-red border-grey-400 color-emoji">' + icon + '</div>' +
+													'</div>' +
+												'</div>' +
+												'<div class="col-67">' +
+													'<h2 class="text-grey-700 text-strong">'+text+'</h2>' +
+												'</div>' +
+												'<div class="col">' +
+													'<div class="right align-right text-small">' +
+														'<ul>' +
+															'<p class="text-orange-900 text-strong">'+d+'.'+m+'.</p>' +
+															'<p class="text-green text-strong">'+hh+':'+mm+'</p>' + 								
+														'</ul>' +
+													'</div>' +
+												'</div>' +
+											'</div>' + 
+											'<div class="row">' +
+												'<div class="col-10" style="margin-right: 0.8em;">' +			
+													'<div class="left">' +
+														'<div class="icon-circle text-red border-grey-400" style="visibility: hidden; height: 1em;"></div>' +
+													'</div>' +
+												'</div>' +	
+												'<div class="col-67">' +
+													badge +
+												'</div>' +
+											'<div>';
+						
+						document.getElementById("kalender").appendChild(newDiv); 
+					
+					}
+				})
+				.catch(err => {
+					console.log(err);
+					//alert("Konnte nicht geladen werden.");
+					openToast({
+						message: 'Kalender konnte nicht geladen werden!',
+						class: 'red'
+					})
+					return;
+				});
 			}
 			setInterval(getCalendar, 60000*10);
 			getCalendar();
 
-			// Seite neu laden
+			// -------- Reload --------
 			setInterval(function() {
 
 				$.ajax({ 
@@ -218,7 +394,10 @@
 					 location.reload(true)
 				});
 				
-				document.getElementById("offlinewarning").style.visibility = "visible"; 
+				if(document.getElementById("offlinewarning").style.visibility != "visible") {
+					loading('Verbindungsaufbau ...');
+				}
+				document.getElementById("offlinewarning").style.visibility = "visible"; 				
 				
 			}, 60000*30); // 30min
 			
@@ -226,34 +405,60 @@
 		<script>
 			var lastKeepAlive = new Date();
 		
-			// Daten empfangen
+			/**
+			 * Verarbeite empfangene Daten
+			 * @param {String}  data
+			 */
 			function processMessage(data) {
 				console.log('Message:', data);
 			
+				// Teile Daten in Topic und Werte
 				var dat = data.split('|');
 				topic = dat[0];
 				msg = dat[1].split('%');
 				
+				// Keep Alive
 				if(topic == 'keepAlive') {
 					if(msg == "OK") {
 						lastKeepAlive = new Date();
+						
+						if(document.getElementById("offlinewarning").style.visibility == "visible") {
+							closeLoading();
+						}
 						document.getElementById("offlinewarning").style.visibility = "hidden"; 
 					}
 				}
 	
+				// Alarm
 				if(topic == 'alarm')
-					window.location.href = '/alarm';
+					window.location.href = '/alarm?tempID=' + msg[0];
+				if(topic == 'letzteralarm')
+					window.location.href = '/alarm?manuell=true';
+			
+				// Präsentation
+				if(topic == 'praes_load')
+					window.location.href = '/praes?name=' + msg[0];
 
+				// Reload
+				if(topic == 'reload')
+					location.reload(); 
+
+				// Kalender
+				if(topic == 'kal_reload')
+					getCalendar();
+				if(topic == 'kal_elemnum') {
+					setCookie("kal_elem", msg[0], 1000);
+					getCalendar();
+				}	
+
+				// Verfügbarkeit
 				var el = undefined;
 				if(topic == 'st_verf') {
 					el = document.getElementById('verv_verfuegbar');                        
 				}
-
 				if(topic == 'st_nichtverf') {
 					el = document.getElementById('verv_nichtverv');					   
-				}
-				
-
+				}				
 				if(el != undefined) {				
 					var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
 					var elChild = null;
@@ -305,26 +510,33 @@
 				var keepAliveInterval = null;
                 var ws = new WebSocket('ws://'+window.location.hostname+':8080');
 				
+				// Event: Socket geöffnet
                 ws.onopen = function() {
                     console.log("WebSocketClient connected:");
-                    this.send("WebClient - Alarmdisplay - Index");
+					this.send("WebClient-Alarmdisplay-Index-0,1,2,3,4");
 					
+					lastKeepAlive = new Date();					
 					keepAliveInterval = setInterval(() => {
 						this.send("keepAlive");
-						if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {
+						if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {						
+							if(document.getElementById("offlinewarning").style.visibility != "visible")
+								loading('Verbindungsaufbau ...');
+								
 							document.getElementById("offlinewarning").style.visibility = "visible"; 
 						}
 					}, 10000)
                 };
 
-				// Daten empfangen
+				// Event: Daten empfangen
                 ws.onmessage = function(e) {
                     processMessage(e.data);
                 };
 
-				// Socket geschlossen
+				// Event: Socket geschlossen
                 ws.onclose = function(e) {
 					clearInterval(keepAliveInterval);
+					if(document.getElementById("offlinewarning").style.visibility != "visible")
+						loading('Verbindungsaufbau ...');
 					document.getElementById("offlinewarning").style.visibility = "visible";
                     console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
                     setTimeout(function() {
@@ -332,9 +544,11 @@
                     }, 1000);
                 };
 
-				// Scoket Fehler
+				// Event: Scoket Fehler
                 ws.onerror = function(err) {
 					clearInterval(keepAliveInterval);
+					if(document.getElementById("offlinewarning").style.visibility != "visible")
+						loading('Verbindungsaufbau ...');
 					document.getElementById("offlinewarning").style.visibility = "visible";
                     console.error('Socket encountered error: ', err.message, 'Closing socket');
                     ws.close();
@@ -342,13 +556,14 @@
             }
             connect();
 
+			// Verarbeite Verfügbarkeiten die Automatisch gesetzt wurden
 			document.querySelectorAll('div.stdiv').forEach(function(node) {			
 				processMessage(node.innerHTML);	
 			});
 		</script>	
 		<script>
-			// DWD Warnungen
 
+			// DWD Warnungen
 			function getDWDWarnings() {
 				if(<%= data["dwd_showwarnings"] %>) {
 				
@@ -357,7 +572,7 @@
 						if (this.readyState == 4 && this.status == 200) {
 							var myObj = JSON.parse(this.responseText);
 
-							var htmlStr = "";
+							document.getElementById("warnung_container").innerHTML = "";
 							myObj.features.forEach(function(entry) {					
 								var prop_name = entry.properties.NAME;
 								var prop_event = entry.properties.EVENT;
@@ -366,43 +581,64 @@
 								var prop_end = entry.properties.EXPIRES.replace(/[TZ]/g, ' ');
 								var prop_description = entry.properties.DESCRIPTION;
 								
-								htmlStr+= "<div class='warnung_elem'><small>" + prop_name + "<br>" + prop_headline  + "<br>von: " + prop_begin + "<br> bis: " + prop_end + "</small></div>"; 
+								
+								let newDiv = document.createElement("div");	
+								newDiv.className = '';
+								newDiv.style.cssText = "margin-bottom: 0.8em;";
+								newDiv.innerHTML += '<div class="row">' +
+														'<div class="col-10" style="margin-right: 0.8em;">' +			
+															'<div class="left">' +
+																'<div class="icon-circle text-red border-white">❗</div>' +
+															'</div>' +
+														'</div>' +
+														'<div class="col-67">' +
+															'<h2 class="text-strong">'+prop_name + '<br>' +prop_headline+'</h2>' +
+														'</div>' +														
+													'</div>' + 
+													'<div class="row">' +
+														'<div class="col-10" style="margin-right: 0.8em;">' +			
+															'<div class="left">' +
+																'<div class="icon-circle text-red border-grey-400" style="visibility: hidden"></div>' +
+															'</div>' +
+														'</div>' +	
+														'<div class="col-67">' +
+															prop_begin + ' - ' + prop_end +
+														'</div>' +
+													'<div>';
+								
+								document.getElementById("warnung_container").appendChild(newDiv); 
 							});
 							
 							//document.getElementById("warnung_container").innerHTML  = "<div class='warnung_elem' id='warnung_ueberschrift'>Deutscher Wetterdienst</div>" + htmlStr;
-							document.getElementById("warnung_container").innerHTML  = htmlStr;
+							//document.getElementById("warnung_container").innerHTML  = htmlStr;
 							
-							if(htmlStr != "") {
-								document.getElementById("warnung_container").style.width = "17em"; 
+							if(myObj.features.length > 0) {
 								document.getElementById("warnung_container").style.visibility = "visible"; 
 								
-								document.getElementById("warnungRechts").style.height = "auto"; 
-								document.getElementById("warnungRechts").style.visibility = "visible"; 
-								document.getElementById("warnungRechts").style.position = "static"; 
+								document.getElementById("warnung").style.height = "auto"; 
+								document.getElementById("warnung").style.visibility = "visible"; 
+								document.getElementById("warnung").style.position = "static"; 
 							} else {
-								document.getElementById("warnung_container").style.width = "0"; 
 								document.getElementById("warnung_container").style.visibility = "hidden"; 
 								
-								document.getElementById("warnungRechts").style.height = "0"; 
-								document.getElementById("warnungRechts").style.visibility = "hidden"; 
-								document.getElementById("warnungRechts").style.position = "absolute"; 
+								document.getElementById("warnung").style.height = "0"; 
+								document.getElementById("warnung").style.visibility = "hidden"; 
+								document.getElementById("warnung").style.position = "absolute"; 
 							}
 
 						}
 						
-						<% if(data["dwd_position"] == "2") { %> 
 						rearrangeWarnings();
-						<% } %>	 
 					};
 					xmlhttp.open("GET", 'https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=json&CQL_FILTER=WARNCELLID%20IN%20(%27<%= data["dwd_warncellid"] %>%27)', true);
 					xmlhttp.send(); 
 
 				}
-			}
-			
+			}			
 			setInterval(getDWDWarnings, 60000*10);
 			getDWDWarnings();
 			
+			// Bei mehr als einer Warnung durchschalten
 			var warnNum = 0;
 			function rearrangeWarnings() {
 				$( "#warnung_container > div" ).each(function() {
@@ -424,34 +660,18 @@
 				setInterval(rearrangeWarnings, 8123);
 			<% } %>	 
 			
-			
-		 
-		 //
 		</script>
+
+		<!-- MOBILE UI -->
+		<script src="/mobileui/base/base.js"></script>
+		<script src="/mobileui/button/script.js"></script>
+		<script src="/mobileui/toast/script.js"></script>
+		<script src="/mobileui/page/script.js"></script>
+		<script src="/mobileui/menu/script.js"></script>
+		<script src="/mobileui/input/script.js"></script>
+		<script src="/mobileui/loading/script.js"></script>
+		<script src="/mobileui/alert/script.js"></script>
 		
 		
     </body>
 </html>
-
-<!--
-
-    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
-    [::::::::::::::      ::::::::::::::]
-    [::::::::::::::      ::::::::::::::]
-    [::::::[[[[[[[:      :]]]]]]]::::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[     CODE THE WEB     ]:::::]
-    [:::::[  http://brackets.io  ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [:::::[                      ]:::::]
-    [::::::[[[[[[[:      :]]]]]]]::::::]
-    [::::::::::::::      ::::::::::::::]
-    [::::::::::::::      ::::::::::::::]
-    [[[[[[[[[[[[[[[      ]]]]]]]]]]]]]]]
-
--->

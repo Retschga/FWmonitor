@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+	
+		<% include partials/head %>	
+        <title>FWmonitor - APP</title>	
+        		
+    </head>
+	
+    <body class="grey-200">
+
+
+		<div class="content">
+
+			<div class="row padding red-600">
+				<div class="col-25 padding">
+				  <img class="avatar circle" src="/icons/icon-384x384.png" />
+				</div>
+				<div class="col padding">
+				  <h1 class="text-big text-light">FWmonitor APP</h1>
+				  <p class="text-grey-200"><%= data["INFOTEXT"] %></p>
+				</div>
+			</div>
+
+			<div class="space"></div>
+
+			<div class="padding">
+
+				<h1 class="align-center text-big">LOGIN</h1>
+
+				<div class="list grey-100">
+					<div id="userpasscontainer">
+						<div class="item label-fixed">
+							<label for="in_telid">Telegram ID</label>
+							<input type="text" inputmode="numeric" id="in_telid" name="telid" autocomplete="telid" required autofocus>
+						</div>
+						<div class="item label-fixed">
+							<label for="in_passwort">Password</label>
+							<input type="password" id="in_passwort" name="current-password" required>
+						</div>
+					</div>
+					<div class="item" id="submitcontainer">
+						<button class="red-700 radius full" onclick="loginUser()" id="loginbutton">ANMELDEN</button>
+					</div>
+				</div>
+
+			</div>
+
+		</div>
+
+
+		<% include partials/foot %>	
+		<script>
+
+			// https://stackoverflow.com/questions/5968196/check-cookie-if-cookie-exists
+			function getCookie( name ) {
+				var dc,
+					prefix,
+					begin,
+					end;
+
+				dc = document.cookie;
+				prefix = name + "=";
+				begin = dc.indexOf("; " + prefix);
+				end = dc.length; // default to end of the string
+
+				// found, and not in first position
+				if (begin !== -1) {
+					// exclude the "; "
+					begin += 2;
+				} else {
+					//see if cookie is in first position
+					begin = dc.indexOf(prefix);
+					// not found at all or found as a portion of another cookie name
+					if (begin === -1 || begin !== 0 ) return null;
+				} 
+
+				// if we find a ";" somewhere after the prefix position then "end" is that position,
+				// otherwise it defaults to the end of the string
+				if (dc.indexOf(";", begin) !== -1) {
+					end = dc.indexOf(";", begin);
+				}
+
+				return decodeURI(dc.substring(begin + prefix.length, end) ).replace(/\"/g, ''); 
+			}
+		
+			function loginUser(){
+
+				loadingElement('loginbutton');
+				
+				fetch('/app/login.html', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					withCredentials: true,
+        			credentials: 'include',
+					cache: 'no-store',
+					mode: "cors",
+					body: JSON.stringify({
+						telegramID: document.getElementById("in_telid").value,
+						passwort: document.getElementById("in_passwort").value
+					})
+				})
+				.then(data => data.json())
+				.then(data =>  { 
+					if(data.msg=="OK"){
+						if(data.auto != true) {
+							window.location.replace("/app/index.html");
+							//window.location.href = "/app/index.html" 
+						} else {
+							window.location.replace("/app/auto/index.html");
+						}
+					} else{
+						closeLoading('loginbutton');	
+						console.log("Telegram ID oder Passwort fehlerhaft!");
+						alert("Telegram ID oder Passwort fehlerhaft!");
+						document.getElementById("userpasscontainer").classList.remove('hidden');	
+						document.getElementById("userpasscontainer").classList.remove('hidden');						
+					}
+				}) 
+				.catch((err) => {
+					console.error("Login Fehler: ", err);
+					document.getElementById("userpasscontainer").classList.remove('hidden');	
+					document.getElementById("userpasscontainer").classList.remove('hidden');
+					closeLoading('loginbutton');		
+				})
+			}
+
+			// Get Parameter auslesen
+			var parts = window.location.search.substr(1).split("&");
+			var $_GET = {};
+			for (var i = 0; i < parts.length; i++) {
+				var temp = parts[i].split("=");
+				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+			}		
+			
+			// Geladen
+			document.addEventListener('DOMContentLoaded', (event) => {
+				if(getCookie('token') && getCookie('token') != "") {					
+					if($_GET['manuell'] == 'true') {
+						document.getElementById("userpasscontainer").classList.add('hidden');								
+					} else {
+						document.getElementById("userpasscontainer").classList.add('hidden');		
+						//document.getElementById("submitcontainer").classList.add('hidden');
+						loginUser();
+					}
+				}
+			})
+			
+		
+		</script>
+		
+		
+
+    </body>
+	
+</html>

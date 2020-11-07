@@ -1,0 +1,27 @@
+<div class="page">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
+		<h1>Kalender</h1>
+		<div class="right hidden" id="kalender_btnAdd">			
+			<button class="blue-grey-900 icon ion-plus" onclick="kalenderBearbeiten_save(true)"></button>
+		</div>
+	</div>		    
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+		<div class="list" id="kalender_list">
+
+		  
+		 
+		</div>
+
+		<div class="space"></div>
+		
+		<button class="green circle icon ion-calendar shadow float-bottom-right" onclick="openPage('/app/filesHTTPS/kalenderKomplett', {},  kalenderFull_loadKalender);"></button>
+
+   </div>
+
+</div>

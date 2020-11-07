@@ -1,68 +1,127 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
     <head>
+		<!-- HTML EINSTELLUNGEN -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Titel</title>
-    
+        <title>FWmonitor - Einstellungen</title>
+	
+		<!-- CSS -->
         <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
-        <link rel="stylesheet" type="text/css" href="stylesheets/einstellungen.css">
-		
-		<script src="javascripts/jquery.js"></script>
+        <link rel="stylesheet" type="text/css" href="stylesheets/einstellungen.css">		
+
+		<!-- MOBILE UI -->
+		<link rel="stylesheet" href="/mobileui/base/reset.css">
+		<link rel="stylesheet" href="/mobileui/base/mobileui.css">
+		<link rel="stylesheet" href="/mobileui/base/colors.css">
+		<link rel="stylesheet" href="/mobileui/base/font.css">
+		<link rel="stylesheet" href="/mobileui/base/icons.css">	
+		<link rel="stylesheet" href="/mobileui/header/style.css">
+		<link rel="stylesheet" href="/mobileui/button/style.css">		
+		<link rel="stylesheet" href="/mobileui/list/style.css">
+		<link rel="stylesheet" href="/mobileui/page/style.css">	
+		<link rel="stylesheet" href="/mobileui/grid/style.css">		
+		<link rel="stylesheet" href="/mobileui/menu/style.css">	
+		<link rel="stylesheet" href="/mobileui/input/style.css">	
+		<link rel="stylesheet" href="/mobileui/loading/style.css">
+		<link rel="stylesheet" href="/mobileui/alert/style.css">
+		<link rel="stylesheet" href="/mobileui/toast/style.css">
 
     </head>
     <body>
-         <header>
-            <div id="menu">
-                <ul>
-                  <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn">MENÜ</a>
-                    <div class="dropdown-content">
-                      <a href="/">Standby</a>
-                      <a onclick="alert('F11 drücken')">Vollbild</a>
-                    </div>
-                  </li>
-                </ul>
-            </div>
-            <div id="time">--:--:-- - --.--.----</div>
-        </header>
+		<!-- HEADER -->
+		<header class="header red-600">
+			<div class="left">
+				<button class="icon ion-navicon-round"  name="button"  onclick="openMenu('leftMenu')"></button>
+			</div>		
+			<div class="right" id="time">--:--:-- - --.--.----</div>
+			<div class="right align-center" id="fwlogo">
+				Einstellungen
+			</div>	
+		</header>
 
-        <div id="main_content">
+		<!-- MENÜ -->
+		<div class="menu red-300" id="leftMenu">
+			<div class="cover align-center red-600 border-bottom-white">
+				<div class="space"></div>
+				<img class="avatar circle border-white shadow" src="/icons/icon-384x384.png" style="width: 30%"/>
+				<h1 class="">FWmonitor</h1>
+				<div class="space"></div>
+			</div>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/';" >Standby Ansicht</button>
+			<button class="red-600 full border-bottom-white selectedButton" onclick="window.location.href = '/einstell';" >Einstellungen</button>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/alarm?manuell=true';" >Letzter Alarm</button>
+			<button class="red-600 full border-bottom-white" onclick="alert('F11 drücken')" >Vollbild</button>
+		</div>
+	
+		<!-- CONTENT -->
+        <div class="content has-header padding bgcolor">
+
+			<div class="space"></div>
         
-			<h3>Benutzer</h3>
+			<h1  class="text-big">Benutzer</h1>
 			<div style="overflow-x:auto;">
 				  <table>
 					<tr>
 						<th>Name</th>
+<!--
 						<th>Gruppe</th>
 						<th>Masch.</th>
 						<th>Atemsch.</th>
 						<th>Gruppenf.</th>
 						<th>Zugf.</th>
+-->
 						<th>Erinner.</th>
 						<th>Status</th>
-						<th></th>						
+					<% if(data["admins"] < 1) { %>	
+						<th></th>	
 						<th>ADMIN</th>
+					<% } %>
+<!--
+						<th>Drucker Papierinfo</th>
+-->
+						<th>APP</th>
 					 </tr>
 
 					  <% for(i in data["users"]) { %>
 						<tr>
 							<td><%= data["users"][i][1] %></td>
+<!--
 							<td class="group" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][2] %> </td>
 							<td class="stMA" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][4] %> </td>
 							<td class="stAGT" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][5] %> </td>
 							<td class="stGRF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][6] %> </td>
 							<td class="stZUGF" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][7] %> </td>
+-->
 							<td class="erinner" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][9] %> </td>
 							<td class="status" style="font-size: 0.5em;" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][10] %> </td>
-							<td class="allowed" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][3] %> </td>							
+						<% if(data["admins"] < 1) { %>	
+							<td class="allowed" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][3] %> </td>	
 							<td class="stADMIN" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][8] %> </td>
+						<% } %>
+<!--
+							<td class="stDRUCKER" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][11] %> </td>
+-->
+							<td class="app" data-id="<%= data["users"][i][0] %>"><%= data["users"][i][12] %> </td>
 						</tr>
 					  <% } %>
 					 
 				  </table>
 			</div>
 
+			<div class="space"></div>
+
+			<h1  class="text-big">Einstellungen</h1>
+			<div style="overflow-x:auto;">
+				<a href="<%= data["einstellLink"] %>">Link: Klick</a>
+				<p>
+					Zugangsdaten: Siehe Telegram > Mehr
+				</p>
+			</div>
+
+			<div class="space"></div>
+
+<!--
 			<h3>Gruppen</h3>
 			<div style="overflow-x:auto;">
 				<table>
@@ -85,8 +144,8 @@
 				{{FAX}} , {{KARTE}} , {{KARTE_EMG}}
 			</p>
 			<p>Markup: Kursiv: _Kursivertext_ , Fett: *Fettertext*</p>
-			
-			<h3>Statistik</h3>
+-->			
+			<h1  class="text-big">Statistik</h1>
 			<div style="overflow-x:auto;">
 				<table>
 					<tr>
@@ -131,7 +190,7 @@
 					</tr>
 				</table>
 			</div>
-		
+<!--
 			<h3>Nachricht an alle (durch Bot)</h3>
 			<div style="overflow-x:auto;">
 				<table>
@@ -147,10 +206,21 @@
 					</tr>
 				</table>
 			</div>
-			
+-->			
 			<br><br>
 		
 		</div>
+
+		<!-- JS -->
+		<script src="javascripts/jquery.js"></script>
+		<script src="/mobileui/base/base.js"></script>
+		<script src="/mobileui/button/script.js"></script>
+		<script src="/mobileui/toast/script.js"></script>
+		<script src="/mobileui/page/script.js"></script>
+		<script src="/mobileui/menu/script.js"></script>
+		<script src="/mobileui/input/script.js"></script>
+		<script src="/mobileui/loading/script.js"></script>
+		<script src="/mobileui/alert/script.js"></script>
         
         <script>
 		
@@ -330,6 +400,37 @@
 				element.innerHTML = "<input id='stADMIN_"+element.dataset.id+"' type='checkbox' name='stADMIN' value='"+
 					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
 			};
+
+			// Person DRUCKER
+			x = document.getElementsByClassName("stDRUCKER")
+			//console.log(x);
+			for (index = 0; index < x.length; ++index) {
+				var element = x[index];
+				
+				if(element.innerHTML == 1)
+					element.style.background = "orange";
+				
+				element.innerHTML = "<input id='stDRUCKER_"+element.dataset.id+"' type='checkbox' name='stDRUCKER' value='"+
+					element.dataset.id+"' " + (element.innerHTML != 1 ? "" : "checked") + ">";
+			};
+
+			// Person APP
+			x = document.getElementsByClassName("app")
+			//console.log(x);
+			for (index = 0; index < x.length; ++index) {
+				var element = x[index];
+				
+				if(element.innerHTML == 1) {
+					element.style.background = "orange";
+					element.innerHTML = "";
+				} else if(element.innerHTML == 0) {
+					element.innerHTML = "";						
+				}
+				else if(element.innerHTML == 2) {
+					element.style.background = "green";
+					element.innerHTML = "";					
+				}
+			};
 			
 			
 			// Array aller Checkboxen
@@ -348,6 +449,8 @@
 					window.location.href = "/changeZUGF?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
 				if(this.name == "stADMIN")
 					window.location.href = "/changeADMIN?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
+				if(this.name == "stDRUCKER")
+					window.location.href = "/changeDRUCKER?" + 'id=' + this.value + '&value='+(this.checked==true?1:0) + '&scroll=' + window.scrollY;
 			}
 
 			checkboxArray.forEach(function(checkbox) {

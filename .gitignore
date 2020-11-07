@@ -1,5 +1,8 @@
 *.sqlite3
+*.pem
 bin/
 obj/
+temp/
 .env
 Hydrantenpositionen.txt
+node_modules

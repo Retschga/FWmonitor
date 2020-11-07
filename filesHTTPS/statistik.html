@@ -1,0 +1,49 @@
+<div class="page">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
+		<h1>Statistik</h1>
+	</div>		
+	
+    
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+		<div class="list">
+			<div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Stichworte
+                </p>
+            </div>
+	
+			<div id="statistik_list">
+
+			</div>
+		</div>
+		
+		<div class="space"></div>
+		
+		<div id="statistik_fwvv" class="list">
+			<div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Einsatzzeit
+                </p>
+            </div>			
+
+			<div class="item">
+				<h2 id="statistik_einsatzzeit" class="align-center">{{HH}} Stunden {{MM}} Minuten ({{EE}} Einsätze)</h2>
+			</div>			
+			<div class="item">
+				<button class="red-600 full radius-left adius-right" onclick="statistik_loadEinsatzzeit()">aktualisieren</button>
+			</div>		 
+
+		</div>
+
+
+        <div class="space"></div>
+
+   </div>
+
+</div>

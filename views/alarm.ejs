@@ -1,36 +1,64 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
     <head>
+		<!-- HTML EINSTELLUNGEN -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Titel</title>
-    
+        <title>FWmonitor - Alarm</title>
+	
+		<!-- CSS -->
         <link rel="stylesheet" type="text/css" href="stylesheets/main.css">
         <link rel="stylesheet" type="text/css" href="stylesheets/alarm.css">
 		<link rel="stylesheet" type="text/css" href="stylesheets/leaflet.css">
 
-		<script src="/javascripts/leaflet.js"></script>
+		<!-- MOBILE UI -->		
+		<link rel="stylesheet" href="/mobileui/base/mobileui.css">
+		<link rel="stylesheet" href="/mobileui/base/colors.css">
+		<link rel="stylesheet" href="/mobileui/base/font.css">
+		<link rel="stylesheet" href="/mobileui/base/icons.css">	
+		<link rel="stylesheet" href="/mobileui/header/style.css">
+		<link rel="stylesheet" href="/mobileui/button/style.css">		
+		<link rel="stylesheet" href="/mobileui/list/style.css">
+		<link rel="stylesheet" href="/mobileui/page/style.css">	
+		<link rel="stylesheet" href="/mobileui/grid/style.css">		
+		<link rel="stylesheet" href="/mobileui/menu/style.css">	
+		<link rel="stylesheet" href="/mobileui/input/style.css">	
+		<link rel="stylesheet" href="/mobileui/loading/style.css">
+		<link rel="stylesheet" href="/mobileui/alert/style.css">
+		<link rel="stylesheet" href="/mobileui/toast/style.css">
+
+
 
     </head>
     <body>
-        <header>
-            <div id="menu">
-                <ul>
-                  <li class="dropdown">
-                    <a href="javascript:void(0)" class="dropbtn">MENÜ</a>
-                    <div class="dropdown-content">
-                      <a href="/">Standbyansicht</a>
-                      <a href="/einstell">Einstellungen</a>                       
-                      <a onclick="alert('F11 drücken')">Vollbild</a>
-                    </div>
-                  </li>
-                </ul>
-            </div>        
-			<div id="time">--:--:-- - --.--.----</div>
-			<div id="elapsedtime">00m 00s</div>
-        </header>
+		<header class="header red-600">
+			<div class="left">
+				<button class="icon ion-navicon-round"  name="button"  onclick="openMenu('leftMenu')"></button>
+			</div>		
+			<div class="right" id="time">--:--:-- - --.--.----</div>
+			
+			<div class="right align-center"  id="fwlogo">
+				<i id="symbol1" style="margin-right: 1em;" class="icon"></i>
+				<span  id="elapsedtime">00m 00s</span>
+				<i id="symbol2" style="margin-left: 1em;" class="icon"></i>
+			</div>	
+		</header>
 
-        <div id="main_content">
+		<div class="menu red-300" id="leftMenu">
+			<div class="cover align-center red-600 border-bottom-white">
+				<div class="space"></div>
+				<img class="avatar circle border-white shadow" src="/icons/icon-384x384.png" style="width: 30%"/>
+				<h1 class="">FWmonitor</h1>
+				<div class="space"></div>
+			</div>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/';" >Standby Ansicht</button>
+			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/einstell';" >Einstellungen</button>
+			<button class="red-600 full border-bottom-white selectedButton" onclick="window.location.href = '/alarm?manuell=true';" >Letzter Alarm</button>
+			<button class="red-600 full border-bottom-white" onclick="alert('F11 drücken')" >Vollbild</button>
+		</div>
+
+
+        <div id="main_content" class="has-header">
             
             <div id="top">
                 <div id="einsatzstichw">
@@ -86,42 +114,36 @@
             </div>       
         </div> 
 
-        
-    
+		
+		<!-- JS -->
+		<script src="/javascripts/leaflet.js"></script>
 
-        <script>       
-			// GET Parameter
+		<script src="javascripts/jquery.js"></script>
+		<script src="/mobileui/base/base.js"></script>
+		<script src="/mobileui/button/script.js"></script>
+		<script src="/mobileui/toast/script.js"></script>
+		<script src="/mobileui/page/script.js"></script>
+		<script src="/mobileui/menu/script.js"></script>
+		<script src="/mobileui/input/script.js"></script>
+		<script src="/mobileui/loading/script.js"></script>
+		<script src="/mobileui/alert/script.js"></script>		
+
+		<script>       
+			
+			var einsatzstichwort = '<%= alarmdata["EINSATZSTICHWORT"] %>';
+
+			// -------- GET Parameter auslesen --------
 			var parts = window.location.search.substr(1).split("&");
 			var $_GET = {};
 			for (var i = 0; i < parts.length; i++) {
 				var temp = parts[i].split("=");
 				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
 			}
-		
-		
-			// Bemerkung Schriftgröße
-			var lvalue=document.getElementById("bemerk").innerHTML.length;
-			if(lvalue>200)
-				document.getElementById("bemerk").style.fontSize = "1em";
-			if(lvalue>400)
-				document.getElementById("bemerk").style.fontSize = "0.8em";
-				
-			// Karte
-			var center = [<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>];
-			var map = L.map('mapid').setView(center, 16);
 
-			L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
-			//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-			}).addTo(map);
-						
-			var overlay;
-			L.tileLayer('http://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png').addTo(map);
-			overlay = L.tileLayer('{z}/{x}/{y}.png', {
-				opacity: 1.5
-			  }).addTo(map);
+			var tempID = parseInt($_GET['tempID']);
 
-			// URL Overpass-API für Hydranten    siehe Ovepass turbo
+			
+			// -------- URL Overpass-API für Hydranten --------     siehe Ovepass turbo
 			var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
 				"[out:json][timeout:25];(" + 
 				"node[%22emergency%22=%22fire_hydrant%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
@@ -136,7 +158,32 @@
 			var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
 				"[out:json][timeout:25];(" + 
 				"way[building](around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out geom;%3E;";						
+				");out geom;%3E;";				
+		
+		
+			// -------- Bemerkung Schriftgröße an bemerkungslänge anpassen --------
+			var lvalue=document.getElementById("bemerk").innerHTML.length;
+			if(lvalue>200)
+				document.getElementById("bemerk").style.fontSize = "1em";
+			if(lvalue>400)
+				document.getElementById("bemerk").style.fontSize = "0.8em";
+				
+
+			// -------- Karte --------
+			var center = [<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>];
+			var map = L.map('mapid').setView(center, 16);
+
+			L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+			//L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+						
+			var overlay;
+			L.tileLayer('http://tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png').addTo(map);
+			overlay = L.tileLayer('{z}/{x}/{y}.png', {
+				opacity: 1.5
+			  }).addTo(map);
+	
 			
 			var icons = {
 				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
@@ -232,8 +279,9 @@
 
 						}
 						console.log(polylinePoints);
-						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);   
-						map.fitBounds(polyline.getBounds());
+						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);
+
+						map.fitBounds(polyline.getBounds(), {padding: [70, 70]});
 					}
 				}
 				xmlHttp.open("GET", overpassStrassenUrl, true); // Asynchron -> true 
@@ -258,7 +306,6 @@
 				xmlHttp.send(null);
 			}
 			
-			// Forst Rettungspunkte
 			function loadForstRettPkt() {
 				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
 				var xmlHttp = new XMLHttpRequest();
@@ -296,9 +343,29 @@
 				xmlHttp.send(null);
 			}
 			
+
+			// -------- Alarmauswertung --------
+			let color = "red-600";
+			let icon = "ion-fireball";
+			let stichwort = einsatzstichwort.toLowerCase();
+			if(stichwort.includes("inf") || stichwort.includes("1nf")) {
+				color = 'green';
+				icon = "ion-information-circled";
+			}
+			else if(stichwort.includes("thl")) {
+				color = 'blue-900';
+				icon = "ion-settings";
+			} 
+			else if(stichwort.includes("rd")) {
+				color = 'orange-800';
+				icon = "ion-ios-medkit-outline";
+			} 
+			document.getElementById("top").classList.add(color);
+			document.getElementById("symbol1").classList.add(icon);
+			document.getElementById("symbol2").classList.add(icon);
 			
-			 setTimeout(function() {
-						
+			// -------- 1 Sekunden nach Seite geladen --------
+			setTimeout(function() {						
 				
 				// Karte genau ? sonst keine Karte
 				if(<%= alarmdata["noMap"] %> == true) {
@@ -322,6 +389,7 @@
 						loadGebaudeData();
 					} else {
 						map.setView(center, 15);
+						console.log('Lade strassendaten');
 						loadStrassenData();
 					}
 				}
@@ -396,7 +464,7 @@
 					var ws = new WebSocket('ws://'+window.location.hostname+':8080');
 					ws.onopen = function() {
 						console.log("WebSocketClient connected:");
-						this.send("WebClient - Alarmdisplay - Alarm");
+						this.send("WebClient-Alarmdisplay-Alarm-5");
 					};
 
 					// Daten empfangen
@@ -408,7 +476,15 @@
 						msg = dat[1].split('%');
 
 						// Neuer Alarm
-						if(topic == 'alarm')
+						if(topic == 'alarm' && tempID != parseInt(msg[0])) {
+							window.location.href = '/alarm?tempID=' + msg[0];
+							//location.reload();
+						} 
+							
+						if(topic == 'zurueck')
+							window.location.href = '/';
+
+						if(topic == 'reload')
 							location.reload(); 
 						
 						// Anzeige Kommen/Komme Nicht
@@ -483,7 +559,7 @@
 				}
 				connect();
 				
-			}, 10000);
+			}, 1000);
 
 		</script>
     </body>

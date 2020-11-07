@@ -1,78 +1,75 @@
-﻿# Um Änderungen zu übernehmen muss das Programm neu gestartet werden
+﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer
 
-#  Raspberry Pi Version (true/false)
+# Um Änderungen zu übernehmen muss das Programm neu gestartet werden
+
+#  Raspberry Pi Version = true / false = Windows Modus
 RASPIVERSION=false
 
 
-# Telegram Bot API Key
+# FW Haus Koordinaten (47.xxxxx, 11.xxxxxx)
+FW_KOORD=
+
+######## API Key´s ########
+
+# Telegram Bot API Key (https://core.telegram.org/bots#3-how-do-i-create-a-bot)
 BOT_TOKEN=
 
 # Geobing API Key (https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)
 GEOBING_KEY=
 
+# OpenRouteService (https://openrouteservice.org/)
+ORS_KEY=
 
 
-# Sende Alarmtelegram (true/false)
+######## Alarmeinstellungen ########
+
+# Sende Alarme (true/false)
 BOT_SENDALARM=false
+APP_SENDALARM=false
 
 # Regex Faxfilter (kann leer bleiben) (Groß/Kleinschreibung egal) https://regexr.com/
 FAXFILTER=
 
-#Alarmdruck (true/false)
-ALARMDRUCK=true
-
-#Alarmdrucker Name (Nur bei Rasppi Version / Ghostscript, sonst Standarddrucker)
-DRUCKERNAME=Microsoft Print to PDF
-
-
-# Drucken mit Foxit Reader oder Ghostscript
-#Ghostscript
-# lokaler Pfad C:/ordner/ordner/
-#GSPFAD=C:/Programme...
-GSPFAD=
-#Foxit Reader
-# lokaler Pfad C:/ordner/ordner/
-#AREADER=C:/Programme...
-AREADER=
-
-
 # Für filter von Fax bei Einsatzmittel
 FW_NAME=Feuerwehr Name 
 
-# Alarm Anzeigezeit
+# Alarm Anzeigezeit (Minuten)
 ALARM_VISIBLE=250
 
-# In Ordner
+
+######## ORDNER ########
+
+# Faxeingangs Ordner (Unter Windows: Ausgangsordner von EM-OCR; Raspberry: Faxordner Hylafax)
 # lokaler Pfad C:/ordner/ordner/
 # bei Netzwerk \\netzwerkpc\ordner\
 FOLDER_IN=C:\Eingang
 
-# Archiv Ordner 
+# Archiv Ordner (Unter Windows: bevorzugt der gleiche wie in EM-OCR eingestellt)
 # lokaler Pfad C:/ordner/ordner/
 FOLDER_ARCHIVE=C:\Archiv
 
-
-
-
-# Telegram Bilderordner
+# Telegram Bilderordner (hier werden an den Bot gesendete Bilder gespeichert)
 # lokaler Pfad C:/ordner/ordner/
 BOT_IMG=./telegramBilder/
-#BOT_IMG=./public/images/slideshow
+#BOT_IMG=./filesHTTP/images/slideshow/
 
+
+######## STANDBY Bildschirm / Telegram Kalender ########
 
 # DWD Warncellid (https://www.dwd.de/DE/leistungen/opendata/help/warnungen/cap_warncellids_csv.csv)
 DWD_WARCELLID=
 
-#Warnungen anzeigen(true/false)
+# DWD Warnungen anzeigen(true/false)
 DWD_SHOWWARNINGS=true
 
-#Warnungen anzeigen - Posiion (1=links, 2=rechts)
+# DWD Warnungen anzeigen - Posiion (1=links, 2=rechts)
 DWD_WARNINGSPOSITION=1
 
-
-# Kalender (ICAL Link)
+# Kalender (ICAL Link) (https://support.google.com/calendar/answer/37648?hl=de)
+# Unter Einstellungen, Betreffenden Kalender auswählen, "Privatadresse im iCal-Format" kopieren
+# Terminnamen Format: "🚒 Hauptübung {{alle}}" (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...)
+# eingetragene Terminerinnerungen werden durch den Bot/App versendet
 ICAL_LINK=
-
 
 # Für Anzeige bei Standby
 FW_NAME_STANDBY=Freiwillige Feuerwehr Name
@@ -80,8 +77,7 @@ FW_NAME_STANDBY=Freiwillige Feuerwehr Name
 # Für Anzeige bei Bot
 FW_NAME_BOT=der Freiwilligen Feuerwehr Name
 
-
-#Diashow Wechselzeit (ms)
+#Diashow Wechselzeit (Millisekunden)
 DIASHOW_DELAY=15000
 
 #Diashow Animation (true/false)
@@ -94,6 +90,7 @@ DIASHOW_RANDOM=false
 ST_VERV_HIDDEN=false
 
 
+######## FWVV Anbindung ########
 
 # FWVV Anbindung (true/false)
 FWVV=false
@@ -103,5 +100,70 @@ FWVV=false
 # bei Netzwerk \\netzwerkpc\ordner\
 FWVV_DATENSICHERUNG=
 
-PORT=80
-#WebSocket_PORT=8080
+
+######## DRUCKEN ########
+
+#Alarmdruck (true/false)
+ALARMDRUCK=true
+
+#Kopien
+ALARMDRUCKSEITENZAHL=1
+
+## Version A ##
+
+#Alarmdrucker URL (siehe verfügbare Drucker bei Programmstart)
+DRUCKERURL=
+
+###############
+
+## Version B ##
+
+#Alarmdrucker Name (Nur relevant bei Raspi Version, sonst ist es immer der Standarddrucker)
+#DRUCKERNAME=Microsoft Print to PDF
+DRUCKERNAME=
+
+# Drucken mit Foxit Reader (Nur relevant unter Windows) (eines einfach freilassen)
+# lokaler Pfad C:/ordner/ordner/
+# Foxit Reader (BEVORZUGT / Funktioniert besser)
+#AREADER=C:/Programme...
+AREADER=
+
+###############
+
+######## PAPIERÜBERWACHUNG ########
+
+# Immer aktiv bei Alarmdruck Version A, funktioniert nur nicht in 100% bei allen Druckern
+
+# Alternative Möglichkeit (auch gleichzeitig möglich):
+
+# Internetseite des Druckers, auf der der Papierlevel angezeigt wird
+# (Bsp: http://192.168.2.33/start/papier.html)
+PRINTER_PATH=
+# Regex Filter für Papier wenn nicht leer (Bsp: CassLevel[1] = "Nicht Leer";) https://regexr.com/
+PRINTER_REGEX=
+
+
+######## APP ########
+# Wenn nicht benötigt/gewollt, einfach nichts eintragen
+
+# VAPID Keys (Konsolenkommando: "./node_modules/.bin/web-push generate-vapid-keys")
+VAPID_PUBLIC=
+VAPID_PRIVATE=
+# Admin Email
+VAPID_EMAIL=
+
+# DynDns Adresse / MyFritz Adresse (empfohlen) (Bsp. www.example.com)
+APP_DNS=
+
+# HTTPS Zertifikat (https://certbot.eff.org/lets-encrypt/windows-other)
+# lokaler Pfad C:/ordner/ordner/datei.pem
+HTTPS_KEY=
+HTTPS_CERT=
+
+
+######## PORTS ########
+# Braucht normalerweise nicht zu verändert werden
+
+# Ports
+HTTP_PORT=8080
+HTTPS_PORT=443

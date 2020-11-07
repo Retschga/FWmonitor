@@ -1,0 +1,164 @@
+/*Define an element as list. This feature depends on the <code>item</code> to function properly.*/
+.list {
+  width: 100%;
+  position: relative;
+  border: 1px solid #ddd;
+}
+/*Define an element as item. This feature depends on the <code>list</code> to function properly.*/
+.list .item {
+  padding: 15px;
+  display: inline-block;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  position: relative;
+  font-size: 18px;
+}
+.list .item.hidden {
+  display: none;
+}
+.list ol, .list ul {
+    list-style: none;
+}
+/*Define a small space between the top and bottom elements.*/
+.list .item.space-small {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.list .item.mark {
+  border-right: 0;
+  border-top: 0;
+}
+/*Block line space with left avatar.*/
+.item .block {
+	display: -webkit-box;
+	display: flex;
+}
+.list .item.mark.margin-button {
+  border-bottom: 0;
+  margin-bottom: 10px;
+}
+/*Remove space in top item.*/
+.list .item.no-space-top {
+  padding-top: 0 !important;
+}
+/*Remove space in bottom item.*/
+.list .item.no-space-bottom {
+  padding-bottom: 0 !important;
+}
+.list .item.row {
+  display: -moz-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+/*Define that a list or an item has no borders.*/
+.list.no-border {
+  border: 0;
+}
+/*Define that a list or an item has a bottom border.*/
+.list.no-border .item.border-bottom,
+.list .item.no-border.border-bottom {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+.list.no-border .item,
+.list .item.no-border {
+  border: none;
+}
+.list .item.cover {
+  padding: 0;
+  margin-left: 20px;
+  height:200px;
+  width: -webkit-calc(100% - 40px);
+  width: -moz-calc(100% - 40px);
+  width: calc(100% - 40px);
+}
+/*Define an item without internal spaces.*/
+.list .item.full {
+  padding: 0;
+  display: flex;
+}
+.list .item h1,
+.list .item h2 {
+  font-size: 16px;
+  margin:0;
+  padding: 0;
+}
+.list .item h1 {
+  margin-top: 7px;
+}
+.list .item p {
+  font-size: 14px;
+  margin:0;
+  padding: 0;
+  line-height: 20px;
+}
+.list .item:last-child {
+  border-bottom:0;
+}
+.list .left {
+  margin-right: 10px;
+  min-width: 25px;
+}
+.list .right {
+  margin-right: 20px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  align-items: center;
+}
+.list .right i {
+  margin-left: 5px;
+}
+.list .align-top {
+  -ms-flex-align: center;
+  -webkit-align-items: center;
+  align-items: baseline;
+  margin-top: 10px;
+}
+/*Set a fixed size for an image.*/
+.list .avatar {
+  height: 50px;
+}
+/*Set a floating badge above the image.*/
+.avatar-badge {
+  position: absolute;
+  margin-left: -4px;
+  margin-top: -3px;
+  border-radius: 8px;
+}
+.list .item small,
+.list .item small .icon {
+  font-size: 14px;
+}
+.list .item .icon {
+  font-size: 18px;
+}
+.list .item .icon.text-huge {
+  font-size: 32px;
+}
+.list .left .icon, .list .right .icon {
+  vertical-align: -webkit-baseline-middle;
+}
+/*Add big border in item or element.*/
+.list .border-big {
+  border-width: 3px;
+  border-style: solid;
+}
+.list .item[onclick]:active,
+.list a.item:active {
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+.list .item .right .icon,
+.list .item .right.icon {
+  font-size: 24px;
+  padding: 0;
+  margin: 0;
+}

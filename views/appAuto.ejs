@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+	
+		<% include partials/head %>	
+		<title>FWmonitor - Auto</title>	 
+		
+		<style>
+			.content {
+				background-color: #e0e0e0 !important
+			}
+			/* fonts*/
+			@font-face {
+				font-family: "emoji";
+				src: local("Noto Emoji");
+				src: url("/NotoEmoji-Regular.ttf");
+			}
+			@font-face {
+				font-family: "color-emoji";
+				src: local("Noto Color Emoji");
+				src: url("/NotoColorEmoji.ttf");
+			}
+			.emoji {
+				font-family: 'emoji';
+			}
+			.color-emoji {
+				font-family: 'color-emoji';
+			}
+
+			.rot-up {
+				transform: rotate(-45deg) scaleX(-1);
+			}
+			.rot-down {
+				transform: rotate(45deg) scaleX(-1);
+			}
+			.rot-none {
+				transform: scaleX(-1);
+			}
+		</style>
+		
+    </head>
+	
+    <body id="body">
+		
+		<!-- HEADER -->
+         <div class="header red-600">
+			<h1><%= data["autoname"] %></h1>
+			<div class="right">
+				<button class="icon-text red-600">
+					<i class="icon ion-clock"></i>
+					<span id="time">--:--:-- - --.--.----</span>
+				</button>
+			</div>
+		</div>
+		<div class="header sub green-800">
+			<div class="title align-center">
+			   HAUPTMENÜ
+			</div>
+		</div>
+		
+		<!-- MENÜ -->
+		<div class="menu red-300" id="leftMenu">
+			<div class="cover align-center red-600 border-bottom-white">
+				<div class="space"></div>
+				<img class="avatar circle border-white shadow" src="/icons/icon-384x384.png" style="width: 30%"/>
+				<h1 class="">FWmonitor APP</h1>
+				<div class="space"></div>
+			</div>
+			<button class="red-600 full border-top-white" onclick="window.location.replace('/app/api/logout');">Abmelden</button>
+		</div>
+
+		<!-- CONTENT -->
+        <div class="content padding has-header has-sub-header has-footer">
+
+			<div class="space"></div>
+
+			<div class="row-around">
+				<div class="col-20 grey-100">
+					<div class="padding border-grey-400 shadow radius align-center" onclick="openPage('/app/filesHTTPS/autoKarte', {}, karte_load)">
+						<i class="icon ion-map"></i>
+						<p>
+							<br>Karte<br>
+						</p>
+					</div>
+				</div>
+				<div class="col-20 grey-100">
+					<div class="padding border-grey-400 shadow radius align-center" onclick="openPage('/app/filesHTTPS/autoFunk')">
+						<i class="icon ion-radio-waves"></i>
+						<p>
+							<br>Funk<br>
+						</p>
+					</div>
+				</div>
+				<div class="col-20 grey-100">
+					<div class="padding border-grey-400 shadow radius align-center" onclick="alteAlarme_offset = 0; openPage('/app/filesHTTPS/alarmList', 5, alteAlarme_loadAlarm)">
+						<i class="icon ion-ios-flame-outline"></i>
+						<p>
+							<br>Alarme<br>
+						</p>
+					</div>
+				</div>				
+			</div>
+
+			<div class="space"></div>
+
+			<div class="row-around">
+
+				<div class="col-20 grey-100" onclick="openPage('/app/filesHTTPS/autoGPS', {}, gps_load)">
+					<div class="padding border-grey-400 shadow radius align-center">
+						<i class="icon ion-location"></i>
+						<p>
+							<br>GPS<br>
+						</p>
+					</div>
+				</div>
+
+				<div class="col-20 grey-100">
+					<div class="padding border-grey-400 shadow radius align-center">
+						<i class="icon ion-ios-list-outline"></i>
+						<p>
+							<br>Platzhalter<br>
+						</p>
+					</div>
+				</div>
+
+				<div class="col-20 grey-100">
+					<div class="padding border-grey-400 shadow radius align-center">
+						<i class="icon ion-ios-list-outline"></i>
+						<p>
+							<br>Platzhalter<br>
+						</p>
+					</div>
+				</div>				
+			
+			</div>
+
+			<% if(data["alarm"] == "true") { %>  
+				<div class="space"></div>
+				<div class="row-around">
+					<div class="col-80 red-300" onclick="openPage('/app/filesHTTPS/autoAlarm', <%= data["alarmID"] %>, alarm_loadAlarm);">
+						<div class="padding border-grey-400 shadow radius align-center">
+							<i class="icon ion-alert"></i>
+							<p>
+								<br>Aktueller Alarm<br>
+							</p>
+						</div>
+					</div>				
+				</div>			
+			<% } %>
+
+			<div class="space"></div>	
+		
+		</div>
+
+		<!-- FOOTER -->
+		<div class="footer grey-800">
+			<div class="left">				
+				<button class="icon ion-location radius text-big red-300" id="index_status_GPS">GPS FEHLER</button>
+				<button class="icon ion-wifi radius text-big red-300" id="index_status_verbindung"> VERBINDUNG FEHLER</button>
+			</div>
+			<div class="right">
+				<button class="icon ion-gear-b red-300 radius" style="min-width: 42px;" onclick="openMenu('leftMenu')"></button>
+				<button class="icon ion-power red-300 radius dispOFF" style="min-width: 42px;"></button>
+			</div>
+		</div>
+
+
+	  
+		<!-- JS -->
+		<% include partials/foot %>	
+		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>		
+
+		<script src="/app/filesHTTPS/javascripts/nav.js"></script>
+		<script src="/app/appClient.js"></script>
+		<script src="/app/filesHTTPS/javascripts/autoMain.js"></script>			
+		<script>
+			// Uhrzeit
+            setInterval(() => {
+                var d = new Date();
+                var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+				var time = d.toLocaleTimeString();
+				var date = d.toLocaleDateString('de-DE', options);
+                document.getElementById('time').innerHTML = time + " - " + date;
+			}, 1000);
+
+			let h = parseInt(location.hash.substring(1));
+			if(h != 0)
+				history.pushState({}, 'Start', '#0')
+		</script>	
+
+		<% if(data["alarm"] == "true") { %>  
+			<script>
+				openPage('/app/filesHTTPS/autoAlarm', <%= data["alarmID"] %>, alarm_loadAlarm);
+			</script>
+		<% } %>
+
+		<script>
+			// Websockets
+			var wsSteuer = null;
+			var wsFWmonitor = null;
+
+			var GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
+			var GPS_now = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
+
+			var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
+			var GPS_meanNum = 0;
+
+			var GPS_hasChanged = () => { console.log("GPS Change")};
+			var GPS_hasFIX = false;
+
+			var GPS_alt_max = 0;
+			var GPS_alt_min = 0;
+			var GPS_dist_sum = 0;	
+				
+			var lastKeepAlive = new Date();
+
+			var SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
+
+			var tempID = "";
+			var tempID_timeout = true;
+			setTimeout(function(){ tempID_timeout = false; }, 3000);
+
+			function index_status_GPS(val) {
+				if(val == 2) {
+					document.getElementById('index_status_GPS').classList.remove('red-300');
+					document.getElementById('index_status_GPS').innerHTML = "GPS 2D FIX";
+					GPS_hasFIX = true;
+				} else if(val == 3) {
+					document.getElementById('index_status_GPS').classList.remove('red-300');
+					document.getElementById('index_status_GPS').innerHTML = "GPS 3D FIX";
+					GPS_hasFIX = true;
+				} else if(val == 1) {
+					document.getElementById('index_status_GPS').classList.add('red-300');
+					document.getElementById('index_status_GPS').innerHTML = "GPS KEIN FIX";
+					GPS_hasFIX = false;
+				} else {
+					document.getElementById('index_status_GPS').classList.add('red-300');
+					document.getElementById('index_status_GPS').innerHTML = "GPS FEHLER";
+					GPS_hasFIX = false;
+				}
+			}
+
+			function index_status_VERBINDUNG(val) {
+				if(val) {
+					document.getElementById('index_status_verbindung').classList.remove('red-300');
+					document.getElementById('index_status_verbindung').innerHTML = " VERBINDUNG OK";
+				} else {
+					document.getElementById('index_status_verbindung').classList.add('red-300');
+					document.getElementById('index_status_verbindung').innerHTML = " VERBINDUNG FEHLER";
+				}
+			}
+
+			/**
+			*   https://gist.github.com/viktorbezdek/3957601
+			*	Distance between two points
+			* 	@param coords1 {lat: xx, lng: yy}
+			* 	@param coords2 {lat: xx, lng: yy}
+			* 	@returnd distance in meters
+			*/
+			function _getCoordsDistance(coords1, coords2)
+			{
+				// earth
+				var R = 6371, // km
+					lat1 = parseFloat(coords1.lat),
+					lat2 = parseFloat(coords2.lat),
+					lon1 = parseFloat(coords1.lng),
+					lon2 = parseFloat(coords2.lng);
+				
+				// deg2rad
+				lat1 = (lat1 / 180) * Math.PI;
+				lat2 = (lat2 / 180) * Math.PI;
+				lon1 = (lon1 / 180) * Math.PI;
+				lon2 = (lon2 / 180) * Math.PI;
+					
+				// Equirectangular approximation
+				// lower accuracy, higher performance
+				var x = (lon2-lon1) * Math.cos((lat1+lat2)/2);
+				var y = (lat2-lat1);
+				var d = Math.sqrt(x*x + y*y) * R;
+				return Math.round(d * 1000);
+			}
+
+			
+			function _getCoordsDistance_accurate(coords1, coords2) {
+				let lat1 = coords1.lat;
+				let lon1 = coords1.lng;
+				let lat2 = coords2.lat;
+				let lon2 = coords2.lng;
+
+				var R = 6371; // km
+				var dLat = (lat2 - lat1).toRad();
+				var dLon = (lon2 - lon1).toRad(); 
+				var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+						Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
+						Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+				var d = R * c;
+				return d;
+			}
+			Number.prototype.toRad = function() {
+				return this * Math.PI / 180;
+			}
+
+
+			function updateDistance(_POS_last, _POS_now) {
+				GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);
+			}
+
+
+			// Websocket fürGPS, Displaysteuerung
+			function connectSteuer() {			
+				wsSteuer = new WebSocket('ws://localhost:8765');
+				let wsGPSInterval = null;				
+				
+				wsSteuer.onopen = function() {
+					console.log("WebSocketClient Lokal connected:");
+					this.send("WebClient - Alarmdisplay - Index");	
+					index_status_GPS(true);
+					wsGPSInterval = setInterval( () => { wsSteuer.send('getGPS'); }, 1000);
+				};
+
+				// Daten empfangen
+				wsSteuer.onmessage = function(e) {
+					// Kein FIX
+					if(e.data == "-1") {
+						index_status_GPS(1);
+
+					} else {
+
+						// Positionsdaten verarbeiten
+						let dat = JSON.parse(e.data);
+
+						// Status anzeigen
+						index_status_GPS(dat.mode);
+
+						// Daten Aufsummieren -> Mittelwert
+						GPS_meanSum.lat += dat.lat;
+						GPS_meanSum.lng += dat.lng;
+						GPS_meanSum.speed += dat.speed;
+						GPS_meanSum.alt += dat.alt;
+						GPS_meanSum.track += dat.track;
+						GPS_meanSum.climb += dat.climb;
+						GPS_meanNum++;
+						// Kein 3D FIX -> Höhe rücksetzen
+						if(dat.mode < 3) GPS_meanSum.alt = 0;
+ 
+						// Mittelwert berechnen
+						if(GPS_meanNum >= 3) {
+							GPS_meanSum.lat /= GPS_meanNum;
+							GPS_meanSum.lng /= GPS_meanNum;
+							GPS_meanSum.speed /= GPS_meanNum;
+							GPS_meanSum.alt /= GPS_meanNum;
+							GPS_meanSum.track /= GPS_meanNum;
+							GPS_meanSum.climb /= GPS_meanNum;
+
+							// Abweichung von letzter Position berechnen
+							if(GPS_now) {
+								let d = _getCoordsDistance({lng: GPS_meanSum.lng, lat: GPS_meanSum.lat}, {lng: GPS_now.lng, lat: GPS_now.lat});
+//								console.log("Distanz", d);
+								if(d >= 2) {
+									if(GPS_last.lat != 0) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
+									GPS_hasChanged();									
+								}
+							}
+
+							// Positionsdaten speichern
+							GPS_now.lat = GPS_meanSum.lat.toFixed(5);
+							GPS_now.lng = GPS_meanSum.lng.toFixed(5);
+							GPS_now.speed = Math.round(GPS_meanSum.speed);
+							GPS_now.alt = Math.round(GPS_meanSum.alt);
+							GPS_now.track = Math.round(GPS_meanSum.track);
+							GPS_now.climb = Math.round(GPS_meanSum.climb);
+							GPS_now.precision = dat.precision;
+							GPS_now.sats = dat.sats;
+
+							// Höhe Min/Max
+							if(GPS_alt_max < GPS_now.alt) GPS_alt_max = GPS_now.alt;
+							if(GPS_alt_min > GPS_now.alt && GPS_now.alt != 0) GPS_alt_min = GPS_now.alt;
+
+							//console.log(GPS_now);
+
+							// Summen rücksetzen
+							GPS_meanSum.lat = 0;
+							GPS_meanSum.lng = 0;
+							GPS_meanSum.speed = 0;
+							GPS_meanSum.alt = 0;
+							GPS_meanSum.track = 0;
+							GPS_meanSum.climb = 0;
+							GPS_meanNum = 0;							
+						}
+					} 
+				};
+
+				// Socket geschlossen
+				wsSteuer.onclose = function(e) {
+					console.log('Socket Lokal is closed. Reconnect will be attempted in 1 second.', e.reason);
+					index_status_GPS(false);	
+					clearInterval(wsGPSInterval);
+					setTimeout(function() {
+						connectSteuer();
+					}, 1000);					
+				};
+
+				// Scoket Fehler
+				wsSteuer.onerror = function(err) {
+					console.error('Socket Lokal encountered error: ', err.message, 'Closing socket');
+					index_status_GPS(false);
+					clearInterval(wsGPSInterval);
+					wsSteuer.close();
+				};
+			}			
+			connectSteuer();
+
+
+
+			function dispAktiv() {
+				console.log("dispON");
+				clearTimeout( SCREEN_OFF_timeout );
+				SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
+				wsSteuer.send('dispON');				
+//				wsFWmonitor.send(JSON.stringify({id: <%= data["autoid"] %>, event: "dispTouch"}));
+			}
+//			var bdy  = document.getElementById ('body');
+//			bdy.addEventListener ('click', () => {
+//				dispAktiv()
+//			});
+			window.onclick = function() {
+				if (event.target.closest('.dispOFF')) {
+					console.log("dispOFF")
+					wsSteuer.send('dispOFF');
+				} else {
+					dispAktiv()
+				}
+			}
+
+			// Websocket Server Verbindung
+			function connectFWmonitor() {			
+				wsFWmonitor = new WebSocket('wss://'+window.location.hostname+':443');
+				let wsGPSInterval = null;	
+				var keepAliveInterval = null;
+				let log = "";
+				
+				wsFWmonitor.onopen = function() {
+					console.log("WebSocketClient FWmonitor connected:");
+					wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+					index_status_VERBINDUNG(true);
+					wsGPSInterval = setInterval( () => {
+						 if(GPS_hasFIX) wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+					}, 60000);
+					lastKeepAlive = new Date();
+					keepAliveInterval = setInterval(() => {
+						this.send("keepAlive");
+						if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {		
+							index_status_VERBINDUNG(false);				
+							location.reload(); 
+						}
+					}, 10000)
+				};
+
+				// Daten empfangen
+				wsFWmonitor.onmessage = function(e) {
+					// Teile Daten in Topic und Werte
+					log = e.data;
+					var dat = e.data.split('|');
+					topic = dat[0];
+					msg = dat[1].split('%');
+
+					if(topic == 'alarm' && tempID != parseInt(msg[0])) {
+						tempID = parseInt(msg[0]);
+						try {
+							dispAktiv();
+						} catch (error) {
+							console.log('Alarm -> Bildschirm konnte nicht aktiviert werden.')
+						}	
+
+						if(!tempID_timeout) {
+							location.reload(); 
+						}
+					}
+
+					// Keep Alive
+					if(topic == 'keepAlive') {
+						//if(msg == "OK") {
+							lastKeepAlive = new Date();
+							
+							index_status_VERBINDUNG(true);
+
+							wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+						//}
+					}
+					// reload
+					if(topic == 'reload') {
+						location.reload(); _status_VERBINDUNG(true);
+					}
+					
+					// restart
+					if(topic == 'rebootScreen') {
+						wsSteuer.send('restart');
+					}
+ 				};
+
+				// Socket geschlossen
+				wsFWmonitor.onclose = function(e) {
+					console.log('Socket Lokal is closed. Reconnect will be attempted in 15 second.', e.reason);
+					index_status_VERBINDUNG(false);	
+					clearInterval(wsGPSInterval);
+					clearInterval(keepAliveInterval);
+					setTimeout(function() {
+						connectFWmonitor();
+					}, 15000);
+				};
+
+				// Scoket Fehler
+				wsFWmonitor.onerror = function(err) {
+					console.error('Socket FWmonitor encountered error: ', err.message, 'Closing socket');
+					index_status_VERBINDUNG(false);
+					clearInterval(wsGPSInterval);
+					clearInterval(keepAliveInterval);
+					wsFWmonitor.close();
+				};
+			}
+			connectFWmonitor();
+		</script>	
+
+    </body>
+	
+</html>

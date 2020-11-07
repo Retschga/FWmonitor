@@ -1,0 +1,32 @@
+<div class="page">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
+		<h1>Benutzer</h1>
+	</div>		
+	
+    
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+		<div class="list">
+			<div class="item">
+			  	<select id="benutzer_filter" onChange="benutzer_selectedFilter=this.selectedIndex;benutzer_filter(this.options[this.selectedIndex].value)">					
+			 	</select>
+			</div>
+		</div>
+
+		<div class="space"></div>
+
+		<div id="benutzer_list" class="list">
+
+		</div>
+
+
+        <div class="space"></div>
+
+   </div>
+
+</div>

@@ -1,0 +1,40 @@
+<div class="page">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
+        <h1>Alarmierung</h1>
+        <div class="right">
+			<button class="blue-grey-900" onclick="alarmierung_load()">AKTUALISIEREN</button>
+		</div>
+	</div>		
+	
+    
+
+    <div class="content padding has-header">
+
+		<div class="space"></div>
+
+        <div class="list">
+
+            <div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Nächste Alarme innerhalb 15min nicht senden
+                </p>
+            </div>
+
+            <div class="item">
+                <h2>Alarm NICHT senden</h2>
+                <div class="right">
+                    <input id="alamierung_ignoreNext" type="checkbox" class="switch green" onchange="alarmierung_setIgnoreNextAlarm()">
+                </div>
+                <p id="alarmierung_timeLeft"></p>
+            </div>
+
+        </div>
+
+        <div class="space"></div>
+        
+
+   </div>
+
+</div>

@@ -62,7 +62,7 @@
 
 	<div id="container">
 
-		<img src='Logo_FFB.jpg'>
+		<img src='logo_ffb.jpg'>
 		
 		<div class="stichwort">
 			<p id="varEINSATZSTICHWORT">Stichw</p> - 
@@ -98,6 +98,32 @@
 		for (var i = 0; i < parts.length; i++) {
 			var temp = parts[i].split("=");
 			$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+		}
+
+		// URL Overpass-API für Hydranten    siehe Ovepass turbo
+		var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
+			"[out:json][timeout:25];(" + 
+			"node[%22emergency%22=%22fire_hydrant%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
+			"node[%22emergency%22=%22water_tank%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
+			");out;%3E;out%20skel%20qt;";
+		var overpassTimestamp = "";
+		var features = [];
+		var overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data="+
+			"[out:json][timeout:25];(" + 
+			"way[%22name%22=%22"+$_GET['varSTRASSE']+"%22](around:5000,"+$_GET['lat']+", "+$_GET['lng']+");" + 
+			");out geom;%3E;out%20skel%20qt;";	
+		
+		var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
+			"[out:json][timeout:25];(" + 
+			"way[building](around:200,"+$_GET['lat']+", "+$_GET['lng']+");" + 
+			");out geom;%3E;";	
+		
+		var icons = {
+			'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
+			'underground': L.icon({iconUrl: "/images/Ofm_hydrant_u_17.png",iconSize: [24,32]}),
+			'pond': L.icon({iconUrl: "/images/Ofm_openwater_17.png",iconSize: [24,32]}),
+			'water_tank': L.icon({iconUrl: "/images/Ofm_water_tank_17.png",iconSize: [24,32]}),
+			'rettPkt': L.icon({iconUrl: "/images/rettPkt.png",iconSize: [24,30]})
 		}
 
 		document.getElementById("varEINSATZSTICHWORT").innerHTML = $_GET['varEINSATZSTICHWORT'];
@@ -145,33 +171,8 @@
 				loadStrassenData();
 			}
 			
-
-			// URL Overpass-API für Hydranten    siehe Ovepass turbo
-			var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"node[%22emergency%22=%22fire_hydrant%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
-				"node[%22emergency%22=%22water_tank%22](around:800,"+$_GET['lat']+","+$_GET['lng']+");" + 
-				");out;%3E;out%20skel%20qt;";
-			var overpassTimestamp = "";
-			var features = [];
-			var overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"way[%22name%22=%22<%= alarmdata["STRASSE"] %>%22](around:5000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out geom;%3E;out%20skel%20qt;";			
-			var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"way[building](around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out geom;%3E;";	
-			
-			var icons = {
-				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
-				'underground': L.icon({iconUrl: "/images/Ofm_hydrant_u_17.png",iconSize: [24,32]}),
-				'pond': L.icon({iconUrl: "/images/Ofm_openwater_17.png",iconSize: [24,32]}),
-				'water_tank': L.icon({iconUrl: "/images/Ofm_water_tank_17.png",iconSize: [24,32]}),
-				'rettPkt': L.icon({iconUrl: "/images/rettPkt.png",iconSize: [24,30]})
-			}
-			
 			function loadHydrantenData() {
+				console.log("Lade Hydrantendaten");
 				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
 				var xmlHttp = new XMLHttpRequest();
 				xmlHttp.onreadystatechange = function() { 
@@ -227,10 +228,11 @@
 			loadHydrantenData();
 			
 			function loadStrassenData() {
-				var xmlHttp = new XMLHttpRequest();
-				xmlHttp.onreadystatechange = function() { 
-					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-						var responseJSON = JSON.parse(xmlHttp.responseText);
+				console.log("Lade Strassendaten URL", overpassStrassenUrl);
+				var xmlHttp1 = new XMLHttpRequest();
+				xmlHttp1.onreadystatechange = function() { 
+					if (xmlHttp1.readyState == 4 && xmlHttp1.status == 200) {
+						var responseJSON = JSON.parse(xmlHttp1.responseText);
 						
 						var dataIn = responseJSON["elements"];
 						var polylinePoints = [];
@@ -257,15 +259,17 @@
 
 						}
 						console.log(polylinePoints);
-						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);   
-						map.fitBounds(polyline.getBounds());
+						var polyline = L.polyline(polylinePoints, {color: 'blue', weight: 10}).addTo(map);  
+						 
+						map.fitBounds(polyline.getBounds(), {padding: [70, 70]});
 					}
 				}
-				xmlHttp.open("GET", overpassStrassenUrl, true); // Asynchron -> true 
-				xmlHttp.send(null);
+				xmlHttp1.open("GET", overpassStrassenUrl, true); // Asynchron -> true 
+				xmlHttp1.send(null);
 			}
 			
 			function loadGebaudeData() {
+				console.log("Lade gebaudedaten");
 				var xmlHttp = new XMLHttpRequest();
 				xmlHttp.onreadystatechange = function() { 
 					if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -285,6 +289,7 @@
 			
 			// Forst Rettungspunkte
 			function loadForstRettPkt() {
+				console.log("Lade Forstdaten");
 				//document.getElementById("hydrant_aktual_zeit").innerHTML = "werden geladen ...";
 				var xmlHttp = new XMLHttpRequest();
 				xmlHttp.onreadystatechange = function() { 

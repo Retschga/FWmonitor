@@ -143,7 +143,7 @@ class DummyClient(WebSocketClient):
             printHard("Timing out for %i seconds. . ." % newTimeout)
             time.sleep(newTimeout)
             printHard("Attempting reconnect. . .")
-            self.setup(newTimeout)
+            self.sock.close()
 
     # (Event) WebSocket geschlossen
     def closed(self, code, reason=None):

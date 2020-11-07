@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css?family=Dosis|Raleway:400,700|Roboto:300,400,900," rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.css">
+    <link rel="stylesheet" href="../base/reset.css">
+    <link rel="stylesheet" href="../base/mobileui.css">
+    <link rel="stylesheet" href="../base/colors.css">
+    <link rel="stylesheet" href="../base/icons.css">
+    <link rel="stylesheet" href="../header/style.css">
+    <link rel="stylesheet" href="../button/style.css">
+    <link rel="stylesheet" href="../list/style.css">
+    <link rel="stylesheet" href="../grid/style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/css/master.css">
+    <style>
+      .content-land { margin-left:50px}
+    </style>
+  </head>
+  <body class="content-land">
+    <!-- BEGIN -->
+    <h2 class="title-doc" id="_DOC_GENERATE_SPACE_">Cover</h2>
+    <p>This component allows you to create teasers using images.
+      Regardless of what kind of element, it will always be centered vertically and horizontally and cover
+      its container without losing its proportions. You can also place additional content, like text or image,
+      on top of the image.</p>
+      <p>
+        To use this component you need install with the command:
+      </p>
+      <div class="dependency tooltip">
+        <strong>Dependency:</strong> <code>base</code>.
+        <span class="tooltiptext">The dependencies will be installed together with this module</span>
+      </div>
+      <pre>mobileui install cover</pre>
+      <!-- _DOC_GENERATE_CSS_DOC -->
+      <p>You can use all features the <a href="#base">base</a> MobileUI in this component.</p>
+<textarea class="bind-code" mode="text/html">
+<div class="cover align-center" style="background-image:url(../assets/img/aurora-boreal-rosa.jpg)">
+  <div class="space"></div>
+  <h1 class="text-huge text-white text-light">About Northern Lights</h1>
+  <p class="text-small text-white text-light">
+    The bright dancing lights of the aurora are actually collisions between
+    electrically charged particles from the sun that enter the earth's atmosphere.
+  </p>
+  <div class="space"></div>
+</div></textarea>
+    <p>
+      You can add color with transparent layer adding class <code>blend-soft-light</code>, <code>blend-darken</code>,
+      <code>blend-luminosity</code>, <code>blend-multiply</code>, <code>blend-screen</code> and <code>blend-overlay</code>.
+      See this example with <a href="#header">header</a> component.</p>
+<textarea class="bind-code" mode="text/html" header-absolute="true">
+<div class="header text-white">
+  <div class="left">
+    <button class="icon ion-location"></button>
+  </div>
+  <div class="right">
+    <button class="icon ion-share"></button>
+  </div>
+</div>
+<div class="cover blend-soft-light align-center blue-800" style="background-image:url(../assets/img/business.jpg)">
+  <div class="space"></div>
+  <div class="space"></div>
+  <div class="space"></div>
+  <h1 class="text-huge text-white text-light">Event On This Day</h1>
+  <p class="text-small text-white text-light">
+    To know new places around the world
+  </p>
+  <div class="space"></div>
+</div>
+<p>Without blend mode:</p>
+<div class="cover align-center" style="background-image:url(../assets/img/business.jpg)">
+  <div class="space"></div>
+  <div class="space"></div>
+  <div class="space"></div>
+  <h1 class="text-huge text-white text-light">Event On This Day</h1>
+  <p class="text-small text-white text-light">
+    To know new places around the world
+  </p>
+  <div class="space"></div>
+</div></textarea>
+    <p>You can combinate with <a href="#button">button</a> circle and <a href="#list">list</a> component.</p>
+<textarea class="bind-code" mode="text/html" header-absolute="true" hidden="true" replace="body,div">
+<body>
+  <div class="header text-white blue-900">
+    <div class="left">
+      <button class="icon ion-android-arrow-back"></button>
+    </div>
+    <div class="right">
+      <button class="icon ion-android-more-vertical"></button>
+    </div>
+  </div>
+  <div class="content has-header">
+    <div class="cover blue align-center blend-soft-light" style="background-image:url(../assets/img/backtop.png)">
+      <img class="avatar circle border-white shadow" src="../assets/img/33.jpg">
+      <h1 class="text-white">Carter Hudson</h1>
+      <p>+55 45 9878 9878</p>
+      <button class="blue-900 big circle float-bottom-right icon ion-ios-telephone"></button>
+    </div>
+    <div class="list">
+      <div class="item">
+        <div class="left">
+          <img class="avatar circle" src="../assets/img/80.jpg">
+        </div>
+        <h2>Jeanette Fletcher</h2>
+        <p class="text-grey">+55 7979 325 655</p>
+        <div class="right">
+          <small class="text-grey">
+            5 min
+            <i class="icon ion-android-happy green"></i>
+          </small>
+        </div>
+      </div>
+      <div class="item">
+        <div class="left">
+          <img class="avatar circle" src="../assets/img/53.jpg">
+        </div>
+        <h2>Emilio Dias</h2>
+        <p class="text-grey">+55 8989 325 655</p>
+        <div class="right">
+          <small class="text-grey">
+            12 min
+            <i class="icon ion-android-sad text-red"></i>
+          </small>
+        </div>
+      </div>
+      <div class="item">
+        <div class="left">
+          <img class="avatar circle" src="../assets/img/96.jpg">
+        </div>
+        <h2>Marcos Paulo</h2>
+        <p class="text-grey">+55 1245 325 655</p>
+        <div class="right">
+          <small class="text-grey">
+            32 min
+            <i class="icon ion-android-sad red"></i>
+          </small>
+        </div>
+      </div>
+      <div class="item">
+        <div class="left">
+          <img class="avatar circle" src="../assets/img/33.jpg">
+        </div>
+        <h2>Carter Hudson</h2>
+        <p class="text-grey">+55 8797 325 655</p>
+        <div class="right">
+          <small class="text-grey">
+            1h 12 min
+            <i class="icon ion-android-happy green"></i>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</body></textarea>
+    <p>
+      You can combinate this component with <a href="#list">list</a>, <a href="#card">card</a>, <a href="#badge">badge</a>, <a href="#icons">icons</a> and <a href="#grid">grid</a>.
+    </p>
+<textarea class="bind-code" mode="text/html">
+<div class="list radius shadow">
+  <div class="item no-border">
+    <div class="left">
+      <img class="avatar circle" src="../assets/img/65.jpg">
+    </div>
+    <h2>Joanne Johnson</h2>
+    <p class="text-grey">Posted a new item for sale.</p>
+    <div class="right text-grey text-small">
+      2h <i class="icon ion-android-time"></i>
+    </div>
+  </div>
+  <div class="item no-border cover radius" style="background-image:url(../assets/img/bike.png)">
+    <div class="text-small gradient bottom padding text-white text-light radius">
+      <span class="amber-300 radius padding text-big text-strong">$198</span>
+      Great for casual weekend outings :)
+    </div>
+  </div>
+  <div class="item no-border row align-center">
+    <div class="col text-red">
+      <i class="icon ion-heart"></i> 245
+    </div>
+    <div class="col text-grey">
+      <i class="icon ion-chatbox"></i> 22
+    </div>
+    <div class="col text-grey">
+      <i class="icon ion-android-share-alt"></i> 65
+    </div>
+  </div>
+</div></textarea>
+    <!-- DONE -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/mode/xml/xml.min.js"></script>
+    <script type="text/javascript" src="../assets/js/main.js"></script>
+  </body>
+</html>

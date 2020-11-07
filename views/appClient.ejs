@@ -1,0 +1,117 @@
+
+const publicVapidKey = '<%= data["VAPID_PUBLIC"] %>';
+
+var serviceWorker_registration = null;
+
+
+
+// -------- Base64 Decoding --------
+// https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey
+function urlBase64ToUint8Array(base64String) {
+	const padding = '='.repeat((4 - base64String.length % 4) % 4);
+	const base64 = (base64String + padding)
+		.replace(/-/g, '+')
+		.replace(/_/g, '/');
+	console.log(base64);
+	const rawData = window.atob(base64);
+	const outputArray = new Uint8Array(rawData.length);
+ 
+	for (let i = 0; i < rawData.length; ++i) {
+		outputArray[i] = rawData.charCodeAt(i);
+	}
+	return outputArray;
+}
+
+
+
+// -------- Notification Permission --------
+async function askPermission() {
+	if (Notification.permission === "granted") {
+		serviceWorker_registration.update();
+		return;
+	}
+
+	return new Promise(function(resolve, reject) {
+		const permissionResult = Notification.requestPermission(function(result) {
+			resolve(result);
+		});
+
+		if (permissionResult) {
+			permissionResult.then(resolve, reject);
+		}
+	})
+	.then(async function(permissionResult) {
+		if (permissionResult !== 'granted') {
+			throw new Error('We weren\'t granted permission.');
+		} else {
+			// Registriere Push
+			console.log('Registering push');
+			const subscription = await serviceWorker_registration.pushManager.
+				subscribe({
+					userVisibleOnly: true,
+					applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+				});
+			console.log('Registered push');  
+		  
+			// Sende Subscription zum Server
+			console.log('Sending Subscribe');
+			await fetch('/app/subscribe', {
+				method: 'POST',
+				body: JSON.stringify(subscription),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+			console.log('Sent Subscribe');
+		}
+	});
+}
+
+
+// -------- Register a Service Worker--------
+async function serviceWorker_run() {
+
+	// Registriere Service Worker
+	console.log('Registering service worker');	
+	serviceWorker_registration = await navigator.serviceWorker.
+		register('/app/appWorker.js', { scope: "/app/" });		
+	console.log('Registered service worker');
+  
+	await navigator.serviceWorker.ready;
+}
+
+
+
+async function start() {
+	console.log('Initiate Service Worker');
+	await serviceWorker_run().catch(error => console.error(error));
+
+	// -------- Feature Detection --------
+	if ('serviceWorker' in navigator) {
+		if (Notification.permission === "granted") {
+			// Push notification permission granted.
+			// Registriere Push
+			console.log('Registering push');
+			const subscription = await serviceWorker_registration.pushManager.
+				subscribe({
+					userVisibleOnly: true,
+					applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+				});
+			console.log('Registered push');  
+		  
+			// Sende Subscription zum Server
+			console.log('Sending Subscribe');
+			await fetch('/app/subscribe', {
+				method: 'POST',
+				body: JSON.stringify(subscription),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+			console.log('Sent Subscribe');
+		}
+
+	}
+}
+start();
+	

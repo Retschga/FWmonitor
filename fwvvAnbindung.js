@@ -1,11 +1,17 @@
+'use strict';
+
+// Modul FWVV Anbindung
 module.exports = function () {
 	
-	
+	// ----------------  STANDARD LIBRARIES ---------------- 
 	const fs = require("fs");
 	const unzipper = require('unzipper');
-	var Parser = require('@episage/dbf-parser');
+	const Parser = require('@episage/dbf-parser');
+	const debug = require('debug')('fwvv');
 	
-	// siehe https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
+	
+	
+	// https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
 	function similarity(s1, s2) {
       var longer = s1;
       var shorter = s2;
@@ -19,7 +25,6 @@ module.exports = function () {
       }
       return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
     }
-
     function editDistance(s1, s2) {
       s1 = s1.toLowerCase();
       s2 = s2.toLowerCase();
@@ -47,7 +52,7 @@ module.exports = function () {
       return costs[s2.length];
     }
 	
-	
+	// Suche neuerste Sicherungsdatei
 	function getNewestFile(files, path) {
 		var out = [];
 		
@@ -67,26 +72,24 @@ module.exports = function () {
 		return (out.length>0) ? out[0].file : "";
 	}
 	
-	
-	function getEinsatzZeit(name, vorname) {
-		
+	// Lese Einsatzzeit einer Person aus FWVV Sicherungsdatei
+	function getEinsatzZeit(name, vorname) {		
 		return new Promise((resolve, reject) => {
 			
-			console.log("Einsatzzeit:  " + name + "  " + vorname);
+			debug("Einsatzzeit:  " + name + "  " + vorname);
 		
 			var zeit = 0;
 			var anzahl = 0;
 			
 			var filepath = String(process.env.FWVV_DATENSICHERUNG);
 			
-			console.log("Pfad: " + filepath);
+			debug("Pfad: " + filepath);
 			
 			fs.readdir(filepath, function(err, files) {
 				if (err) reject(err);
+				
 				var newestFile = getNewestFile(files, filepath);
-
-				console.log("Datei: " + newestFile);
-			
+				debug("Datei: " + newestFile);			
 		
 				fs.createReadStream(filepath + newestFile)
 				.pipe(unzipper.Parse())
@@ -94,20 +97,17 @@ module.exports = function () {
 					const fileName = entry.path;
 					const type = entry.type; // 'Directory' or 'File'
 					const size = entry.vars.uncompressedSize; // There is also compressedSize;
-					if (fileName === "E_PERSON.DBF") {
-						
-					
+					if (fileName === "E_PERSON.DBF") {						
 						var parser = Parser(entry);				
 						var diesesJahr = new Date().getFullYear();
 						
 						parser.on('header', (h) => {
-							//console.log('dBase file header has been parsed');
-							//console.log(h);
+							//debug('dBase file header has been parsed');
+							//debug(h);
 						});
 						 
-						parser.on('record', (record) => {
-							
-							var eintragJahr = record.E_DATUM.substring(0,4);						
+						parser.on('record', (record) => {							
+							var eintragJahr = record.E_DATUM.substring(0,4);					
 							
 							if(
 								record["@deleted"] != true
@@ -115,10 +115,8 @@ module.exports = function () {
 								&& record.NAME == name
 								&& similarity(record.VORNAME, vorname) > 0.25								
 								
-							) {
-								
-								anzahl++;
-								
+							) {								
+								anzahl++;								
 								if(record.E_VON != "" && record.BIS_DATUM != "" && record.E_BIS != "" ) {
 								
 									var eintragMonat = record.E_DATUM.substring(4,6);
@@ -134,36 +132,32 @@ module.exports = function () {
 									var diff =(startTime.getTime() - endTime.getTime()) / 1000;
 									diff /= 60;	
 									
-									zeit += Math.abs(Math.round(diff));
+									zeit += Math.abs(Math.round(diff));									
 									
-									
-									//console.log(record);
-									//console.log(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));
-								
-								}
-								
-							}
-								
+									//debug(record);
+									//debug(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));								
+								}								
+							}								
 						});
 						
 						parser.on('end', () => {
-							console.log('Gesamt Minuten: ' + zeit + " ( " + Math.floor(zeit/60) + "h " + (zeit%60) + " ) "); 
+							debug('Gesamt Minuten: ' + zeit + " ( " + Math.floor(zeit/60) + "h " + (zeit%60) + " ) "); 
 							resolve([zeit, anzahl]);
 						});
-						
 						
 					} else {
 						entry.autodrain();
 					}
 				});
 			
-			});
+			})
 		
 		});
 
 	}
 
+
     return {
-        getEinsatzZeit: getEinsatzZeit
+        getEinsatzZeit
     }; 
 }

@@ -1,0 +1,107 @@
+<div class="page" style="height: calc(100vh - 52px) !important;">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-android-arrow-back" name="button" onclick="goBack()"></button>
+		<h1>GPS</h1>
+	</div>		
+	
+    <div class="content padding has-header noscrollbar padding">
+
+
+        <span 
+            id="gps_carIcon" 
+            class="text-extra-huge color-emoji rot-none" 
+            style="position: absolute; margin-top: 50px; left: 65px;"
+        >🚒</span>
+
+        <object 
+            data="/app/filesHTTPS/images/compass.svg" 
+            type="image/svg+xml" 
+            width="180" 
+            height="150" 
+            id="gps_compass"
+            style="position: absolute; top: 250px; left: 20px;"
+        >
+        </object>
+
+        
+
+        <div class="list" style="margin-left: 200px; margin-top: 30px;">    
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Position:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_latlng">{LAT}, {LNG}</span>
+                </div>
+            </div>    
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Höhe:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_alt">{ALT}</span>
+                    <span class="text-big" id="gps_alt_min">{MIN}</span>
+                    <span class="text-big" id="gps_alt_max">{MAX}</span>                    
+                    <button class="red-300 icon-text small" onclick="GPS_alt_max = GPS_last.alt; GPS_alt_min = GPS_last.alt; gps_update()" style="padding: 1 0.1em">
+                        <i class="icon ion-trash-b" style="top: 0;"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Geschwindigkeit:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_speed">{SPEED}</span>
+                </div>
+            </div>            
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Steigung:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_climb">{CLIMB}</span>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Satelliten:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_sats">{SATS}</span>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Genauigkeit:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_latlng_precision">{PRECISION}</span>
+                </div>
+            </div>
+            <div class="item row">
+                <div class="col-34">
+                    <i class="icon ion-location"></i>
+                    <span class="text-big">Kilometer:</span>
+                </div>
+                <div class="col-67">
+                    <span class="text-big" id="gps_distance">{DISTANCE}</span>
+                    <button class="red-300 icon-text small" onclick="GPS_dist_sum = 0; gps_update()" style="padding: 1 0.1em">
+                        <i class="icon ion-trash-b" style="top: 0;"></i>
+                    </button>          
+                </div>
+            </div>   
+        </div>
+        </div>
+
+
+   </div>
+
+</div>
