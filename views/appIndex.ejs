@@ -158,7 +158,25 @@
 		<script src="filesHTTPS/javascripts/appMain.js"></script>	
 		<script src="/javascripts/calendar.js"></script>			
     
-		<script>		
+		<script>
+
+			var firststart = true;
+			setTimeout(function() { 
+				firststart = false;
+			}, 1000);
+
+			console.log("start")
+			document.addEventListener("visibilitychange", function() {
+				if (document.visibilityState === 'visible' && !firststart) {
+					console.log("open");	
+					index_loadKalender();	
+					<% if(data["nurLAN"] == "0") { %> 
+					index_loadStatus();		
+					<% } %>
+				} else {
+					console.log("close");
+				}
+			});
 		
 			let h = parseInt(location.hash.substring(1));
 			if(h != 0)

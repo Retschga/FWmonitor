@@ -200,6 +200,8 @@ async function index_loadKalender() {
 	try {
 
 		let response = await fetchWithParam('app/api/kalender', {});
+		
+		document.getElementById("index_kalender").innerHTML = "";
 
 		// Für alle Termine
 		for(let i = 0; i < response.length; i++) {
