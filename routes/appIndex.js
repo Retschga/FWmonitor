@@ -302,6 +302,15 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		});
 	});
 
+	router.get('/filesHTTPS/manifest.json', function (req, res) {
+		res.render('appManifest', {
+			page: '',
+			data: {
+				FW_NAME_BOT: process.env.FW_NAME_BOT
+			}
+		});
+	});
+
 	// APP REST API
 	var routesAPI = require('../routes/appAPI')(_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm);
 	router.use('/', isLoggedIn, routesAPI);

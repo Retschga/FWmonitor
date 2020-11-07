@@ -74,8 +74,8 @@ ICAL_LINK=
 # Für Anzeige bei Standby
 FW_NAME_STANDBY=Freiwillige Feuerwehr Name
 
-# Für Anzeige bei Bot
-FW_NAME_BOT=der Freiwilligen Feuerwehr Name
+# Für Anzeige bei Bot / APP
+FW_NAME_BOT=FF Name
 
 #Diashow Wechselzeit (Millisekunden)
 DIASHOW_DELAY=15000

@@ -131,7 +131,7 @@ module.exports = function (_httpServer, destroySession) {
 			} else {
 
 				// Antwort senden
-				ctx.reply('Telegram Bot ' + process.env.FW_NAME_BOT);
+				ctx.reply('Telegram Bot der' + process.env.FW_NAME_BOT);
 
 				if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
 
@@ -1299,7 +1299,7 @@ _${st_nichtverf}_`,
 		hydrantPicRequested[ctx.from.id] = false;
 
 		ctx.reply(
-			'Telegram Bot ' + process.env.FW_NAME_BOT,
+			'Telegram Bot der' + process.env.FW_NAME_BOT,
 			Telegraf.Extra.HTML().markup((m) =>
 				m.keyboard(mainKeyboard).resize()
 			)

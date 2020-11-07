@@ -148,7 +148,7 @@ async function createKalenderElement(_response, _id, edit = false, editID) {
 
 function goBack() {
 	window.history.back();
-	closeLoading();	
+	closeLoading();	closeLoading();	closeLoading();	closeLoading();	
 }
 
 // Icons Karte
@@ -200,7 +200,7 @@ async function index_loadKalender() {
 	try {
 
 		let response = await fetchWithParam('app/api/kalender', {});
-		
+
 		document.getElementById("index_kalender").innerHTML = "";
 
 		// Für alle Termine

@@ -40,13 +40,15 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
+process.env.VERSION = "2.0.0";
+
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 
 	console.log("\n\n    --------------------------------------------------------------");
 	console.log("    |            Feuerwehr Einsatzmonitor Software               |");
 	console.log("    |                                                            |");
 	console.log("    |             (c) 2020 Resch - FF Fischbachau                |");
-	console.log("    |                                                            |");
+	console.log("    |                       VERSION "+process.env.VERSION+"                         |");
 	console.log("    |                                                            |");
 	console.log("    |               weitere Infos: siehe Readme                  |");
 	console.log("    |                                                            |");
