@@ -1,4 +1,15 @@
+/**
+ * Lädt Daten vom Server mit fetch API
+ * @param  {String} 		_url    - Zu ladende URL
+ * @param  {Array[String]}	_param  - GET Parameter
+ * @param  {Boolean} 		_json   - Ist Antwort JSON
+ * @return {Promise}
+ */
 function fetchWithParam(_url, _param, _json = true) {
+	const controller = new AbortController();
+	const signal = controller.signal;
+	const timeout = 20000;
+
 	return new Promise(async (resolve, reject) => {
 		try {
 
@@ -11,17 +22,27 @@ function fetchWithParam(_url, _param, _json = true) {
 			// GET Parameter an URL anhängen
 			Object.keys(_param).forEach(key => url.searchParams.append(key, _param[key]));		
 
-			// FETCH Daten
+			// FETCH Daten mit Timeout
+			const timeoutId = setTimeout(() => controller.abort(), timeout);
 			let response = await fetch(url, {
 				credentials: 'same-origin',
-				headers: { "Content-Type": "application/json; charset=utf-8" }
+				headers: { "Content-Type": "application/json; charset=utf-8" },
+				signal
 			})
+			if(response.status == 401) {
+				window.location.href = '/app/login.html';
+				return null;
+			}
+			clearTimeout(timeoutId);
 			if(_json) response = await response.json();
 
-			console.log(_url, _param);
-			console.log("response", response);
+//			console.log(_url, _param);
+//			console.log("response", response);
 
+			// Loader schließen
 			closeLoading();	
+			
+			// Promise beenden
 			resolve(response);
 
 		} catch (error) {
@@ -191,6 +212,7 @@ var styleFunction = function(feature) {
 	}
 	return style;
 };
+
 
 // ----------------  INDEX ---------------- 
 
@@ -659,8 +681,6 @@ async function alarm_rueck(val) {
 }
 
 
-
-
 // ----------------  KALENDER ---------------- 
 
 async function kalender_loadKalender() {
@@ -686,6 +706,7 @@ async function kalender_loadKalender() {
 		alert("Kalender konnte nicht geladen werden.");
 	}
 }
+
 
 // ----------------  KALENDER FULL ---------------- 
 
@@ -727,6 +748,7 @@ async function kalenderFull_loadKalender() {
 	}
 }
 
+
 // ----------------  STATISTIK ---------------- 
 
 async function statistik_loadStatistik() {
@@ -739,7 +761,11 @@ async function statistik_loadStatistik() {
 
 		let response = await fetchWithParam('app/api/statistik', {});	
 
+		let eins = 0;
+
 		for(let i = 0; i < response.length; i++) {
+
+			eins += parseInt(response[i][0]);
 
 			let newDiv = document.createElement("div");				
 			newDiv.className = 'item';
@@ -751,6 +777,8 @@ async function statistik_loadStatistik() {
 			document.getElementById("statistik_list").appendChild(newDiv); 
 		
 		}
+
+		document.getElementById("statistik_stichworte").innerHTML = "Stichworte (" + eins + " Einsätze)";
 
     } catch (error) {
 		console.log(error);	
@@ -844,6 +872,8 @@ async function verfuegbarkeit_setStatus(status, days) {
 var verfuegbarkeit_status = '';
 async function verfuegbarkeit_loadVerfuegbarkeitGesamt() {
 	try {
+
+		if(!document.getElementById("numVerf")) return;
 
 		let response = await fetchWithParam('app/api/verfuegbarkeit', {});
 	
@@ -947,7 +977,6 @@ async function einstellungen_setNotifications() {
 }
 
 
-
 // ----------------  BENUTZER ---------------- 
 
 var benutzer_selectedFilter = 0;
@@ -1002,7 +1031,7 @@ async function benutzer_loadBenutzer() {
 			let kalGrString = "";
 			let grupp = String(response[i].kalenderGroups).split('|');
 			for(let j = 1; j < grupp.length; j++) {
-				kalGrString += '<span class="text-small green radius padding">'+kalendergruppen[grupp[j]-1].name.replace(/\s/g, '&nbsp;')+' </span>';
+				kalGrString += ' <span class="text-small green radius padding">'+kalendergruppen[grupp[j]-1].name.replace(/\s/g, '&nbsp;')+'</span><wbr>';
 			}
 			
 			newDiv.className = 
@@ -1050,7 +1079,6 @@ async function benutzer_loadBenutzer() {
 		alert("Benutzer konnte nicht geladen werden.");
 	}   
 }
-
 
 
 // ----------------  BENUTZER BEARBEITEN ---------------- 
@@ -1260,8 +1288,6 @@ async function kalendergruppen_saveGruppen() {
 }
 
 // ----------------  ALARMGRUPPEN ---------------- 
-
-
 var alarmgruppen_changed = false;
 var alarmgruppen_count = false;
 async function alarmgruppen_loadGruppen() {
@@ -1704,7 +1730,7 @@ async function kalenderBearbeiten_load(obj) {
 
 	id = obj.id;
 	kalenderBearbeiten_callback = obj.callback;
-
+	
 	console.log("Load ID", id);
 
 	try {
@@ -1809,8 +1835,12 @@ async function kalenderBearbeiten_load(obj) {
 		
 }
 
-async function kalenderBearbeiten_save(newItem) {
+async function kalenderBearbeiten_save(newItem, callb) {
 	try {
+
+		if(callb != undefined) {
+			kalenderBearbeiten_callback = kalender_loadKalender;
+		}
 
 		let send = {};
 	
@@ -2062,4 +2092,171 @@ async function clients_action(id, action, value) {
 		alert("Aktion konnte nicht gesendet werden.");
 	}	
 
+}
+
+
+// ----------------  Verfügbarkeit Pläne ---------------- 
+vervuegbarkeitplaene_plans = {"plans": []};
+async function vervuegbarkeitplaene_load() {
+
+	try {
+
+		let response = await fetchWithParam('app/api/getVervPlans', {});
+		if(!response.statusPlans) return;
+		response.statusPlans = JSON.parse(response.statusPlans);
+
+		vervuegbarkeitplaene_plans = response.statusPlans;
+		
+		document.getElementById("verfuegbarkeitPlan_list").innerHTML = "";
+
+		for(let i = 0; i < response.statusPlans["plans"].length; i++) {
+			
+			let newDiv = document.createElement("div");
+			newDiv.className = 'list';
+			newDiv.innerHTML += `<div class="item">
+					<h2 
+						class="icon ion-edit"
+						onclick="openPage('filesHTTPS/verfuegbarkeitPlanBearbeiten', ${i}, vervuegbarkeitplaeneBearbeiten_load);"
+					>&nbsp;&nbsp;${ response.statusPlans["plans"][i].name }</h2>
+					<div class="right">
+						<input 
+							id="verfuegbarkeitPlan_plan_${i}" 
+							type="checkbox" class="switch green" 
+							onchange="vervuegbarkeitplaene_changeActive(${i}, this.checked)" 
+							${response.statusPlans["plans"][i].active == true ? "checked" : ""}
+						>
+					</div>
+				</div>`
+			
+			document.getElementById("verfuegbarkeitPlan_list").appendChild(newDiv); 
+		}
+
+	} catch (error) {
+		console.log(error);	
+		goBack();
+		alert("Geräte konnten nicht geladen werden.");
+	}
+}
+
+async function vervuegbarkeitplaene_changeActive(id, value) {
+	try {
+		if(
+			vervuegbarkeitplaene_plans.plans[id]["from"] == ""
+			|| vervuegbarkeitplaene_plans.plans[id]["to"] == ""
+		) {
+			document.getElementById("verfuegbarkeitPlan_plan_"+id).checked = false;
+			return;
+		}
+
+		vervuegbarkeitplaene_plans.plans[id]["active"] = value;
+
+		var getUrl = window.location;
+		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+		var url = new URL('app/api/setVervPlans', baseUrl);
+
+		let response = await fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(vervuegbarkeitplaene_plans), // body data type must match "Content-Type" header,
+		})
+
+		setTimeout(function(){ vervuegbarkeitplaene_load(); }, 100);
+
+	} catch (error) {
+		console.log(error);	
+		alert("Kalender Termin konnte nicht gespeichert werden.");
+	}
+}
+
+// ----------------  Verfügbarkeit Pläne Bearbeiten ----------------
+vervuegbarkeitplaeneBearbeiten_num = 0;
+async function vervuegbarkeitplaeneBearbeiten_load(num) {
+	try { 
+
+		vervuegbarkeitplaeneBearbeiten_num = num;
+
+		let response = await fetchWithParam('app/api/getVervPlans', {});
+		if(!response.statusPlans) return;
+		response.statusPlans = JSON.parse(response.statusPlans);
+		
+		vervuegbarkeitplaene_plans = response.statusPlans;
+
+		document.getElementById("vervuegbarkeitplaeneBearbeiten_name").innerHTML = vervuegbarkeitplaene_plans["plans"][num]["name"];
+		document.getElementById("vervuegbarkeitplaeneBearbeiten_start").value = vervuegbarkeitplaene_plans["plans"][num]["from"];
+		document.getElementById("vervuegbarkeitplaeneBearbeiten_end").value = vervuegbarkeitplaene_plans["plans"][num]["to"];
+		
+		for(let i = 0; i < 7; i++) {
+			document.getElementById("vervuegbarkeitplaeneBearbeiten_" +i).checked = vervuegbarkeitplaene_plans["plans"][num]["weekdays"][i];
+		}
+		
+
+	} catch (error) {
+		console.log(error);	
+		goBack();
+		alert("Geräte konnten nicht geladen werden.");
+	}
+}
+
+async function vervuegbarkeitplaeneBearbeiten_save(action) {
+	try {
+
+		if(!action) {
+			vervuegbarkeitplaene_plans.plans[vervuegbarkeitplaeneBearbeiten_num]["name"] = document.getElementById("vervuegbarkeitplaeneBearbeiten_name").innerHTML;
+			vervuegbarkeitplaene_plans.plans[vervuegbarkeitplaeneBearbeiten_num]["from"] = document.getElementById("vervuegbarkeitplaeneBearbeiten_start").value;
+			vervuegbarkeitplaene_plans.plans[vervuegbarkeitplaeneBearbeiten_num]["to"] = document.getElementById("vervuegbarkeitplaeneBearbeiten_end").value;
+
+			for(let i = 0; i < 7; i++) {
+				vervuegbarkeitplaene_plans.plans[vervuegbarkeitplaeneBearbeiten_num]["weekdays"][i] = document.getElementById("vervuegbarkeitplaeneBearbeiten_" +i).checked;
+			}
+		} else {
+			vervuegbarkeitplaene_plans.plans.push(
+				{"name": "NAME", "from":"", "to":"", "active": false, "weekdays": [false, false, false, false, false, false, false] }
+			);			
+		}
+
+		var getUrl = window.location;
+		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+		var url = new URL('app/api/setVervPlans', baseUrl);
+
+		let response = await fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(vervuegbarkeitplaene_plans), // body data type must match "Content-Type" header,
+		})
+
+		vervuegbarkeitplaene_load();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Kalender Termin konnte nicht gespeichert werden.");
+	}
+}
+
+async function vervuegbarkeitplaeneBearbeiten_delete(action) {
+	try {
+
+		vervuegbarkeitplaene_plans.plans.splice(vervuegbarkeitplaeneBearbeiten_num, 1);
+
+		var getUrl = window.location;
+		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+		var url = new URL('app/api/setVervPlans', baseUrl);
+
+		let response = await fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(vervuegbarkeitplaene_plans), // body data type must match "Content-Type" header,
+		})
+
+		vervuegbarkeitplaene_load();
+		vervuegbarkeitplaene_load();
+		goBack();
+
+
+	} catch (error) {
+		console.log(error);	
+		alert("Kalender Termin konnte nicht gespeichert werden.");
+	}
 }

@@ -4,7 +4,7 @@
 		<button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
 		<h1>Kalender</h1>
 		<div class="right hidden" id="kalender_btnAdd">			
-			<button class="blue-grey-900 icon ion-plus" onclick="kalenderBearbeiten_save(true)"></button>
+			<button class="blue-grey-900 icon ion-plus" onclick="kalenderBearbeiten_callback = kalender_loadKalender; kalenderBearbeiten_save(true, kalender_loadKalender);"></button>
 		</div>
 	</div>		    
 

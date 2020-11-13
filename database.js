@@ -182,6 +182,12 @@ module.exports = function () {
   const deleteKalender = async function (id) {
     return await dbQuery('DELETE FROM "main"."kalender" WHERE id IN(?)', id);
   } 
+  const setVerfuegbarkeitPlans = async function (uid, plans) {
+    return await dbQuery('UPDATE "main"."users" SET "statusPlans"=? WHERE "telegramid"=?', plans.toString(), parseInt(uid));
+  }
+  const getVerfuegbarkeitPlans = async function (uid) {
+    return await dbQuery('SELECT statusPlans FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+  }
 
 
 
@@ -384,6 +390,25 @@ module.exports = function () {
           console.error("[APP] Database error: " + err);
         });
 
+        // Spalte statusPlans
+        db.all('PRAGMA table_info("users")').then((rows) => {
+          var exists = false;
+          rows.forEach(function (element) {
+            if (element.name == "statusPlans")
+              exists = true;
+          });
+          if (!exists) {
+            db.run('ALTER TABLE users ADD statusPlans TEXT;').then(rows => {
+              debug("Created Column statusPlans in users");
+            }).catch(err => {
+              console.error("[APP] Database error: " + err);
+            })
+          }
+        }).catch(err => {
+          console.error("[APP] Database error: " + err);
+        });
+
+
 
 
       })
@@ -434,6 +459,8 @@ module.exports = function () {
     addKalender,
     updateKalender,
     deleteKalender,
+    setVerfuegbarkeitPlans,
+    getVerfuegbarkeitPlans,
     update
   };
 }

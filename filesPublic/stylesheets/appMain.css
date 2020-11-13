@@ -81,10 +81,21 @@ body {
     color: light-gray;
     background-color: transparent;
 }
+*[contenteditable][placeholder]:empty:before {
+    content: attr(placeholder);
+    position: absolute;
+    color: light-gray;
+    background-color: transparent;
+}
 [contenteditable] {
-    -webkit-user-select: text;
+    -webkit-user-select: auto !important;
     user-select: text;
-    -webkit-user-modify:read-write;
+    -webkit-user-modify: read-write;
+}
+*[contenteditable] {
+    -webkit-user-select: auto !important;
+    user-select: text;
+    -webkit-user-modify: read-write;
 }
 .clear {
     float: clear;

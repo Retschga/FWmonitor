@@ -133,8 +133,8 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 
 		wss.on('connection', function connection(ws) {
 			ws.interval = setInterval(function(){ 
-				ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ' ')); 			
-				debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ' '));
+				ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':')); 			
+				debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':'));
 				if (ws.readyState === WebSocket.CLOSED) {
 					clearInterval(ws.interval);
 					ws.terminate();
@@ -143,7 +143,7 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 
 			ws.on('message', function incoming(message) {
 				if (message == "keepAlive") {
-					ws.send('keepAlive|OK');
+					ws.send('keepAlive|OK%'+String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':'));
 					return;
 				}
 				if(message.indexOf('WebClient') != -1) {

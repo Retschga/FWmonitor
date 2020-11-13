@@ -6,6 +6,8 @@ module.exports = function () {
 	// ----------------  STANDARD LIBRARIES ---------------- 
 	const axios = require('axios');
 	const debug = require('debug')('geocodeManager');
+	const csv = require('csv-parser')
+	const fs = require('fs')
 	
 	// ----------------  DIFFMATCH ---------------- 
 	var diffmatch = require('./diff_match_patch.js');
@@ -86,13 +88,58 @@ module.exports = function () {
 		
 		return ret;
 	}
+
+	// Suche nach Bahnübergang
+	async function bahnuebergaenge(OBJEKT) {
+		return new Promise(async (resolve, reject) => {
+			const results = [];
+			let s = OBJEKT.split(' ');
+			s = s[s.length -1];
+ 
+			fs.createReadStream('bahnuebergaenge.csv')
+			.pipe(csv({ separator: ';' }))
+			.on('data', (data) => {
+				if(data['BEZEICHNUNG'].indexOf(s) != -1) {
+					results.push(data)
+				}
+			})
+			.on('end', () => {
+				debug(results);
+				if(results.length == 1) {
+					debug("Bahnübergang gefunden");
+					resolve(results[0]);					
+					// [
+					//   { NAME: 'Daffy Duck', AGE: '24' },
+					//   { NAME: 'Bugs Bunny', AGE: '22' }
+					// ]
+				} else {
+					reject("Bahnübergang nicht gefunden");
+				}
+			});
+		});		
+	}
 	
 	// Geocode Adresse
 	async function geocode(searchString, isAddress, OBJEKT, ORT) {		
 		var ret = {lat: 0, lng: 0, isAddress: isAddress};	
 		var isHighway = false;	
 		debug('Suche: ', searchString);	
-		
+
+		if(OBJEKT.toLowerCase().indexOf('bahn') != -1) {
+			await bahnuebergaenge( OBJEKT )
+			.then((response) => {
+				debug("Response", response);	
+				if(response) {							
+					ret.lat = response['GEOGR_BREITE'].replace(',', '.');
+					ret.lng = response['GEOGR_LAENGE'].replace(',', '.');
+					ret.isAddress = true;
+					debug('Ergebnis: Bahnübergang ', ret);
+				}
+			})
+			.catch((err) => { console.error('[GeocodeManager] [Bahnübergang] Fehler ', err) });
+		}
+		if(ret.lat != 0) return ret;
+
 		// Bing Geocode
 		await geocodeBing( searchString )
 		.then((response) => {

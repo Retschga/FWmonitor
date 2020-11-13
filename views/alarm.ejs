@@ -186,11 +186,11 @@
 	
 			
 			var icons = {
-				'pillar': L.icon({iconUrl: "/images/Ofm_hydrant_p_17.png",iconSize: [24,32]}),
-				'underground': L.icon({iconUrl: "/images/Ofm_hydrant_u_17.png",iconSize: [24,32]}),
-				'pond': L.icon({iconUrl: "/images/Ofm_openwater_17.png",iconSize: [24,32]}),
-				'water_tank': L.icon({iconUrl: "/images/Ofm_water_tank_17.png",iconSize: [24,32]}),
-				'rettPkt': L.icon({iconUrl: "/images/rettPkt.png",iconSize: [24,30]})
+				'pillar': L.icon({iconUrl: "/images/map_marker_hydrant_ueberflur.png",iconSize: [24,32]}),
+				'underground': L.icon({iconUrl: "/images/map_marker_hydrant_unterflur.png",iconSize: [24,32]}),
+				'pond': L.icon({iconUrl: "/images/map_marker_openwater.png",iconSize: [24,32]}),
+				'water_tank': L.icon({iconUrl: "/images/map_marker_tank.png",iconSize: [24,32]}),
+				'rettPkt': L.icon({iconUrl: "/images/map_marker_rettPkt.png",iconSize: [24,30]})
 			}
 			
 			function loadHydrantenData() {
@@ -480,7 +480,7 @@
 							window.location.href = '/alarm?tempID=' + msg[0];
 							//location.reload();
 						} 
-							
+								
 						if(topic == 'zurueck')
 							window.location.href = '/';
 

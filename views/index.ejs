@@ -419,14 +419,12 @@
 				
 				// Keep Alive
 				if(topic == 'keepAlive') {
-					if(msg == "OK") {
-						lastKeepAlive = new Date();
-						
-						if(document.getElementById("offlinewarning").style.visibility == "visible") {
-							closeLoading();
-						}
-						document.getElementById("offlinewarning").style.visibility = "hidden"; 
+					lastKeepAlive = new Date();
+					
+					if(document.getElementById("offlinewarning").style.visibility == "visible") {
+						closeLoading();
 					}
+					document.getElementById("offlinewarning").style.visibility = "hidden"; 
 				}
 	
 				// Alarm

@@ -25,15 +25,19 @@
 				</div>
 				<div class="col-34">
 					<div style="display:table; height: 100%;">
-						<h2 id="verfuegbarkeit_status_verf" class="" style="display:table-cell; vertical-align: middle; padding-left:1em; padding-right:1em;">
+						<h2 id="verfuegbarkeit_status_verf" class="" style="height: 2.5em;display:table-cell; vertical-align: middle; padding-left:1em; padding-right:1em;">
 							####
 						</h2>
 					</div>
 				</div>
-				
-				<button class="col red-600 border-red-300 radius" onclick="verfuegbarkeit_toggleStatus()">
+			</div>	
+			<div class="item row">				
+				<button class="col-50 red-600 border-red-300 radius" onclick="verfuegbarkeit_toggleStatus()">
 					Umschalten
 				</button>
+				<button class="col-50 red-600 border-red-300 radius" onclick="openPage('filesHTTPS/verfuegbarkeitPlan', null, vervuegbarkeitplaene_load)">
+					Pläne
+				</button>				
 			</div>	
 			<div id="verfuegbarkeit_status_bis_container" class="item row hidden" style="margin-top: 1em;"> 
 				<div class="col-20">	

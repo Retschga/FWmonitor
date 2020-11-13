@@ -814,7 +814,7 @@ module.exports = function (_httpServer, destroySession) {
 			result = "";
 		}
 
-		await setVervFalse(ctx.from.id);
+		await setVervFalse(ctx.from.id, result);
 
 		ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
 		ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
@@ -858,6 +858,13 @@ _${st_nichtverf}_`,
 	});
 
 	var interval = setInterval(async () => {
+		function addZero(i) {
+			if (i < 10) {
+			  i = "0" + i;
+			}
+			return i;
+		}
+
 		debug('intervalVerfügbarkeit');
 		try {
 
@@ -866,14 +873,36 @@ _${st_nichtverf}_`,
 			if (rows == undefined) {
 				console.error("Interval Error: Keine Zeile zurückgegeben");
 			} else {
-				var dateNow = new Date();
-				rows.forEach(async (element) => {
+				let dateNow = new Date();
+				let dateNow_h = addZero(dateNow.getHours());
+				let dateNow_m = addZero(dateNow.getMinutes());
+				let dateNow_d = dateNow.getDay();
+				
+				rows.forEach(async (element) => {					
 					if (element.statusUntil != "") {
-						var dateUntil = new Date(element.statusUntil);
+						let dateUntil = new Date(element.statusUntil);
 						if (dateUntil < dateNow) {
 							await setVervTrue(element.telegramid);
 							bot.telegram.sendMessage(element.telegramid, '🚒 Status -> 🟩  Verfügbar', Telegraf.Extra.markdown());
 						}
+					} else if(
+						element.statusPlans != "" 
+						&& element.statusPlans != null
+						&& element.status != 2
+					) {
+						let el = JSON.parse(element.statusPlans);
+						el.plans.forEach(async (plan) => {
+							if(plan.weekdays[dateNow_d] = true
+								&& plan.active == true
+								&& plan.from == (dateNow_h + ':' + dateNow_m) 
+							) {
+								let dateUntil = new Date();
+								dateUntil.setHours(plan.to.split(':')[0]);
+								dateUntil.setMinutes(plan.to.split(':')[1]);
+								await setVervFalse(element.telegramid, dateUntil);
+								bot.telegram.sendMessage(element.telegramid, '🚒 Status ->  Nicht Verfügbar', Telegraf.Extra.markdown());
+							}
+						});
 					}
 				});
 			}
@@ -881,7 +910,7 @@ _${st_nichtverf}_`,
 		} catch (error) {
 			console.error('[TelegramBot] Interval Verfügbarkeit Fehler', error);
 		}
-	}, 90000);
+	}, 55000);
 
 	async function setVervTrue(telID) {
 		debug('setVervTrue', telID);
@@ -905,11 +934,13 @@ _${st_nichtverf}_`,
 		}
 	}
 
-	async function setVervFalse(telID) {
+	async function setVervFalse(telID, until) {
 		debug('setVervFalse', telID);
 		try {
 
-			await db.setVerfuegbar(telID, 2, "");
+			if(!until) until = "";
+
+			await db.setVerfuegbar(telID, 2, until);
 
 			let rows = await db.getUser(telID);
 

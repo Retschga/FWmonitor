@@ -97,8 +97,6 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		else 
 			getAll = true;
 
-		console.log("getall " + getAll);
-
 		let termine = await calendar.getCalendarByPattern(getAll)
 			.catch((err) => { console.error('[appIndex] Kalender Fehler', err) });
 
@@ -489,14 +487,14 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			return;
 		}
 
-		var result = new Date();
+		var result =  new Date();
 		result.setDate(result.getDate() + parseInt(days, 10));
 		if (days == -1 || status == 1) {
 			result = "";
 		}
 
 
-
+ 
 		await db.setVerfuegbar(req.session.telegramID, status, result).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		db.getUser(req.session.telegramID)
@@ -543,6 +541,30 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		});
 
 		res.json({ numVerf: st_verfNum, numNVerf: st_nichtverfNum, nameVerf: st_verf, nameNVerf: st_nichtverf });
+	});
+
+	// post setVervPlans
+	router.post('/api/setVervPlans', async function (req, res) {
+		let plans = req.body.plans;
+		if (plans == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
+		await db.setVerfuegbarkeitPlans(req.session.telegramID, '{"plans":'+JSON.stringify(plans)+'}').catch((err) => { console.error('[appIndex] DB Fehler', err) });
+
+		res.send('OK');
+	});
+
+	// get getVervPlans
+	router.get('/api/getVervPlans', async function (req, res) {
+		let rows = await db.getVerfuegbarkeitPlans(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		if (rows == undefined) {
+			res.send("Fehler");
+			return;
+		}
+
+		res.json(rows[0]);
 	});
 
 

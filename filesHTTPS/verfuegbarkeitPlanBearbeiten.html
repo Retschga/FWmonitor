@@ -1,0 +1,102 @@
+<div class="page">      
+       
+	<div class="header red-600">
+        <button class="left icon icon ion-close-round" name="button" onclick="vervuegbarkeitplaeneBearbeiten_save(); goBack();"></button>
+        <h1>Plan bearbeiten</h1>
+        <div class="right">
+			<button class="blue-grey-900" onclick="vervuegbarkeitplaeneBearbeiten_save()">Speichern</button>
+		</div>
+    </div>		
+	
+
+    <div class="content has-header">
+
+        <div class="row padding red-400">
+            <div class="padding">
+                <div class="col-25 padding list circle red-200">
+                    <div class="text-red item align-center ">
+                        <span class="text-huge">🕘</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col padding">
+                <div class="item">
+                    <label class="text-light">Planname</label>
+                    <div 
+                        class="lineWarpInput text-big padding red-200 radius" 
+                        contenteditable 
+                        placeholder="Text..." 
+                        onkeypress="return (this.innerText.length <= 45)"
+                        id="vervuegbarkeitplaeneBearbeiten_name"
+                    >
+                    </div>
+                   <!-- <input type="text" class="text-big" placeholder="Text ...">-->
+                </div>
+            </div> 
+        </div>
+
+        <div class="list">
+            <div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Nicht Verfügbar:
+                </p>
+            </div>
+            <div class="item label-fixed">
+                <label>Startzeit</label>
+                <input type="time" id="vervuegbarkeitplaeneBearbeiten_start" class="align-right" onchange="">
+            </div>
+            <div class="item label-fixed">
+                <label>Endzeit</label>
+                <input type="time" id="vervuegbarkeitplaeneBearbeiten_end" class="align-right" onchange="">
+            </div>    
+
+            <div class="item small-space grey-300 text-grey-700">
+                <p>
+                    Tage:
+                </p>
+            </div>
+            <div class="item label-fixed">
+                <label>Montag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_1"></div>           
+            </div>    
+            <div class="item label-fixed">
+                <label>Dienstag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_2"></div>           
+            </div> 
+            <div class="item label-fixed">
+                <label>Mittwoch</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_3"></div>           
+            </div> 
+            <div class="item label-fixed">
+                <label>Donnserstag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_4"></div>           
+            </div> 
+            <div class="item label-fixed">
+                <label>Freitag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_5"></div>           
+            </div> 
+            <div class="item label-fixed">
+                <label>Samstag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_6"></div>           
+            </div> 
+            <div class="item label-fixed">
+                <label>Sonntag</label>
+                <div class="right"><input type="checkbox" class="green" id="vervuegbarkeitplaeneBearbeiten_0"></div>           
+            </div>    
+        </div>
+
+            
+            
+        <div class="space"></div>
+
+        <div class="item">
+            <button class="item red-600 border-grey-200 radius small" onclick="vervuegbarkeitplaeneBearbeiten_delete()">
+                Plan Löschen
+            </button>
+        </div>
+
+        <div class="space"></div>
+
+   </div>
+
+</div>

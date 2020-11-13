@@ -98,7 +98,7 @@ window.openPage = function(p, params, callback){
   xhttp.timeout = 20000; // time in milliseconds
   xhttp.onload = function() {
     if (this.readyState == 4) {
-		 if (xhttp.status >= 200 && xhttp.status < 304) {
+		 if (xhttp.status >= 200 && xhttp.status < 304 || xhttp.status == 401) {
 			  closeLoading();	
 			  var page = this.responseText;
 			  page = page.replace('backPage()','backPage(\''+p+'\')');

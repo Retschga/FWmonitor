@@ -481,13 +481,11 @@
 
 					// Keep Alive
 					if(topic == 'keepAlive') {
-						//if(msg == "OK") {
-							lastKeepAlive = new Date();
-							
-							index_status_VERBINDUNG(true);
+						lastKeepAlive = new Date();
+						
+						index_status_VERBINDUNG(true);
 
-							wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
-						//}
+						wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
 					}
 					// reload
 					if(topic == 'reload') {

@@ -250,11 +250,11 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			if (req.session.telegramID) {
 				next();
 			} else {
-				res.render('appRedirect', {
+				res.status(401).render('appRedirect', {
 					page: '',
 					data: {
 					}
-				});
+				});				
 				//res.redirect('/app/login.html');
 			}
 		} catch (err) {
