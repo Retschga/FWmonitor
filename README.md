@@ -253,4 +253,4 @@ Ich übernehme keine Haftung für die Funktion der Software vor Ort. Da über di
 ![Bild](/Screenshot1.PNG "Bild")
 ![Bild](/Screenshot2.PNG "Bild")
 ![Bild](/Screenshot3.PNG "Bild")
-![Bild](/Screenshot4.PNG "Bild")
+![Bild](/Screenshot4.PNG "Bild" | width=250)
