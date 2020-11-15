@@ -3,15 +3,43 @@
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem Bildschirm darzustellen. 
 Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.
 
-Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmManager.js Datei angepasst werden).
+Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmFax.js Datei angepasst werden).
 
 ## Funktionsumfang
 
-* Standby Display mit Uhrzeit, Diashow, Google Kalender, Verfügbarkeitsanzeige der Einsatzkräfte, DWD Warnungen
-* Telegram Messenger Integration mit Alarminfo (Einstellbar für verschiedene Personengruppen), Google Kalender mit Terminerinnerungen, Verfügbarkeitsanzeige, Einsatzstatistik
-* Alarmdisplay mit allen relevanten Infos aus dem Alarmfax, Kartenanzeige, Verfügbarkeitsanzeige der Einsatzkräfte
+* Standby-Display mit Uhrzeit, Diashow, Kalender/Google Kalender, Verfügbarkeitsanzeige der Einsatzkräfte, DWD Warnungen
+* Alarm-Display
+	* Alle relevanten Infos aus dem Alarmfax
+	* Kartenanzeige
+	* Rückmeldungen der Einsatzkräfte
+* PDF-Display für Schulungspräsentationen etc.
+* Telegram Messenger 
+	* Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
+	* Rückmeldungen zum Alarm
+	* Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
+	* Verfügbarkeits Anzeige/Einstellung
+	* Einsatzstatistik
+	* Hydrantenposition eintragen
+* Installierbare WebApp für Android und IOS
+	* Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
+	* Rückmeldungen zum Alarm
+	* Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
+	* Bearbeiten des Kalenders
+	* Verfügbarkeits Anzeige/Einstellung
+	* Verfügbarkeits Pläne (Wochentagsweise)
+	* Hydrantenkarte
+	* Einsatzstatistik
+	* Admin-Optionen
+		* Benutzereinstellungen
+		* Kalendergruppen
+		* Alarmgruppen
+		* Präsentationssteuerung
 * Kartenausdruck
-* Adress-Koordinaten Suche über Bing, Nominatim, Und OSM Gebäudenamen
+* Adress-Koordinaten Suche über
+	* Bing
+	* Nominatim
+	* OSM Gebäudenamen
+	* Bahnübergänge
 * Kalender mit Erinnerungen und Gruppen
 * Alarmdrucker Papierlevel-Warnung
 * ...
@@ -19,14 +47,14 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 ## Installation
 
 Raspberry PI: 
- - `sudo apt-get install git`
+ - GIT installieren `sudo apt-get install git`
  - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
  - `sudo apt-get install printer-driver-cups-pdf`
  - im Browser unter `127.0.0.1:631` CUPS konfigurieren (Login gleich wie Raspberry): 
    gewünschten Drucker als `Alarmdrucker` (Name) einrichten; PDF-Printer als `PDFPrint` (Name) einrichten 
  - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen (am besten als ganzer Pfad /home/pi/...)
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
- - `sudo apt-get install tesseract-ocr`  
+ - Tesseract installieren `sudo apt-get install tesseract-ocr`  
    (Test mit: `tesseract -v`)
  - `cd /home/pi/Desktop/`
  - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405 und https://pypi.org/project/pdf2image/ und https://github.com/windele/alarmdisplay-ffw/blob/master/infos/Installation_auf_Raspberry_Pi.md
@@ -50,8 +78,8 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) sudo unter Windows
 ## Update
  
 - Einfach die Dateien nochmal herunterladen und die alten ersetzen
-- .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen
-- `npm install`
+- .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen/ändern/löschen
+- Libraries updaten `npm install`
 - Software neu starten 
  
 ## Autostart 
@@ -78,16 +106,16 @@ Raspberry:
 	sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /home/pi/.config/chromium/Default/Preferences
 
 
-	@chromium-browser --disable-features=InfiniteSessionRestore --disable-session-crashed-bubble --no-first-run --noerrors --disable-infobars --enable-webgl --ignore-gpu-blacklist --start-fullscreen --app=http://IP-ADRESSE:8080/
+	@chromium-browser --disable-features=InfiniteSessionRestore --disable-session-crashed-bubble --no-first-run --noerrors --disable-infobars --enable-webgl --ignore-gpu-blacklist --start-fullscreen --app=http://HIER_IP_ADRESSE_EINTRAGEN:8080/
 	@unclutter -idle 0
 	```
-- oder siehe https://github.com/t08094a/alarmDisplay/tree/master/kiosk
 	
 - evtl Neustart jeden Tag 09:00 Uhr:
-	- `sudo crontab -e`; darin `00 09 * * * /sbin/shutdown -r now` hinzufügen
+	- `sudo crontab -e`
+	-  darin `00 09 * * * /sbin/shutdown -r now` hinzufügen
 
 Windows:
- - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen (Nur bei Programminstallation unter Windows)
+ - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
  - Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
 
 ## Einstellungen
@@ -97,7 +125,7 @@ Windows:
 `.env - Leer` Datei zu `.env` umbenennen (Konsole: Windows: `ren ".env - Leer" ".env"`; Raspberry: `mv ".env - Leer" ".env"`)
 
 Alle relevanten Einstellungen in der .env Datei bearbeiten
-Der Archivordner sollte der gleiche sein, in dem die Orginal Fax PDF´s / TIFF´s abgelegt sind (für Telegram Alarmfaxsendefunktion)
+Der Archivordner sollte der gleiche sein, in dem die Orginal Fax PDF´s / TIFF´s abgelegt werden (für Telegram Alarmfaxsendefunktion)
 
 Logo unter `public/images/logo.png` austauschen
 
@@ -124,12 +152,11 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 - https://certbot.eff.org/lets-encrypt/windows-other befolgen
 - Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
 
-- Alternativ kann auch ein anderer DynDNS Dienst oder eine feste IP verwendet werden
+- Alternativ zu MyFritz kann auch ein anderer DynDNS Dienst oder eine feste IP verwendet werden
 
-- Port 8080 bzw. un .env eingestellter "HTML_PORT" darf keinesfalls freigegeben werden!
+- Port 8080 bzw. un .env eingestellter "HTML_PORT" darf keinesfalls freigegeben werden! (hier besteht kein Passwortschutz)
 
-- In Konsole: 
-- `./node_modules/.bin/web-push generate-vapid-keys`
+- In Konsole: `./node_modules/.bin/web-push generate-vapid-keys` ausführen
 - Werte in .env unter "VAPID" eintragen
 
 ## Programmstart (manuell)
@@ -155,8 +182,14 @@ in OpenStreetMap eingetragen werden.
 ## Alarmdrucker Papierüberwachung
 
 Es wird eine Warnung an ausgewählte Personen gesendet, falls das Druckerpapier leer ist.
-In .env die Internetseite des Alarm-Netzwerkdruckers eintragen, auf der der Papierlevel angezeigt wird.
+In .env die Internetseite des Alarm-Netzwerkdruckers und das zu suchende Pattern eintragen, auf der der Papierlevel angezeigt wird.
 
+## Bewegungsmelder Steuerskript (Raspberry PI)
+- Anschluss des PIR siehe anschlussplan.PNG (Bei Verwendung eines Relais an 230V: Anschluss nur durch berechtigte Personen. Verwenden auf eigene Gefahr!)
+- Autostart: `sudo crontab -e` 
+- darin `@reboot python "/home/pi/steuer.py" #>> "/home/pi/steuer.log"` hinzufügen
+
+Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk/MonitorActivation
 
 
 ## Built With
@@ -165,17 +198,18 @@ In .env die Internetseite des Alarm-Netzwerkdruckers eintragen, auf der der Papi
 * npm - Dependency Management
 * jquery
 * leaflet
+* OpenLayers 3
 * Bing Geocode
 * openstreetmap - https://www.openstreetmap.org/fixthemap
 *   Hillshading - https://klokantech.github.io/dare-raster-tiles/hillshade/
 * 	Overpass - https://wiki.openstreetmap.org/wiki/DE:Overpass_API
 * 	OpenFireMap - https://wiki.openstreetmap.org/wiki/DE:OpenFireMap
 * 	Nominatim Geocode - https://nominatim.openstreetmap.org/
-* Ghostscript https://www.ghostscript.com/download/gsdnld.html
-* diff-match-patch https://github.com/google/diff-match-patch [Apache License 2.0]
+* diff-match-patch - https://github.com/google/diff-match-patch
 * Diashow - https://gist.github.com/mhulse/66bcbb7099bb4beae530
-* https://gist.github.com/aeroaks/ac4dbed9c184607a330c
-* https://mobileui.github.io/
+* Python Timer - https://gist.github.com/aeroaks/ac4dbed9c184607a330c
+* MobileUi - https://mobileui.github.io/
+* Bahnübergänge - https://data.deutschebahn.com/dataset/geo-bahnuebergang
 
 ## Authors
 
@@ -195,3 +229,4 @@ Ich übernehme keine Haftung für die Funktion der Software vor Ort. Da über di
 ![Bild](/Screenshot1.PNG "Bild")
 ![Bild](/Screenshot2.PNG "Bild")
 ![Bild](/Screenshot3.PNG "Bild")
+![Bild](/Screenshot4.PNG "Bild")

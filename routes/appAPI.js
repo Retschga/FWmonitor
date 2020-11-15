@@ -334,27 +334,31 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			await loadGebaudeData();
 
 
-		// add your api_key here
-		var Directions = new openrouteservice.Directions({
-			api_key: process.env.ORS_KEY,
-		});
-
-		if (routeCache[id] == undefined && rows.lat != "" && rows.lng != "") {
-			let direct = await Directions.calculate({
-				coordinates: [process.env.FW_KOORD.split(','), [rows.lng, rows.lat]],
-				profile: 'driving-car',
-				restrictions: {  },
-				extra_info: ["waytype"],
-				radiuses: [1000,5000],
-				format: 'json'
-			})
-			.catch(function(err) {
-				var str = "An error occured: " + err;
-				console.log("Route Error: " + str);
+		if(process.env.FW_KOORD != "" && process.env.ORS_KEY != "") {
+			// add your api_key here
+			var Directions = new openrouteservice.Directions({
+				api_key: process.env.ORS_KEY,
 			});
-//			console.log(direct);
-			routeCache[id] = JSON.stringify(direct);
-		} 
+
+			if (routeCache[id] == undefined && rows.lat != "" && rows.lng != "") {
+				let direct = await Directions.calculate({
+					coordinates: [process.env.FW_KOORD.split(','), [rows.lng, rows.lat]],
+					profile: 'driving-car',
+					restrictions: {  },
+					extra_info: ["waytype"],
+					radiuses: [1000,5000],
+					format: 'json'
+				})
+				.catch(function(err) {
+					var str = "An error occured: " + err;
+					console.log("Route Error: " + str);
+				});
+	//			console.log(direct);
+				routeCache[id] = JSON.stringify(direct);
+			} 
+		} else {
+			console.log("[appAPI] keine FW_KOORD oder kein ORS_KEY angegeben -> keine Route berechnet");
+		}
 
 
 		// Gruppenpattern

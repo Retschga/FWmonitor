@@ -443,7 +443,7 @@ module.exports = function (_httpServer, destroySession) {
 			console.error('[TelegramBot] #einstell_Kalender_set Fehler', error);
 		}
 	});
-	/*
+	
 	onCallback.on('einstell_Benutzer', async (ctx) => {
 		try {
 
@@ -542,7 +542,7 @@ module.exports = function (_httpServer, destroySession) {
 			})
 			.catch((err) => { console.error('[TelegramBot] Datenbank Fehler', err) });
 	});
-	*/
+	
 	onCallback.on('einstell_rebootScreen', (ctx) => {
 		ctx.answerCbQuery("Bildschirm wird neugestartet!", true);
 		_httpServer[0].wss.broadcast('rebootScreen', "");
@@ -892,7 +892,7 @@ _${st_nichtverf}_`,
 					) {
 						let el = JSON.parse(element.statusPlans);
 						el.plans.forEach(async (plan) => {
-							if(plan.weekdays[dateNow_d] = true
+							if(plan.weekdays[dateNow_d] == true
 								&& plan.active == true
 								&& plan.from == (dateNow_h + ':' + dateNow_m) 
 							) {
