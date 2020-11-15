@@ -149,8 +149,15 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 - Gerät, auf dem FWmonitor läuft auswählen
 - dann unten "Neue Freigabe", dann "MyFRITZ!-Freigabe" HTTP-Server
 - dann unten "Neue Freigabe", dann "MyFRITZ!-Freigabe" HTTPS-Server
-- https://certbot.eff.org/lets-encrypt/windows-other befolgen
-- Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
+
+- Windows: 
+	- https://certbot.eff.org/lets-encrypt/windows-other befolgen
+	- Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
+- Raspberry Pi:
+	- `cd ~`
+	- `git clone https://github.com/letsencrypt/letsencrypt`
+	- `cd letsencrypt`
+	- `./letsencrypt-auto -d ERSTE_DOMAIN -d ZWEITE_DOMAIN --redirect -m DEINE_MAIL --standalone`
 
 - Alternativ zu MyFritz kann auch ein anderer DynDNS Dienst oder eine feste IP verwendet werden
 
@@ -158,6 +165,19 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 
 - In Konsole: `./node_modules/.bin/web-push generate-vapid-keys` ausführen
 - Werte in .env unter "VAPID" eintragen
+
+- Auto Renew Let´s Encrypt
+	- Windows: Aufgabenplanung öffnen
+		- Eingache aufgabe erstellen (rechts) 
+		- Name: certbot 
+		- Wöchentlich 
+		- Sonntag 
+		- Programm Starten
+		- Programm/Skript: certbot
+		- Argumente hinzufügen: renew
+	- Raspberry Pi: `sudo crontab -e`
+		- `0 0 * * 0 ./letsencrypt-auto -d ERSTE_DOMAIN --redirect -m DEINE_MAIL --agree-tos --renew-by-default --standalone
+
 
 ## Programmstart (manuell)
 
@@ -167,6 +187,10 @@ In Konsole (Windows: Rechtsklick - Git Bash here):
 Nun im Webbrowser die IP-Adresse:8080 des Computers eingeben, auf dem FWmonitor läuft.
 (Herauszufinden in Konsole: Windows: ipconfig; Raspberry: ifconfig; Eigener PC: 127.0.0.1)
 Bsp: 192.168.2.153:8080 oder 127.0.0.1:8080
+
+## Benutzer hinzufügen
+Einfach dem erstellten Telegram-Bot /start schreiben.
+Nun kann der Benutzer über die Einstellungen freigegeben werden.
 
 ## Hydrantenfunktion
 
