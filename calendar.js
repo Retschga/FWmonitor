@@ -71,64 +71,68 @@ module.exports = function () {
                 });   
             }
             
-            if(process.env.ICAL_LINK != '')
-            ical.fromURL(process.env.ICAL_LINK, {}, function (err, data) {
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }
-
-                
-                Object.keys(data).forEach(function (key) {
-                    var entry = data[key];
-
-                    // Hat Text
-                    if (entry.summary) {
-
-                        // Ist in Zukunft
-                        if (new Date(entry.start) > Date.now() || getAll == true) {   
-                            let oKeys = Object.keys(entry);                           
-
-                             // Erinnerung auslesen
-                             let remind = undefined;
-                            if (entry[oKeys[oKeys.length - 1]].type != undefined && entry[oKeys[oKeys.length - 1]].type == "VALARM") {		
-                                var trig = entry[oKeys[oKeys.length - 1]].trigger;
-                                var d = trig.substring(trig.indexOf("P")+1, trig.indexOf("D"));
-                                var h = trig.substring(trig.indexOf("T")+1, trig.indexOf("H"));
-                                var m = trig.substring(trig.indexOf("H")+1, trig.indexOf("M"));  
-                                var dateOffset = d*(24*60*60*1000) + h*(60*60*1000) + m*(60*1000);
-                             
-                                remind = new Date(entry.start);
-                                remind.setTime(remind.getTime() - dateOffset);
-                            }
-
-                            // Gruppen auslesen
-                            let group = [];                       
-                            for(let i = 0; i < kalendergruppen.length; i++) {
-                                if(entry.summary.indexOf(kalendergruppen[i].pattern) != -1) {
-                                    group.push({id: kalendergruppen[i].id, name: kalendergruppen[i].name});
-                                }
-                            }
-                            // Keine Gruppe angegeben -> alle
-                            if(group.length < 1) {
-                                group.push({id: kalendergruppen[0].id, name: kalendergruppen[0].name});
-                            }
-
-                            // Termin speichern
-                            result.push({
-                                summary: removePattern(entry.summary),
-                                start: entry.start,
-                                end: entry.end,
-                                location: entry.location,
-                                remind: remind,
-                                group: group
-                            });   
-                        }                     
+            if(process.env.ICAL_LINK != '') {
+                ical.fromURL(process.env.ICAL_LINK, {}, function (err, data) {
+                    if (err) {
+                        console.log(err);
+                        reject(err);
                     }
-                });
+
+                    
+                    Object.keys(data).forEach(function (key) {
+                        var entry = data[key];
+
+                        // Hat Text
+                        if (entry.summary) {
+
+                            // Ist in Zukunft
+                            if (new Date(entry.start) > Date.now() || getAll == true) {   
+                                let oKeys = Object.keys(entry);                           
+
+                                // Erinnerung auslesen
+                                let remind = undefined;
+                                if (entry[oKeys[oKeys.length - 1]].type != undefined && entry[oKeys[oKeys.length - 1]].type == "VALARM") {		
+                                    var trig = entry[oKeys[oKeys.length - 1]].trigger;
+                                    var d = trig.substring(trig.indexOf("P")+1, trig.indexOf("D"));
+                                    var h = trig.substring(trig.indexOf("T")+1, trig.indexOf("H"));
+                                    var m = trig.substring(trig.indexOf("H")+1, trig.indexOf("M"));  
+                                    var dateOffset = d*(24*60*60*1000) + h*(60*60*1000) + m*(60*1000);
+                                
+                                    remind = new Date(entry.start);
+                                    remind.setTime(remind.getTime() - dateOffset);
+                                }
+
+                                // Gruppen auslesen
+                                let group = [];                       
+                                for(let i = 0; i < kalendergruppen.length; i++) {
+                                    if(entry.summary.indexOf(kalendergruppen[i].pattern) != -1) {
+                                        group.push({id: kalendergruppen[i].id, name: kalendergruppen[i].name});
+                                    }
+                                }
+                                // Keine Gruppe angegeben -> alle
+                                if(group.length < 1) {
+                                    group.push({id: kalendergruppen[0].id, name: kalendergruppen[0].name});
+                                }
+
+                                // Termin speichern
+                                result.push({
+                                    summary: removePattern(entry.summary),
+                                    start: entry.start,
+                                    end: entry.end,
+                                    location: entry.location,
+                                    remind: remind,
+                                    group: group
+                                });   
+                            }                     
+                        }
+                    });
+                    result.sort(sortByDate);
+                    resolve(result);
+                }); 
+            } else {
                 result.sort(sortByDate);
-                resolve(result);
-            }); 
+                    resolve(result);
+            }
         });
     }
 
