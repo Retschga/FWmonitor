@@ -606,11 +606,14 @@ module.exports = function (_httpServer, destroySession) {
 	async function removeUser(userid) {
 		debug('removeUser', userid);
 		try {
-
 			let telegramid = await db.getUserRowNum(userid);
 
 			destroySession(telegramid);
+		} catch (error) {
+			console.error('[TelegramBot] removeUser() Fehler', error);
+		}
 
+		try {
 			await bot.telegram.sendMessage(
 				telegramid[0].telegramid,
 				'Benutzer gelöscht!',
@@ -620,9 +623,12 @@ module.exports = function (_httpServer, destroySession) {
 					]).resize()
 				)
 			);
+		} catch (error) {
+			console.error('[TelegramBot] removeUser() Fehler', error);
+		}
 
+		try {
 			await db.deleteUser(userid);
-
 		} catch (error) {
 			console.error('[TelegramBot] removeUser() Fehler', error);
 		}
