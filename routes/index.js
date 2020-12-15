@@ -35,7 +35,7 @@ router.get('/', function (req, res) {
 				src.push("/images/slideshow/" + items[i]);
         }
 
-        db.getStatusAll()
+        db.getUserStatusAll()
 		.then((rows) => {
 
 			var st_verv = [];

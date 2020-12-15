@@ -10,6 +10,9 @@ module.exports = function () {
     const fs = require('fs');
 
     // ----------------  Papierüberwachung ---------------- 
+    /**
+     * Drucker Papierüberwachung
+     */
     async function isNotFull() {
         let ret = false;
 
@@ -30,6 +33,9 @@ module.exports = function () {
 
         return ret;
     }
+    /**
+     * Drucker Papierüberwachung HTTP GET
+     */
     async function isNotFull1() {
         debug('isNotFull1');
         var browser = await puppeteer.launch();
@@ -56,14 +62,16 @@ module.exports = function () {
 
         } catch (err) {
             await browser.close();
-            console.error(err);
+            console.error("[printer] ", err);
             return null;
         }
         await browser.close();
         debug('null');
         return null;
     };
-
+    /**
+     * Drucker Papierüberwachung IPP
+     */
     async function isNotFull2() {
         debug('isNotFull2');
         let printerURI = process.env.DRUCKERURL;
@@ -78,7 +86,7 @@ module.exports = function () {
 
         ipp.request(printerURI, data, function (err, res) {
             if (err) {
-                return console.log(err);
+                return console.error("[printer] ", err);
             }
             debug("Status: " + res["printer-attributes-tag"]["printer-state"]);
             debug("Grund: " + res["printer-attributes-tag"]["printer-state-reasons"]);
@@ -91,7 +99,11 @@ module.exports = function () {
         return null;
     };
 
-    // ----------------  Drucken ---------------- 
+    // ----------------  Drucken ----------------
+    /**
+     * Drucken einer Datei
+     * @param {String} path 
+     */
     function print(path) {
         if (process.env.DRUCKERURL != '') {
             print2(path);
@@ -100,7 +112,10 @@ module.exports = function () {
             print1(path);
         }
     }
-
+    /**
+     * Drucken FoxitReader/CUPS
+     * @param {String} path 
+     */
     function print1(path) {
         debug('print1');
         if (process.env.RASPIVERSION == "false") {
@@ -112,7 +127,7 @@ module.exports = function () {
 
                 exec(cmd, function (error, stdout, stderr) {
                     if (error) {
-                        console.log('error:', err);
+                        console.error("[printer] ", err);
                     }
 
                     debug(stdout)
@@ -129,7 +144,7 @@ module.exports = function () {
 
                 exec(cmd, function (error, stdout, stderr) {
                     if (error) {
-                        console.log('error:', err);
+                        console.error("[printer] ", err);
                     }
 
                     debug(stdout)
@@ -139,7 +154,10 @@ module.exports = function () {
 
         }
     }
-
+    /**
+     * Drucken IPP
+     * @param {String} filename 
+     */
     function print2(filename) {
         debug('print2');
         let printerURI = process.env.DRUCKERURL;
@@ -157,8 +175,8 @@ module.exports = function () {
             };
 
             printer.execute("Print-Job", msg, function (err, res) {
-                console.log('err', err);
-                console.log('res', res);
+                debug('err', err);
+                debug('res', res);
             });
 
         });

@@ -4,6 +4,7 @@
 module.exports = function () {
 
   const debug = require('debug')('database');
+  const dbFile = 'save.sqlite3';
 
   // ----------------  SQLITE ---------------- 
   const Database = require('sqlite-async');
@@ -11,7 +12,7 @@ module.exports = function () {
   // ---------------- Datenbankfunktionen ----------------	
   const dbQuery = async function (str, ...values) {
     return new Promise(async (resolve, reject) => {
-      var db = await Database.open('save.sqlite3').catch(err => reject(err));
+      var db = await Database.open(dbFile).catch(err => reject(err));
       var statement = await db.prepare(str).catch(err => reject(err));
       statement.bind(values).catch(err => reject(err));
       var rows = await statement.all().catch(err => reject(err));
@@ -22,33 +23,74 @@ module.exports = function () {
     });
   }
 
-
-  const getUser = async function (uid) {
+  // ---- User ----
+  const getUserByUid = async function (uid) {
     return await dbQuery('SELECT * FROM users WHERE "telegramid"=?', parseInt(uid));
   }
-  const getUserRowNum = async function (uid) {
-    return await dbQuery('SELECT * FROM users WHERE "id"=?', parseInt(uid));
+  const getUserByRowNum = async function (row) {
+    return await dbQuery('SELECT * FROM users WHERE "id"=?', parseInt(row));
   }
   const getUserAll = async function () {
     return await dbQuery('SELECT * FROM users ORDER BY "name" ASC, "vorname" ASC');
   }
-  const getAllowedUser = async function () {
+  const getUserAllowed = async function () {
     return await dbQuery('SELECT users.*, groups."pattern" FROM users LEFT JOIN groups ON users."group" = groups."id" WHERE "allowed"="1"');
   }
-  const getStatus = async function (uid) {
+
+  // ---- User Status ----
+  const getUserStatusByUid = async function (uid) {
     //return await dbQuery('SELECT * FROM users ' + (uid != undefined ? (' WHERE "telegramid"=' + uid) : ""));
     return await dbQuery('SELECT status, stAGT, stMA, stGRF, stZUGF, statusUntil, sendRemembers, appNotifications, kalenderGroups FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
   }
-  const getStatusAll = async function () {
-    return await dbQuery('SELECT * FROM users');
+  const getUserStatusAll = async function () {
+    return await dbQuery('SELECT * FROM users WHERE allowed == 1 AND statusHidden <> 1 ORDER BY "name" ASC, "vorname" ASC');
   }
-  const isAllowed = async function (uid) {
-    var rows = await getUser(uid);
+  const setUserStatus = async function (uid, status, until) {
+    return await dbQuery('UPDATE "main"."users" SET "status"=?, "statusUntil"=? WHERE "telegramid"=?', status, until.toString(), parseInt(uid));
+  }
+  const setUserStatusPlan = async function (uid, plans) {
+    return await dbQuery('UPDATE "main"."users" SET "statusPlans"=? WHERE "telegramid"=?', plans.toString(), parseInt(uid));
+  }
+  const getUserStatusPlan = async function (uid) {
+    return await dbQuery('SELECT statusPlans FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+  }
+  const setUserStatusHidden = async function (uid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "statusHidden"=? WHERE "telegramid"=?', parseInt(value), parseInt(uid));
+  }
+  const getUserStatusHidden = async function (uid) {
+    return await dbQuery('SELECT statusHidden FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+  }
+
+  // ---- User Settings ----
+  const setUserPassword = async function (uid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "appPasswort" = ? WHERE "telegramid"= ? ', value, parseInt(uid));
+  }
+  const getUserLogin = async function (uid) {
+		return await dbQuery("SELECT appPasswort, admin, kalender FROM users WHERE telegramid=?", parseInt(uid));       
+  }
+  const getAutoLogin = async function (appBenutzer) {
+		return await dbQuery("SELECT appPasswort, appBenutzer, name, id FROM autos WHERE appBenutzer=?", appBenutzer);       
+  }
+  const setUserColumn = async function (uid, type, value) {
+		return await dbQuery('UPDATE "main"."users" SET "' + type + '"= ? WHERE "id"= ? ', value, parseInt(uid));
+  };
+
+  // ---- User Notifications ----
+  const getUserNotificationsSubscription = async function () {
+    return await dbQuery('SELECT "appNotifications", "appNotificationsSubscription" AS endpoint, telegramid, "drucker", "group", "stAGT", "stMA", "stGRF", "stZUGF", "admin"  FROM users');         
+  }
+  const setUserNotificationsSubscription = async function (uid, val) {
+    return await dbQuery('UPDATE "main"."users" SET "appNotificationsSubscription"=? WHERE "telegramid"=?', val, parseInt(uid));         
+  }
+  const setUserNotifications = async function (uid, val) {
+		return await dbQuery('UPDATE "main"."users" SET "appNotifications"=? WHERE "telegramid"=?', val, parseInt(uid));
+  }
+
+  // ---- User Add/Remove/Allowed ----
+  const isUserAllowed = async function (uid) {
+    var rows = await getUserByUid(uid);
     if (rows[0] != undefined)
       return rows[0].allowed == 1;
-  }
-  const setVerfuegbar = async function (uid, status, until) {
-    return await dbQuery('UPDATE "main"."users" SET "status"=?, "statusUntil"=? WHERE "telegramid"=?', status, until.toString(), parseInt(uid));
   }
   const addUser = async function (uid, name, vorname) {
     // war mit .run()
@@ -60,18 +102,20 @@ module.exports = function () {
   const deleteUser = async function (uid) {
     return await dbQuery('DELETE FROM "main"."users" WHERE _rowid_ IN(?)', parseInt(uid));
   } 
+
+  // ---- User Group ----
   const changeUserGroup = async function (uid, group) {
     //return await dbQuery('UPDATE "main"."users" SET "group"=? WHERE "id"=?', group, parseInt(uid));
 		return await dbQuery('UPDATE "main"."users" SET "group"=? WHERE "id"=?', (group * 1 + 1), parseInt(uid));
 	};
-  const getAlarmList = async function (offset, row_count) {
-    if(!offset) offset = 0;
-    if(!row_count) row_count = 100;
-		return await dbQuery('SELECT "_rowid_",* FROM "main"."alarms" ORDER BY "id" DESC LIMIT ?, ?;', offset, row_count);
-	}
-  const changeUserRemember = async function (uid, val) {
-    return await dbQuery('UPDATE "main"."users" SET "sendRemembers"=? WHERE "telegramid"=?', val, parseInt(uid));
+  const changeUserReminders = async function (uid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "sendRemembers"=? WHERE "telegramid"=?', value, parseInt(uid));
   }
+  const getGroupsAll = async function () {
+		return await dbQuery('SELECT * FROM groups');
+  };
+
+  // ---- Statistik ----
   const getStatistik = async function () {
     //return await dbQuery("SELECT einsatzstichwort, count(einsatzstichwort) AS number FROM alarms WHERE strftime('%Y', date) = strftime('%Y', DATE('now')) GROUP BY einsatzstichwort");
     return await dbQuery("SELECT einsatzstichwort, count(einsatzstichwort) AS number FROM alarms WHERE strftime('%Y', date) = strftime('%Y', DATE('now')) GROUP BY einsatzstichwort ORDER BY number DESC");
@@ -80,10 +124,37 @@ module.exports = function () {
     var now = new Date();
     return await dbQuery('INSERT INTO "main"."statistik"("date","aktion","user") VALUES (?,?,?)', now.toISOString(), aktion, user);
   }
-  const changePassword = async function (uid, value) {
-    return await dbQuery('UPDATE "main"."users" SET "appPasswort" = ? WHERE "telegramid"= ? ', value, parseInt(uid));
+  const getStatistikKlicks = async function (aktion, days) {
+		return await dbQuery(
+			'SELECT  *, count(user) AS num FROM  statistik WHERE aktion=? AND ' +
+			'strftime("%Y-%m-%d",date) >= date("now","-' + days + ' days") AND strftime("%Y-%m-%d",date)<=date("now") GROUP BY user',
+			aktion
+		);
+  };
+
+  // ---- Kalender ----
+  const getKalendergruppen = async function () {
+		return await dbQuery('SELECT * FROM kalenderGroups');
+  }  
+	const setKalendergruppen = async function (id, name, pattern) {
+		return await dbQuery('UPDATE "main"."kalenderGroups" SET "name"=?, pattern=? WHERE id=?', name, pattern, parseInt(id));
   }
-  const dbInsertAlarm = async function (
+  const getKalender = async function () {
+		return await dbQuery('SELECT * FROM kalender');
+  }
+  const insertKalender = async function (summary, start, remind, group) {
+    return await dbQuery('INSERT INTO "main"."kalender"("id", "summary","start","remind","group") VALUES (NULL,?,?,?,?)', summary, start, remind, group);
+  }
+  const updateKalender = async function (id, summary, start, remind, group) {
+    debug('UPDATE "main"."kalender" SET "summary"=?, start=?, remind=?, group=? WHERE id=?', summary, start, remind, group, id);
+		return await dbQuery('UPDATE "main"."kalender" SET "summary"=?, "start"=?, "remind"=?, "group"=? WHERE id=?', summary, start, remind, group, id);
+  }
+  const deleteKalender = async function (id) {
+    return await dbQuery('DELETE FROM "main"."kalender" WHERE id IN(?)', id);
+  } 
+
+  // ---- Alarm ----
+  const insertAlarm = async function (
 		EINSATZSTICHWORT,
 		SCHLAGWORT,
 		OBJEKT,
@@ -115,85 +186,35 @@ module.exports = function () {
 			cars1.toString(),
 			cars2.toString(),
 			(isAddress == true ? 1 : 0));
-  }  
-  const getKalendergruppen = async function () {
-		return await dbQuery('SELECT * FROM kalenderGroups');
-  }  
-  const getUserNotificationsSubscription = async function () {
-    return await dbQuery('SELECT "appNotifications", "appNotificationsSubscription" AS endpoint, telegramid, "drucker", "group", "stAGT", "stMA", "stGRF", "stZUGF", "admin"  FROM users');         
-  }
-  const changeUserNotificationsSubscription = async function (uid, val) {
-    return await dbQuery('UPDATE "main"."users" SET "appNotificationsSubscription"=? WHERE "telegramid"=?', val, parseInt(uid));         
-  }
-  const getLastAlarm = async function () {
+  } 
+  const getAlarmLast = async function () {
     return await dbQuery('SELECT * FROM alarms ORDER BY id DESC LIMIT 1;');	
   }
-  const getGroups = async function () {
-		return await dbQuery('SELECT * FROM groups');
-  };
-  const getStatistikKlicks = async function (aktion, days) {
-		return await dbQuery(
-			'SELECT  *, count(user) AS num FROM  statistik WHERE aktion=? AND ' +
-			'strftime("%Y-%m-%d",date) >= date("now","-' + days + ' days") AND strftime("%Y-%m-%d",date)<=date("now") GROUP BY user',
-			aktion
-		);
-  };
-  const getIsAlarm = async function () {
+  const isAlarmNow = async function () {
 		return await dbQuery('SELECT * FROM alarms WHERE strftime("%Y-%m-%d %H:%M",date) >= datetime("now", "-90 minutes") ORDER BY id DESC');       
-  }
-  const getLogin = async function (uid) {
-		return await dbQuery("SELECT appPasswort, admin, kalender FROM users WHERE telegramid=?", parseInt(uid));       
-  }
-  const getLoginAuto = async function (appBenutzer) {
-		return await dbQuery("SELECT appPasswort, appBenutzer, name, id FROM autos WHERE appBenutzer=?", appBenutzer);       
-  }
-  const changeStAny = async function (uid, type, value) {
-		return await dbQuery('UPDATE "main"."users" SET "' + type + '"= ? WHERE "id"= ? ', value, parseInt(uid));
-  };
-  const getAlarm = async function (id) {
+  }  
+  const getAlarmAll = async function (id) {
 		return await dbQuery('SELECT "_rowid_",* FROM "main"."alarms" WHERE "id"=?', id);
 		console.log(offset, row_count);
 	}
-  const getUserPattern = async function (uid) {
+  const getUserAlarmPattern = async function (uid) {
 		return await dbQuery('SELECT groups."pattern" FROM users LEFT JOIN groups ON users."group"=groups."id"  WHERE users."telegramid"=?', parseInt(uid));
   }
-  const changeUserNotifications = async function (uid, val) {
-		return await dbQuery('UPDATE "main"."users" SET "appNotifications"=? WHERE "telegramid"=?', val, parseInt(uid));
-  }
-	const setKalendergruppen = async function (id, name, pattern) {
-		return await dbQuery('UPDATE "main"."kalenderGroups" SET "name"=?, pattern=? WHERE id=?', name, pattern, parseInt(id));
-	}
-	const getAlarmgruppen = async function () {
+	const getAlarmgruppenAll = async function () {
 		return await dbQuery('SELECT * FROM groups');
 	}
 	const setAlarmgruppen = async function (id, name, pattern) {
 		return await dbQuery('UPDATE "main"."groups" SET "name"=?, pattern=? WHERE id=?', name, pattern, parseInt(id));
   }
-  const getKalender = async function () {
-		return await dbQuery('SELECT * FROM kalender');
-  }
-  const addKalender = async function (summary, start, remind, group) {
-    return await dbQuery('INSERT INTO "main"."kalender"("id", "summary","start","remind","group") VALUES (NULL,?,?,?,?)', summary, start, remind, group);
-  }
-  const updateKalender = async function (id, summary, start, remind, group) {
-    debug('UPDATE "main"."kalender" SET "summary"=?, start=?, remind=?, group=? WHERE id=?', summary, start, remind, group, id);
-		return await dbQuery('UPDATE "main"."kalender" SET "summary"=?, "start"=?, "remind"=?, "group"=? WHERE id=?', summary, start, remind, group, id);
-  }
-  const deleteKalender = async function (id) {
-    return await dbQuery('DELETE FROM "main"."kalender" WHERE id IN(?)', id);
-  } 
-  const setVerfuegbarkeitPlans = async function (uid, plans) {
-    return await dbQuery('UPDATE "main"."users" SET "statusPlans"=? WHERE "telegramid"=?', plans.toString(), parseInt(uid));
-  }
-  const getVerfuegbarkeitPlans = async function (uid) {
-    return await dbQuery('SELECT statusPlans FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
-  }
-
+  const getAlarmList = async function (offset, row_count) {
+    if(!offset) offset = 0;
+    if(!row_count) row_count = 100;
+		return await dbQuery('SELECT "_rowid_",* FROM "main"."alarms" ORDER BY "id" DESC LIMIT ?, ?;', offset, row_count);
+	}
 
 
   // ----------------  Datenbank updaten ---------------- 
-
-  const update = async function () {
+  const updateDatabase = async function () {
     Database.open('save.sqlite3')
       .then(db => {
 
@@ -408,6 +429,24 @@ module.exports = function () {
           console.error("[APP] Database error: " + err);
         });
 
+        // Spalte Status bis
+        db.all('PRAGMA table_info("users")').then((rows) => {
+          var exists = false;
+          rows.forEach(function (element) {
+            if (element.name == "statusHidden")
+              exists = true;
+          });
+          if (!exists) {
+            db.run('ALTER TABLE users ADD statusHidden INTEGER DEFAULT 0;').then(rows => {
+              debug("Created Column statusHidden in users");
+            }).catch(err => {
+              console.error("[APP] Database error: " + err);
+            })
+          }
+        }).catch(err => {
+          console.error("[APP] Database error: " + err);
+        });
+
 
 
 
@@ -421,46 +460,48 @@ module.exports = function () {
 
 
   return {
-    getUser,
-    getUserRowNum,
+    getUserByUid,
+    getUserByRowNum,
     getUserAll,
-    getAllowedUser,
-    getStatus,
-    getStatusAll,
-    isAllowed,
-    setVerfuegbar,
+    getUserAllowed,
+    getUserStatusByUid,
+    getUserStatusAll,
+    isUserAllowed,
+    setUserStatus,
     addUser,
     activateUser,
     deleteUser,
     changeUserGroup,
     getAlarmList,
-    changeUserRemember,
+    changeUserReminders,
     getStatistik,
     addStatistik,
-    changePassword,
-    dbInsertAlarm,
+    setUserPassword,
+    insertAlarm,
     getKalendergruppen,
     getUserNotificationsSubscription,
-    changeUserNotificationsSubscription,
-    getLastAlarm,
-    getGroups,
+    setUserNotificationsSubscription,
+    getAlarmLast,
+    getGroupsAll,
     getStatistikKlicks,
-    getIsAlarm,
-    getLogin,
-    getLoginAuto,
-    changeStAny,
-    getAlarm,
-    getUserPattern,
-    changeUserNotifications,
+    isAlarmNow,
+    getUserLogin,
+    getAutoLogin,
+    setUserColumn,
+    getAlarmAll,
+    getUserAlarmPattern,
+    setUserNotifications,
     setKalendergruppen,
-    getAlarmgruppen,
+    getAlarmgruppenAll,
     setAlarmgruppen,
     getKalender,
-    addKalender,
+    insertKalender,
     updateKalender,
     deleteKalender,
-    setVerfuegbarkeitPlans,
-    getVerfuegbarkeitPlans,
-    update
+    setUserStatusPlan,
+    getUserStatusPlan,
+    getUserStatusHidden,
+    setUserStatusHidden,
+    updateDatabase
   };
 }

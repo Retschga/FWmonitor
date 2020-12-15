@@ -42,7 +42,7 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.0.4";
+process.env.VERSION = "2.0.5";
 
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 
@@ -203,7 +203,7 @@ var onAlarm = async function(data) {
 	if (!ignoreNextAlarm) {
 
 		// Lösche Sessions -> Seite in App wird neu geladen
-		let rows = await db.getAllowedUser()
+		let rows = await db.getUserAllowed()
 			.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
 
 		rows.forEach(function (user) {
@@ -345,7 +345,7 @@ var terminerrinerrung = function() {
 						if (mm < 10)
 							mm = "0" + mm;
 
-						let rows = await db.getAllowedUser()
+						let rows = await db.getUserAllowed()
 							.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
 
 						rows.forEach(function (user) {
@@ -408,7 +408,7 @@ async function main() {
 	await startScreen();
 
 	// ---------------- PROGRAMMSTART ----------------
-	await db.update();
+	await db.updateDatabase();
 
 	// ---------------- Module starten ----------------
 	_httpServer[0] = require('./httpServer')(_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm);

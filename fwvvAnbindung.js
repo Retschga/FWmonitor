@@ -52,7 +52,11 @@ module.exports = function () {
       return costs[s2.length];
     }
 	
-	// Suche neuerste Sicherungsdatei
+	/**
+	 * Suche neuerste Sicherungsdatei
+	 * @param {*} files Dateien
+	 * @param {*} path  Pfad zu den Dateien
+	 */
 	function getNewestFile(files, path) {
 		var out = [];
 		
@@ -72,7 +76,11 @@ module.exports = function () {
 		return (out.length>0) ? out[0].file : "";
 	}
 	
-	// Lese Einsatzzeit einer Person aus FWVV Sicherungsdatei
+	/**
+	 * Lese Einsatzzeit einer Person aus FWVV Sicherungsdatei
+	 * @param {String} name 
+	 * @param {String} vorname 
+	 */
 	function getEinsatzZeit(name, vorname) {		
 		return new Promise((resolve, reject) => {
 			

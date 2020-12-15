@@ -9,13 +9,13 @@ const db = require('../database')();
 
 // ---------------- ROUTEN ----------------	
 router.get('/alarm', async function (req, res, alarmMan) {
-	let rows = await db.getLastAlarm();
-	let rowsVerv = await db.getStatusAll();
+	let rows_lastAlarm = await db.getAlarmLast();
+	let rows_statusAll = await db.getUserStatusAll();
 
 	var st_nichtverf = [];
 	var st_nichtverfID = [];
 
-	rowsVerv.forEach(function (element) {
+	rows_statusAll.forEach(function (element) {
 		if (element.allowed == 1) {
 			if (element.status == 2) {
 				st_nichtverf.push(element.name + " " + element.vorname);
@@ -26,22 +26,22 @@ router.get('/alarm', async function (req, res, alarmMan) {
 
 	res.render('alarm', {
 		page: 'alarm', alarmdata: {
-			'time': rows[0].date,
-			'EINSATZSTICHWORT': rows[0].einsatzstichwort,
-			'SCHLAGWORT': rows[0].schlagwort,
-			'OBJEKT': rows[0].objekt,
-			'BEMERKUNG': rows[0].bemerkung,
-			'STRASSE': rows[0].strasse,
-			'ORTSTEIL': rows[0].ortsteil,
-			'ORT': rows[0].ort,
-			'LAT': rows[0].lat,
-			'LNG': rows[0].lng,
-			'cars1': rows[0].cars1.split(","), 'cars2': rows[0].cars2.split(","),
+			'time': rows_lastAlarm[0].date,
+			'EINSATZSTICHWORT': rows_lastAlarm[0].einsatzstichwort,
+			'SCHLAGWORT': rows_lastAlarm[0].schlagwort,
+			'OBJEKT': rows_lastAlarm[0].objekt,
+			'BEMERKUNG': rows_lastAlarm[0].bemerkung,
+			'STRASSE': rows_lastAlarm[0].strasse,
+			'ORTSTEIL': rows_lastAlarm[0].ortsteil,
+			'ORT': rows_lastAlarm[0].ort,
+			'LAT': rows_lastAlarm[0].lat,
+			'LNG': rows_lastAlarm[0].lng,
+			'cars1': rows_lastAlarm[0].cars1.split(","), 'cars2': rows_lastAlarm[0].cars2.split(","),
 			'VISIBLETIME': process.env.ALARM_VISIBLE,
 			"st_nichtverf": st_nichtverf,
 			"st_nichtverfID": st_nichtverfID,
-			"noMap": (rows[0].strasse == "" && rows[0].isAddress == false ? true : false),
-			"ISADDRESS": rows[0].isAddress
+			"noMap": (rows_lastAlarm[0].strasse == "" && rows_lastAlarm[0].isAddress == false ? true : false),
+			"ISADDRESS": rows_lastAlarm[0].isAddress
 		}
 	});
 });

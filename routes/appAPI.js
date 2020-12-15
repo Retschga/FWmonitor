@@ -144,7 +144,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 				console.error('[appIndex] DB Fehler', err)
 			});
 		} else {
-			await db.addKalender(req.body.summary, req.body.start, req.body.remind, req.body.group)
+			await db.insertKalender(req.body.summary, req.body.start, req.body.remind, req.body.group)
 			.catch((err) => {
 				console.error('[appIndex] DB Fehler', err)
 			});
@@ -239,7 +239,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			return;
 		}
 
-		let rows = await db.getAlarmgruppen().catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getAlarmgruppenAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -272,9 +272,9 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			_{{EINSATZMITTEL_EIGEN}}_
 			_{{EINSATZMITTEL_ANDERE}}_`}];
 		} else {
-			user = await db.getUserPattern(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+			user = await db.getUserAlarmPattern(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		}
-		let rows = await db.getAlarm(req.query.id).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getAlarmAll(req.query.id).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -495,7 +495,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// ---- Status ----
 	// get Status
 	router.get('/api/status', async function (req, res) {
-		let rows = await db.getStatus(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserStatusByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -521,9 +521,9 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 
  
-		await db.setVerfuegbar(req.session.telegramID, status, result).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		await db.setUserStatus(req.session.telegramID, status, result).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
-		db.getUser(req.session.telegramID)
+		db.getUserByUid(req.session.telegramID)
 			.then((rows) => {
 				if (rows[0] != undefined) {
 					if (status == 2)
@@ -542,8 +542,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	// get Verfügbarkeit
 	router.get('/api/verfuegbarkeit', async function (req, res) {
-		let rows = await db.getUserAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
-		if (rows == undefined) {
+		let rows_allUsers = await db.getUserAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		if (rows_allUsers == undefined) {
 			res.send("Fehler");
 			return;
 		}
@@ -553,7 +553,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		var st_nichtverf = new Array();
 		var st_nichtverfNum = 0;
 
-		rows.forEach(function (element) {
+		rows_allUsers.forEach(function (element) {
 			if (element.allowed == 1) {
 				if (element.status == 2) {
 					st_nichtverf.push(element.name + " " + element.vorname);
@@ -577,14 +577,14 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			return;
 		}
 
-		await db.setVerfuegbarkeitPlans(req.session.telegramID, '{"plans":'+JSON.stringify(plans)+'}').catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		await db.setUserStatusPlan(req.session.telegramID, '{"plans":'+JSON.stringify(plans)+'}').catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		res.send('OK');
 	});
 
 	// get getVervPlans
 	router.get('/api/getVervPlans', async function (req, res) {
-		let rows = await db.getVerfuegbarkeitPlans(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserStatusPlan(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -603,12 +603,12 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			return;
 		}
 
-		let rows = await db.getUserAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
-		if (rows == undefined) {
+		let rows_allUsers = await db.getUserAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		if (rows_allUsers == undefined) {
 			res.send("Fehler");
 			return;
 		}
-		res.json(rows);
+		res.json(rows_allUsers);
 	});
 
 	// set Einstellung ADMIN
@@ -630,37 +630,37 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		switch (setting) {
 			case 'admin':
-				db.changeStAny(id, "admin", value)
+				db.setUserColumn(id, "admin", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'kalender':
-				db.changeStAny(id, "kalender", value)
+				db.setUserColumn(id, "kalender", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'stAGT':
-				db.changeStAny(id, "stAGT", value)
+				db.setUserColumn(id, "stAGT", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'stMA':
-				db.changeStAny(id, "stMA", value)
+				db.setUserColumn(id, "stMA", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'stGRF':
-				db.changeStAny(id, "stGRF", value)
+				db.setUserColumn(id, "stGRF", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'stZUGF':
-				db.changeStAny(id, "stZUGF", value)
+				db.setUserColumn(id, "stZUGF", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'drucker':
-				db.changeStAny(id, "drucker", value)
+				db.setUserColumn(id, "drucker", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
@@ -670,7 +670,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
 			case 'kalGr':
-				db.changeStAny(id, "kalenderGroups", value)
+				db.setUserColumn(id, "kalenderGroups", value)
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
@@ -697,7 +697,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		value = value;
 
-		await db.changeUserNotifications(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		await db.setUserNotifications(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		res.send('OK');
 	});
@@ -714,7 +714,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		else
 			value = 0;
 
-		await db.changeUserRemember(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		await db.changeUserReminders(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		res.send('OK');
 	});
@@ -751,7 +751,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// get Einsatzzeit
 	router.get('/api/einsatzzeit', async function (req, res) {
 
-		let rows = await db.getUser(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		let zeit = await fwvv.getEinsatzZeit(rows[0].name, rows[0].vorname)
 			.then((arr) => {
@@ -918,7 +918,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		});
 	});
 	router.get('/appWorker.js', async function (req, res) {
-		let rows = await db.getStatus(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserStatusByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;

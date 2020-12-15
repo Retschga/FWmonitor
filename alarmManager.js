@@ -67,7 +67,7 @@ module.exports = function () {
 			);
 
 			// Daten in Datenbank schreiben
-			await db.dbInsertAlarm(
+			await db.insertAlarm(
 				fields.EINSATZSTICHWORT,
 				fields.SCHLAGWORT,
 				fields.OBJEKT,

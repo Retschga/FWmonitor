@@ -38,7 +38,7 @@ module.exports = function (_httpServer, destroySession) {
 	// ---------------- Bot Name ----------------
 	bot.telegram.getMe().then((botInfo) => {
 		bot.options.username = botInfo.username;
-		console.log("[TelegramBot] Initialized", botInfo.username);
+		console.log("[TelegramBot] Initialized ", botInfo.username);
 	});
 
 	// ---------------- Callback Router der Daten am : teilt ----------------
@@ -75,11 +75,11 @@ module.exports = function (_httpServer, destroySession) {
 				.catch((err) => {
 					console.error("[Telegram] ERROR sendMessage (ChatID " + chatId + "): " + err);
 					if (err.message.indexOf("blocked") != -1) {
-						db.setVerfuegbar(chatId, -1, "").then(() => {
+						db.setUserStatus(chatId, -1, "").then(() => {
 							;
 						});
 					} else if (err.message.indexOf("disabled") != -2) {
-						db.setVerfuegbar(chatId, -1, "").then(() => {
+						db.setUserStatus(chatId, -1, "").then(() => {
 							;
 						});
 					}
@@ -100,7 +100,7 @@ module.exports = function (_httpServer, destroySession) {
 	// ---------------- Erste Bot Verbindung ----------------
 	bot.start(async (ctx) => {
 		try {
-			let rows = await db.getUser(ctx.from.id)
+			let rows = await db.getUserByUid(ctx.from.id)
 
 			// Prüfe ob Benutzer bereits existiert
 			if (rows[0] != undefined) {
@@ -152,7 +152,7 @@ module.exports = function (_httpServer, destroySession) {
 
 					// Antwort senden
 					ctx.reply(
-						'Warte auf Freigabe',
+						'Warte auf Freigabe (evtl. bescheidgeben)',
 						Telegraf.Extra.HTML().markup((m) =>
 							m.keyboard([
 								['/start']
@@ -171,12 +171,12 @@ module.exports = function (_httpServer, destroySession) {
 
 
 	// ---------------- Sicherheits Middleware  ----------------
-	// sichere alles unterhalb gegen unberechtigten Zugriff
+	// Sichere alles unterhalb gegen unberechtigten Zugriff
 	bot.use(async (ctx, next) => {
 		try {
 
 			// Prüfe ob Benutzer freigegeben
-			let allowed = await db.isAllowed(ctx.from.id);
+			let allowed = await db.isUserAllowed(ctx.from.id);
 			if (allowed != true) {
 				console.log('[Telegram] Unerlaubter Zugriffsveruch durch %s %s', ctx.from.last_name, ctx.from.first_name)
 				return;
@@ -196,7 +196,7 @@ module.exports = function (_httpServer, destroySession) {
 
 
 
-	// **** APP ****
+	// ---------------- APP -----------------
 	bot.hears('📱 Einsatzmonitor APP', async (ctx) => {
 		try {
 
@@ -213,6 +213,7 @@ module.exports = function (_httpServer, destroySession) {
 			);
 			
 		} catch (error) {
+			console.error('[TelegramBot] #APP Fehler (.env APP_DNS wahrscheinlich nicht korrekt)');
 			console.error('[TelegramBot] #APP Fehler', error);
 		}
 	});
@@ -249,35 +250,35 @@ module.exports = function (_httpServer, destroySession) {
 		try {
 			await ctx.editMessageText(
 				'*⌛ lädt ⌛*',
-				Telegraf.Extra.markdown() //.markup((m) => { })
+				Telegraf.Extra.markdown()
 			)
 
 			ctx.replyWithChatAction('typing');
 
 			await timeout(500);
 
-			let rows = await db.getAlarmList();
+			let rows_alarmList = await db.getAlarmList();
 
-			var alarmnum = parseInt(ctx.state.amount, 10);
+			var alarmNum = parseInt(ctx.state.amount, 10);
 			if (ctx.state.amount < 0)
-				alarmnum = rows.length - 1;
-			if (ctx.state.amount >= rows.length)
-				alarmnum = 0;
+				alarmNum = rows_alarmList.length - 1;
+			if (ctx.state.amount >= rows_alarmList.length)
+				alarmNum = 0;
 
-			var d = new Date(rows[alarmnum].date);
+			var d = new Date(rows_alarmList[alarmNum].date);
 			var options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit' };
 			var time = d.toLocaleTimeString();
 			var date = d.toLocaleDateString('de-DE', options);
 
 			ctx.editMessageText(
 				`*📜 ${date} ${time}*
-				_${rows[alarmnum].einsatzstichwort}
-				${rows[alarmnum].schlagwort}
-				${rows[alarmnum].ort}_`,
+				_${rows_alarmList[alarmNum].einsatzstichwort}
+				${rows_alarmList[alarmNum].schlagwort}
+				${rows_alarmList[alarmNum].ort}_`,
 				Telegraf.Extra.markdown().markup((m) =>
 					m.inlineKeyboard([
-						m.callbackButton('<', 'showAlarm:' + (alarmnum - 1)),
-						m.callbackButton('>', 'showAlarm:' + (alarmnum + 1))
+						m.callbackButton('<', 'showAlarm:' + (alarmNum - 1)),
+						m.callbackButton('>', 'showAlarm:' + (alarmNum + 1))
 					])
 				)
 			)
@@ -375,7 +376,7 @@ module.exports = function (_httpServer, destroySession) {
 	bot.hears('️▪️ Mehr', async (ctx) => {
 		try {
 
-			let rows = await db.getUser(ctx.from.id);
+			let rows = await db.getUserByUid(ctx.from.id);
 
 			// Tastatur erstellen
 			var keyboard;
@@ -428,7 +429,7 @@ module.exports = function (_httpServer, destroySession) {
 
 		try {
 
-			await db.changeUserRemember(userid, val);
+			await db.changeUserReminders(userid, val);
 
 			if (val == 1) {
 				ctx.answerCbQuery("📅 Kalender Erinnerungen -> Ein", false);
@@ -565,7 +566,7 @@ module.exports = function (_httpServer, destroySession) {
 
 			} else {
 
-				db.changePassword(ctx.from.id, hash);
+				db.setUserPassword(ctx.from.id, hash);
 
 				ctx.editMessageText(
 					'*APP Zugangsdaten: Telegram ID, Passwort*',
@@ -589,7 +590,7 @@ module.exports = function (_httpServer, destroySession) {
 		try {
 
 			await db.activateUser(userid);
-			let telegramid = await db.getUserRowNum(userid);
+			let telegramid = await db.getUserByRowNum(userid);
 
 			bot.telegram.sendMessage(
 				telegramid[0].telegramid,
@@ -606,7 +607,7 @@ module.exports = function (_httpServer, destroySession) {
 	async function removeUser(userid) {
 		debug('removeUser', userid);
 		try {
-			let telegramid = await db.getUserRowNum(userid);
+			let telegramid = await db.getUserByRowNum(userid);
 
 			destroySession(telegramid);
 		} catch (error) {
@@ -748,7 +749,7 @@ module.exports = function (_httpServer, destroySession) {
 	bot.hears('🚒 Verfügbarkeit', async (ctx) => {
 		try {
 
-			let rows = await db.getStatus(ctx.from.id);
+			let rows = await db.getUserStatusByUid(ctx.from.id);
 
 			var stat = "🟩";
 			if (rows[0].status == 2) {
@@ -836,15 +837,13 @@ module.exports = function (_httpServer, destroySession) {
 			var st_nichtverfNum = 0;
 
 			rows.forEach(function (element) {
-				if (element.allowed == 1) {
-					if (element.status == 1) {
-						st_verv += (element.name + " " + element.vorname) + "\n";
-						st_vervNum += 1;
-					}
-					else {
-						st_nichtverf += (element.name + " " + element.vorname) + "\n";
-						st_nichtverfNum += 1;
-					}
+				if (element.status == 1) {
+					st_verv += (element.name + " " + element.vorname) + "\n";
+					st_vervNum += 1;
+				}
+				else {
+					st_nichtverf += (element.name + " " + element.vorname) + "\n";
+					st_nichtverfNum += 1;
 				}
 			});
 
@@ -874,7 +873,7 @@ _${st_nichtverf}_`,
 		debug('intervalVerfügbarkeit');
 		try {
 
-			let rows = await db.getStatusAll();
+			let rows = await db.getUserStatusAll();
 
 			if (rows == undefined) {
 				console.error("Interval Error: Keine Zeile zurückgegeben");
@@ -922,9 +921,9 @@ _${st_nichtverf}_`,
 		debug('setVervTrue', telID);
 		try {
 
-			await db.setVerfuegbar(telID, 1, "");
+			await db.setUserStatus(telID, 1, "");
 
-			let rows = await db.getUser(telID);
+			let rows = await db.getUserByUid(telID);
 
 			if (rows[0] != undefined) {
 				_httpServer[0].wss.broadcast(
@@ -946,9 +945,9 @@ _${st_nichtverf}_`,
 
 			if(!until) until = "";
 
-			await db.setVerfuegbar(telID, 2, until);
+			await db.setUserStatus(telID, 2, until);
 
-			let rows = await db.getUser(telID);
+			let rows = await db.getUserByUid(telID);
 
 			if (rows[0] != undefined) {
 				_httpServer[0].wss.broadcast(
@@ -998,7 +997,7 @@ _${st_nichtverf}_`,
 			}
 			debug("[TelegramBot] Sende Alarm...");
 
-			let rows = await db.getAllowedUser();
+			let rows = await db.getUserAllowed();
 
 			rows.forEach(async (element) => {
 
@@ -1140,7 +1139,7 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);
 			ctx.editMessageText("Status -> Kommen: Nein", extra);
 
-			let rows = await db.getUser(ctx.from.id);
+			let rows = await db.getUserByUid(ctx.from.id);
 			if (rows[0] != undefined) {
 				_httpServer[0].wss.broadcast(
 					'st_nicht', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT +
@@ -1158,7 +1157,7 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 👍  Kommen: Ja", true);
 			ctx.editMessageText("Status -> Kommen: Ja", extra);
 
-			let rows = await db.getUser(ctx.from.id);
+			let rows = await db.getUserByUid(ctx.from.id);
 
 			if (rows[0] != undefined) {
 				_httpServer[0].wss.broadcast(
@@ -1177,7 +1176,7 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 🕖  Kommen: Später", true);
 			ctx.editMessageText("Status -> Kommen: Später", extra);
 
-			let rows = await db.getUser(ctx.from.id);
+			let rows = await db.getUserByUid(ctx.from.id);
 
 			if (rows[0] != undefined) {
 				_httpServer[0].wss.broadcast(
@@ -1198,7 +1197,7 @@ _${st_nichtverf}_`,
 
 		try {
 
-			let rows = await db.getAllowedUser();
+			let rows = await db.getUserAllowed();
 
 			rows.forEach((element) => {
 				sendMessage(element.telegramid, msg, Telegraf.Extra.markdown());
@@ -1214,7 +1213,7 @@ _${st_nichtverf}_`,
 	async function sendKalender(ctx, gesamt = false) {
 		let termine = await calendar.getCalendarString();
 
-		let user = await db.getUser(ctx.from.id);
+		let user = await db.getUserByUid(ctx.from.id);
 
 		user = user[0];
 
@@ -1350,7 +1349,7 @@ _${st_nichtverf}_`,
 		debug('sendPapierInfo', status);
 		try {
 
-			let rows = await db.getAllowedUser();
+			let rows = await db.getUserAllowed();
 
 			rows.forEach((element) => {
 				if (element.drucker == 1) {

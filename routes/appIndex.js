@@ -37,7 +37,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		switch (req.query.value) {
 			case 'kommeNein':
-				db.getUser(req.query.telegramID)
+				db.getUserByUid(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(
@@ -49,7 +49,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.catch((err) => { console.error('[appIndex] Datenbank Fehler', err) });
 				break;
 			case 'kommeJa':
-				db.getUser(req.query.telegramID)
+				db.getUserByUid(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(
@@ -61,7 +61,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.catch((err) => { console.error('[appIndex] Datenbank Fehler', err) });
 				break;
 			case 'kommeSpaeter':
-				db.getUser(req.query.telegramID)
+				db.getUserByUid(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(
@@ -96,9 +96,9 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		let getLogin = async function(_telid) {
 			if(_telid.length > 4 && _telid.substring(0, 4) == "AUTO") {
 				isAuto = true;
-				return await db.getLoginAuto(_telid)
+				return await db.getAutoLogin(_telid)
 			}
-			return await db.getLogin(_telid)	
+			return await db.getUserLogin(_telid)	
 		}
 		
 		let loginOK = function(_telid) {
@@ -270,7 +270,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.redirect('/app/index.html');
 	});
 	router.get('/index.html', isLoggedIn, async function (req, res) {
-		let isAlarm = await db.getIsAlarm()
+		let isAlarm = await db.isAlarmNow()
 			.catch((err) => {
 				console.error('[AppIndex] Datenbank Fehler', err);
 			});

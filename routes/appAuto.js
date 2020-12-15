@@ -17,7 +17,7 @@ module.exports = function () {
     	res.redirect('/app/auto/index.html');    
 	});
 	router.get('/index.html', async function (req, res) {
-		let isAlarm = await db.getIsAlarm()
+		let isAlarm = await db.isAlarmNow()
 			.catch((err) => {
 				console.error('[AppIndex] Datenbank Fehler', err);
 			});

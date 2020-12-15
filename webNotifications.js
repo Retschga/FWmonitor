@@ -13,7 +13,18 @@ if (process.env.APP_DNS != "")
 const db = require('./database')();
 
 
-
+/**
+ * Versendet Notifications an die WebApp
+ * @param {String} titel 
+ * @param {String} text 
+ * @param {String} tag 
+ * @param {Boolean} silent 
+ * @param {String} timestamp 
+ * @param {String} zeigeBis 
+ * @param {Boolean} isAlarm 
+ * @param {[String]} actions 
+ * @param {[String]} groups 
+ */
 function notify(titel, text, tag, silent, timestamp, zeigeBis, isAlarm, actions, groups) {
 
 	if (process.env.APP_DNS == "") {
@@ -26,7 +37,7 @@ function notify(titel, text, tag, silent, timestamp, zeigeBis, isAlarm, actions,
 			.catch((err) => {
 				if (err.statusCode === 404 || err.statusCode === 410) {
 					console.log('Subscription has expired or is no longer valid: ', err);
-					return db.changeUserNotificationsSubscription(telegramid, '');
+					return db.setUserNotificationsSubscription(telegramid, '');
 				} else {
 					throw err;
 				}
@@ -110,6 +121,11 @@ function notify(titel, text, tag, silent, timestamp, zeigeBis, isAlarm, actions,
 		});
 }
 
+/**
+ * Speichert die Subscription eines Users
+ * @param {Integer} telegramID 
+ * @param {String} subscription 
+ */
 function subscribe(telegramID, subscription) {
 
 	if (process.env.APP_DNS == "") {
@@ -117,7 +133,7 @@ function subscribe(telegramID, subscription) {
 		return;
 	}
 
-	return db.changeUserNotificationsSubscription(telegramID, subscription)
+	return db.setUserNotificationsSubscription(telegramID, subscription)
 		.then(function (subscriptionId) {
 			return true;
 		})

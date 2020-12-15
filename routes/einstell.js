@@ -38,7 +38,7 @@ module.exports = function (_bot, _httpsServer) {
 
 			let rows = await db.getUserAll();
 
-			let grouprows = await db.getGroups();
+			let grouprows = await db.getGroupsAll();
 
 			let users = [];
 			let groups = [];
