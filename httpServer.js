@@ -51,9 +51,11 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	var routesIndex = require('./routes/index');
 	var routesAlarm = require('./routes/alarm');
 	var routesPrint = require('./routes/print');
+	var routesScripts = require('./routes/scripts');
 	appHTTP.use('/', routesPrint);
 	appHTTP.use('/', routesIndex);
 	appHTTP.use('/', routesAlarm);
+	appHTTP.use('/', routesScripts);
 
 	// ---------------- HTTP Server starten ----------------
 	serverHTTP = http.createServer(appHTTP);
@@ -74,8 +76,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	wss.on('connection', function connection(ws) {
 		ws.interval = setInterval(function(){ 
-			ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':')); 			
-			debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':'));		
+			ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 			
+			debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 	
 			if (ws.readyState === WebSocket.CLOSED) {
 				clearInterval(ws.interval);
 				ws.terminate();
@@ -84,7 +86,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		ws.on('message', function incoming(message) {
 			if (message == "keepAlive") {
-				ws.send('keepAlive|OK%'+String(new Date().toISOString()).replace(/[-,:;TZ]/g, ':'));
+				ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 	
 				return;
 			}
 			if(message.indexOf('WebClient') != -1) {

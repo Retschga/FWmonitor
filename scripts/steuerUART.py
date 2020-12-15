@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Strom geschalten über Relais)
+# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Samsung Smart Signage Display ED65E LED)
 # (c) 2019 Johannes Resch
 
 # IP Adresse des Server PC ganz unten!
@@ -20,11 +20,17 @@ import os
 # GPIO PIN Bewegungsmelder
 pirpin = 11
 
-# GPIO PIN Relais
-relaispin = 12
+# COM Port (Fernseher)
+uartport = "/dev/ttyAMA0"
+
+# Befehl "Bildschirm AN"  siehe Anleitung Fersneher
+poweron = "\xAA\x11\xFE\x01\x01\x11"
+# Befehl "Bildschirm AUS" siehe Anleitung Fersneher
+
+poweroff = "\xAA\x11\xFE\x01\x00\x10"
 
 # IP Adresse des FWmonitor servers
-targetserver = 'ws://192.168.178.28:8080/';
+targetserver = '192.168.178.28:8080';
 
 
 
@@ -33,12 +39,15 @@ targetserver = 'ws://192.168.178.28:8080/';
 GPIO.setmode(GPIO.BOARD)
 # RASPBERRY GPIO Pins Setup
 GPIO.setup(pirpin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(relaispin, GPIO.OUT)
 
 
 logtext = ""
 schirmstatus = "????"
 schirmstatusTime = "????"
+logbuff = "                                    "
+reconn = False
+version = "1.0.5"
+starttime = str(datetime.datetime.now())
 
 # -------------- Hilfsfunktionen --------------
 
@@ -48,15 +57,38 @@ def printHard(*args):
     print(str(time), args)
     sys.stdout.flush()
     global logtext
-    logtext = ', '.join(args)
+    logtext = ', '.join(map(str, args))
     try:
-        ws.send("PySteuerClient-Alarmdisplay-Steuerskript-7-LOG:" + logtext + ";SCHIRM:" + schirmstatus + " " + schirmstatusTime)
+        ws.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\""+logtext+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+schirmstatus + " " + schirmstatusTime+"\"},{\"id\":\"-1\",\"key\":\"3h\",\"value\":\""+logbuff+"\"}]}")
     except:
         print("No ws open")
 
+# ------- BewegMelder Signal? -------
+def createLog():
+    global logbuff
+    if schirmstatus == "AN":
+        logbuff = logbuff[1:] + "#"
+    else:
+        logbuff = logbuff[1:] + "_"
+    tlog.stop_timer()
+    tlog.start_timer()
+    
+
 # ------- Bildschirm AUS -------
 def schirmaus():
-    GPIO.output(relaispin, GPIO.LOW)
+    # Öffne Seriellen Port
+    ser = serial.Serial(
+        port=uartport,
+        baudrate=9600,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        xonxoff=False
+    )
+    # Sende Daten
+    ser.write(poweroff)
+    # Schließe Seriellen Port
+    ser.close()
     # Konsolenausgabe
     global schirmstatus
     global schirmstatusTime
@@ -68,7 +100,19 @@ def schirmaus():
 
 # ------- Bildschirm AN -------
 def schirman():
-    GPIO.output(relaispin, GPIO.HIGH)
+    # Öffne Seriellen Port
+    ser = serial.Serial(
+        port=uartport,
+        baudrate=9600,
+        parity=serial.PARITY_NONE,
+        stopbits=serial.STOPBITS_ONE,
+        bytesize=serial.EIGHTBITS,
+        xonxoff=False
+    )
+    # Sende Daten
+    ser.write(poweron)
+    # Schließe Seriellen Port
+    ser.close()
     # Konsolenausgabe
     global schirmstatus
     global schirmstatusTime
@@ -112,27 +156,27 @@ def doIfHigh(channel):
 # ------- Websocket -------
 # Verbindung über Websockets zum Hauptprogramm
 # -> Schaltet Bildschirm bei Alarm sofort ein
-class DummyClient(WebSocketClient):
-
-    reconn = False
+class DummyClient(WebSocketClient):    
 
     # (Event) WebSocket geöffnet
     def opened(self):
         self.send("WS Connection...")
         printHard("WS Opened")
-        self.send("PySteuerClient-Alarmdisplay-Steuerskript-7")
+        self.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"}]}")
 
     # WebSocket Setup
     def setup(self, timeout=5):
+        global reconn
         # Verbindungsaufbau zum Ziel
         try:
-            self.reconn = False
+            reconn = False
             self.__init__(self.url)
             self.connect()
             self.run_forever()
 
         # Bei Tastendruck schließen
-        except KeyboardInterrupt:
+        except KeyboardInterrupt:            
+            reconn = True
             self.close()
 
         # Fehler / Verbindungsabbruch
@@ -140,25 +184,31 @@ class DummyClient(WebSocketClient):
             newTimeout = timeout + 1
             printHard("Error > Timing out for %i seconds. . ." % newTimeout)
             time.sleep(newTimeout)
-            if self.reconn == False:
-                self.reconn = True
+            if reconn == False:
+                reconn = True
                 printHard("Attempting reconnect. . .")
-                self.setup(newTimeout)
+                ws.setup(newTimeout) #self
 
     # (Event) WebSocket geschlossen
     def closed(self, code, reason=None):
+        global reconn
         printHard("Closed down", code, reason)
-        if self.reconn == False:
+        if reconn == False:
             printHard("Closed > Timing out for a bit. . .")
             time.sleep(3)
             printHard("Reconnecting. . .")
             # self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
-            self.setup()
+            try: 
+                ws.sock.close()      #self.          
+            except:
+                print("No ws open")
+            ws.setup()#self.
+
 
     # (Event) WebSocket Daten empfangen
     def received_message(self, m):
-        printHard("=> %d %s" % (len(m), str(m)))
+        #printHard("=> %d %s" % (len(m), str(m)))
+        printHard(str(m))
 
         # Meldunf für Alarm empfangen
         if 'alarm' in str(m):
@@ -171,9 +221,12 @@ class DummyClient(WebSocketClient):
             schirman()
             schirman()
         if 'rebootScreen' in str(m):
-            ws.send("PySteuerClient-Alarmdisplay-Steuerskript--RESTARTING")
+            self.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\"RESTARTING\"}]}")
             ws.close()
             os.system('sudo shutdown -r now')
+        if 'updateScript' in str(m):
+            self.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\"UPDATE\"}]}")
+            os.system("sudo bash /home/pi/steuerUpdate.sh \"" + targetserver + "\" >> update.log")
 
 
 # -------------- Programmstart --------------
@@ -182,7 +235,7 @@ if __name__ == '__main__':
     try:
 
         # Programmstart Ausgabe auf Konsole
-        printHard(" --- PROGRAMMSTART --- ")
+        printHard("Steuerskript UART", "Version " + version)
 
         # Programmstart Ausgabe auf COM Port (Notwendig = ?)
         # Hilfreich, wenn serieller Monitor angesteckt ist
@@ -214,6 +267,11 @@ if __name__ == '__main__':
         tpir.start()
         tpir.start_timer()
 
+          # ------- LOG Timer -------   
+        tlog = RU_Timer(300 *10, createLog)
+        tlog.start()
+        tlog.start_timer()
+
         # ------- Setup GPIO Events -------
         # GPIO Event "Steigende Flanke"
         # an Bewegungsmelder Pin
@@ -223,11 +281,12 @@ if __name__ == '__main__':
 
         # ------- Starte Websocket -------
         #                            V-- IP Adresse Server PC
-        ws = DummyClient(targetserver, protocols=['http-only', 'chat'])
+        ws = DummyClient("ws://" + targetserver, protocols=['http-only', 'chat'])
         ws.setup()
 
     # Beende bei Tastendruck (Haut ned hi K.A. warum)
     except KeyboardInterrupt:
+        reconn = True
         tpir.stop_timer()
         GPIO.remove_event_detect(pirpin)
         GPIO.cleanup()

@@ -315,7 +315,7 @@
 				
 				wsSteuer.onopen = function() {
 					console.log("WebSocketClient Lokal connected:");
-					this.send("WebClient - Alarmdisplay - Index");	
+					this.send("WebClient*Alarmdisplay*Index");	
 					index_status_GPS(true);
 					wsGPSInterval = setInterval( () => { wsSteuer.send('getGPS'); }, 1000);
 				};
@@ -443,10 +443,32 @@
 				
 				wsFWmonitor.onopen = function() {
 					console.log("WebSocketClient FWmonitor connected:");
-					wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+					wsFWmonitor.send(
+					`{"type":"WebClient",
+					"name":"Auto",
+					"info":"<%= data["autoname"] %>",
+					"actions":[
+						{"id":"0"},
+						{"id":"7"},
+						{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+						{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+						{"id":"-1", "key": "LOG", "value": "${log}"}
+					]}`);
+					
 					index_status_VERBINDUNG(true);
 					wsGPSInterval = setInterval( () => {
-						 if(GPS_hasFIX) wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+						if(GPS_hasFIX) 
+						wsFWmonitor.send(
+							`{"type":"WebClient",
+							"name":"Auto",
+							"info":"<%= data["autoname"] %>",
+							"actions":[
+								{"id":"0"},
+								{"id":"7"},
+								{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+								{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+								{"id":"-1", "key": "LOG", "value": "${log}"}
+							]}`);
 					}, 60000);
 					lastKeepAlive = new Date();
 					keepAliveInterval = setInterval(() => {
@@ -485,7 +507,17 @@
 						
 						index_status_VERBINDUNG(true);
 
-						wsFWmonitor.send("WebClient-Auto-<%= data["autoname"] %>-0,7-GPS:" + GPS_hasFIX + " lat " + GPS_now.lat + " lng " + GPS_now.lng + ";LOG:" + log); 
+						wsFWmonitor.send(
+							`{"type":"WebClient",
+							"name":"Auto",
+							"info":"<%= data["autoname"] %>",
+							"actions":[
+								{"id":"0"},
+								{"id":"7"},
+								{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+								{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+								{"id":"-1", "key": "LOG", "value": "${log}"}
+							]}`);
 					}
 					// reload
 					if(topic == 'reload') {

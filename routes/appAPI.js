@@ -189,6 +189,25 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.json({ data: 'ok' });
 	});
 
+	function getAlarmColor(einsatzstichwort) {
+		let stichwort = einsatzstichwort.toLowerCase();
+
+		// Green
+		if(stichwort.includes("inf") || stichwort.includes("1nf"))
+			return '3';
+
+		// Blue
+		if(stichwort.includes("thl"))
+			return '2';
+
+		// Orange
+		if(stichwort.includes("rd"))
+			return '1';
+
+		// Red
+		return "0";
+	}
+
 	// get Alarmliste
 	router.get('/api/alarmList', async function (req, res) {
 		let offset = req.query.offset;
@@ -207,7 +226,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		let ret = new Array();
 
 		for (let row of rows) {
-			ret.push([row.schlagwort, row.strasse, row.ort, row.date, row.einsatzstichwort, row.id]);
+			ret.push([row.schlagwort, row.strasse, row.ort, row.date, row.einsatzstichwort, row.id, getAlarmColor(row.einsatzstichwort)]);
 		}
 
 		res.json(ret);
@@ -384,7 +403,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			hydrantenCache: hydrantenCache[id],
 			strassenCache: strassenCache[id],
 			gebaeudeCache: gebaeudeCache[id],
-			routeCache: routeCache[id]
+			routeCache: routeCache[id],
+			color: "0"
 		};
 
 		if (pattern.indexOf('{{EINSATZSTICHWORT}}') !== -1)
@@ -418,6 +438,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			ret.lat = rows.lat;
 			ret.lng = rows.lng;
 		}
+
+		ret.color = getAlarmColor(rows.einsatzstichwort);
 
 		ret.date = rows.date;
 
@@ -818,6 +840,12 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		}
 
 		let ret = [];
+
+		ret.push({"id": "-1", "type": `{"type":"MainSoftware",
+					"name":"FWmonitor - Haupt Software",
+					"info":"Version ${process.env.VERSION}",
+					"actions":[]}`
+				});
 		
 		_httpServer[0].wss.getOpenSockets().forEach(function each(client) {				
 			if(client.wsType) {
@@ -828,7 +856,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			if(client.wsType) {
 				ret.push({"id": client.id, "type": client.wsType});
 			}
-		});
+		});		
 
 		res.json(ret); return;
 
@@ -869,7 +897,10 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			case 'restart': // 5
 				dat = "rebootScreen";
 				break;
-		}
+			case 'updateScript': // 5
+				dat = "updateScript";
+				break;
+		}		
 		_httpServer[0].wss.sendToID(id, dat);
 		_httpsServer[0].wss.sendToID(id, dat);
 

@@ -16,7 +16,7 @@
     "body-parser": "^1.19.0",
     "chokidar": "^2.1.8",
     "cookie-parser": "^1.4.5",
-    "csv-parser": "^2.3.3",
+    "csv-parser": "^2.3.5",
     "debug": "^2.6.9",
     "dotenv": "^7.0.0",
     "ejs": "^2.7.4",
@@ -28,20 +28,20 @@
     "ipp": "^2.0.1",
     "jsonwebtoken": "^8.5.1",
     "mdns-js": "^1.0.3",
-    "memorystore": "^1.6.2",
+    "memorystore": "^1.6.4",
     "morgan": "^1.10.0",
     "move-file": "^1.2.0",
     "nconf": "^0.10.0",
     "node-ical": "^0.9.2",
     "nominatim-geocoder": "^0.1.4",
-    "openrouteservice-js": "^0.1.10",
+    "openrouteservice-js": "^0.1.13",
     "puppeteer": "^1.20.0",
     "serve-favicon": "^2.3.0",
-    "sqlite-async": "^1.1.0",
+    "sqlite-async": "^1.1.1",
     "sqlite3": "^4.2.0",
     "telegraf": "^3.38.0",
     "unzipper": "^0.10.11",
     "web-push": "^3.4.4",
-    "ws": "^7.3.1"
+    "ws": "^7.4.1"
   }
 }

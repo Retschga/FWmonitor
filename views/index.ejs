@@ -511,7 +511,8 @@
 				// Event: Socket geöffnet
                 ws.onopen = function() {
                     console.log("WebSocketClient connected:");
-					this.send("WebClient-Alarmdisplay-Index-0,1,2,3,4");
+					this.send('{"type":"WebClient","name":"Alarmdisplay","info":"Index","actions":[{"id":"0"},{"id":"1"},{"id":"2"},{"id":"3"},{"id":"4"}]}');
+					
 					
 					lastKeepAlive = new Date();					
 					keepAliveInterval = setInterval(() => {

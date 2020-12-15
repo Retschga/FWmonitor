@@ -4,6 +4,8 @@
 require('dotenv').config();
 var RASPIVERSION = process.env.RASPIVERSION;
 
+process.env.NODE_ENV = 'production';
+
 // ----------------  STANDARD LIBRARIES ---------------- 
 const debug = require('debug')('app');
 const chokidar = require('chokidar');
@@ -40,7 +42,7 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.0.0";
+process.env.VERSION = "2.0.4";
 
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 
@@ -48,7 +50,7 @@ async function startScreen() {
 	console.log("    |            Feuerwehr Einsatzmonitor Software               |");
 	console.log("    |                                                            |");
 	console.log("    |             (c) 2020 Resch - FF Fischbachau                |");
-	console.log("    |                       VERSION "+process.env.VERSION+"                         |");
+	console.log("    |                       VERSION "+process.env.VERSION+"                        |");
 	console.log("    |                                                            |");
 	console.log("    |               weitere Infos: siehe Readme                  |");
 	console.log("    |                                                            |");
@@ -187,7 +189,7 @@ var getIgnoreNextAlarm = function () {
 }
 
 var alarmNummer = Math.floor(Math.random() * 1000); 
-var onAlarm = function(data) {
+var onAlarm = async function(data) {
 	alarmNummer++;
 	// Bildschirm umschalten
 	console.log("[APP] APP Alamierung -> Schalte Bildschirme um");
@@ -199,6 +201,14 @@ var onAlarm = function(data) {
 	}
 
 	if (!ignoreNextAlarm) {
+
+		// Lösche Sessions -> Seite in App wird neu geladen
+		let rows = await db.getAllowedUser()
+			.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
+
+		rows.forEach(function (user) {
+			_httpsServer[0].destroySession(user.telegramid);	
+		});	
 
 		// Telegram
 		_bot[0].sendAlarm(
@@ -248,6 +258,7 @@ var onAlarm = function(data) {
 var papierinfo = function() {
 	let firststart = true;
 	let papierLast = false;
+	let count = 0;
 	let interval = setInterval(async () => {
 
 		debug('Drucker Papier auslesen');
@@ -261,30 +272,38 @@ var papierinfo = function() {
 			// Änderung -> sende Info
 			if (status != papierLast && !firststart) {
 
-				console.log("Drucker Papier nicht voll: ", status);
+				count++;
 
-				// BOT
-				_bot[0].sendPapierInfo(status);
+				if(count > 1) {
 
-				// APP
-				if (process.env.APP_DNS != "") {
-					// FWmonitor APP
-					var zeigeBis = new Date();
-					zeigeBis.setTime(zeigeBis.getTime() + (60 * 60 * 1000));
-					webNotifications.notify(
-						"🖨️ Drucker Information 🖨️",
-						"Alarm-Drucker: " + (status ? "Papier wieder voll" : "Papier LEER") + "!",
-						zeigeBis,
-						false,
-						new Date(),
-						zeigeBis,
-						false,
-						[],
-						['drucker']
-					);
+					console.log("Drucker Papier nicht voll: ", status);
+
+					// BOT
+					_bot[0].sendPapierInfo(status);
+
+					// APP
+					if (process.env.APP_DNS != "") {
+						// FWmonitor APP
+						var zeigeBis = new Date();
+						zeigeBis.setTime(zeigeBis.getTime() + (60 * 60 * 1000));
+						webNotifications.notify(
+							"🖨️ Drucker Information 🖨️",
+							"Alarm-Drucker: " + (status ? "Papier wieder voll" : "Papier LEER") + "!",
+							zeigeBis,
+							false,
+							new Date(),
+							zeigeBis,
+							false,
+							[],
+							['drucker']
+						);
+					}
+
 				}
 
 
+			} else {
+				count = 0;
 			}
 
 			papierLast = status;
@@ -431,10 +450,10 @@ async function main() {
 			});
 		});
 	}
-	
+	*/
 	// production error handler
-	// no stacktraces leaked to user
-	
+	// no stacktraces leaked to user	
+	/*
 	appHTTP.use(function (err, req, res, next) {
 		console.error(err.message);
 		res.status(err.status || 500);
@@ -443,8 +462,8 @@ async function main() {
 			error: {}
 		});
 	});
-	
 	*/
+	
 
 
 	// ---------------- Verzeichnisüberwachung ----------------

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Samsung Smart Signage Display ED65E LED)
+# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Strom geschalten über Relais)
 # (c) 2019 Johannes Resch
 
 # IP Adresse des Server PC ganz unten!
@@ -20,13 +20,8 @@ import os
 # GPIO PIN Bewegungsmelder
 pirpin = 11
 
-# COM Port (Fernseher)
-uartport = "/dev/ttyAMA0"
-
-# Befehl "Bildschirm AN"  siehe Anleitung Fersneher
-poweron = "\xAA\x11\xFE\x01\x01\x11"
-# Befehl "Bildschirm AUS" siehe Anleitung Fersneher
-poweroff = "\xAA\x11\xFE\x01\x00\x10"
+# GPIO PIN Relais
+relaispin = 12
 
 # IP Adresse des FWmonitor servers
 targetserver = 'ws://192.168.178.28:8080/';
@@ -38,6 +33,7 @@ targetserver = 'ws://192.168.178.28:8080/';
 GPIO.setmode(GPIO.BOARD)
 # RASPBERRY GPIO Pins Setup
 GPIO.setup(pirpin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(relaispin, GPIO.OUT)
 
 
 logtext = ""
@@ -54,25 +50,13 @@ def printHard(*args):
     global logtext
     logtext = ', '.join(args)
     try:
-        ws.send("PySteuerClient-Alarmdisplay-Steuerskript-7-LOG:" + logtext + ";SCHIRM:" + schirmstatus + " " + schirmstatusTime)
+        ws.send("PySteuerClient*Alarmdisplay*Steuerskript*7*LOG:" + logtext + ";SCHIRM:" + schirmstatus + " " + schirmstatusTime)
     except:
         print("No ws open")
 
 # ------- Bildschirm AUS -------
 def schirmaus():
-    # Öffne Seriellen Port
-    ser = serial.Serial(
-        port=uartport,
-        baudrate=9600,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        bytesize=serial.EIGHTBITS,
-        xonxoff=False
-    )
-    # Sende Daten
-    ser.write(poweroff)
-    # Schließe Seriellen Port
-    ser.close()
+    GPIO.output(relaispin, GPIO.LOW)
     # Konsolenausgabe
     global schirmstatus
     global schirmstatusTime
@@ -84,19 +68,7 @@ def schirmaus():
 
 # ------- Bildschirm AN -------
 def schirman():
-    # Öffne Seriellen Port
-    ser = serial.Serial(
-        port=uartport,
-        baudrate=9600,
-        parity=serial.PARITY_NONE,
-        stopbits=serial.STOPBITS_ONE,
-        bytesize=serial.EIGHTBITS,
-        xonxoff=False
-    )
-    # Sende Daten
-    ser.write(poweron)
-    # Schließe Seriellen Port
-    ser.close()
+    GPIO.output(relaispin, GPIO.HIGH)
     # Konsolenausgabe
     global schirmstatus
     global schirmstatusTime
@@ -148,7 +120,7 @@ class DummyClient(WebSocketClient):
     def opened(self):
         self.send("WS Connection...")
         printHard("WS Opened")
-        self.send("PySteuerClient-Alarmdisplay-Steuerskript-7")
+        self.send("PySteuerClient*Alarmdisplay*Steuerskript*7")
 
     # WebSocket Setup
     def setup(self, timeout=5):
@@ -199,7 +171,7 @@ class DummyClient(WebSocketClient):
             schirman()
             schirman()
         if 'rebootScreen' in str(m):
-            ws.send("PySteuerClient-Alarmdisplay-Steuerskript--RESTARTING")
+            ws.send("PySteuerClient*Alarmdisplay*Steuerskript**RESTARTING")
             ws.close()
             os.system('sudo shutdown -r now')
 

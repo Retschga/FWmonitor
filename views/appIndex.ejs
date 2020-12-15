@@ -6,9 +6,24 @@
 		<% include partials/head %>	
         <title>FWmonitor - APP</title>	
 		
+		<style>
+			.page {
+				background-color: #eeeeee !important;
+			}
+			.content {
+				background-color: #ffffff;
+				max-width: 800px;
+				position: relative !important;
+				margin: 0 auto;
+			}
+			.bodybg {
+				background-color: #eeeeee !important;
+			}
+		</style>
+
     </head>
 	
-    <body class="">
+    <body class="bodybg">
 		
 		<!-- HEADER -->
          <div class="header red-600">
@@ -35,13 +50,14 @@
 				<div class="space"></div>
 			</div>
 			<% if(data["nurLAN"] == "0") { %>  
+			<% } %>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/kalender', null, kalender_loadKalender)" >Kalender</button>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/alarmList', 5, alteAlarme_loadAlarm)">Letzte Einsätze</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/alarmList', -5, alteAlarme_loadAlarm)">Letzte Einsätze</button>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/statistik', null, statistik_loadStatistik)">Statistik</button>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/verfuegbarkeit', null, verfuegbarkeit_load)">Verfügbarkeit</button>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/hydrantenkarte', null, hydrantenkarte_load)">Hydrantenkarte</button>
 			<button class="red-600 full" onclick="openPage('filesHTTPS/einstellungen', null, einstellungen_load)">Einstellungen</button>
-			<% } %>
+			
 			<% if(data["admin"] == "1") { %>  
 				<p class="align-center">Administrator Bereich</p>
 				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/benutzer', null, benutzer_loadBenutzer)">Benutzer</button>
@@ -161,33 +177,39 @@
 		<script>
 
 			var firststart = true;
-			setTimeout(function() { 
-				firststart = false;				
-			}, 1000);
-
-			console.log("start")
-			document.addEventListener("visibilitychange", function() {
-				if (document.visibilityState === 'visible' && !firststart) {
-					console.log("open");	
-					index_loadKalender();	
-					<% if(data["nurLAN"] == "0") { %> 
-					index_loadStatus();		
-					<% } %>
-				} else {
-					console.log("close");
-				}
-			});
+		//	setTimeout(function() { 
+		//		firststart = false;			
+		//	}, 1000);
 		
 			let h = parseInt(location.hash.substring(1));
 			if(h != 0)
 				history.pushState({}, 'Start', '#0')
 	
 		
-			index_loadKalender();
+			window.onload = function () {
+				console.log('Dokument geladen');
+				index_loadKalender();
+				index_loadStatus();	
+				firststart = false;	
 
-			<% if(data["nurLAN"] == "0") { %>  
+				<% if(data["alarm"] == "true") { %>  
+					openPage('filesHTTPS/alarm', <%= data["alarmID"] %>, alarm_loadAlarm);
+				<% } %>
+			}			
+			document.addEventListener("visibilitychange", function() {
+				if (document.visibilityState === 'visible' && !firststart) {
+					console.log("open");	
+					index_loadKalender();	
+					index_loadStatus();		
+				//	<% if(data["nurLAN"] == "0") { %> 
+				//		index_loadStatus();		
+				//	<% } %>
+				} else {
+					console.log("close");
+				}
+			});
 
-				index_loadStatus();		
+			<% if(data["nurLAN"] == "0") { %>  					
 
 				// ----------------  ProgressivWebApp ---------------- 
 
@@ -287,16 +309,6 @@
 
 		</script>
 		
-		<% if(data["alarm"] == "true") { %>  
-			<script>
-				openPage('filesHTTPS/alarm', <%= data["alarmID"] %>, alarm_loadAlarm);
-			</script>
-		<% } %>
-
-	
-
-	
-
     </body>
 	
 </html>

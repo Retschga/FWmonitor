@@ -539,16 +539,15 @@ async function alarm_loadAlarm(id) {
 		// Alarm Farbe und Icon
 		let color = "red-600";
 		let icon = "ion-fireball";
-		let stichwort = response.einsatzstichwort.toLowerCase();
-		if(stichwort.includes("inf") || stichwort.includes("1nf")) {
+		if(response.color == "3") {
 			color = 'green';
 			icon = "ion-information-circled";
 		}
-		else if(stichwort.includes("thl")) {
+		else if(response.color == "2") {
 			color = 'blue';
 			icon = "ion-settings";
 		} 
-		else if(stichwort.includes("rd")) {
+		else if(response.color == "1") {
 			color = 'orange';
 			icon = "ion-ios-medkit-outline";
 		} 			
@@ -710,12 +709,11 @@ async function alteAlarme_loadAlarm(count) {
 
 			// Alarm Farbe erstellen
 			let color = "border-red";
-			let stichwort = response[i][4].toLowerCase();
-			if(stichwort.includes("inf") || stichwort.includes("1nf"))
+			if(response[i][6] == "3")
 				color = 'border-green';
-			else if(stichwort.includes("thl"))
+			else if(response[i][6] == "2")
 				color = 'border-blue';
-			else if(stichwort.includes("rd"))
+			else if(response[i][6] == "1")
 				color = 'border-orange';
 
 			// Alarm Datum  String erstellen

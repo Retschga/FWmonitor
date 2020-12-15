@@ -300,6 +300,11 @@ var alteAlarme_offset = 0;
 async function alteAlarme_loadAlarm(count) {	
 	try {
 
+		if (count < 0) {
+			alteAlarme_offset = 0;
+			count = count * -1;
+		}
+
 		let response = await fetchWithParam('app/api/alarmList', {offset:alteAlarme_offset, count: count});
 		alteAlarme_offset += count;
 
@@ -313,12 +318,11 @@ async function alteAlarme_loadAlarm(count) {
 
 			// Alarm Farbe erstellen
 			let color = "border-red";
-			let stichwort = response[i][4].toLowerCase();
-			if(stichwort.includes("inf") || stichwort.includes("1nf"))
+			if(response[i][6] == "3")
 				color = 'border-green';
-			else if(stichwort.includes("thl"))
+			else if(response[i][6] == "2")
 				color = 'border-blue';
-			else if(stichwort.includes("rd"))
+			else if(response[i][6] == "1")
 				color = 'border-orange';
 
 			// Alarm Datum  String erstellen
@@ -554,16 +558,15 @@ async function alarm_loadAlarm(id) {
 		// Alarm Farbe und Icon
 		let color = "red-600";
 		let icon = "ion-fireball";
-		let stichwort = response.einsatzstichwort.toLowerCase();
-		if(stichwort.includes("inf") || stichwort.includes("1nf")) {
+		if(response.color == "3") {
 			color = 'green';
 			icon = "ion-information-circled";
 		}
-		else if(stichwort.includes("thl")) {
+		else if(response.color == "2") {
 			color = 'blue';
 			icon = "ion-settings";
 		} 
-		else if(stichwort.includes("rd")) {
+		else if(response.color == "1") {
 			color = 'orange';
 			icon = "ion-ios-medkit-outline";
 		} 			
@@ -1863,7 +1866,11 @@ async function kalenderBearbeiten_save(newItem, callb) {
 			send.id = kalenderBearbeiten_id;
 			send.summary = summary;
 			send.start = new Date(document.getElementById("kalenderBearbeiten_dateStart").value).toISOString();
-			send.remind = new Date(document.getElementById("kalenderBearbeiten_dateRemind").value).toISOString();
+			if (document.getElementById("kalenderBearbeiten_dateRemind").value != "") {
+				send.remind = new Date(document.getElementById("kalenderBearbeiten_dateRemind").value).toISOString();
+			} else {
+				send.remind = "";
+			}
 			send.group = group;
 
 		} else {
@@ -1941,8 +1948,7 @@ async function hydrantenkarte_load() {
 		enableHighAccuracy: true,
 		timeout: 5000,
 		maximumAge: 4000
-	};
-	navigator.geolocation.getCurrentPosition(success, error, opts);
+	};	
 
 	async function success(position) {
 		let latitude  = position.coords.latitude;
@@ -1966,6 +1972,8 @@ async function hydrantenkarte_load() {
 		}
 		alert(`Es war nicht möglich Sie zu lokalisieren (${str})`);
 	};
+
+	navigator.geolocation.getCurrentPosition(success, error, opts);
 }
 
 
@@ -1979,91 +1987,115 @@ async function clients_load() {
 		document.getElementById("clients_list").innerHTML = "";
 
 		for(let i = 0; i < response.length; i++) {
-			let dat = response[i].type.split('-');
+			try {				
+				
+				let dat = JSON.parse(response[i].type);
+				let responseID = response[i].id;
+				/*
+				`{"type":"WebClient",
+					"name":"Auto",
+					"info":"<%= data["autoname"] %>",
+					"actions":[
+						{"id":"0"},
+						{"id":"7"},
+						{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+						{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+						{"id":"-1", "key": "LOG", "value": "${log}"}
+					]`
+				*/
+				let newDiv = document.createElement("div");		
+				let newDiv2 = document.createElement("div");	
+				newDiv2.className = 'space';
+				newDiv.className = 'list';
+				newDiv.innerHTML += `<div class="item small-space grey-300 text-grey-700  label-fixed">
+										<label class="text-black">Name</label>
+										<input id="clients_name_${i}" type="text" value="${dat.name}" readonly>
+									</div>
+									<div class="item  label-fixed">
+										<label class="text-black">Info</label>
+										<input class="" id="client_page_${i}" style="text-align:right;" value="${dat.info}" readonly>
+									</div>`
+				for(let j = 0; j < dat.actions.length; j++) {
+					let elem = dat.actions[j];
+					// Textanzeige
+					if(elem.id == "-1") {
+						newDiv.innerHTML +=	`<div class="item  label-fixed">
+												<label class="text-black">${elem.key}</label>
+												<input class="" id="client_data_${i}" value="${elem.value}" style="text-align:right;" readonly>
+											</div>`
+					// Seite Reload
+					} else if(elem.id == "0") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Seite neu laden</label>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'reload', '');">Ausführen</button>
+											</div>`
+					// Wechsle zu Letzter Alarm
+					} else if(elem.id == "1") {
+						newDiv.innerHTML +=	`<div class="item  label-fixed">
+												<label class="text-black">Letzter Alarm anzeigen</label>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'letzteralarm', '');">Ausführen</button>
+											</div>`
+					// ????
+					} else if(elem.id == "2") {
+						newDiv.innerHTML +=	`<div class="item  label-fixed">
+												<label class="text-black">Diashow</label>
+												<button class="red-400 small right" onclick="">Ausführen</button>
+											</div>`
+					// Kalender Reload
+					} else if(elem.id == "3") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Kalender neu laden</label>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'kalReload', '');">Ausführen</button>
+											</div>
+											<div class="item  label-fixed">
+												<label class="text-black">Kalender Elemente</label>
+												<input class="red-400 right radius" id="client_kalElem_${i}" type="number" style="max-width:20vw; margin-right: 10em;">
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'kalElem', document.getElementById('client_kalElem_${i}').value);">Ausführen</button>
+											</div>`
+					// Wechsle zu Präsentations-Steuerung
+					} else if(elem.id == "4") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Präsentation</label>
+												<button class="red-400 small right" onclick="openPage('filesHTTPS/praesentation', null, praesentation_load)">Ausführen</button>
+											</div>`
+					// Seite Zurück
+					} else if(elem.id == "5") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Zurück</label>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'zurueck', '');">Ausführen</button>
+											</div>`
+					// Neustart
+					} else if(elem.id == "7") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Neustart</label>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'restart', '');">Ausführen</button>
+											</div>`
+					// Update
+					} else if(elem.id == "8") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">Version</label>
+												<input class="" id="client_data_${i}" value="${elem.value}" style="margin-right: 10em; text-align:right;" readonly>
+												<button class="red-400 small right" onclick="clients_action('${responseID}', 'updateScript', '');">Update</button>
+											</div>`
+					// GPS Position
+					} else if(elem.id == "9") {
+						newDiv.innerHTML += `<div class="item  label-fixed">
+												<label class="text-black">GPS Pos.</label>
+												<input class="" id="client_data_${i}" value="${elem.value}" style="margin-right: 10em; text-align:right;" readonly>
+												<button class="red-400 small right" onclick="location.href='geo:${elem.value}'">Karte</button>
+											</div>`
+					}
+				}	
+				
+				document.getElementById("clients_list").appendChild(newDiv); 
+				document.getElementById("clients_list").appendChild(newDiv2); 
 
-			if(!dat[1]) dat[1] = "";
-			if(!dat[2]) dat[2] = "";
-			if(!dat[3]) dat[3] = "";
-			if(!dat[4]) dat[4] = []; else dat[4] = String(dat[4]).split(';');
-			
-			let newDiv = document.createElement("div");		
-			let newDiv2 = document.createElement("div");	
-			newDiv2.className = 'space';
-			newDiv.className = 'list';
-			newDiv.innerHTML += `<div class="item small-space grey-300 text-grey-700  label-fixed">
-									<label class="text-black">Name</label>
-									<input id="clients_name_${i}" type="text">
-								</div>
-								<div class="item  label-fixed">
-									<label class="text-black">Seite</label>
-									<input class="" id="client_page_${i}" readonly>
-								</div>`
-			for(let i = 0; i < dat[4].length; i++) {
-				let row = dat[4][i].split(':');
-				newDiv.innerHTML += `<div class="item  label-fixed">
-									<label class="text-black">${row[0]}</label>
-									<input class="" id="client_data_${i}" value="${row[1]}" readonly>
-								</div>`
-			}			
-			newDiv.innerHTML += `${ dat[3].indexOf('0') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Seite neu laden</label>
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'reload', '');">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('1') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Letzter Alarm anzeigen</label>
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'letzteralarm', '');">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('2') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Diashow</label>
-									<button class="red-400 small right" onclick="">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('3') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Kalender neu laden</label>
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'kalReload', '');">Ausführen</button>
-								</div>
-								<div class="item  label-fixed">
-									<label class="text-black">Kalender Elemente</label>
-									<input class="red-400 right radius" id="client_kalElem_${i}" type="number" style="max-width:20vw; margin-right: 10em;">
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'kalElem', document.getElementById('client_kalElem_${i}').value);">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('4') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Präsentation</label>
-									<button class="red-400 small right" onclick="">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('5') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Zurück</label>
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'zurueck', '');">Ausführen</button>
-								</div>` : ""
-								}
-								${ dat[3].indexOf('7') != -1 ? 
-								`<div class="item  label-fixed">
-									<label class="text-black">Neustart</label>
-									<button class="red-400 small right" onclick="clients_action('${response[i].id}', 'restart', '');">Ausführen</button>
-								</div>` : ""
-								}
-								`;
-
-			
-			document.getElementById("clients_list").appendChild(newDiv); 
-			document.getElementById("clients_list").appendChild(newDiv2); 
-
-			document.getElementById("clients_name_"+i).value = dat[1]; 
-			document.getElementById("client_page_"+i).value = dat[2]; 
-
-			document.getElementById("clients_name_"+i).addEventListener("input", () => {
-				kalendergruppen_changed = true;
-			}); 
+				document.getElementById("clients_name_"+i).addEventListener("input", () => {
+					// Name speichern
+				}); 
+			} catch (error) {
+				console.error(error);
+			}
 		}
 
 	} catch (error) {

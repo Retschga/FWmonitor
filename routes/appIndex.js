@@ -78,7 +78,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			data: "OK"
 		}));
 	});
-
+/*
 	router.get('/sessions', (req, res) => {
 		req.sessionStore.sessionModel.findAll()
 			.then(sessions => sessions.map(sess => JSON.parse(sess.dataValues.data)))
@@ -86,7 +86,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 				res.send(sessions)
 			})
 	})
-
+*/
 
 	// ----------------  AUTHIFICATION ---------------- 
 	router.post('/login.html', async (req, res, next) => {

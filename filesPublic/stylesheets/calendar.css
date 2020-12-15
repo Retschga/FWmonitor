@@ -104,7 +104,7 @@
     
     .calendar .day {
       display: inline-block;
-      width: calc(100vw / 7);
+      width: calc(100% / 7);
       padding: 10px;
       text-align: center;
       vertical-align: top;
