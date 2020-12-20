@@ -37,7 +37,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		switch (req.query.value) {
 			case 'kommeNein':
-				db.getUserByUid(req.query.telegramID)
+				db.getUserByTelId(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(
@@ -49,7 +49,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.catch((err) => { console.error('[appIndex] Datenbank Fehler', err) });
 				break;
 			case 'kommeJa':
-				db.getUserByUid(req.query.telegramID)
+				db.getUserByTelId(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(
@@ -61,7 +61,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.catch((err) => { console.error('[appIndex] Datenbank Fehler', err) });
 				break;
 			case 'kommeSpaeter':
-				db.getUserByUid(req.query.telegramID)
+				db.getUserByTelId(req.query.telegramID)
 					.then((rows) => {
 						if (rows[0] != undefined) {
 							_httpServer[0].wss.broadcast(

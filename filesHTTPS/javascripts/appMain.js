@@ -935,6 +935,13 @@ async function einstellungen_loadStatus() {
 			document.getElementById("einstellungen_notificationsCount").classList.add('hidden');
 		}
 
+		if(response.statusHidden == 1) {
+			document.getElementById("einstellungen_statusHidden").checked = true;
+		} else {
+			document.getElementById("einstellungen_statusHidden").checked = false;
+		}
+
+
     } catch (error) {
 		console.log(error);	
 		alert("Status konnte nicht geladen werden.");
@@ -976,6 +983,19 @@ async function einstellungen_setNotifications() {
     } catch (error) {
 		console.log(error);	
 		alert("Notification Einstellungen konnten nicht gesetzt werden.");
+	}
+}
+
+async function einstellungen_setStatusHidden() {
+	try {
+
+		let response = await fetchWithParam('app/api/setStatusHidden', {value: document.getElementById("einstellungen_statusHidden").checked}, false);
+
+		einstellungen_loadStatus();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Erinnerungseinstellung konnte nicht gesetzt werden.");
 	}
 }
 
@@ -1132,6 +1152,7 @@ function benutzerBearbeiten_loadBenutzer(data) {
 	document.getElementById("benutzerBearbeiten_drucker").checked =  response.drucker=='1';
 	document.getElementById("benutzerBearbeiten_erinnerung").checked = response.sendRemembers=='1';
 	document.getElementById("benutzerBearbeiten_verfuegbar").checked = response.status=='1';
+	document.getElementById("benutzerBearbeiten_statusHidden").checked = response.statusHidden=='1';
 	document.getElementById("benutzerBearbeiten_stAGT").checked = response.stAGT=='1';
 	document.getElementById("benutzerBearbeiten_stMA").checked = response.stMA=='1';
 	document.getElementById("benutzerBearbeiten_stGRF").checked = response.stGRF=='1';

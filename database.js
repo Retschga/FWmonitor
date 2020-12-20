@@ -9,6 +9,12 @@ module.exports = function () {
   // ----------------  SQLITE ---------------- 
   const Database = require('sqlite-async');
 
+  // Enums
+  const USER_STATUS = {"NVERV": 2, "VERV": 1, "BOT_DISABLED": -2, "BOT_BLOCKED": -1};
+  const USER_STATUSHIDDEN = {"HIDDEN": 1, "VISIBLE": 0};
+  const STATISTIK = {"SHOW_VERV": 2, "SET_VERV": 3, "SHOW_KALENDER": 1};
+
+
   // ---------------- Datenbankfunktionen ----------------	
   const dbQuery = async function (str, ...values) {
     return new Promise(async (resolve, reject) => {
@@ -24,8 +30,8 @@ module.exports = function () {
   }
 
   // ---- User ----
-  const getUserByUid = async function (uid) {
-    return await dbQuery('SELECT * FROM users WHERE "telegramid"=?', parseInt(uid));
+  const getUserByTelId = async function (telid) {
+    return await dbQuery('SELECT * FROM users WHERE "telegramid"=?', parseInt(telid));
   }
   const getUserByRowNum = async function (row) {
     return await dbQuery('SELECT * FROM users WHERE "id"=?', parseInt(row));
@@ -38,35 +44,35 @@ module.exports = function () {
   }
 
   // ---- User Status ----
-  const getUserStatusByUid = async function (uid) {
+  const getUserStatusByTelId = async function (telid) {
     //return await dbQuery('SELECT * FROM users ' + (uid != undefined ? (' WHERE "telegramid"=' + uid) : ""));
-    return await dbQuery('SELECT status, stAGT, stMA, stGRF, stZUGF, statusUntil, sendRemembers, appNotifications, kalenderGroups FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+    return await dbQuery('SELECT status, stAGT, stMA, stGRF, stZUGF, statusUntil, sendRemembers, appNotifications, kalenderGroups, statusHidden FROM users ' + (telid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(telid));
   }
   const getUserStatusAll = async function () {
     return await dbQuery('SELECT * FROM users WHERE allowed == 1 AND statusHidden <> 1 ORDER BY "name" ASC, "vorname" ASC');
   }
-  const setUserStatus = async function (uid, status, until) {
-    return await dbQuery('UPDATE "main"."users" SET "status"=?, "statusUntil"=? WHERE "telegramid"=?', status, until.toString(), parseInt(uid));
+  const setUserStatus = async function (telid, status, until) {
+    return await dbQuery('UPDATE "main"."users" SET "status"=?, "statusUntil"=? WHERE "telegramid"=?', status, until.toString(), parseInt(telid));
   }
-  const setUserStatusPlan = async function (uid, plans) {
-    return await dbQuery('UPDATE "main"."users" SET "statusPlans"=? WHERE "telegramid"=?', plans.toString(), parseInt(uid));
+  const setUserStatusPlan = async function (telid, plans) {
+    return await dbQuery('UPDATE "main"."users" SET "statusPlans"=? WHERE "telegramid"=?', plans.toString(), parseInt(telid));
   }
-  const getUserStatusPlan = async function (uid) {
-    return await dbQuery('SELECT statusPlans FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+  const getUserStatusPlan = async function (telid) {
+    return await dbQuery('SELECT statusPlans FROM users ' + (telid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(telid));
   }
-  const setUserStatusHidden = async function (uid, value) {
-    return await dbQuery('UPDATE "main"."users" SET "statusHidden"=? WHERE "telegramid"=?', parseInt(value), parseInt(uid));
+  const setUserStatusHidden = async function (telid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "statusHidden"=? WHERE "telegramid"=?', parseInt(value), parseInt(telid));
   }
-  const getUserStatusHidden = async function (uid) {
-    return await dbQuery('SELECT statusHidden FROM users ' + (uid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(uid));
+  const getUserStatusHidden = async function (telid) {
+    return await dbQuery('SELECT statusHidden FROM users ' + (telid != undefined ? (' WHERE "telegramid"=?') : ""), parseInt(telid));
   }
 
   // ---- User Settings ----
-  const setUserPassword = async function (uid, value) {
-    return await dbQuery('UPDATE "main"."users" SET "appPasswort" = ? WHERE "telegramid"= ? ', value, parseInt(uid));
+  const setUserPassword = async function (telid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "appPasswort" = ? WHERE "telegramid"= ? ', value, parseInt(telid));
   }
-  const getUserLogin = async function (uid) {
-		return await dbQuery("SELECT appPasswort, admin, kalender FROM users WHERE telegramid=?", parseInt(uid));       
+  const getUserLogin = async function (telid) {
+		return await dbQuery("SELECT appPasswort, admin, kalender FROM users WHERE telegramid=?", parseInt(telid));       
   }
   const getAutoLogin = async function (appBenutzer) {
 		return await dbQuery("SELECT appPasswort, appBenutzer, name, id FROM autos WHERE appBenutzer=?", appBenutzer);       
@@ -79,22 +85,22 @@ module.exports = function () {
   const getUserNotificationsSubscription = async function () {
     return await dbQuery('SELECT "appNotifications", "appNotificationsSubscription" AS endpoint, telegramid, "drucker", "group", "stAGT", "stMA", "stGRF", "stZUGF", "admin"  FROM users');         
   }
-  const setUserNotificationsSubscription = async function (uid, val) {
-    return await dbQuery('UPDATE "main"."users" SET "appNotificationsSubscription"=? WHERE "telegramid"=?', val, parseInt(uid));         
+  const setUserNotificationsSubscription = async function (telid, val) {
+    return await dbQuery('UPDATE "main"."users" SET "appNotificationsSubscription"=? WHERE "telegramid"=?', val, parseInt(telid));         
   }
-  const setUserNotifications = async function (uid, val) {
-		return await dbQuery('UPDATE "main"."users" SET "appNotifications"=? WHERE "telegramid"=?', val, parseInt(uid));
+  const setUserNotifications = async function (telid, val) {
+		return await dbQuery('UPDATE "main"."users" SET "appNotifications"=? WHERE "telegramid"=?', val, parseInt(telid));
   }
 
   // ---- User Add/Remove/Allowed ----
-  const isUserAllowed = async function (uid) {
-    var rows = await getUserByUid(uid);
+  const isUserAllowed = async function (telid) {
+    var rows = await getUserByTelId(telid);
     if (rows[0] != undefined)
       return rows[0].allowed == 1;
   }
-  const addUser = async function (uid, name, vorname) {
+  const addUser = async function (telid, name, vorname) {
     // war mit .run()
-    return await dbQuery('INSERT INTO "main"."users"("id", "name","vorname","telegramid","status","group","admin") VALUES (NULL,?,?,?,1,1,0)', name, vorname, parseInt(uid));
+    return await dbQuery('INSERT INTO "main"."users"("id", "name","vorname","telegramid","status","group","admin") VALUES (NULL,?,?,?,1,1,0)', name, vorname, parseInt(telid));
   }
   const activateUser = async function (uid) {
     return await dbQuery('UPDATE "main"."users" SET "allowed"=1 WHERE "_rowid_"=?', parseInt(uid));
@@ -108,8 +114,8 @@ module.exports = function () {
     //return await dbQuery('UPDATE "main"."users" SET "group"=? WHERE "id"=?', group, parseInt(uid));
 		return await dbQuery('UPDATE "main"."users" SET "group"=? WHERE "id"=?', (group * 1 + 1), parseInt(uid));
 	};
-  const changeUserReminders = async function (uid, value) {
-    return await dbQuery('UPDATE "main"."users" SET "sendRemembers"=? WHERE "telegramid"=?', value, parseInt(uid));
+  const changeUserReminders = async function (telid, value) {
+    return await dbQuery('UPDATE "main"."users" SET "sendRemembers"=? WHERE "telegramid"=?', value, parseInt(telid));
   }
   const getGroupsAll = async function () {
 		return await dbQuery('SELECT * FROM groups');
@@ -460,11 +466,11 @@ module.exports = function () {
 
 
   return {
-    getUserByUid,
+    getUserByTelId,
     getUserByRowNum,
     getUserAll,
     getUserAllowed,
-    getUserStatusByUid,
+    getUserStatusByTelId,
     getUserStatusAll,
     isUserAllowed,
     setUserStatus,
@@ -502,6 +508,9 @@ module.exports = function () {
     getUserStatusPlan,
     getUserStatusHidden,
     setUserStatusHidden,
-    updateDatabase
+    updateDatabase,
+    USER_STATUS,
+    USER_STATUSHIDDEN,
+    STATISTIK
   };
 }

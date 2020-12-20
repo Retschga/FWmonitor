@@ -42,7 +42,7 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.0.5";
+process.env.VERSION = "2.0.6";
 
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 

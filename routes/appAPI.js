@@ -495,7 +495,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// ---- Status ----
 	// get Status
 	router.get('/api/status', async function (req, res) {
-		let rows = await db.getUserStatusByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserStatusByTelId(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -523,7 +523,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
  
 		await db.setUserStatus(req.session.telegramID, status, result).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
-		db.getUserByUid(req.session.telegramID)
+		db.getUserByTelId(req.session.telegramID)
 			.then((rows) => {
 				if (rows[0] != undefined) {
 					if (status == 2)
@@ -554,7 +554,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		var st_nichtverfNum = 0;
 
 		rows_allUsers.forEach(function (element) {
-			if (element.allowed == 1) {
+			if (element.allowed == 1 && (element.statusHidden != 1 || req.session.isAdmin == true)) {
 				if (element.status == 2) {
 					st_nichtverf.push(element.name + " " + element.vorname);
 					st_nichtverfNum += 1;
@@ -719,6 +719,23 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.send('OK');
 	});
 
+	// set StatusHidden
+	router.get('/api/setStatusHidden', async function (req, res) {
+		let value = req.query.value;
+		if (value == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+		if (value == 'true')
+			value = 1;
+		else
+			value = 0;
+
+		await db.setUserStatusHidden(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+
+		res.send('OK');
+	});
+	
 
 	// ---- Statistik ----
 	// get Statistik
@@ -751,7 +768,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// get Einsatzzeit
 	router.get('/api/einsatzzeit', async function (req, res) {
 
-		let rows = await db.getUserByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserByTelId(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		let zeit = await fwvv.getEinsatzZeit(rows[0].name, rows[0].vorname)
 			.then((arr) => {
@@ -918,7 +935,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		});
 	});
 	router.get('/appWorker.js', async function (req, res) {
-		let rows = await db.getUserStatusByUid(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let rows = await db.getUserStatusByTelId(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;

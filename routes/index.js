@@ -44,7 +44,7 @@ router.get('/', function (req, res) {
 			var st_nichtverfID = [];
 
 			rows.forEach(function (element) {
-				if (element.allowed == 1) {
+				if (element.allowed == 1 && element.statusHidden != 1) {
 					if (element.status == 1) {
 						st_verv.push(
 							"st_verf|" + element.name + " " + 

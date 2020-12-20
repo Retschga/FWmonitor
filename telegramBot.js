@@ -33,7 +33,7 @@ module.exports = function (_httpServer, destroySession) {
 	// ---------------- Fehlerausgabe ----------------
 	bot.catch((err) => {
 		console.error('[TelegramBot] Telegram Fehler', err)
-	})
+	});
 
 	// ---------------- Bot Name ----------------
 	bot.telegram.getMe().then((botInfo) => {
@@ -53,8 +53,8 @@ module.exports = function (_httpServer, destroySession) {
 				amount: parts[1]
 			}
 		}
-	})
-	bot.on('callback_query', onCallback)
+	});
+	bot.on('callback_query', onCallback);
 
 	// ---------------- Send Funktion mit Rate Limiting ----------------
 	var sendtMessages = 0;
@@ -100,26 +100,27 @@ module.exports = function (_httpServer, destroySession) {
 	// ---------------- Erste Bot Verbindung ----------------
 	bot.start(async (ctx) => {
 		try {
-			let rows = await db.getUserByUid(ctx.from.id)
+			let rows_userById = await db.getUserByTelId(ctx.from.id);
+			let user = rows_userById[0];
 
 			// Prüfe ob Benutzer bereits existiert
-			if (rows[0] != undefined) {
+			if (user != undefined) {
 
 				// Prüfe ob Benutzer bereits freigegeben
 				var existing = false;
-				if (rows[0].allowed == 1)
+				if (user.allowed == 1)
 					existing = true;
 
 				// Antwort senden
 				if (!existing) {
-					ctx.reply('Warte auf Freigabe (evtl. bescheidgeben)', Telegraf.Extra.HTML().markup((m) =>
+					ctx.reply('Warte auf Freigabe (bitte bescheidgeben)', Telegraf.Extra.HTML().markup((m) =>
 						m.keyboard([
 							['/start']
 						]).resize()
 					));
 				} else {
 					ctx.reply(
-						`Anmeldung erfolgreich: ${rows[0].name} ${rows[0].vorname}
+						`Anmeldung erfolgreich: ${user.name} ${user.vorname}
 						*Funktionen:*
 						_ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
 						_ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
@@ -133,6 +134,7 @@ module.exports = function (_httpServer, destroySession) {
 				// Antwort senden
 				ctx.reply('Telegram Bot der' + process.env.FW_NAME_BOT);
 
+				// Prüfe ob in Telegram Vor- und Nachname eingetragen ist
 				if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
 
 					// Antwort senden
@@ -152,7 +154,7 @@ module.exports = function (_httpServer, destroySession) {
 
 					// Antwort senden
 					ctx.reply(
-						'Warte auf Freigabe (evtl. bescheidgeben)',
+						'Warte auf Freigabe (bitte bescheidgeben)',
 						Telegraf.Extra.HTML().markup((m) =>
 							m.keyboard([
 								['/start']
@@ -182,16 +184,15 @@ module.exports = function (_httpServer, destroySession) {
 				return;
 			}
 
-			const start = new Date();
+//			const start = new Date();
 			await next();
-
-			//const ms = new Date() - start;
-			//console.log('[Telegram] Response time: %sms', ms);
+//			const ms = new Date() - start;
+//			console.log('[Telegram] Response time: %sms', ms);
 
 		} catch (error) {
 			console.error('[TelegramBot] Zugriffsschutz Fehler', error);
 		}
-	})
+	});
 
 
 
@@ -217,9 +218,44 @@ module.exports = function (_httpServer, destroySession) {
 			console.error('[TelegramBot] #APP Fehler', error);
 		}
 	});
+	onCallback.on('einstell_appLogin', (ctx) => {
+
+		destroySession(ctx.from.id);
+
+		let password = generator.generate({
+			length: 10,
+			numbers: true,
+			excludeSimilarCharacters: true
+		});
+
+		bcrypt.hash(password, 10, async (err, hash) => {
+			if (err) {
+
+				console.error('[TelegramBot] #einstell_appLogin Fehler', err);
+				ctx.answerCbQuery("Fehler: Zugangsdaten konnten nicht erstellt werden.", true);
+
+			} else {
+
+				db.setUserPassword(ctx.from.id, hash);
+
+				ctx.editMessageText(
+					'*APP Zugangsdaten: Telegram ID, Passwort*',
+					Telegraf.Extra.markdown()
+				);
+
+				sendMessage(ctx.from.id, "_" + ctx.from.id + "_", Telegraf.Extra.markdown());
+
+				await timeout(500);
+
+				sendMessage(ctx.from.id, "_" + password + "_", Telegraf.Extra.markdown());
+
+			}
+		});
+
+	});
 
 	// ---------------- Historie ----------------
-	var isLoading = {};
+	var user_botIsLoading = {};
 
 	bot.hears('🔥 Einsätze', (ctx) => {
 		if (process.env.FWVV != "true") {
@@ -244,15 +280,14 @@ module.exports = function (_httpServer, destroySession) {
 	onCallback.on('showAlarm', async (ctx) => {
 
 		// Prüfe ob bereits Daten geladen werden
-		if (isLoading[ctx.from.id] == true) return;
-		isLoading[ctx.from.id] = true;
+		if (user_botIsLoading[ctx.from.id] == true) return;
+		user_botIsLoading[ctx.from.id] = true;
 
 		try {
 			await ctx.editMessageText(
 				'*⌛ lädt ⌛*',
 				Telegraf.Extra.markdown()
 			)
-
 			ctx.replyWithChatAction('typing');
 
 			await timeout(500);
@@ -283,18 +318,18 @@ module.exports = function (_httpServer, destroySession) {
 				)
 			)
 
-			isLoading[ctx.from.id] = false;
+			user_botIsLoading[ctx.from.id] = false;
 
 		} catch (error) {
 			console.error('[TelegramBot] #showAlarm Fehler', error);
-			isLoading[ctx.from.id] = false;
+			user_botIsLoading[ctx.from.id] = false;
 		}
 
 	});
 	onCallback.on('showStatistik', async (ctx) => {
 		try {
 
-			let rows = await db.getStatistik();
+			let rows_statistik = await db.getStatistik();
 
 			var d = new Date();
 			var options = { year: 'numeric' };
@@ -303,7 +338,7 @@ module.exports = function (_httpServer, destroySession) {
 			var str = ""
 			var sum = 0;
 
-			rows.forEach((element) => {
+			rows_statistik.forEach((element) => {
 				if (element.number < 10)
 					str += "0";
 
@@ -323,7 +358,7 @@ module.exports = function (_httpServer, destroySession) {
 
 			ctx.editMessageText(
 				str,
-				Telegraf.Extra.markdown() //.markup((m) => { }))
+				Telegraf.Extra.markdown()
 			);
 
 		} catch (error) {
@@ -333,41 +368,41 @@ module.exports = function (_httpServer, destroySession) {
 	onCallback.on('showEinsatzZeit', async (ctx) => {
 
 		// Prüfe ob bereits Daten geladen werden
-		if (isLoading[ctx.from.id] == true) return;
-		isLoading[ctx.from.id] = true;
+		if (user_botIsLoading[ctx.from.id] == true) return;
+		user_botIsLoading[ctx.from.id] = true;
 
 		try {
-
-			ctx.replyWithChatAction('typing');
-
+			
 			await ctx.editMessageText(
 				"*⌛ lädt ⌛*",
-				Telegraf.Extra.markdown() //.markup((m) => { }))
+				Telegraf.Extra.markdown()
 			);
+			ctx.replyWithChatAction('typing');
 
-			let arr = await fwvv.getEinsatzZeit(ctx.from.last_name, ctx.from.first_name)
+			let responseFwvv = await fwvv.getEinsatzZeit(ctx.from.last_name, ctx.from.first_name)
 
 			var d = new Date();
 			var options = { year: 'numeric' };
 			var date = d.toLocaleDateString('de-DE', options);
 
 			var str = `*⏱️ Einsatzzeit Jahr ${date} :* 
-						_${Math.floor(arr[0] / 60)} h ${arr[0] % 60} m ( ${arr[1]} Einsätze )_`;
+						_${Math.floor(responseFwvv[0] / 60)} h ${responseFwvv[0] % 60} m ( ${responseFwvv[1]} Einsätze )_`;
 
 			ctx.editMessageText(
 				str,
-				Telegraf.Extra.markdown() //.markup((m) => { })
+				Telegraf.Extra.markdown()
 			);
-			isLoading[ctx.from.id] = false;
+
+			user_botIsLoading[ctx.from.id] = false;
 
 
 		} catch (error) {
 			console.error('[TelegramBot] #showStatistik Fehler', error);
 			ctx.editMessageText(
 				"Fehler: Daten konnten nicht geladen werden.",
-				Telegraf.Extra.markdown() //.markup((m) => { })
+				Telegraf.Extra.markdown()
 			);
-			isLoading[ctx.from.id] = false;
+			user_botIsLoading[ctx.from.id] = false;
 		}
 	});
 
@@ -376,32 +411,25 @@ module.exports = function (_httpServer, destroySession) {
 	bot.hears('️▪️ Mehr', async (ctx) => {
 		try {
 
-			let rows = await db.getUserByUid(ctx.from.id);
+			let rows_userById = await db.getUserByTelId(ctx.from.id);
 
 			// Tastatur erstellen
 			var keyboard;
-			if (rows[0].admin == 1) {
+			if (rows_userById[0].admin == 1) {
 				keyboard = [
-					/*Telegraf.Extra.Markup.callbackButton('👤 Benutzer', 'einstell_Benutzer:0'),*/
+//					Telegraf.Extra.Markup.callbackButton('👤 Benutzer', 'einstell_Benutzer:0'),
 					Telegraf.Extra.Markup.callbackButton('📅 Erinnerungen', 'einstell_Kalender'),
 					Telegraf.Extra.Markup.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte 1', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte 2', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T'),
-					Telegraf.Extra.Markup.callbackButton('🖥️ Bildschirm Neustart', 'einstell_rebootScreen'),
+//					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
+					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
 				];
 			} else {
 				keyboard = [
 					Telegraf.Extra.Markup.callbackButton('📅 Erinnerungen', 'einstell_Kalender'),
 					Telegraf.Extra.Markup.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte 1', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte 2', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
+//					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
+					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
 				];
-			}
-
-			// App Knöpfe hinzufügen
-			keyboard.push(Telegraf.Extra.Markup.callbackButton('🔑 APP Zugang', 'einstell_appLogin'));
-			if (process.env.APP_DNS != "") {
-				keyboard.push(Telegraf.Extra.Markup.urlButton('📱 APP - Link', "https://" + process.env.APP_DNS + "/app"));
 			}
 
 			// Antwort senden
@@ -448,42 +476,42 @@ module.exports = function (_httpServer, destroySession) {
 	onCallback.on('einstell_Benutzer', async (ctx) => {
 		try {
 
-			let rows = await db.getUserAll();
+			let rows_allUsers = await db.getUserAll();
 
 			var usernum = parseInt(ctx.state.amount, 10);
 			if (ctx.state.amount < 0)
-				usernum = rows.length - 1;
-			if (ctx.state.amount >= rows.length)
+				usernum = rows_allUsers.length - 1;
+			if (ctx.state.amount >= rows_allUsers.length)
 				usernum = 0;
-			var grupp = rows[usernum].group;
+			var grupp = rows_allUsers[usernum].group;
 			if (grupp == 1)
 				grupp = "Standard";
-			if (rows[usernum].allowed == 1) {
+			if (rows_allUsers[usernum].allowed == 1) {
 				ctx.editMessageText(
-					'Benutzer: ' + rows[usernum].name + " " + rows[usernum].vorname + " \nGruppe: " + grupp,
+					'Benutzer: ' + rows_allUsers[usernum].name + " " + rows_allUsers[usernum].vorname + " \nGruppe: " + grupp,
 					Telegraf.Extra.markup((m) =>
 						m.inlineKeyboard([
 							m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
 							m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
-							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows[usernum].id + "-" + rows[usernum].id),
-							m.callbackButton('Gruppe: Standard', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-1"),
-							m.callbackButton('Gruppe: 1', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-2"),
-							m.callbackButton('Gruppe: 2', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-3"),
-							m.callbackButton('Gruppe: 3', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-4"),
-							m.callbackButton('Gruppe: 4', 'einstell_Benutzer_gruppe:' + rows[usernum].id + "-" + rows[usernum].id + "-5")
+							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
+							m.callbackButton('Gruppe: Standard', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-1"),
+							m.callbackButton('Gruppe: 1', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-2"),
+							m.callbackButton('Gruppe: 2', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-3"),
+							m.callbackButton('Gruppe: 3', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-4"),
+							m.callbackButton('Gruppe: 4', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-5")
 
 						], { columns: 3 })
 					)
 				)
 			} else {
 				ctx.editMessageText(
-					'Benutzer: ' + rows[usernum].name + " " + rows[usernum].vorname,
+					'Benutzer: ' + rows_allUsers[usernum].name + " " + rows_allUsers[usernum].vorname,
 					Telegraf.Extra.markup((m) =>
 						m.inlineKeyboard([
 							m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
 							m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
-							m.callbackButton('✔️ Freigeben', 'einstell_Benutzer_allow:' + rows[usernum].id + "-" + rows[usernum].id),
-							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_delete:' + rows[usernum].id + "-" + rows[usernum].id)
+							m.callbackButton('✔️ Freigeben', 'einstell_Benutzer_allow:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
+							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_delete:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id)
 						], { columns: 2 })
 					)
 				)
@@ -544,56 +572,20 @@ module.exports = function (_httpServer, destroySession) {
 			.catch((err) => { console.error('[TelegramBot] Datenbank Fehler', err) });
 	});
 	
-	onCallback.on('einstell_rebootScreen', (ctx) => {
-		ctx.answerCbQuery("Bildschirm wird neugestartet!", true);
-		_httpServer[0].wss.broadcast('rebootScreen', "");
-	});
-	onCallback.on('einstell_appLogin', (ctx) => {
-
-		destroySession(ctx.from.id);
-
-		let password = generator.generate({
-			length: 10,
-			numbers: true,
-			excludeSimilarCharacters: true
-		});
-
-		bcrypt.hash(password, 10, async (err, hash) => {
-			if (err) {
-
-				console.error('[TelegramBot] #einstell_appLogin Fehler', err);
-				ctx.answerCbQuery("Fehler: Zugangsdaten konnten nicht erstellt werden.", true);
-
-			} else {
-
-				db.setUserPassword(ctx.from.id, hash);
-
-				ctx.editMessageText(
-					'*APP Zugangsdaten: Telegram ID, Passwort*',
-					Telegraf.Extra.markdown()
-				);
-
-				sendMessage(ctx.from.id, "_" + ctx.from.id + "_", Telegraf.Extra.markdown());
-
-				await timeout(500);
-
-				sendMessage(ctx.from.id, "_" + password + "_", Telegraf.Extra.markdown());
-
-			}
-		});
-
-	});
-
-
+	/**
+	 * Gibt einen Benutzer frei
+	 * @param {Integer} userid 
+	 */
 	async function allowUser(userid) {
 		debug('allowUser', userid);
 		try {
 
 			await db.activateUser(userid);
-			let telegramid = await db.getUserByRowNum(userid);
+			let rows_userByRowNum = await db.getUserByRowNum(userid);
+			let user = rows_userByRowNum[0]; 
 
 			bot.telegram.sendMessage(
-				telegramid[0].telegramid,
+				user.telegramid,
 				'Benutzer freigeschaltet! \n Für die FWmonitor APP: siehe "Mehr"',
 				Telegraf.Extra.HTML().markup((m) =>
 					m.keyboard(mainKeyboard).resize()
@@ -604,19 +596,27 @@ module.exports = function (_httpServer, destroySession) {
 			console.error('[TelegramBot] allowUser() Fehler', error);
 		}
 	}
+	/**
+	 * Entfernt einen Benutzer
+	 * @param {Integer} userid 
+	 */
 	async function removeUser(userid) {
 		debug('removeUser', userid);
 		try {
-			let telegramid = await db.getUserByRowNum(userid);
-
-			destroySession(telegramid);
+			let rows_userByRowNum = await db.getUserByRowNum(userid);
+			let user = rows_userByRowNum[0];
+			
+			await db.deleteUser(userid);
+			destroySession(user.telegramid);
+			
 		} catch (error) {
 			console.error('[TelegramBot] removeUser() Fehler', error);
-		}
+			return;
+		}		
 
 		try {
 			await bot.telegram.sendMessage(
-				telegramid[0].telegramid,
+				user.telegramid,
 				'Benutzer gelöscht!',
 				Telegraf.Extra.HTML().markup((m) =>
 					m.keyboard([
@@ -627,18 +627,12 @@ module.exports = function (_httpServer, destroySession) {
 		} catch (error) {
 			console.error('[TelegramBot] removeUser() Fehler', error);
 		}
-
-		try {
-			await db.deleteUser(userid);
-		} catch (error) {
-			console.error('[TelegramBot] removeUser() Fehler', error);
-		}
 	}
 
 
 	// ---------------- Hydranten ----------------
-	var locationList = {};
-	var hydrantPicRequested = {}
+	var user_location = {};
+	var user_hydrantPicRequested = {};
 
 	onCallback.on('einstell_Hydrant', (ctx) => {
 		ctx.editMessageText('🧯 Hydrant eintragen');
@@ -671,7 +665,7 @@ module.exports = function (_httpServer, destroySession) {
 			]))
 		);
 
-		locationList[ctx.from.id] = ctx.message.location;
+		user_location[ctx.from.id] = ctx.message.location;
 	});
 	onCallback.on('hydrPosOK', (ctx) => {
 		var message_id = ctx.state.amount;
@@ -693,7 +687,7 @@ module.exports = function (_httpServer, destroySession) {
 		ctx.editMessageText('Typ: ' + typ);
 
 		ctx.reply('Bitte ein Bild mit der Umgebung des Hydranten senden zur besseren Lokalisierung (  über 📎 Büroklammer Symbol unten ).');
-		hydrantPicRequested[ctx.from.id] = true;
+		user_hydrantPicRequested[ctx.from.id] = true;
 
 		var d = new Date();
 		var options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -709,14 +703,14 @@ module.exports = function (_httpServer, destroySession) {
 			},
 			"geometry": {
 				"type": "Point",
-				"coordinates": [locationList[ctx.from.id].longitude, locationList[ctx.from.id].latitude]
+				"coordinates": [user_location[ctx.from.id].longitude, user_location[ctx.from.id].latitude]
 			}
 		};
 
 		var geoHeader = { "type": "FeatureCollection", "features": [feature] };
 		try {
 			fs.writeFile(
-				'Hydranten/' + locationList[ctx.from.id].latitude.toString() + ", " + locationList[ctx.from.id].longitude.toString() + '.geojson',
+				'Hydranten/' + user_location[ctx.from.id].latitude.toString() + ", " + user_location[ctx.from.id].longitude.toString() + '.geojson',
 				JSON.stringify(geoHeader),
 				(err) => {
 					if (err) throw err;
@@ -729,8 +723,8 @@ module.exports = function (_httpServer, destroySession) {
 		try {
 			fs.appendFile(
 				'Hydranten/Hydrantenpositionen.txt', "\n" + time + " - " + date + "    " +
-				ctx.from.last_name + " " + ctx.from.first_name + " - " + locationList[ctx.from.id].latitude + ", " +
-				locationList[ctx.from.id].longitude + " - " + typ,
+				ctx.from.last_name + " " + ctx.from.first_name + " - " + user_location[ctx.from.id].latitude + ", " +
+				user_location[ctx.from.id].longitude + " - " + typ,
 				function (err) {
 					if (err) throw err;
 					//locationList[ctx.from.id] = "";
@@ -741,7 +735,7 @@ module.exports = function (_httpServer, destroySession) {
 		}
 
 		
-		debug("[Hydrant]", ctx.from, locationList[ctx.from.id], typ);
+		debug("[Hydrant]", ctx.from, user_location[ctx.from.id], typ);
 	});
 
 
@@ -749,15 +743,15 @@ module.exports = function (_httpServer, destroySession) {
 	bot.hears('🚒 Verfügbarkeit', async (ctx) => {
 		try {
 
-			let rows = await db.getUserStatusByUid(ctx.from.id);
+			let rows_userStatus = await db.getUserStatusByTelId(ctx.from.id);
 
 			var stat = "🟩";
-			if (rows[0].status == 2) {
+			if (rows_userStatus[0].status == 2) {
 
 				var bis = "";
 
-				if (rows[0].statusUntil != "") {
-					var result = new Date(rows[0].statusUntil);
+				if (rows_userStatus[0].statusUntil != "") {
+					var result = new Date(rows_userStatus[0].statusUntil);
 					var options = { year: 'numeric', month: '2-digit', day: '2-digit' };
 					var time = result.toLocaleTimeString();
 					var date = result.toLocaleDateString('de-DE', options);
@@ -830,19 +824,20 @@ module.exports = function (_httpServer, destroySession) {
 	onCallback.on('VerfuegbarZeige', async (ctx) => {
 		try {
 
-			let rows = await db.getUserAll();
+			let rows_allUsers = await db.getUserAll();
 			var st_verv = "";
 			var st_vervNum = 0;
 			var st_nichtverf = "";
 			var st_nichtverfNum = 0;
 
-			rows.forEach(function (element) {
-				if (element.status == 1) {
-					st_verv += (element.name + " " + element.vorname) + "\n";
+			rows_allUsers.forEach(function (user) {
+				if (user.statusHidden == db.USER_STATUSHIDDEN.HIDDEN) return;
+				if (user.status == db.USER_STATUS.VERV) {
+					st_verv += (user.name + " " + user.vorname) + "\n";
 					st_vervNum += 1;
 				}
-				else {
-					st_nichtverf += (element.name + " " + element.vorname) + "\n";
+				else if (user.status == db.USER_STATUS.NVERV) {
+					st_nichtverf += (user.name + " " + user.vorname) + "\n";
 					st_nichtverfNum += 1;
 				}
 			});
@@ -855,13 +850,14 @@ _${st_nichtverf}_`,
 				Telegraf.Extra.markdown()
 			);
 
-			db.addStatistik(2, ctx.from.id);
+			db.addStatistik(db.STATISTIK.SHOW_VERV, ctx.from.id);
 
 		} catch (error) {
 			console.error('[TelegramBot] #VerfuegbarZeige Fehler', error);
 		}
 	});
 
+	// Verfügbarkeitsintervall
 	var interval = setInterval(async () => {
 		function addZero(i) {
 			if (i < 10) {
@@ -873,9 +869,9 @@ _${st_nichtverf}_`,
 		debug('intervalVerfügbarkeit');
 		try {
 
-			let rows = await db.getUserStatusAll();
+			let rows_allUserStatus = await db.getUserStatusAll();
 
-			if (rows == undefined) {
+			if (rows_allUserStatus == undefined) {
 				console.error("Interval Error: Keine Zeile zurückgegeben");
 			} else {
 				let dateNow = new Date();
@@ -883,7 +879,7 @@ _${st_nichtverf}_`,
 				let dateNow_m = addZero(dateNow.getMinutes());
 				let dateNow_d = dateNow.getDay();
 				
-				rows.forEach(async (element) => {					
+				rows_allUserStatus.forEach(async (element) => {					
 					if (element.statusUntil != "") {
 						let dateUntil = new Date(element.statusUntil);
 						if (dateUntil < dateNow) {
@@ -915,48 +911,58 @@ _${st_nichtverf}_`,
 		} catch (error) {
 			console.error('[TelegramBot] Interval Verfügbarkeit Fehler', error);
 		}
-	}, 55000);
+	}, 35000);
 
+	/**
+	 * Setze User auf Verfügbar
+	 * @param {Integer} telID 
+	 */
 	async function setVervTrue(telID) {
 		debug('setVervTrue', telID);
 		try {
 
 			await db.setUserStatus(telID, 1, "");
 
-			let rows = await db.getUserByUid(telID);
+			let rows_userByID = await db.getUserByTelId(telID);
+			let user = rows_userByID[0];
 
-			if (rows[0] != undefined) {
+			if (user != undefined && user.statusHidden != 1) {
 				_httpServer[0].wss.broadcast(
-					'st_verf', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT +
-					"," + rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF
+					'st_verf', user.name + " " + user.vorname + "%" + user.stAGT +
+					"," + user.stGRF + "," + user.stMA + "," + user.stZUGF
 				);
 			}
 
-			db.addStatistik(3, telID);
+			db.addStatistik(db.STATISTIK.SET_VERV, telID);
 
 		} catch (error) {
 			console.error('[TelegramBot] setVervTrue() Fehler', error);
 		}
 	}
 
+	/**
+	 * Setze User auf Nicht Verfügbar
+	 * @param {Integer} telID 
+	 * @param {Date} until 
+	 */
 	async function setVervFalse(telID, until) {
 		debug('setVervFalse', telID);
 		try {
 
 			if(!until) until = "";
 
-			await db.setUserStatus(telID, 2, until);
+			await db.setUserStatus(telID, db.USER_STATUS.NVERV, until);
 
-			let rows = await db.getUserByUid(telID);
-
-			if (rows[0] != undefined) {
+			let rows_userById = await db.getUserByTelId(telID);
+			let user = rows_userById[0];
+			if (user != undefined && user.statusHidden != 1) {
 				_httpServer[0].wss.broadcast(
-					'st_nichtverf', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT +
-					"," + rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF
+					'st_nichtverf', user.name + " " + user.vorname + "%" + user.stAGT +
+					"," + user.stGRF + "," + user.stMA + "," + user.stZUGF
 				);
 			}
 
-			db.addStatistik(3, telID);
+			db.addStatistik(db.STATISTIK.SET_VERV, telID);
 
 		} catch (error) {
 			console.error('[TelegramBot] setVervFalse() Fehler', error);
@@ -966,13 +972,12 @@ _${st_nichtverf}_`,
 
 	// ---------------- Alarm ----------------
 	var extra =
-		Telegraf.Extra.HTML().markup((m) =>
+		Telegraf.Extra.markdown().markup((m) =>
 			m.inlineKeyboard([
 				m.callbackButton('👍 JA!', 'KommenJa'),
 				m.callbackButton('👎 NEIN!', 'KommenNein'),
 				m.callbackButton('🕖 SPÄTER!', 'KommenSpäter')
-			]
-			)
+			])
 		);
 
 	async function sendAlarm(
@@ -997,9 +1002,9 @@ _${st_nichtverf}_`,
 			}
 			debug("[TelegramBot] Sende Alarm...");
 
-			let rows = await db.getUserAllowed();
+			let rows_allowedUsers = await db.getUserAllowed();
 
-			rows.forEach(async (element) => {
+			rows_allowedUsers.forEach(async (element) => {
 
 				// Gruppenpattern
 				var text = element.pattern;
@@ -1119,12 +1124,12 @@ _${st_nichtverf}_`,
 				}
 
 				// Komme JaNein
-				await timeout(4000);
-				sendMessage(element.telegramid, 'Komme:', extra);
+//				await timeout(4000);
+//				sendMessage(element.telegramid, 'Komme:', extra);
 
 				//Alarmmeldung
-				await timeout(8000);
-				sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());
+				await timeout(4000);
+				sendMessage(element.telegramid, alarmMessage, extra/*Telegraf.Extra.markdown()*/);
 
 			});
 
@@ -1139,13 +1144,15 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);
 			ctx.editMessageText("Status -> Kommen: Nein", extra);
 
-			let rows = await db.getUserByUid(ctx.from.id);
-			if (rows[0] != undefined) {
+			let rows_userById = await db.getUserByTelId(ctx.from.id);
+			let user = rows_userById[0];
+			if (user != undefined) {
 				_httpServer[0].wss.broadcast(
-					'st_nicht', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT +
-					"," + rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF
+					'st_nicht', user.name + " " + user.vorname + "%" + user.stAGT +
+					"," + user.stGRF + "," + user.stMA + "," + user.stZUGF
 				);
 			}
+			
 
 		} catch (error) {
 			console.error('[TelegramBot] #KommenNein Fehler', error);
@@ -1157,12 +1164,12 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 👍  Kommen: Ja", true);
 			ctx.editMessageText("Status -> Kommen: Ja", extra);
 
-			let rows = await db.getUserByUid(ctx.from.id);
-
-			if (rows[0] != undefined) {
+			let rows_userById = await db.getUserByTelId(ctx.from.id);
+			let user = rows_userById[0];
+			if (user != undefined) {
 				_httpServer[0].wss.broadcast(
-					'st_komme', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT + "," +
-					rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF
+					'st_komme', user.name + " " + user.vorname + "%" + user.stAGT +
+					"," + user.stGRF + "," + user.stMA + "," + user.stZUGF
 				);
 			}
 
@@ -1176,12 +1183,12 @@ _${st_nichtverf}_`,
 			ctx.answerCbQuery("Status -> 🕖  Kommen: Später", true);
 			ctx.editMessageText("Status -> Kommen: Später", extra);
 
-			let rows = await db.getUserByUid(ctx.from.id);
-
-			if (rows[0] != undefined) {
+			let rows_userById = await db.getUserByTelId(ctx.from.id);
+			let user = rows_userById[0];
+			if (user != undefined) {
 				_httpServer[0].wss.broadcast(
-					'st_später', rows[0].name + " " + rows[0].vorname + "%" + rows[0].stAGT + "," +
-					rows[0].stGRF + "," + rows[0].stMA + "," + rows[0].stZUGF
+					'st_später', user.name + " " + user.vorname + "%" + user.stAGT +
+					"," + user.stGRF + "," + user.stMA + "," + user.stZUGF
 				);
 			}
 
@@ -1211,11 +1218,11 @@ _${st_nichtverf}_`,
 
 	// ---------------- Kalender ----------------
 	async function sendKalender(ctx, gesamt = false) {
+
 		let termine = await calendar.getCalendarString();
 
-		let user = await db.getUserByUid(ctx.from.id);
-
-		user = user[0];
+		let rows_userById = await db.getUserByTelId(ctx.from.id);
+		let user = rows_userById[0];
 
 		var str = "";
 		for (var i = 0; i < termine.length; i++) {
@@ -1250,14 +1257,14 @@ _${st_nichtverf}_`,
 			));
 		}
 
-		db.addStatistik(1, ctx.from.id);
+		db.addStatistik(db.STATISTIK.SHOW_KALENDER, ctx.from.id);
 	}
 	bot.hears('📅 Kalender', async ctx => {
 		try {
 
 			sendKalender(ctx, false);
 
-			db.addStatistik(1, ctx.from.id);
+			db.addStatistik(db.STATISTIK.SHOW_KALENDER, ctx.from.id);
 
 		} catch (error) {
 			console.error('[TelegramBot] #Kalender Fehler', error);
@@ -1286,8 +1293,8 @@ _${st_nichtverf}_`,
 			var filepath = process.env.BOT_IMG;
 
 			// Hydrantenbild
-			if (hydrantPicRequested[ctx.from.id] == true) {
-				filepath = "Hydranten/" + locationList[ctx.from.id].latitude + ", " + locationList[ctx.from.id].longitude + "   ";
+			if (user_hydrantPicRequested[ctx.from.id] == true) {
+				filepath = "Hydranten/" + user_location[ctx.from.id].latitude + ", " + user_location[ctx.from.id].longitude + "   ";
 			}
 
 			var d = new Date();
@@ -1306,7 +1313,7 @@ _${st_nichtverf}_`,
 				.then(async (response) => {
 					await response.data.pipe(writer);
 
-					if (hydrantPicRequested[ctx.from.id] == true) {
+					if (user_hydrantPicRequested[ctx.from.id] == true) {
 						ctx.reply('Fertig.', Telegraf.Extra.markup((markup) => {
 							return markup.resize()
 								.keyboard([
@@ -1332,7 +1339,7 @@ _${st_nichtverf}_`,
 
 	// ---------------- Bei restichen Texten ----------------
 	bot.on('text', (ctx) => {
-		hydrantPicRequested[ctx.from.id] = false;
+		user_hydrantPicRequested[ctx.from.id] = false;
 
 		ctx.reply(
 			'Telegram Bot der' + process.env.FW_NAME_BOT,
@@ -1379,8 +1386,7 @@ _${st_nichtverf}_`,
 		removeUser,
 		sendMsgToAll,
 		sendPapierInfo,
-		sendMessage,
-//		mainKeyboard
+		sendMessage
 	};
 }
 
