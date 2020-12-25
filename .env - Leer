@@ -1,4 +1,4 @@
-﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer
+﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI
 
 # Um Änderungen zu übernehmen muss das Programm neu gestartet werden
 
@@ -48,10 +48,8 @@ FOLDER_IN=C:\Eingang
 # lokaler Pfad C:/ordner/ordner/
 FOLDER_ARCHIVE=C:\Archiv
 
-# Telegram Bilderordner (hier werden an den Bot gesendete Bilder gespeichert)
-# lokaler Pfad C:/ordner/ordner/
-BOT_IMG=./telegramBilder/
-#BOT_IMG=./filesHTTP/images/slideshow/
+# Telegram Bilder automatisch in Diashow ohne man. Freigabe (true/false)
+BOT_IMG_AUTOFREIGABE=true
 
 
 ######## STANDBY Bildschirm / Telegram Kalender ########

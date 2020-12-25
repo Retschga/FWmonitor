@@ -1290,17 +1290,20 @@ _${st_nichtverf}_`,
 			debug("[TelegramBot] Telegram Bild!");
 
 			// Normales Bild
-			var filepath = process.env.BOT_IMG;
+			let filepath = "./telegramBilder/";
+			if (process.env.BOT_IMG_AUTOFREIGABE == "true") {
+				filepath = "./filesHTTP/images/slideshow/";
+			}
 
 			// Hydrantenbild
 			if (user_hydrantPicRequested[ctx.from.id] == true) {
 				filepath = "Hydranten/" + user_location[ctx.from.id].latitude + ", " + user_location[ctx.from.id].longitude + "   ";
 			}
 
-			var d = new Date();
-			var options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-			var time = d.toLocaleTimeString().replace(/[:]/g, '-');
-			var date = d.toLocaleDateString('de-DE', options);
+			let d = new Date();
+			let options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+			let time = d.toLocaleTimeString().replace(/[:]/g, '-');
+			let date = d.toLocaleDateString('de-DE', options);
 
 			const imageData = await bot.telegram.getFile(ctx.message.photo[ctx.message.photo.length - 1].file_id);
 			const writer = fs.createWriteStream(filepath + time + " - " + date + " - " + imageData.file_path.substr(7));

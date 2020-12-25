@@ -5,6 +5,7 @@ require('dotenv').config();
 var RASPIVERSION = process.env.RASPIVERSION;
 
 process.env.NODE_ENV = 'production';
+//process.env.NODE_ENV = 'development';
 
 // ----------------  STANDARD LIBRARIES ---------------- 
 const debug = require('debug')('app');
@@ -42,7 +43,7 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.0.6";
+process.env.VERSION = "2.0.7";
 
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 

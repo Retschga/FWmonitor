@@ -1,12 +1,15 @@
 'use strict';
 module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm) {
 	// ----------------  STANDARD LIBRARIES ---------------- 
-	var express = require('express');
-	var router = express.Router();
+	const express = require('express');
+	const router = express.Router();
 	const path = require('path');
 	const axios = require('axios');
-	var fs = require('fs');
-	var openrouteservice = require("openrouteservice-js");
+	const fs = require('fs');
+	const util = require('util');
+	const readdir = util.promisify(fs.readdir);
+	const openrouteservice = require("openrouteservice-js");
+	const debug = require('debug')('appAPI');
 
 	// ----------------  WEB PUSH NOTIFICATIONS ---------------- 
 	const webNotifications = require('../webNotifications');
@@ -85,6 +88,21 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 	router.get('/filesHTTPS/images/icons/:file', function (req, res) {
 		res.sendFile(req.params.file, { root: './filesHTTPS/images/icons' });
+	});
+	// ADMIN
+	router.get('/filesHTTP/images/slideshow/:file', function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+		res.sendFile(req.params.file, { root: './filesHTTP/images/slideshow' });
+	});
+	router.get('/telegramBilder/:file', function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+		res.sendFile(req.params.file, { root: './telegramBilder' });
 	});
 
 
@@ -924,6 +942,87 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.json("ok"); return;
 
 	});
+
+
+	// ---- Diashow ----
+	// get detDiashow ADMIN
+	router.get('/api/getDiashow', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		let ret = [];
+
+		let path = "./filesHTTP/images/slideshow/";
+		let src = [];
+		let items = await readdir(path)
+		.catch((err) => { console.error('[appAPI] fs.readdir Fehler ', err) });
+		for (var i = 0; i < items.length; i++) {
+			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1)
+				src.push("/app/filesHTTP/images/slideshow/" + items[i]);
+		}
+		ret.push(src);
+
+		path = "./telegramBilder/";
+		src = [];
+		items = await readdir(path)
+		.catch((err) => { console.error('[appAPI] fs.readdir Fehler ', err) });
+		for (var i = 0; i < items.length; i++) {
+			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1)
+				src.push("/app/telegramBilder/" + items[i]);
+		}
+		ret.push(src);
+
+		res.json(ret); return;
+
+	});
+	// post setDiashowFreigabeTrue ADMIN
+	router.post('/api/setDiashowFreigabeTrue', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+		if (!req.body.src) return;
+		let file = req.body.src.split(/[\\/]/).pop();
+		debug("Freigabe TRUE: " + file);
+		fs.rename("./telegramBilder/" + file, "./filesHTTP/images/slideshow/" + file, function (err) {
+			if (err) throw err
+			console.log('Successfully renamed - AKA moved!');
+			res.json({ data: 'ok' });
+		});
+	});
+	// post setDiashowFreigabeFalse ADMIN
+	router.post('/api/setDiashowFreigabeFalse', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+		if (!req.body.src) return;
+		let file = req.body.src.split(/[\\/]/).pop();
+		debug("Freigabe FALSE: " + file);
+		fs.rename("./filesHTTP/images/slideshow/" + file, "./telegramBilder/" + file, function (err) {
+			if (err) throw err
+			console.log('Successfully renamed - AKA moved!');
+			res.json({ data: 'ok' });
+		});		
+	});
+	// post setDiashowDelete ADMIN
+	router.post('/api/setDiashowDelete', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+		if (!req.body.src) return;
+		let file = req.body.src.split(/[\\/]/).pop();
+		debug("Gelöscht: " + file);
+		fs.unlinkSync("./telegramBilder/" + file);
+		res.json({ data: 'ok' });
+	});
+
+	
+
+
 	
 	// ---- Service Worker ----
 	router.get('/appClient.js', function (req, res) {

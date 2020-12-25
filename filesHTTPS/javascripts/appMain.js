@@ -2313,3 +2313,182 @@ async function vervuegbarkeitplaeneBearbeiten_delete(action) {
 		alert("Kalender Termin konnte nicht gespeichert werden.");
 	}
 }
+
+// ----------------  Diashow ----------------
+async function diashow_load() {
+	try { 
+
+		let response = await fetchWithParam('app/api/getDiashow', {});
+
+		console.log(response);
+
+		document.getElementById("slideshowFreig").innerHTML = "";
+		document.getElementById("slideshowNichtFreig").innerHTML = "";		
+
+		for(let j = 0; j < response[0].length; j++) {
+			let newDiv = document.createElement("div");		
+			newDiv.className = 'border-grey-400 shadow radius spinner';
+			newDiv.style = "width: 20%; min-width: 200px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px; background-color: #363739;";
+			newDiv.innerHTML += `
+				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[0][j]}" style="position:relative;top: 50%; transform:translateY(-50%);"/>
+				<div style="position:absolute; right:10px; bottom:10px;">
+					<button class="red circle icon ion-close shadow" onclick="diashow_freigabeFalse('${response[0][j]}')" style="z-index: 1;"></button>
+				</div>
+				`;
+			document.getElementById("slideshowFreig").appendChild(newDiv); 
+		}
+		for(let j = 0; j < response[1].length; j++) {
+			let newDiv = document.createElement("div");		
+			newDiv.className = 'border-grey-400 shadow radius spinner';
+			newDiv.style = "width: 20%; min-width: 200px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px;background-color: #363739;";
+			newDiv.innerHTML += `
+				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[1][j]}" style="position:relative;top: 50%; transform:translateY(-50%);"/>
+				<div style="position:absolute; right:10px; bottom:10px;">
+					<button class="green circle icon ion-checkmark" onclick="diashow_freigabeTrue('${response[1][j]}')" style="z-index: 1;"></button>
+					<button class="red circle icon ion-close shadow" onclick="diashow_delete('${response[1][j]}')" style="z-index: 1;"></button>
+				</div>
+				`;
+			document.getElementById("slideshowNichtFreig").appendChild(newDiv); 
+		}
+
+			var lazyloadImages;    
+		  
+			if ("IntersectionObserver" in window) {
+				lazyloadImages = document.querySelectorAll(".lazy");
+				var imageObserver = new IntersectionObserver(function(entries, observer) {
+					entries.forEach(function(entry) {
+					if (entry.isIntersecting) {
+						var image = entry.target;
+						image.src = image.dataset.src;
+						image.classList.remove("lazy");
+						imageObserver.unobserve(image);
+					}
+					});
+				});
+		  
+				lazyloadImages.forEach(function(image) {
+					imageObserver.observe(image);
+				});
+			} else {  
+				var lazyloadThrottleTimeout;
+				lazyloadImages = document.querySelectorAll(".lazy");
+				
+				function lazyload () {
+					if(lazyloadThrottleTimeout) {
+					clearTimeout(lazyloadThrottleTimeout);
+					}    
+			
+					lazyloadThrottleTimeout = setTimeout(function() {
+					var scrollTop = window.pageYOffset;
+					lazyloadImages.forEach(function(img) {
+						if(img.offsetTop < (window.innerHeight + scrollTop)) {
+							img.src = img.dataset.src;
+							img.classList.remove('lazy');
+						}
+					});
+					if(lazyloadImages.length == 0) { 
+						document.removeEventListener("scroll", lazyload);
+						window.removeEventListener("resize", lazyload);
+						window.removeEventListener("orientationChange", lazyload);
+					}
+					}, 20);
+				}
+			
+				document.addEventListener("scroll", lazyload);
+				window.addEventListener("resize", lazyload);
+				window.addEventListener("orientationChange", lazyload);
+			}
+		
+
+	} catch (error) {
+		console.log(error);	
+		goBack();
+		alert("Diashow konnten nicht geladen werden.");
+	}
+}
+
+async function diashow_freigabeTrue(img) {
+	try {
+
+		var getUrl = window.location;
+		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+		var url = new URL('app/api/setDiashowFreigabeTrue', baseUrl);
+
+		let response = await fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify({"src": img}), // body data type must match "Content-Type" header,
+		})
+
+		diashow_load();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Kalender Termin konnte nicht gespeichert werden.");
+	}
+}
+async function diashow_freigabeFalse(img) {
+	try {
+
+		var getUrl = window.location;
+		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+		var url = new URL('app/api/setDiashowFreigabeFalse', baseUrl);
+
+		let response = await fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify({"src": img}), // body data type must match "Content-Type" header,
+		})
+
+		diashow_load();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Kalender Termin konnte nicht gespeichert werden.");
+	}
+}
+async function diashow_delete(img) {
+	console.log(alert({
+		title:'Löschen',
+		message:'Bild wirklich löschen?',
+		class:'red',
+		buttons:[
+		  {
+			label: 'Ja',
+			class:'red-900',
+			onclick: async function () {
+				closeAlert();			
+				try {
+
+					var getUrl = window.location;
+					var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
+					var url = new URL('app/api/setDiashowDelete', baseUrl);
+			
+					let response = await fetch(url, {
+						method: 'POST',
+						credentials: 'same-origin',
+						headers: {'Content-Type': 'application/json'},
+						body: JSON.stringify({"src": img}), // body data type must match "Content-Type" header,
+					})
+			
+					diashow_load();
+			
+				} catch (error) {
+					console.log(error);	
+					alert("Kalender Termin konnte nicht gespeichert werden.");
+				}				
+			}
+		  },
+		  {
+			label:'Nein',
+			class:'text-white',
+			onclick: function () {
+			  closeAlert();
+			}
+		  }
+		]
+	}));
+	
+}
