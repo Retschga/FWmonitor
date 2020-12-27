@@ -2012,18 +2012,7 @@ async function clients_load() {
 				
 				let dat = JSON.parse(response[i].type);
 				let responseID = response[i].id;
-				/*
-				`{"type":"WebClient",
-					"name":"Auto",
-					"info":"<%= data["autoname"] %>",
-					"actions":[
-						{"id":"0"},
-						{"id":"7"},
-						{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
-						{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-						{"id":"-1", "key": "LOG", "value": "${log}"}
-					]`
-				*/
+				
 				let newDiv = document.createElement("div");		
 				let newDiv2 = document.createElement("div");	
 				newDiv2.className = 'space';
@@ -2056,12 +2045,12 @@ async function clients_load() {
 												<label class="text-black">Letzter Alarm anzeigen</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'letzteralarm', '');">Ausführen</button>
 											</div>`
-					// ????
-					} else if(elem.id == "2") {
-						newDiv.innerHTML +=	`<div class="item  label-fixed">
-												<label class="text-black">Diashow</label>
-												<button class="red-400 small right" onclick="">Ausführen</button>
-											</div>`
+					// Diashow
+					//} else if(elem.id == "2") {
+					//	newDiv.innerHTML +=	`<div class="item  label-fixed">
+					//							<label class="text-black">Diashow</label>
+					//							<button class="red-400 small right" onclick="">Ausführen</button>
+					//						</div>`
 					// Kalender Reload
 					} else if(elem.id == "3") {
 						newDiv.innerHTML += `<div class="item  label-fixed">
@@ -2070,7 +2059,7 @@ async function clients_load() {
 											</div>
 											<div class="item  label-fixed">
 												<label class="text-black">Kalender Elemente</label>
-												<input class="red-400 right radius" id="client_kalElem_${i}" type="number" style="max-width:20vw; margin-right: 10em;">
+												<input class="red-400 right radius" id="client_kalElem_${i}" type="number" style="max-width:20vw; margin-right: 150px; font-size: 2em; text-align: center;" value="${elem.value}">
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'kalElem', document.getElementById('client_kalElem_${i}').value);">Ausführen</button>
 											</div>`
 					// Wechsle zu Präsentations-Steuerung
@@ -2125,7 +2114,6 @@ async function clients_load() {
 		alert("Geräte konnten nicht geladen werden.");
 	}
 }
-
 
 async function clients_action(id, action, value) {
 	try {
@@ -2328,9 +2316,9 @@ async function diashow_load() {
 		for(let j = 0; j < response[0].length; j++) {
 			let newDiv = document.createElement("div");		
 			newDiv.className = 'border-grey-400 shadow radius spinner';
-			newDiv.style = "width: 20%; min-width: 200px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px; background-color: #363739;";
+			newDiv.style = "width: 20%; min-width: 150px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px; background-color: #363739;";
 			newDiv.innerHTML += `
-				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[0][j]}" style="position:relative;top: 50%; transform:translateY(-50%);"/>
+				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[0][j]}" style="position:relative;top: 50%; left:50%; transform:translate(-50%, -50%);"/>
 				<div style="position:absolute; right:10px; bottom:10px;">
 					<button class="red circle icon ion-close shadow" onclick="diashow_freigabeFalse('${response[0][j]}')" style="z-index: 1;"></button>
 				</div>
@@ -2340,9 +2328,9 @@ async function diashow_load() {
 		for(let j = 0; j < response[1].length; j++) {
 			let newDiv = document.createElement("div");		
 			newDiv.className = 'border-grey-400 shadow radius spinner';
-			newDiv.style = "width: 20%; min-width: 200px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px;background-color: #363739;";
+			newDiv.style = "width: 20%; min-width: 150px; min-height: 100px; position: relative; flex-grow: 1; margin: 4px;background-color: #363739;";
 			newDiv.innerHTML += `
-				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[1][j]}" style="position:relative;top: 50%; transform:translateY(-50%);"/>
+				<img alt="Bild ${j} lädt..." class="lazy" data-src="${response[1][j]}" style="position:relative;top: 50%; left:50%; transform:translate(-50%, -50%);"/>
 				<div style="position:absolute; right:10px; bottom:10px;">
 					<button class="green circle icon ion-checkmark" onclick="diashow_freigabeTrue('${response[1][j]}')" style="z-index: 1;"></button>
 					<button class="red circle icon ion-close shadow" onclick="diashow_delete('${response[1][j]}')" style="z-index: 1;"></button>

@@ -31,7 +31,7 @@ router.get('/', function (req, res) {
 		if(err) throw err;
 		
         for (var i = 0; i < items.length; i++) {
-			if(items[i] != '.gitignore')
+			if(items[i] != '.gitignore' && items[i].indexOf('thumbnail') == -1)
 				src.push("/images/slideshow/" + items[i]);
         }
 

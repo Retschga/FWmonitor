@@ -4,7 +4,7 @@
 module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm) {
 
     const debugWSS = require('debug')('wss');
-    const logger = require('morgan');
+    //const logger = require('morgan');
     const http = require('http');
     const express = require('express');
     const session = require('express-session');
@@ -75,14 +75,24 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	};
 
 	wss.on('connection', function connection(ws) {
+		ws.send("Hallo Client");
+
 		ws.interval = setInterval(function(){ 
-			ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 			
-			debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 	
+			ws.ping(new Date().toISOString());	
 			if (ws.readyState === WebSocket.CLOSED) {
 				clearInterval(ws.interval);
 				ws.terminate();
 			}
 		}, 15000);
+
+		ws.on('ping', (cancel, data) => {
+			debugWSS('Received Ping ' + data);
+			ws.pong(data);
+		});
+
+		ws.on('pong', (data) => {
+			debugWSS('Received Pong ' + data);
+		});
 
 		ws.on('message', function incoming(message) {
 			if (message == "keepAlive") {

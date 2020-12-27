@@ -169,8 +169,17 @@
         </div>
 		
 		<!-- JS -->
-		<script src="javascripts/jquery.js"></script>
+		<script src="javascripts/jquery.js"></script>		
         <script>
+			// -------- GET Parameter auslesen --------
+			var parts = window.location.search.substr(1).split("&");
+			var $_GET = {};
+			for (var i = 0; i < parts.length; i++) {
+				var temp = parts[i].split("=");
+				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+			}
+			var clientName = $_GET['name'];			
+			console.log("Clientname: ", clientName);
 
 			/**
 			 * Erstellt ein Cookie
@@ -206,6 +215,12 @@
 				return "";
 			}
 		
+			var kalenderElemente = getCookie("kal_elem");
+			if(kalenderElemente == "") {
+				kalenderElemente = 5;
+			}
+			kalenderElemente = parseInt(kalenderElemente);
+
 			// -------- Diashow --------
             /*! slides | https://gist.github.com/mhulse/66bcbb7099bb4beae530 */
 			(function($) {				
@@ -288,15 +303,9 @@
 				.then(res => res.json()) // parse response as JSON (can be res.text() for plain response)
 				.then(response => {
 
-					document.getElementById("kalender").innerHTML = "";
+					document.getElementById("kalender").innerHTML = "";					
 
-					let elemNum = getCookie("kal_elem");
-					if(elemNum == "") {
-						elemNum = 5;
-					}
-					elemNum = parseInt(elemNum);
-
-					for(let i = 0; i < response.length && i < elemNum; i++) {
+					for(let i = 0; i < response.length && i < kalenderElemente; i++) {
 						
 						let dat = new Date(response[i].start);
 						let m = dat.getMonth();
@@ -429,9 +438,9 @@
 	
 				// Alarm
 				if(topic == 'alarm')
-					window.location.href = '/alarm?tempID=' + msg[0];
+					window.location.href = '/alarm?tempID=' + msg[0] + '&name=' + clientName;
 				if(topic == 'letzteralarm')
-					window.location.href = '/alarm?manuell=true';
+					window.location.href = '/alarm?manuell=true&name=' + clientName;
 			
 				// Präsentation
 				if(topic == 'praes_load')
@@ -446,7 +455,7 @@
 					getCalendar();
 				if(topic == 'kal_elemnum') {
 					setCookie("kal_elem", msg[0], 1000);
-					getCalendar();
+					location.reload(); 
 				}	
 
 				// Verfügbarkeit
@@ -511,7 +520,7 @@
 				// Event: Socket geöffnet
                 ws.onopen = function() {
                     console.log("WebSocketClient connected:");
-					this.send('{"type":"WebClient","name":"Alarmdisplay","info":"Index","actions":[{"id":"0"},{"id":"1"},{"id":"2"},{"id":"3"},{"id":"4"}]}');
+					this.send('{"type":"WebClient","name":"Alarmdisplay - '+clientName+'","info":"Index","actions":[{"id":"0"},{"id":"1"},{"id":"2"},{"id":"3", "value": '+kalenderElemente+'},{"id":"4"}]}');
 					
 					
 					lastKeepAlive = new Date();					

@@ -64,10 +64,15 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
     if (process.env.APP_DNS != "") {
         
         // ----------------  TLS ---------------- 
-        var secureContext = tls.createSecureContext({
-            key: fs.readFileSync(process.env.HTTPS_KEY, 'utf8'),
-            cert: fs.readFileSync(process.env.HTTPS_CERT, 'utf8')
-        })
+        var secureContext;
+		function reloadCert() {
+			secureContext = tls.createSecureContext({
+				key: fs.readFileSync(process.env.HTTPS_KEY, 'utf8'),
+				cert: fs.readFileSync(process.env.HTTPS_CERT, 'utf8')
+			});
+		}
+		reloadCert();
+		setInterval(reloadCert, 1000 * 60 * 60 * 24);
 
         var httpsOptions = {
             SNICallback: function (domain, cb) {

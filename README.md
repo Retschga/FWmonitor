@@ -44,7 +44,7 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 * Alarmdrucker Papierlevel-Warnung
 * ...
 
-## Installation
+## Installation Server
 
 Raspberry PI: 
  - GIT installieren `sudo apt-get install git`
@@ -80,45 +80,12 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) sudo unter Windows
 - Einfach die Dateien nochmal herunterladen und die alten ersetzen
 - .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen/ändern/löschen
 - Libraries updaten `npm install`
+- Wenn nötig die verbundenen Geräte unter Einstellungen updaten
 - Software neu starten 
  
-## Autostart 
-
-Raspberry:
- - `sudo crontab -e`; darin `@reboot PFAD_ZU_FWMONITOR/start.sh > /home/pi/Desktop/log.txt` hinzufügen (Nur bei Programminstallation direkt auf dem Raspberry)
- - Um Browser automatisch im Vollbild zu starten:
-   mit `mkdir /home/pi/.config/lxsession/LXDE-pi/` erstellen
-   dann `nano /home/pi/.config/lxsession/LXDE-pi/autostart` und Inhalt einfügen:
-    ```
-	@xset s off
-	@xset -dpms
-	@xset s noblank
-
-	sed -i 's/"exited_cleanly": false/"exited_cleanly": true/' \
-		~/.config/google-chrome/Default/Preferences
-
-	sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' "$HOME/.config/google-chrome/Local State"
-
-	sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' ~/.config/chromium/'Local State'
-	sed -i 's/"exited_cleanly":false/"exited_cleanly":true/; s/"exit_type":"[^"]\+"/"exit_type":"Normal"/' ~/.config/chromium/Default/Preferences
-
-	sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' /home/pi/.config/chromium/Default/Preferences
-	sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /home/pi/.config/chromium/Default/Preferences
-
-
-	@chromium-browser --disable-features=InfiniteSessionRestore --disable-session-crashed-bubble --no-first-run --noerrors --disable-infobars --enable-webgl --ignore-gpu-blacklist --start-fullscreen --app=http://HIER_IP_ADRESSE_EINTRAGEN:8080/
-	@unclutter -idle 0
-	```
-	
-- evtl Neustart jeden Tag 09:00 Uhr:
-	- `sudo crontab -e`
-	-  darin `00 09 * * * /sbin/shutdown -r now` hinzufügen
-
-Windows:
- - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
- - Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
-
 ## Einstellungen
+
+Für den Server PC/Raspberry PI sollte eine feste IP-Adresse vergeben sein!
 
 `save.sqlite3 - Leer` zu `save.sqlite3` umbenennen (Konsole: Windows: `ren "save.sqlite3 - Leer" "save.sqlite3"`; Raspberry: `mv "save.sqlite3 - Leer" "save.sqlite3"`)
 
@@ -137,10 +104,6 @@ dann unter `/public/rettPunkte.geojson` speichern
 
 
 Veränderte Einstellungen erfordern immer einen Software Neustart!
-
-## Fragen / Anregungen
-
-Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstellen.
 
 ## APP Funktion
 - In Fritzbox mit MyFritz (Internet > MyFRITZ!-Konto) anmelden
@@ -188,20 +151,40 @@ Nun im Webbrowser die IP-Adresse:8080 des Computers eingeben, auf dem FWmonitor 
 (Herauszufinden in Konsole: Windows: ipconfig; Raspberry: ifconfig; Eigener PC: 127.0.0.1)
 Bsp: 192.168.2.153:8080 oder 127.0.0.1:8080
 
+## Autostart / Installation des Displays
+
+Raspberry:
+	- Benötigt min. Raspian buster
+	- `sudo apt-get update`
+	- `sudo apt-get upgrade`
+	- Server:
+		- `sudo crontab -e`; darin `@reboot PFAD_ZU_FWMONITOR/start.sh > /home/pi/Desktop/log.txt` hinzufügen
+	- Display:
+		IP_ADRESSE=IP Adresse des Servers, PORT=8080 außer wenn in .env geändert
+		- `wget IP_ADRESSE:PORT/scripts/installDisplay.sh`
+		- `sudo chmod +x installDisplay.sh`
+		- `sudo ./installDisplay.sh IP_ADRESSE:PORT CLIENT_NAME`
+
+Windows:
+	- Server:
+ 		- unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
+	- Display:
+ 		- Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
+
 ## Benutzer hinzufügen
 Einfach dem erstellten Telegram-Bot /start schreiben.
 Nun kann der Benutzer über die Einstellungen freigegeben werden.
+
+## Telegram
+
+- Nutzer-Erstverbindung: Dem erstellten bot /start schreiben bzw. Knopf drücken. Nun muss der Benutzer unter Einstellungen freigegeben werden.
+- Falls die Telegram Tastatur nicht mehr angezeigt wird, einfach irgendeinen Text an den Bot senden und es sollte wider erscheinen.
 
 ## Hydrantenfunktion
 
 Mit Telegram unter Einstellungen können Positionen von Hydranten gesendet werden.
 Diese befinden sich dann im Hydrantenordner. Mithilfe von https://www.osmhydrant.org/de/ können diese
 in OpenStreetMap eingetragen werden.
-
-## Telegram
-
-- Nutzer-Erstverbindung: Dem erstellten bot /start schreiben bzw. Knopf drücken. Nun muss der Benutzer unter Einstellungen freigegeben werden.
-- Falls die Telegram Tastatur nicht mehr angezeigt wird, einfach irgendeinen Text an den Bot senden und es sollte wider erscheinen.
 
 ## Alarmdrucker Papierüberwachung
 
@@ -211,9 +194,13 @@ In .env die Internetseite des Alarm-Netzwerkdruckers und das zu suchende Pattern
 ## Bewegungsmelder Steuerskript (Raspberry PI)
 - Anschluss des PIR siehe anschlussplan.PNG (Bei Verwendung eines Relais an 230V: Anschluss nur durch berechtigte Personen. Verwenden auf eigene Gefahr!)
 - Autostart: `sudo crontab -e` 
-- darin `@reboot python "/home/pi/steuer.py" #>> "/home/pi/steuer.log"` hinzufügen
+- darin die Zeile `@reboot python "/home/pi/steuer####.py"` auskommentieren
 
 Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk/MonitorActivation
+
+## Fragen / Anregungen
+
+Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstellen.
 
 
 ## Built With
@@ -235,9 +222,37 @@ Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk
 * MobileUi - https://mobileui.github.io/
 * Bahnübergänge - https://data.deutschebahn.com/dataset/geo-bahnuebergang
 
+## Getestete Aufbauten
+```
+---       Kabel   
+)))  (((  WiFi
+
+----------     -------------     ----------------     -----------
+| Router |-----| USB-Modem |-----| Raspberry PI |-----| Monitor | 
+---------- |   -------------     |  Server      |     -----------
+           ----------------------|  Display     |
+		   |   -----------       ----------------
+           ----| Drucker |
+			   -----------
+
+------------     -------------------          ------------------------     -----------
+| Fritzbox |-----| Win10 PC Server | )))  ((( | Raspberry PI Display |-----| Monitor |
+------------ |   -------------------          ------------------------     -----------
+			 |   -----------
+             ----| Drucker |
+		  	     -----------
+
+------------          -------------------          ------------------------     -----------
+| Fritzbox | )))  ((( | Win10 PC Server | )))  ((( | Raspberry PI Display |-----| Monitor |
+------------ |        -------------------          ------------------------     -----------
+			 |   -----------
+			 ----| Drucker |
+			     -----------
+```
+
 ## Authors
 
-*  *Resch - Freiwillige Feuerwehr Fischbachau*
+*  *Johannes Resch - Freiwillige Feuerwehr Fischbachau*
 
 ## License
 

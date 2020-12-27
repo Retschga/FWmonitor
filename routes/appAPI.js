@@ -10,6 +10,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	const readdir = util.promisify(fs.readdir);
 	const openrouteservice = require("openrouteservice-js");
 	const debug = require('debug')('appAPI');
+	const sharp = require('sharp');
 
 	// ----------------  WEB PUSH NOTIFICATIONS ---------------- 
 	const webNotifications = require('../webNotifications');
@@ -20,6 +21,21 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// ----------------  KALENDER/FWVV ---------------- 
 	var calendar = require('../calendar')()
 	const fwvv = require('../fwvvAnbindung')();
+
+	const fileExists = async path => !!(await fs.promises.stat(path).catch(e => false));
+	const pathSlideshow = './filesHTTP/images/slideshow/';
+	const pathTelegramImg = './telegramBilder/';
+	const createThumbnail = async (path, file) => {return new Promise(async (resolve, reject) => {
+		sharp(path + file)
+		.resize(200)
+		.toFile(path + 'thumbnail-' + file, (err, resizeImage) => {
+			if (err) {
+				reject("Thumbnail generation ERROR: " + err);
+			} else {
+				resolve(resizeImage);
+			}
+		});
+	})}
 
 
 
@@ -90,19 +106,25 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.sendFile(req.params.file, { root: './filesHTTPS/images/icons' });
 	});
 	// ADMIN
-	router.get('/filesHTTP/images/slideshow/:file', function (req, res) {
+	router.get('/filesHTTP/images/slideshow/:file', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
 		}
-		res.sendFile(req.params.file, { root: './filesHTTP/images/slideshow' });
+		if(!await fileExists(pathSlideshow + "thumbnail-" + req.params.file)) {
+			await createThumbnail(pathSlideshow, req.params.file);
+		}
+		res.sendFile('thumbnail-' + req.params.file, { root: pathSlideshow });
 	});
-	router.get('/telegramBilder/:file', function (req, res) {
+	router.get('/telegramBilder/:file', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
 		}
-		res.sendFile(req.params.file, { root: './telegramBilder' });
+		if(!await fileExists(pathTelegramImg + "thumbnail-" + req.params.file)) {
+			await createThumbnail(pathTelegramImg, req.params.file);
+		}
+		res.sendFile('thumbnail-' + req.params.file, { root: pathTelegramImg });
 	});
 
 
@@ -494,8 +516,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	});
 
-
-	// get Status
+	// get Hydranten
 	router.get('/api/hydranten.geojson', async function (req, res) {
 		let lat = req.query.lat;
 		let lng = req.query.lng;
@@ -572,7 +593,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		var st_nichtverfNum = 0;
 
 		rows_allUsers.forEach(function (element) {
-			if (element.allowed == 1 && (element.statusHidden != 1 || req.session.isAdmin == true)) {
+			if (parseInt(element.allowed) == 1 && (parseInt(element.statusHidden) != 1 || req.session.isAdmin == true)) {
 				if (element.status == 2) {
 					st_nichtverf.push(element.name + " " + element.vorname);
 					st_nichtverfNum += 1;
@@ -959,7 +980,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		let items = await readdir(path)
 		.catch((err) => { console.error('[appAPI] fs.readdir Fehler ', err) });
 		for (var i = 0; i < items.length; i++) {
-			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1)
+			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1 && items[i].indexOf('thumbnail') == -1)
 				src.push("/app/filesHTTP/images/slideshow/" + items[i]);
 		}
 		ret.push(src);
@@ -969,7 +990,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		items = await readdir(path)
 		.catch((err) => { console.error('[appAPI] fs.readdir Fehler ', err) });
 		for (var i = 0; i < items.length; i++) {
-			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1)
+			if(items[i] != '.gitignore' && items[i].indexOf('.') != -1 && items[i].indexOf('thumbnail') == -1)
 				src.push("/app/telegramBilder/" + items[i]);
 		}
 		ret.push(src);
@@ -986,9 +1007,14 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		if (!req.body.src) return;
 		let file = req.body.src.split(/[\\/]/).pop();
 		debug("Freigabe TRUE: " + file);
-		fs.rename("./telegramBilder/" + file, "./filesHTTP/images/slideshow/" + file, function (err) {
+		fs.rename(pathTelegramImg + file, pathSlideshow + file, function (err) {
 			if (err) throw err
 			console.log('Successfully renamed - AKA moved!');
+			res.json({ data: 'ok' });
+		});
+		fs.rename(pathTelegramImg + "thumbnail-" + file, pathSlideshow + "thumbnail-" + file, function (err) {
+			if (err) throw err
+			console.log('Successfully renamed Thumbnail - AKA moved!');
 			res.json({ data: 'ok' });
 		});
 	});
@@ -1001,9 +1027,14 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		if (!req.body.src) return;
 		let file = req.body.src.split(/[\\/]/).pop();
 		debug("Freigabe FALSE: " + file);
-		fs.rename("./filesHTTP/images/slideshow/" + file, "./telegramBilder/" + file, function (err) {
+		fs.rename(pathSlideshow + file, pathTelegramImg + file, function (err) {
 			if (err) throw err
 			console.log('Successfully renamed - AKA moved!');
+			res.json({ data: 'ok' });
+		});		
+		fs.rename(pathSlideshow + "thumbnail-" + file, pathTelegramImg + "thumbnail-" + file, function (err) {
+			if (err) throw err
+			console.log('Successfully renamed Thumbnail - AKA moved!');
 			res.json({ data: 'ok' });
 		});		
 	});
@@ -1016,7 +1047,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		if (!req.body.src) return;
 		let file = req.body.src.split(/[\\/]/).pop();
 		debug("Gelöscht: " + file);
-		fs.unlinkSync("./telegramBilder/" + file);
+		fs.unlinkSync(pathTelegramImg + file);
+		fs.unlinkSync(pathTelegramImg + "thumbnail-" + file);
 		res.json({ data: 'ok' });
 	});
 

@@ -43,7 +43,7 @@ var _httpsServer = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.0.7";
+process.env.VERSION = "2.1.0";
 
 async function startScreen() {
 	// ---------------- Startinfo ---------------- 
@@ -115,13 +115,6 @@ async function startScreen() {
 	console.log("     Diashow Zufällig: " + (process.env.DIASHOW_RANDOM == "true" ? "Ja" : "Nein"));
 	console.log("     FW Name: " + process.env.FW_NAME_STANDBY);
 
-	// Prüfe Diashow Ordner
-	try {
-		var stats = await stat(process.env.BOT_IMG);
-		console.log("     Bilderordner: " + process.env.BOT_IMG + " -> OK");
-	} catch (err) {
-		console.error("     Bilderordner: " + process.env.BOT_IMG + " -> Fehler");
-	}
 
 	// Gebe Telegrammeinstellungen aus
 	console.log("\n    # ALARMIERUNG:");

@@ -134,3 +134,18 @@ body {
     border-bottom-color: #07d;
     animation: spinner .8s ease infinite;
   }
+
+
+
+.page {
+    background-color: #eeeeee !important;
+}
+.content {
+    background-color: #ffffff;
+    max-width: 800px;
+    position: relative !important;
+    margin: 0 auto;
+}
+.bodybg {
+    background-color: #eeeeee !important;
+}

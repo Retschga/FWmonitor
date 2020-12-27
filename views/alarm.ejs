@@ -141,6 +141,8 @@
 			}
 
 			var tempID = parseInt($_GET['tempID']);
+			var clientName = $_GET['name'];			
+			console.log("Clientname: ", clientName);
 
 			
 			// -------- URL Overpass-API für Hydranten --------     siehe Ovepass turbo
@@ -465,7 +467,7 @@
 					ws.onopen = function() {
 						console.log("WebSocketClient connected:");
 						this.send(`{"type":"WebClient",
-							"name":"Alarmdisplay",
+							"name":"Alarmdisplay - ${clientName}",
 							"info":"Alarm",
 							"actions":[
 								{"id":"5"},
@@ -482,12 +484,12 @@
 
 						// Neuer Alarm
 						if(topic == 'alarm' && tempID != parseInt(msg[0])) {
-							window.location.href = '/alarm?tempID=' + msg[0];
+							window.location.href = '/alarm?tempID=' + msg[0] + '&name=' + clientName;
 							//location.reload();
 						} 
 								
 						if(topic == 'zurueck')
-							window.location.href = '/';
+							window.location.href = '/?name=' + clientName;
 
 						if(topic == 'reload')
 							location.reload(); 
