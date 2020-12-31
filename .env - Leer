@@ -6,7 +6,7 @@
 RASPIVERSION=false
 
 
-# FW Haus Koordinaten (47.xxxxx, 11.xxxxxx)
+# FW Haus Koordinaten (11.xxxxx, 47.xxxxxx) (lng, lat)
 FW_KOORD=
 
 ######## API Key´s ########

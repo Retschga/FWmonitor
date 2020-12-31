@@ -56,36 +56,38 @@
 		<% include partials/foot %>	
 		<script>
 
-			// https://stackoverflow.com/questions/5968196/check-cookie-if-cookie-exists
-			function getCookie( name ) {
-				var dc,
-					prefix,
-					begin,
-					end;
+			/**
+			 * Erstellt ein Cookie
+			 * @param  {String} 	cname   - Cookie Name
+			 * @param  {String} 	cvalue  - Cookie Wert
+			 * @param  {Integer} 	exdays  - Lebesdauer in Tagen
+			 */
+			 function setCookie(cname,cvalue,exdays) {
+				var d = new Date();
+				d.setTime(d.getTime() + (exdays*24*60*60*1000));
+				var expires = "expires=" + d.toGMTString();
+				document.cookie = cname + "=" + cvalue + ";" + (exdays ? expires + ";" : "") + "path=/";
+			}
 
-				dc = document.cookie;
-				prefix = name + "=";
-				begin = dc.indexOf("; " + prefix);
-				end = dc.length; // default to end of the string
-
-				// found, and not in first position
-				if (begin !== -1) {
-					// exclude the "; "
-					begin += 2;
-				} else {
-					//see if cookie is in first position
-					begin = dc.indexOf(prefix);
-					// not found at all or found as a portion of another cookie name
-					if (begin === -1 || begin !== 0 ) return null;
-				} 
-
-				// if we find a ";" somewhere after the prefix position then "end" is that position,
-				// otherwise it defaults to the end of the string
-				if (dc.indexOf(";", begin) !== -1) {
-					end = dc.indexOf(";", begin);
+			/**
+			 * Gibt den Wert des Cookies zurück
+			 * @param  {String} 	cname   - Cookie Name
+			 * @return {String}     Cookie Wert
+			 */
+			function getCookie(cname) {
+				var name = cname + "=";
+				var decodedCookie = decodeURIComponent(document.cookie);
+				var ca = decodedCookie.split(';');
+				for(var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+					c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0) {
+					return c.substring(name.length, c.length);
+					}
 				}
-
-				return decodeURI(dc.substring(begin + prefix.length, end) ).replace(/\"/g, ''); 
+				return "";
 			}
 		
 			function loginUser(){

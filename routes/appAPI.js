@@ -935,26 +935,26 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		let dat = "";
 		switch (action) {
-			case 'kalElem': // 3
+			case 'kalElem':
 				dat = "kal_elemnum|"+value;
 				break;
-			case 'kalReload': // 3
+			case 'kalReload':
 				dat = "kal_reload|";
 				break;
-			case 'reload': // 0
+			case 'reload':
 				dat = "reload|";
 				break;
-			case 'letzteralarm': // 1
+			case 'letzteralarm':
 				dat = "letzteralarm|";
 				break;
-			case 'zurueck': // 5
+			case 'zurueck':
 				dat = "zurueck|";
 				break;
-			case 'restart': // 5
-				dat = "rebootScreen";
+			case 'restart':
+				dat = "rebootScreen|";
 				break;
-			case 'updateScript': // 5
-				dat = "updateScript";
+			case 'updateScript':
+				dat = "updateScript|";
 				break;
 		}		
 		_httpServer[0].wss.sendToID(id, dat);

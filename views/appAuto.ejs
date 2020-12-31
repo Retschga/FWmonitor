@@ -5,10 +5,13 @@
 	
 		<% include partials/head %>	
 		<title>FWmonitor - Auto</title>	 
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
 		
 		<style>
 			.content {
-				background-color: #e0e0e0 !important
+				background-color: #cecece !important;
+				max-width: 10000px !important;
 			}
 			/* fonts*/
 			@font-face {
@@ -36,6 +39,31 @@
 			}
 			.rot-none {
 				transform: scaleX(-1);
+			}
+			.bgWhite {
+				background-color: white;
+			}
+			.noborder {
+				border: none !important;
+			}
+
+			.simple-keyboard  {
+				display: none;
+			}
+			.simple-keyboard-show {
+				display: block !important;
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				z-index: 9999;
+			}
+			.pageWithKeyboard {
+				max-height: calc(100vh - 230px) !important;
+				border-bottom: 3px solid black !important;
+			}
+			.highlight {
+				border: 2px solid red !important;
 			}
 		</style>
 		
@@ -67,7 +95,10 @@
 				<h1 class="">FWmonitor APP</h1>
 				<div class="space"></div>
 			</div>
+			<button class="red-600 full border-top-white" onclick="openPage('/app/filesHTTPS/autoSettings', null, einstellungen_load);">Einstellungen</button>
 			<button class="red-600 full border-top-white" onclick="window.location.replace('/app/api/logout');">Abmelden</button>
+			<div class="space"></div>
+			<button class="red-600 full border-top-white" onclick="wsSteuer.send('restart');">Neustart</button>			
 		</div>
 
 		<!-- CONTENT -->
@@ -150,6 +181,8 @@
 			<% } %>
 
 			<div class="space"></div>	
+
+			<div class="simple-keyboard"></div>
 		
 		</div>
 
@@ -169,8 +202,8 @@
 	  
 		<!-- JS -->
 		<% include partials/foot %>	
-		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>		
-
+		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/index.js"></script>
 		<script src="/app/filesHTTPS/javascripts/nav.js"></script>
 		<script src="/app/appClient.js"></script>
 		<script src="/app/filesHTTPS/javascripts/autoMain.js"></script>			
@@ -187,6 +220,9 @@
 			let h = parseInt(location.hash.substring(1));
 			if(h != 0)
 				history.pushState({}, 'Start', '#0')
+
+			var fwHausPos = "<%= data["fwHausPos"] %>";
+			console.log("FW Haus Koordinaten",fwHausPos);
 		</script>	
 
 		<% if(data["alarm"] == "true") { %>  
@@ -196,31 +232,94 @@
 		<% } %>
 
 		<script>
+			let Keyboard = window.SimpleKeyboard.default;
+			
+			const german = {
+				default: [
+					"^ 1 2 3 4 5 6 7 8 9 0 \u00DF \u00B4 {bksp}",
+					"{tab} q w e r t z u i o p \u00FC +",
+					"{lock} a s d f g h j k l \u00F6 \u00E4 # {enter}",
+					"{shift} < y x c v b n m , . - {shift}",
+					".com @ {space}"
+				],
+				shift: [
+					'\u00B0 ! " \u00A7 $ % & / ( ) = ? ` {bksp}',
+					"{tab} Q W E R T Z U I O P \u00DC *",
+					"{lock} A S D F G H J K L \u00D6 \u00C4 ' {enter}",
+					"{shift} > Y X C V B N M ; : _ {shift}",
+					".com @ {space}"
+				]
+			};
+
+			let keyboard = new Keyboard({
+				onChange: input => onChange(input),
+				onKeyPress: button => onKeyPress(button),
+				layout: german
+			});
+
+			/**
+			 * Update simple-keyboard when input is changed directly
+			 */
+
+			console.log(keyboard);
+
+			function onChange(input) {
+				keyboard.focusedElement.value = input;
+				console.log("Input changed", input);
+			}
+
+			function onKeyPress(button) {
+				console.log("Button pressed", button);
+
+				/**
+				 * If you want to handle the shift and caps lock buttons
+				 */
+				if (button === "{shift}" || button === "{lock}") handleShift();
+				}
+
+				function handleShift() {
+				let currentLayout = keyboard.options.layoutName;
+				let shiftToggle = currentLayout === "default" ? "shift" : "default";
+
+				keyboard.setOptions({
+					layoutName: shiftToggle					
+				});
+			}
+		</script>
+		
+		<script>
 			// Websockets
 			var wsSteuer = null;
 			var wsFWmonitor = null;
+			var lastKeepAlive = new Date();
 
+			// GPS
 			var GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
 			var GPS_now = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
-
 			var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
 			var GPS_meanNum = 0;
-
 			var GPS_hasChanged = () => { console.log("GPS Change")};
 			var GPS_hasFIX = false;
-
 			var GPS_alt_max = 0;
 			var GPS_alt_min = 0;
 			var GPS_dist_sum = 0;	
 				
-			var lastKeepAlive = new Date();
-
+			// Bildschirm
 			var SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
 
+			// Alarm
 			var tempID = "";
 			var tempID_timeout = true;
 			setTimeout(function(){ tempID_timeout = false; }, 3000);
 
+			// Raspberry PI Infos
+			var status_memFree = 0;
+			var status_memTotal = 0;
+			var status_cpuTemp = 0;
+			var status_wpaSupp = "";
+			var status_connWlan = "";
+
+			/// GPS Status
 			function index_status_GPS(val) {
 				if(val == 2) {
 					document.getElementById('index_status_GPS').classList.remove('red-300');
@@ -241,6 +340,7 @@
 				}
 			}
 
+			// Server Verbindungsstatus
 			function index_status_VERBINDUNG(val) {
 				if(val) {
 					document.getElementById('index_status_verbindung').classList.remove('red-300');
@@ -250,6 +350,7 @@
 					document.getElementById('index_status_verbindung').innerHTML = " VERBINDUNG FEHLER";
 				}
 			}
+
 
 			/**
 			*   https://gist.github.com/viktorbezdek/3957601
@@ -280,7 +381,6 @@
 				var d = Math.sqrt(x*x + y*y) * R;
 				return Math.round(d * 1000);
 			}
-
 			
 			function _getCoordsDistance_accurate(coords1, coords2) {
 				let lat1 = coords1.lat;
@@ -302,7 +402,6 @@
 				return this * Math.PI / 180;
 			}
 
-
 			function updateDistance(_POS_last, _POS_now) {
 				GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);
 			}
@@ -315,16 +414,41 @@
 				
 				wsSteuer.onopen = function() {
 					console.log("WebSocketClient Lokal connected:");
-					this.send("WebClient*Alarmdisplay*Index");	
-					index_status_GPS(true);
-					wsGPSInterval = setInterval( () => { wsSteuer.send('getGPS'); }, 1000);
+					// Setze GPS Status auf kein FIX
+					index_status_GPS(1);
+					// Interval GPS Positionsabfrage
+					wsGPSInterval = setInterval( () => { 
+						wsSteuer.send('getGPS'); 
+						wsSteuer.send('getMemFree'); 
+						wsSteuer.send('getMemTotal'); 
+						wsSteuer.send('getCpuTemp'); 
+						wsSteuer.send('getConnWlan'); 
+					}, 1000);
+					wsSteuer.send('getWpaSupp'); 
 				};
 
-				// Daten empfangen
 				wsSteuer.onmessage = function(e) {
 					// Kein FIX
 					if(e.data == "-1") {
 						index_status_GPS(1);
+
+					// Memory Free
+					} else if (e.data.indexOf('memFree') != -1) {
+						status_memFree = e.data.split(':')[1];
+
+					// Memory Total
+					} else if (e.data.indexOf('memTotal') != -1) {
+						status_memTotal = e.data.split(':')[1];
+
+					// Wlan
+					} else if (e.data.indexOf('wpaSupp') != -1) {
+						status_wpaSupp = e.data.split(':')[1];
+
+					} else if (e.data.indexOf('cpuTemp') != -1) {
+						status_cpuTemp = e.data.split(':')[1];
+
+					} else if (e.data.indexOf('connWlan') != -1) {
+						status_connWlan = e.data.split(':')[1];
 
 					} else {
 
@@ -378,8 +502,6 @@
 							if(GPS_alt_max < GPS_now.alt) GPS_alt_max = GPS_now.alt;
 							if(GPS_alt_min > GPS_now.alt && GPS_now.alt != 0) GPS_alt_min = GPS_now.alt;
 
-							//console.log(GPS_now);
-
 							// Summen rücksetzen
 							GPS_meanSum.lat = 0;
 							GPS_meanSum.lng = 0;
@@ -392,58 +514,74 @@
 					} 
 				};
 
-				// Socket geschlossen
 				wsSteuer.onclose = function(e) {
 					console.log('Socket Lokal is closed. Reconnect will be attempted in 1 second.', e.reason);
-					index_status_GPS(false);	
+					// Setze GPS Status auf Fehler
+					index_status_GPS(0);	
+					// Lösche GPS Abfrageintervall
 					clearInterval(wsGPSInterval);
+
+					// Nach 1s neu verbinden
 					setTimeout(function() {
 						connectSteuer();
 					}, 1000);					
 				};
 
-				// Scoket Fehler
 				wsSteuer.onerror = function(err) {
 					console.error('Socket Lokal encountered error: ', err.message, 'Closing socket');
-					index_status_GPS(false);
+					// Setze GPS Status auf Fehler
+					index_status_GPS(0);
+					// Lösche GPS Abfrageintervall
 					clearInterval(wsGPSInterval);
+					// Verbindung schließen
 					wsSteuer.close();
 				};
 			}			
 			connectSteuer();
 
-
-
+			// Display aktivieren
 			function dispAktiv() {
-				console.log("dispON");
+				// Timeout zurücksetzen
 				clearTimeout( SCREEN_OFF_timeout );
 				SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
+				// Bildschirm aktivieren
 				wsSteuer.send('dispON');				
-//				wsFWmonitor.send(JSON.stringify({id: <%= data["autoid"] %>, event: "dispTouch"}));
 			}
 //			var bdy  = document.getElementById ('body');
 //			bdy.addEventListener ('click', () => {
 //				dispAktiv()
 //			});
 			window.onclick = function() {
+				// Bei Touch auf Display AUS
 				if (event.target.closest('.dispOFF')) {
 					console.log("dispOFF")
 					wsSteuer.send('dispOFF');
+				
+				} else if (event.target.closest('.hg-button')) {
+					return;
+				} else if (event.target.closest('.input')) {
+					return;
+
+				// Bei Touch sonst irgendwo auf dem Bildschim
 				} else {
-					dispAktiv()
+					document.querySelector(".simple-keyboard").classList.remove('simple-keyboard-show');
+					document.querySelector(".page").classList.remove('pageWithKeyboard');	
+
+					dispAktiv();					
 				}
+				
 			}
+
 
 			// Websocket Server Verbindung
 			function connectFWmonitor() {			
 				wsFWmonitor = new WebSocket('wss://'+window.location.hostname+':443');
-				let wsGPSInterval = null;	
+				let wsStatusInterval = null;
 				var keepAliveInterval = null;
 				let log = "";
-				
-				wsFWmonitor.onopen = function() {
-					console.log("WebSocketClient FWmonitor connected:");
-					wsFWmonitor.send(
+
+				// Sende Status Datensatz
+				let sendStatus = () => {wsFWmonitor.send(
 					`{"type":"WebClient",
 					"name":"Auto",
 					"info":"<%= data["autoname"] %>",
@@ -453,23 +591,23 @@
 						{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
 						{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
 						{"id":"-1", "key": "LOG", "value": "${log}"}
-					]}`);
-					
+					]}`)}
+				
+				wsFWmonitor.onopen = function() {
+					console.log("WebSocketClient FWmonitor connected:");
+
+					// Sende Status Datensatz
+					sendStatus();
+
+					// Setze Verbindungsstatus auf OK
 					index_status_VERBINDUNG(true);
-					wsGPSInterval = setInterval( () => {
-						if(GPS_hasFIX) 
-						wsFWmonitor.send(
-							`{"type":"WebClient",
-							"name":"Auto",
-							"info":"<%= data["autoname"] %>",
-							"actions":[
-								{"id":"0"},
-								{"id":"7"},
-								{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
-								{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-								{"id":"-1", "key": "LOG", "value": "${log}"}
-							]}`);
-					}, 60000);
+
+					// Sende alle 30 sek einen Statusdatensatz
+					wsStatusInterval = setInterval( () => {
+						sendStatus();
+					}, 30000);
+
+					// Sende KeepAlive Intervall
 					lastKeepAlive = new Date();
 					keepAliveInterval = setInterval(() => {
 						this.send("keepAlive");
@@ -480,13 +618,13 @@
 					}, 10000)
 				};
 
-				// Daten empfangen
 				wsFWmonitor.onmessage = function(e) {
 					// Teile Daten in Topic und Werte
 					log = e.data;
 					var dat = e.data.split('|');
 					topic = dat[0];
-					msg = dat[1].split('%');
+					if(dat[1]) msg = dat[1].split('%');
+					else msg = "";
 
 					if(topic == 'alarm' && tempID != parseInt(msg[0])) {
 						tempID = parseInt(msg[0]);
@@ -499,53 +637,40 @@
 						if(!tempID_timeout) {
 							location.reload(); 
 						}
+
+						GPS_alt_max = GPS_last.alt;
+						GPS_alt_min = GPS_last.alt
+						GPS_dist_sum = 0;	
 					}
 
-					// Keep Alive
 					if(topic == 'keepAlive') {
-						lastKeepAlive = new Date();
-						
+						lastKeepAlive = new Date();						
 						index_status_VERBINDUNG(true);
-
-						wsFWmonitor.send(
-							`{"type":"WebClient",
-							"name":"Auto",
-							"info":"<%= data["autoname"] %>",
-							"actions":[
-								{"id":"0"},
-								{"id":"7"},
-								{"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
-								{"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-								{"id":"-1", "key": "LOG", "value": "${log}"}
-							]}`);
 					}
-					// reload
+
 					if(topic == 'reload') {
-						location.reload(); _status_VERBINDUNG(true);
+						location.reload();
 					}
 					
-					// restart
 					if(topic == 'rebootScreen') {
 						wsSteuer.send('restart');
 					}
  				};
 
-				// Socket geschlossen
 				wsFWmonitor.onclose = function(e) {
 					console.log('Socket Lokal is closed. Reconnect will be attempted in 15 second.', e.reason);
 					index_status_VERBINDUNG(false);	
-					clearInterval(wsGPSInterval);
+					clearInterval(wsStatusInterval);
 					clearInterval(keepAliveInterval);
 					setTimeout(function() {
 						connectFWmonitor();
 					}, 15000);
 				};
 
-				// Scoket Fehler
 				wsFWmonitor.onerror = function(err) {
 					console.error('Socket FWmonitor encountered error: ', err.message, 'Closing socket');
 					index_status_VERBINDUNG(false);
-					clearInterval(wsGPSInterval);
+					clearInterval(wsStatusInterval);
 					clearInterval(keepAliveInterval);
 					wsFWmonitor.close();
 				};

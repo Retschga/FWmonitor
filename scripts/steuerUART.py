@@ -27,13 +27,13 @@ targetserver = sys.argv[1]
 name = sys.argv[2]
 
 # GPIO PIN Bewegungsmelder
-pirpin = sys.argv[3]
+pirpin = int(sys.argv[3])
 
 # COM Port (Fernseher)
 uartport = sys.argv[4]
 
 starttime = str(datetime.datetime.now())
-version = "2.0.0"
+version = "2.0.1"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = "\xAA\x11\xFE\x01\x01\x11"
@@ -159,6 +159,7 @@ class WebSocketRetry:
                         # Empfangen
                         try:
                             data = await asyncio.wait_for(ws.recv(), self.timeout)
+                            asyncState.log = data
                             await asyncio.wait_for(printLog(data), 5)
                             if 'alarm' in str(data):
                                 await asyncio.wait_for(schirman(asyncState), 10)
@@ -216,7 +217,7 @@ async def keepAlive(asyncState):
     while True:
         await asyncio.sleep(10)        
         await asyncState.client.sendPing("TESTPING")
-        await asyncState.client.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\""+logtext+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+schirmstatus + " " + schirmstatusTime+"\"},{\"id\":\"-1\",\"key\":\"3h\",\"value\":\""+logbuff+"\"}]}")
+        await asyncState.client.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\""+asyncState.log+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-1\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"}]}")
         
 
 # -------------- Programmstart --------------
@@ -224,6 +225,11 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     asyncState = type('', (), {})()
+
+    asyncState.schirmstatus = "???"
+    asyncState.schirmstatusTime = "???"
+    asyncState.log = "---"
+    asyncState.logbuff = "---"
 
     try:
 

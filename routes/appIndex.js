@@ -114,7 +114,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 				req.session.autoid = login[0].id;
 			}
 
-			console.log("sessionid " + req.sessionID, 'Auto: ' + isAuto);
+			console.log("telid: " + req.session.telegramID + " + sessionid:" + req.sessionID, 'Auto: ' + isAuto);
 			_httpsServer[0].addSession(req.sessionID, _telid);
 
 			// Remember me token neu vergeben
@@ -140,7 +140,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		// Token Login
 		const token = req.cookies.token;
 		// ----------------------------------------------------- TODO: Check PW changed
-		if(token) {
+		if(token && !req.body.telegramID) {
 			let payload;
 			try {
 				// Parse the JWT string and store the result in `payload`.

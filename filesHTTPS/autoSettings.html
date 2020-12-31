@@ -1,0 +1,136 @@
+<div class="page" style="height: calc(100vh - 52px) !important;">      
+       
+	<div class="header red-600">
+		<button class="left icon icon ion-android-arrow-back" name="button" onclick="goBack()"></button>
+		<h1>Einstellungen</h1>
+	</div>		
+	
+    <div class="content padding has-header noscrollbar padding">
+
+        <div class="space"></div>
+
+        <div class="row">    
+
+                <div class="col-50 padding">
+
+                    <!-- WiFi 1 -->
+                    <div class="list bgWhite" id="sett_nw1">
+
+                        <div class="item small-space grey-300 text-grey-700">
+                            <p>
+                                WiFi 1 (Gerätehaus)
+                            </p>
+                        </div>
+
+                        <div class="item">
+                            <h2>SSID</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">SSID</label>
+                                    <input id="sett_nw1_ssid" class="input" type="text">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item">
+                            <h2>Passwort</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">Passwort</label>
+                                    <input id="sett_nw1_psk" class="input" type="text">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="space"></div>
+
+                    <!-- WiFi 2 -->
+                    <div class="list bgWhite" id="sett_nw2">
+
+                        <div class="item small-space grey-300 text-grey-700">
+                            <p>
+                                WiFi 2 (Handy/Hotspot)
+                            </p>
+                        </div>
+
+                        <div class="item">
+                            <h2>SSID</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">SSID</label>
+                                    <input id="sett_nw2_ssid" class="input" type="text">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item">
+                            <h2>Passwort</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">Passwort</label>
+                                    <input id="sett_nw2_psk" class="input" type="text">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="space"></div>
+
+                    <div class="item">
+                        <button class="blue radius full">Speichern</button>
+                    </div>
+
+                </div>
+
+                <div class="col-50 padding">
+
+                    <!-- CPU -->
+                    <div class="list bgWhite">
+
+                        <div class="item small-space grey-300 text-grey-700">
+                            <p>
+                                CPU
+                            </p>
+                        </div>
+
+                        <div class="item">
+                            <h2>Temperatur</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">Temperatur</label>
+                                    <input id="sett_cpuTemp" type="text" readonly value="##.# °C">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item">
+                            <h2>Arbeitsspeicher</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">Belegt/Gesamt</label>
+                                    <input id="sett_mem" type="text" readonly value="###kB/###kB">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="space"></div>
+
+                    <div class="item">
+                        <button class="blue radius full" onclick="einstellungen_loadInfo()">Aktualisieren</button>
+                    </div>
+                   
+                </div>
+           
+        </div>
+
+        <div class="space"></div>
+
+
+   </div>
+
+</div>

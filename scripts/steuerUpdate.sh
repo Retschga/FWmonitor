@@ -24,6 +24,8 @@ echo "Alte Skripte ersetzen"
 /bin/mv /home/pi/steuerRELAIS.py.1 /home/pi/steuerRELAIS.py
 /bin/mv /home/pi/steuerUpdate.sh.1 /home/pi/steuerUpdate.sh
 
+sudo chmod +x /home/pi/steuerUpdate.sh
+
 ## RPI Update
 apt-get update
 apt-get upgrade -y 

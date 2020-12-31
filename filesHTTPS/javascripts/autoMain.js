@@ -754,12 +754,17 @@ async function alteAlarme_loadAlarm(count) {
 async function karte_load() {
 
 	// Prüfe ob GPS Position vorhanden
-	if (GPS_now.lng == 0) {
+	if (GPS_now.lng == 0 && fwHausPos == "") {
 		alert("GPS Position nicht gefunden!");
 		goBack();
 		return;
-	}
+	}	
 	let pos = {lat:GPS_now.lat, lng:GPS_now.lng};
+	if (GPS_now.lng == 0 && fwHausPos != "") {
+		let p = fwHausPos.split(',');
+		pos = {lat:p[1], lng:p[0]};
+		console.log("Keine GPS Position > verwende FW Haus", pos)
+	}
 	alarm_map_pos = [pos.lng, pos.lat];
 
 	// Lade Hydrantendaten
@@ -791,6 +796,10 @@ async function karte_load() {
 		posMarker.setGeometry(pos ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
 		alarm_mapCenter();
 	};
+
+	if (GPS_now.lng == 0 && fwHausPos != "") {
+		alert("GPS Position nicht gefunden! > verwende FW Haus Koordinaten!");
+	}
 
 }
 
@@ -880,4 +889,88 @@ async function gps_load() {
 
 
 
+// ---------------- Einstellungen ------------
+function einstellungen_load() {
+	Array.from(document.querySelectorAll('.input')).forEach(function(element) {
+		element.addEventListener("focusin", event => {
+			keyboard.setInput(element.value);
+			keyboard.focusedElement = element;
+	
+			document.querySelector(".simple-keyboard").classList.add('simple-keyboard-show');	
+			document.querySelector(".page").classList.add('pageWithKeyboard');			
+			
+			element.style.background = 'pink';
+		});
+		element.addEventListener("focusout", event => {		
+			element.style.background = '';
+		});		
+	});
 
+	einstellungen_loadInfo();
+	
+
+	let networks = [];
+	let tempLines = status_wpaSupp.split('\n');
+	for(let i = 0;i < tempLines.length;i++){
+		let line = tempLines[i];
+		if(line.indexOf('ssid') != -1) {
+			let tmp = line.split('=').pop();
+			console.log(tmp);
+			networks.push({'ssid': String(tmp).replace(/\"/g, '')});
+		}
+		if(line.indexOf('psk') != -1) {
+			let tmp = line.split('=').pop();
+			console.log(tmp);
+			networks[networks.length -1]['psk'] =  String(tmp).replace(/\"/g, '');
+		}
+		if(line.indexOf('priority') != -1) {
+			let tmp = line.split('=').pop();
+			console.log(tmp);
+			networks[networks.length -1]['priority'] = parseInt( String(tmp).replace(/\"/g, '') );
+		}
+	}
+	if(networks.length > 2) {
+		alert("Fehler: Mehr als 2 konfigurierte Netzwerke gefunden");
+		return;
+	}
+	if(networks.length > 1) {
+		if(networks[0]['priority'] < networks[1]['priority']) {
+			let tmp = networks[0];
+			networks[0] = networks[1];
+			networks[1] = tmp;
+		}
+		document.getElementById("sett_nw1_ssid").value = String(networks[0]['ssid']);
+		document.getElementById("sett_nw1_psk").value = String(networks[0]['psk']);
+		document.getElementById("sett_nw2_ssid").value = String(networks[1]['ssid']);
+		document.getElementById("sett_nw2_psk").value = String(networks[1]['psk']);
+
+		status_connWlan = String(status_connWlan).replace(/\"/g, '');
+
+		console.log("SSIDs", networks[0]['ssid'], networks[1]['ssid'] );
+		console.log("Connected to " + String(status_connWlan).replace(/\"/g, ''));
+		console.log(networks[0]['ssid'], status_connWlan, networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim())
+		console.log(networks[1]['ssid'], status_connWlan, networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim())
+
+		if( networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+			document.getElementById("sett_nw1").classList.add('highlight');
+			document.getElementById("sett_nw2").classList.remove('highlight');
+		} else if( networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+			document.getElementById("sett_nw1").classList.remove('highlight');
+			document.getElementById("sett_nw2").classList.add('highlight');
+		}
+	} else if (networks.length > 0) {
+		document.getElementById("sett_nw2_ssid").value = networks[0]['ssid'];
+		document.getElementById("sett_nw2_psk").value = networks[0]['psk'];
+
+		if( networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+			document.getElementById("sett_nw2").classList.add('highlight');
+		} else  {
+			document.getElementById("sett_nw2").classList.remove('highlight');
+		}
+	}
+		
+}
+function einstellungen_loadInfo() {
+	document.getElementById("sett_cpuTemp").value = status_cpuTemp + '°C';
+	document.getElementById("sett_mem").value = status_memFree + "MB / " + status_memTotal + "MB";
+}

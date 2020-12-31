@@ -40,6 +40,7 @@ echo "Lade Skripte herunter"
 /usr/bin/wget -O /home/pi/steuerUART.py "$1/scripts/steuerUART.py"
 /usr/bin/wget -O /home/pi/steuerRELAIS.py "$1/scripts/steuerRELAIS.py"
 /usr/bin/wget -O /home/pi/steuerUpdate.sh "$1/scripts/steuerUpdate.sh"
+sudo chmod +x /home/pi/steuerUpdate.sh
 
 # Autostarteinträge für chromium hinzufügen
 mkdir -p /home/pi/.config/lxsession/LXDE-pi/
@@ -67,6 +68,17 @@ echo "@chromium-browser --disable-features=InfiniteSessionRestore --disable-sess
 # Installation watchdog
 if promptyn "# Watchdog installieren? (y/n)"; then
     echo "# Installation watchdog"
+    sudo apt-get install watchdog
+    watchdogentry="  watchdog-device        = /dev/watchdog"
+    sudo cat /etc/watchdog.conf | grep -q "${watchdogentry}"  && echo 'entry already exists' || ( (echo "${watchdogentry}") >> /etc/watchdog.conf )
+    watchdogentry="  max-load-5             = 24"
+    sudo cat /etc/watchdog.conf | grep -q "${watchdogentry}"  && echo 'entry already exists' || ( (echo "${watchdogentry}") >> /etc/watchdog.conf )
+    watchdogentry="  watchdog-device = /dev/watchdog"
+    sudo cat /etc/watchdog.conf | grep -q "${watchdogentry}"  && echo 'entry already exists' || ( (echo "${watchdogentry}") >> /etc/watchdog.conf )
+    watchdogentry="  watchdog-timeout=15"
+    sudo cat /etc/watchdog.conf | grep -q "${watchdogentry}"  && echo 'entry already exists' || ( (echo "${watchdogentry}") >> /etc/watchdog.conf )
+    sudo systemctl enable watchdog
+    sudo systemctl start watchdog
 else    
     echo "# Watchdog Installation übersprungen > Neustart 1x pro Tag"    
     cronentry="00 00 * * * /sbin/shutdown -r now"
