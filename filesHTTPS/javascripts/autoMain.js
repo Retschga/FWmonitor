@@ -60,6 +60,7 @@ function goBack() {
 	GPS_hasChanged = () => {};
 	window.history.back();
 	clearInterval(alarmClockInterval);
+	clearInterval(einstellungenUpdateInterval);
 }
 
 // Icons Karte
@@ -890,6 +891,7 @@ async function gps_load() {
 
 
 // ---------------- Einstellungen ------------
+var einstellungenUpdateInterval = null;
 function einstellungen_load() {
 	Array.from(document.querySelectorAll('.input')).forEach(function(element) {
 		element.addEventListener("focusin", event => {
@@ -906,8 +908,7 @@ function einstellungen_load() {
 		});		
 	});
 
-	einstellungen_loadInfo();
-	
+	einstellungenUpdateInterval = setInterval(function(){ einstellungen_loadInfo(); }, 2000);	
 
 	let networks = [];
 	let tempLines = status_wpaSupp.split('\n');
@@ -973,4 +974,5 @@ function einstellungen_load() {
 function einstellungen_loadInfo() {
 	document.getElementById("sett_cpuTemp").value = status_cpuTemp + '°C';
 	document.getElementById("sett_mem").value = status_memFree + "MB / " + status_memTotal + "MB";
+	document.getElementById("sett_cpuUsage").value = (100 - parseInt(status_cpuIdle)) + '%';
 }

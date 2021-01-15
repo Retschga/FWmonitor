@@ -232,19 +232,23 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	function getAlarmColor(einsatzstichwort) {
 		let stichwort = einsatzstichwort.toLowerCase();
 
-		// Green
-		if(stichwort.includes("inf") || stichwort.includes("1nf"))
+		// Info/Sonstiges - Green
+		if(stichwort.includes("inf") || stichwort.includes("1nf") || stichwort.includes("son"))
 			return '3';
 
-		// Blue
+		// THL - Blue
 		if(stichwort.includes("thl"))
-			return '2';
+			return '2';		
 
-		// Orange
+		// Brand - Red
+		if(stichwort.includes("b "))
+			return '0';
+
+		// Rettungsdienst - Orange
 		if(stichwort.includes("rd"))
 			return '1';
 
-		// Red
+		// Rest - Red
 		return "0";
 	}
 

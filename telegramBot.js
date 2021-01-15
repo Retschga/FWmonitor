@@ -75,11 +75,11 @@ module.exports = function (_httpServer, destroySession) {
 				.catch((err) => {
 					console.error("[Telegram] ERROR sendMessage (ChatID " + chatId + "): " + err);
 					if (err.message.indexOf("blocked") != -1) {
-						db.setUserStatus(chatId, -1, "").then(() => {
+						db.setUserStatus(chatId, db.USER_STATUS.BOT_BLOCKED, "").then(() => {
 							;
 						});
 					} else if (err.message.indexOf("disabled") != -2) {
-						db.setUserStatus(chatId, -1, "").then(() => {
+						db.setUserStatus(chatId, db.USER_STATUS.BOT_DISABLED, "").then(() => {
 							;
 						});
 					}
@@ -94,7 +94,7 @@ module.exports = function (_httpServer, destroySession) {
 	];
 
 	if (process.env.APP_DNS != "") {
-		mainKeyboard.push(['📱 Einsatzmonitor APP']);
+		mainKeyboard.push(['📱 FWmonitor APP']);
 	}
 
 	// ---------------- Erste Bot Verbindung ----------------
@@ -121,12 +121,14 @@ module.exports = function (_httpServer, destroySession) {
 				} else {
 					ctx.reply(
 						`Anmeldung erfolgreich: ${user.name} ${user.vorname}
-						*Funktionen:*
-						_ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
-						_ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
-						Telegraf.Extra.markdown().HTML().markup((m) =>
+*Funktionen:*
+_ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
+_ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
+						Telegraf.Extra.markdown().markup((m) =>
 							m.keyboard(mainKeyboard).resize()
 						));
+
+						await setVervTrue(ctx.from.id);
 				}
 
 			} else {
@@ -198,7 +200,7 @@ module.exports = function (_httpServer, destroySession) {
 
 
 	// ---------------- APP -----------------
-	bot.hears('📱 Einsatzmonitor APP', async (ctx) => {
+	bot.hears('📱 FWmonitor APP', async (ctx) => {
 		try {
 
 			let keyboard = [];
@@ -209,7 +211,7 @@ module.exports = function (_httpServer, destroySession) {
 			}
 
 			ctx.reply(
-				'*📱 Einsatzmonitor APP*',
+				'*📱 FWmonitor APP*',
 				Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard(keyboard))
 			);
 			

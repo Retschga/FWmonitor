@@ -35,6 +35,7 @@ module.exports = function () {
 				autoname: req.session.autoname,
 				autoid: req.session.autoid,
 				fwHausPos: process.env.FW_KOORD,
+				version: process.env.VERSION
 			}
 		});
 	});
