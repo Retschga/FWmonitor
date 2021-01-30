@@ -1014,14 +1014,13 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		debug("Freigabe TRUE: " + file);
 		fs.rename(pathTelegramImg + file, pathSlideshow + file, function (err) {
 			if (err) throw err
-			console.log('Successfully renamed - AKA moved!');
-			res.json({ data: 'ok' });
+			console.log('Successfully renamed - AKA moved!');			
 		});
 		fs.rename(pathTelegramImg + "thumbnail-" + file, pathSlideshow + "thumbnail-" + file, function (err) {
 			if (err) throw err
 			console.log('Successfully renamed Thumbnail - AKA moved!');
-			res.json({ data: 'ok' });
 		});
+		res.json({ data: 'ok' });
 	});
 	// post setDiashowFreigabeFalse ADMIN
 	router.post('/api/setDiashowFreigabeFalse', async function (req, res) {
@@ -1035,13 +1034,13 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		fs.rename(pathSlideshow + file, pathTelegramImg + file, function (err) {
 			if (err) throw err
 			console.log('Successfully renamed - AKA moved!');
-			res.json({ data: 'ok' });
 		});		
 		fs.rename(pathSlideshow + "thumbnail-" + file, pathTelegramImg + "thumbnail-" + file, function (err) {
 			if (err) throw err
 			console.log('Successfully renamed Thumbnail - AKA moved!');
-			res.json({ data: 'ok' });
+
 		});		
+		res.json({ data: 'ok' });
 	});
 	// post setDiashowDelete ADMIN
 	router.post('/api/setDiashowDelete', async function (req, res) {
