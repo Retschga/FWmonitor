@@ -92,13 +92,14 @@
 			<div class="cover align-center red-600 border-bottom-white">
 				<div class="space"></div>
 				<img class="avatar circle border-white shadow" src="/icons/icon-384x384.png" style="width: 30%"/>
-				<h1 class="">FWmonitor APP</h1>
+				<h1 class="">FWmonitor Auto</h1>
+				<h2>Version <%= data["version"] %></h2>
 				<div class="space"></div>
 			</div>
 			<button class="red-600 full border-top-white" onclick="openPage('/app/filesHTTPS/autoSettings', null, einstellungen_load);">Einstellungen</button>
 			<button class="red-600 full border-top-white" onclick="window.location.replace('/app/api/logout');">Abmelden</button>
 			<div class="space"></div>
-			<button class="red-600 full border-top-white" onclick="wsSteuer.send('restart');">Neustart</button>			
+			<button class="red-600 full border-top-white" onclick="loading('Neustart...');; setInterval(() => {wsSteuer.send('restart');}, 100)">Neustart</button>			
 		</div>
 
 		<!-- CONTENT -->
@@ -135,22 +136,22 @@
 
 			<div class="space"></div>
 
-			<div class="row-around">
+			<div class="row-around">			
+
+				<div class="col-20 grey-100" onclick="openPage('/app/filesHTTPS/autoNavi', {}, navigation_load)">
+					<div class="padding border-grey-400 shadow radius align-center">
+						<i class="icon ion-ios-list-outline"></i>
+						<p>
+							<br>Navigation<br>
+						</p>
+					</div>
+				</div>
 
 				<div class="col-20 grey-100" onclick="openPage('/app/filesHTTPS/autoGPS', {}, gps_load)">
 					<div class="padding border-grey-400 shadow radius align-center">
 						<i class="icon ion-location"></i>
 						<p>
 							<br>GPS<br>
-						</p>
-					</div>
-				</div>
-
-				<div class="col-20 grey-100">
-					<div class="padding border-grey-400 shadow radius align-center">
-						<i class="icon ion-ios-list-outline"></i>
-						<p>
-							<br>Platzhalter<br>
 						</p>
 					</div>
 				</div>
@@ -207,6 +208,8 @@
 		<script src="/app/filesHTTPS/javascripts/nav.js"></script>
 		<script src="/app/appClient.js"></script>
 		<script src="/app/filesHTTPS/javascripts/autoMain.js"></script>			
+		
+		<!-- Uhrzeit, Konstanten, etc. -->
 		<script>
 			// Uhrzeit
             setInterval(() => {
@@ -217,21 +220,24 @@
                 document.getElementById('time').innerHTML = time + " - " + date;
 			}, 1000);
 
+			// Browser History Setup
 			let h = parseInt(location.hash.substring(1));
-			if(h != 0)
-				history.pushState({}, 'Start', '#0')
+			if(h != 0) history.pushState({}, 'Start', '#0')
 
+			// FW Haus Position
 			var fwHausPos = "<%= data["fwHausPos"] %>";
 			console.log("FW Haus Koordinaten",fwHausPos);
 		</script>	
 
+		<!-- Alarm -->
 		<% if(data["alarm"] == "true") { %>  
 			<script>
 				openPage('/app/filesHTTPS/autoAlarm', <%= data["alarmID"] %>, alarm_loadAlarm);
 				window.setTimeout(() => {location.reload();}, 60000 * 3);
 			</script>
 		<% } %>
-
+		
+		<!-- Virtual Keyboard -->
 		<script>
 			let Keyboard = window.SimpleKeyboard.default;
 			
@@ -258,10 +264,6 @@
 				layout: german
 			});
 
-			/**
-			 * Update simple-keyboard when input is changed directly
-			 */
-
 			console.log(keyboard);
 
 			function onChange(input) {
@@ -278,7 +280,7 @@
 				if (button === "{shift}" || button === "{lock}") handleShift();
 				}
 
-				function handleShift() {
+			function handleShift() {
 				let currentLayout = keyboard.options.layoutName;
 				let shiftToggle = currentLayout === "default" ? "shift" : "default";
 
@@ -288,6 +290,7 @@
 			}
 		</script>
 		
+		<!-- Websockets -->
 		<script>
 			// Websockets
 			var wsSteuer = null;
@@ -299,14 +302,15 @@
 			var GPS_now = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
 			var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
 			var GPS_meanNum = 0;
-			var GPS_hasChanged = () => { console.log("GPS Change")};
+			var GPS_hasChanged = () => {};
 			var GPS_hasFIX = false;
-			var GPS_alt_max = 0;
-			var GPS_alt_min = 0;
-			var GPS_dist_sum = 0;	
+			var GPS_alt_max = parseInt(localStorage.getItem('gps.altMax') || 0);
+			var GPS_alt_min = parseInt(localStorage.getItem('gps.altMin') || 0);
+			var GPS_dist_sum = parseInt(localStorage.getItem('gps.distSum') || 0);				
 				
 			// Bildschirm
-			var SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
+			var SCREEN_OFF_timeout_time = parseInt(localStorage.getItem('display.timeoutTime') || 60000 * 30);
+			var SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, SCREEN_OFF_timeout_time);
 
 			// Alarm
 			var tempID = "";
@@ -320,6 +324,7 @@
 			var status_wpaSupp = "";
 			var status_connWlan = "";
 			var status_cpuIdle = 0;
+			var status_hostname = "";
 
 			/// GPS Status
 			function index_status_GPS(val) {
@@ -391,25 +396,25 @@
 				let lon2 = coords2.lng;
 
 				var R = 6371; // km
-				var dLat = (lat2 - lat1).toRad();
-				var dLon = (lon2 - lon1).toRad(); 
+				var dLat = (lat2 - lat1) * Math.PI / 180;
+				var dLon = (lon2 - lon1) * Math.PI / 180; 
 				var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-						Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
+						Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
 						Math.sin(dLon / 2) * Math.sin(dLon / 2); 
 				var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
 				var d = R * c;
-				return d;
+				return d * 1000;
 			}
 			Number.prototype.toRad = function() {
 				return this * Math.PI / 180;
 			}
 
 			function updateDistance(_POS_last, _POS_now) {
-				GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);
-			}
+				let dist = _getCoordsDistance_accurate(_POS_last, _POS_now);
+				GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);				
+			}			
 
-
-			// Websocket fürGPS, Displaysteuerung
+			// Websocket für GPS, Displaysteuerung
 			function connectSteuer() {			
 				wsSteuer = new WebSocket('ws://localhost:8765');
 				let wsGPSInterval = null;				
@@ -425,14 +430,14 @@
 						wsSteuer.send('getMemTotal'); 
 						wsSteuer.send('getCpuTemp'); 
 						wsSteuer.send('getConnWlan'); 
-						wsSteuer.send('getCpuIdle'); 
-						wsSteuer.send(' '); 
+						wsSteuer.send('getCpuIdle'); 						
 					}, 1500);
 					wsSteuer.send('getWpaSupp'); 
+					wsSteuer.send('getHostname'); 
 				};
 
 				wsSteuer.onmessage = function(e) {
-					console.log("Local: " + e.data);
+					console.log("Lokal: " + e.data);
 					// Kein FIX
 					if(e.data == "-1") {
 						index_status_GPS(1);
@@ -457,6 +462,13 @@
 
 					} else if (e.data.indexOf('cpuIdle') != -1) {
 						status_cpuIdle = e.data.split(':')[1];
+
+					} else if (e.data.indexOf('hostname') != -1) {
+						status_hostname = e.data.split(':')[1];
+
+					} else if (e.data.indexOf('setWpaSupp') != -1) {
+						closeLoading();
+						alert('Daten gespeichert!');
 
 					} else {
 
@@ -484,17 +496,25 @@
 							GPS_meanSum.speed /= GPS_meanNum;
 							GPS_meanSum.alt /= GPS_meanNum;
 							GPS_meanSum.track /= GPS_meanNum;
-							GPS_meanSum.climb /= GPS_meanNum;
+							GPS_meanSum.climb /= GPS_meanNum;							
 
 							// Abweichung von letzter Position berechnen
 							if(GPS_now) {
 								let d = _getCoordsDistance({lng: GPS_meanSum.lng, lat: GPS_meanSum.lat}, {lng: GPS_now.lng, lat: GPS_now.lat});
 //								console.log("Distanz", d);
 								if(d >= 2) {
-									if(GPS_last.lat != 0) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
+									if(GPS_last.lat != 0 && GPS_last.speed > 5) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
+									console.log("GPS Change", GPS_meanSum);
 									GPS_hasChanged();									
 								}
 							}
+
+							GPS_last.lat = GPS_now.lat;
+							GPS_last.lng = GPS_now.lng;
+							GPS_last.speed = GPS_now.speed;
+							GPS_last.alt = GPS_now.alt;
+							GPS_last.track = GPS_now.track;
+							GPS_last.climb = GPS_now.climb;
 
 							// Positionsdaten speichern
 							GPS_now.lat = GPS_meanSum.lat.toFixed(5);
@@ -509,6 +529,9 @@
 							// Höhe Min/Max
 							if(GPS_alt_max < GPS_now.alt) GPS_alt_max = GPS_now.alt;
 							if(GPS_alt_min > GPS_now.alt && GPS_now.alt != 0) GPS_alt_min = GPS_now.alt;
+							localStorage.setItem('gps.altMax', GPS_alt_max);
+							localStorage.setItem('gps.altMin', GPS_alt_min);
+							localStorage.setItem('gps.distSum', GPS_dist_sum);
 
 							// Summen rücksetzen
 							GPS_meanSum.lat = 0;
@@ -551,7 +574,7 @@
 			function dispAktiv() {
 				// Timeout zurücksetzen
 				clearTimeout( SCREEN_OFF_timeout );
-				SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, 1000 * 60 * 60);
+				SCREEN_OFF_timeout = setTimeout(function(){ wsSteuer.send('dispOFF'); }, SCREEN_OFF_timeout_time);
 				// Bildschirm aktivieren
 				wsSteuer.send('dispON');				
 			}
@@ -654,9 +677,13 @@
 							location.reload(); 
 						}
 
+						// DPS Statistik für Einsatz zurücksetzen
 						GPS_alt_max = GPS_last.alt;
 						GPS_alt_min = GPS_last.alt
 						GPS_dist_sum = 0;	
+						localStorage.setItem('gps.distSum', GPS_dist_sum);
+						localStorage.setItem('gps.altMax', GPS_alt_max);
+						localStorage.setItem('gps.altMin', GPS_alt_min);
 					}
 
 					if(topic == 'keepAlive') {

@@ -1,4 +1,4 @@
-<div class="page">      
+<div class="page" id="autoAlarm">      
        
 	<div class="header red-600 shadow">
         <button class="left icon icon ion-close-round" name="button" onclick="goBack()"></button>
@@ -124,7 +124,7 @@
 
         <!-- Navigation starten Knopf -->
         <div id="alarm_navstart" style="position: fixed; bottom: 10px; left: 10px;">
-            <button class="green full" onclick="alarm_navAktiv = true; this.classList.add('hidden')">Navigation starten</button>
+            <button class="red full" style="border: 4px solid rgba(255,255,255,.4);" onclick="alarm_navAktiv = !alarm_navAktiv; this.classList.add('hidden'); setTimeout(()=>{this.classList.remove('hidden');}, 2000);">Navigation Ein/Aus</button>
         </div>
 
 

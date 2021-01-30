@@ -34,7 +34,7 @@ pirpin = int(sys.argv[3])
 uartport = sys.argv[4]
 
 starttime = str(datetime.datetime.now())
-version = "2.1.1"
+version = "2.1.6"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = b'\xAA\x11\xFE\x01\x01\x11'

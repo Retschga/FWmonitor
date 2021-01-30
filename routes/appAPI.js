@@ -415,6 +415,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 				.catch(function(err) {
 					var str = "An error occured: " + err;
 					console.log("Route Error: " + str);
+					// TODO Sende Info bei Fehler an admin
 				});
 	//			console.log(direct);
 				routeCache[id] = JSON.stringify(direct);

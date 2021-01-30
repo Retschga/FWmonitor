@@ -1,5 +1,3 @@
-let alarmClockInterval;
-
 // ----------------  HILFSFUNKTIONEN ---------------- 
 
 /**
@@ -59,8 +57,40 @@ function fetchWithParam(_url, _param, _json = true) {
 function goBack() {
 	GPS_hasChanged = () => {};
 	window.history.back();
-	clearInterval(alarmClockInterval);
-	clearInterval(einstellungenUpdateInterval);
+}
+
+/**
+ * Erzeigt ein Intervall und bindet dieses an die Lebensdauer eines DOM-Elements
+ * @param {String}   elementId 	DOM-Element ID
+ * @param {Function} callback  	Callback
+ * @param {Integer}  time 		Intervall in ms
+ */
+var createIntervalOnElement = function(elementId, callback, time){
+    let interval;
+    interval = setInterval(function(){
+        if(document.getElementById(elementId) == null){
+            clearInterval(interval);
+        }else{
+            callback();
+        }
+    },time);
+};
+
+/**
+ * Gibt das subDokument eines HTML Elements zurück
+ * @param {HTMLelement} embedding_element 
+ */
+function getSubDocument(embedding_element) {
+	if (embedding_element.contentDocument) {
+	  return embedding_element.contentDocument;
+	}
+	else {
+	  var subdoc = null;
+	  try {
+		subdoc = embedding_element.getSVGDocument();
+	  } catch(e) {}
+	  return subdoc;
+	}
 }
 
 // Icons Karte
@@ -317,9 +347,14 @@ function createMap(dest, hydrantenCache, center = false) {
 
 	if(center) {
 		alarm_map_pos = [dest.lng, dest.lat];
-		alarm_mapCenter = () => {
-			view.setZoom(15);
+		alarm_mapCenter = () => {	
+			//view.setZoom(15);
 			view.setCenter(ol.proj.transform(alarm_map_pos, 'EPSG:4326', 'EPSG:3857'));
+			alarm_map_moved = false;
+			setTimeout(function(){ 
+				alarm_map_moved = false;
+			}, 50);
+			console.log("MAP CENTER 1", alarm_map_pos, alarm_map_moved);
 		}
 		setTimeout(function(){ 
 			alarm_mapCenter(); 
@@ -333,7 +368,6 @@ function createMap(dest, hydrantenCache, center = false) {
 	return {view, map};
 }
 // Forst Rettungspunkte
-let rettPkt = null;
 async function loadForstRettPkt(map) {
 	let response = await fetchWithParam('rettPunkte.geojson', {});
 
@@ -364,6 +398,7 @@ var alarm_setupMap = function(response) {
 	// Zielkoordinaten
 	let dest = {lat:response.lat, lng:response.lng};
 	
+	// Karte erstellen
 	let ret = createMap(dest, response.hydrantenCache, true);
 	let view = ret.view;
 	let map = ret.map;
@@ -385,8 +420,13 @@ var alarm_setupMap = function(response) {
 
 		if(response.gebaeudeCache.length < 5) {
 			alarm_mapCenter = () => {
-				view.setZoom(15);
+				//view.setZoom(15);
 				view.setCenter(ol.proj.transform([dest.lng, dest.lat], 'EPSG:4326', 'EPSG:3857'));
+				alarm_map_moved = false;
+				setTimeout(function(){ 
+					alarm_map_moved = false;
+				}, 50);
+				console.log("MAP CENTER 2", alarm_map_pos, alarm_map_moved);
 			}
 			alarm_mapCenter();
 		}	
@@ -412,6 +452,11 @@ var alarm_setupMap = function(response) {
 
 		alarm_mapCenter = () => {
 			view.fit(polyline, {padding: [80, 80, 80, 80]});
+			alarm_map_moved = false;
+			setTimeout(function(){ 
+				alarm_map_moved = false;
+			}, 50);
+			console.log("MAP CENTER 3", alarm_map_pos, alarm_map_moved);
 		}
 		alarm_mapCenter();
 	}
@@ -419,6 +464,7 @@ var alarm_setupMap = function(response) {
 	// Forst Rettungspunkte
 	loadForstRettPkt(map);
 
+	// Route laden
 	polylinePoints = null;
 	instructions = null;
 	if(response.routeCache) {
@@ -463,31 +509,38 @@ var alarm_setupMap = function(response) {
 		map.addLayer(layer);	
 
 		console.log("Instructions", instructions);
+
+		let alertOpen = -1;		
+
 		GPS_hasChanged = () => {	
 			console.log("GPS change", alarm_map_moved);	
-			
-			if(!alarm_navAktiv) return;
 
 			let pos = {lat:GPS_now.lat, lng:GPS_now.lng};		
 			alarm_map_pos = [pos.lng, pos.lat];
-			posMarker.setGeometry(pos ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
+			posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
 			
+
 			let near = nav_nearestTo(pos, 0, 5000);
+			helpline.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat([near.point.lng, near.point.lat])) : null);
+
 			let nextInstruction = instructions[near.instructionsIndex];
-			let tPos = {lat:polylinePoints[nextInstruction.way_points[1]][0], lng: polylinePoints[nextInstruction.way_points[1]][1]}
-			let tDist = nav_geo_distance(tPos, pos);
-			console.log("near", near);
-			console.log("Next Instruction", nextInstruction);
-			console.log("Abstand Next Instruction", nav_geo_distance(tPos, pos))
+			let tPos = {lat:0, lng:0}
+			let tDist = 9999999999999999;
+			if(nextInstruction) {
+				tPos = {lat:polylinePoints[nextInstruction.way_points[1]][0], lng: polylinePoints[nextInstruction.way_points[1]][1]}
+				tDist = nav_geo_distance(tPos, pos);
+				console.log("near", near);
+				console.log("Next Instruction", nextInstruction);
+				console.log("Abstand Next Instruction", nav_geo_distance(tPos, pos))			
+				nextMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(polylinePoints[nextInstruction.way_points[1]].reverse())) : null);
+			}
 
-			helpline.setGeometry(pos ? new ol.geom.Point(ol.proj.fromLonLat([near.point.lng, near.point.lat])) : null);
-			nextMarker.setGeometry(pos ? new ol.geom.Point(ol.proj.fromLonLat(polylinePoints[nextInstruction.way_points[1]].reverse())) : null);
-
-			let alertOpen = false;
+			if(alarm_navAktiv != true) return;
+			
 			// Nächste Instruktion anzeigen ab x Punkte Abstand		
 			if(tDist < 100) {
 				document.getElementById("autoAlarm_instr").innerHTML = nextInstruction.instruction;
-				if(alertOpen)
+				if(alertOpen != near.instructionsIndex)
 					closeAlert('my-custom-id-alert');
 				alertOpen = true;
 				alert({
@@ -504,17 +557,19 @@ var alarm_setupMap = function(response) {
 				});
 			} else if(alertOpen) {
 				closeAlert('my-custom-id-alert');
-				alertOpen = false;
+				alertOpen = near.instructionsIndex;
 			}			
 
 			if(alarm_map_moved) return;
 
 			alarm_mapCenter = () => {
-				view.setZoom(15);
+				//view.setZoom(15);
 				view.setCenter(ol.proj.transform(alarm_map_pos, 'EPSG:4326', 'EPSG:3857'));
+				alarm_map_moved = false;
 				setTimeout(function(){ 
 					alarm_map_moved = false;
-				}, 50);	
+				}, 50);
+				console.log("MAP CENTER 4", alarm_map_pos, alarm_map_moved);
 			}
 		
 			alarm_map_moved = false;
@@ -629,12 +684,12 @@ async function alarm_loadAlarm(id) {
 		}
 
 		// Uhranzeige
-		alarmClockInterval = setInterval(() => {
+		createIntervalOnElement('autoAlarm', () => {
 			var d = new Date();
 			var time = d.toLocaleTimeString();
 			document.getElementById('currenttime').innerHTML = time;
 			ticken();
-		}, 1000);  
+		}, 1000);
 
 		// Anzeige Alarmzeit
 		var startDate = new Date(response.date);			
@@ -672,7 +727,6 @@ async function alarm_loadAlarm(id) {
 				else {sekunden = SekundenZahl + "s ";}
 			zeit = stunden + minuten + sekunden;
 			
-			//elapsedtime.innerHTML = zeit;
 			document.getElementById('elapsedtime').innerHTML = zeit;
 		}
 		
@@ -695,7 +749,7 @@ var alteAlarme_offset = 0;
 async function alteAlarme_loadAlarm(count) {	
 	try {
 
-		// Late Alarme
+		// Alte Alarme laden
 		let response = await fetchWithParam('/app/api/alarmList', {offset:alteAlarme_offset, count: count});
 		alteAlarme_offset += count;
 
@@ -736,7 +790,8 @@ async function alteAlarme_loadAlarm(count) {
 
 			var currentDiv = document.getElementById("alteAlarme_loadMore"); 
             document.getElementById("alteAlarme_list").insertBefore(newDiv, currentDiv); 
-            
+			
+			// Klick Event hinzufügen
             newDiv.onclick = () => {openPage('/app/filesHTTPS/autoAlarm', response[i][5], alarm_loadAlarm);};
 		}
 		
@@ -791,13 +846,15 @@ async function karte_load() {
 
 	// Callback bei Positionsänderung
 	GPS_hasChanged = () => {		
-		let pos = {lat:GPS_now.lat, lng:GPS_now.lng};		
+		let pos = {lat:GPS_now.lat, lng:GPS_now.lng};				
 		alarm_map_pos = [pos.lng, pos.lat];
+		console.log('Map neupositionieren', alarm_map_pos, alarm_map_moved);				
+		posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
 		if(alarm_map_moved) return;
-		posMarker.setGeometry(pos ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
 		alarm_mapCenter();
 	};
 
+	// Warnung
 	if (GPS_now.lng == 0 && fwHausPos != "") {
 		alert("GPS Position nicht gefunden! > verwende FW Haus Koordinaten!");
 	}
@@ -808,20 +865,21 @@ async function karte_load() {
 // ----------------  GPS ---------------- 
 
 /**
- * Gibt das subDokument eines HTML Elements zurück
- * @param {HTMLelement} embedding_element 
+ * Startfunktion Seite GPS
  */
-function getSubDocument(embedding_element) {
-	if (embedding_element.contentDocument) {
-	  return embedding_element.contentDocument;
+function gps_load() {
+	if (GPS_now.lng == 0) {
+		alert("GPS Position nicht gefunden!");
+		return;
 	}
-	else {
-	  var subdoc = null;
-	  try {
-		subdoc = embedding_element.getSVGDocument();
-	  } catch(e) {}
-	  return subdoc;
-	}
+
+	// Anzeigen updaten
+	gps_update();
+
+	// Bei GPS-change Anzeigen updaten
+	GPS_hasChanged = () => {		
+		gps_update();
+	};
 }
 
 /**
@@ -845,15 +903,19 @@ function gps_update() {
 
 	// Werte
 	document.getElementById("gps_latlng").innerHTML = GPS_now.lat + "<br>" + GPS_now.lng;
-	let prec = GPS_now.precision.substring(1, GPS_now.precision.length -2).split(',');
-	document.getElementById("gps_latlng_precision").innerHTML = "Pos: ±" + Math.round(prec[0]) + " m  Höhe: ±" + Math.round(prec[1]) + " m";
-	document.getElementById("gps_speed").innerHTML = Math.round(parseInt(GPS_now.speed) / 3600) + " km/h";
+	let precision = GPS_now.precision.substring(1, GPS_now.precision.length -2).split(',');
+	document.getElementById("gps_latlng_precision").innerHTML = "Pos: ±" + Math.round(precision[0]) + " m  Höhe: ±" + Math.round(precision[1]) + " m";
+	document.getElementById("gps_speed").innerHTML = Math.round(parseInt(GPS_now.speed) * 3.6) + " km/h";
 	document.getElementById("gps_alt").innerHTML = Math.round(GPS_now.alt) + " m";
 	document.getElementById("gps_alt_min").innerHTML = "(" + Math.round(GPS_alt_min) + " m, ";
 	document.getElementById("gps_alt_max").innerHTML = Math.round(GPS_alt_max) + " m)";
 	document.getElementById("gps_climb").innerHTML = Math.round(GPS_now.climb) + " m/s";
 	document.getElementById("gps_sats").innerHTML = GPS_now.sats;
-	document.getElementById("gps_distance").innerHTML = Math.round(GPS_dist_sum) + " km";
+	if (parseInt(GPS_dist_sum) < 5000) {
+		document.getElementById("gps_distance").innerHTML = Math.round(GPS_dist_sum) + " m";
+	} else {
+		document.getElementById("gps_distance").innerHTML = Math.round(GPS_dist_sum/1000) + " km";
+	}
 
 	// Kompass
 	setTimeout(function(){ 
@@ -869,38 +931,21 @@ function gps_update() {
 	}, 500);
 }
 
-/**
- * Startfunktion Seite GPS
- */
-async function gps_load() {
-	if (GPS_now.lng == 0) {
-		alert("GPS Position nicht gefunden!");
-		return;
-	}
-
-	gps_update();
-
-	GPS_hasChanged = () => {
-		
-		gps_update();
-
-	};
-
-}
-
-
 
 // ---------------- Einstellungen ------------
-var einstellungenUpdateInterval = null;
+var einstellungen_networks = [];
+/**
+ * Startfunktion Seite Einstellungen
+ */
 function einstellungen_load() {
+
+	// Eventlistener für Virtual-Keyboard zu den inputs hinzufügen
 	Array.from(document.querySelectorAll('.input')).forEach(function(element) {
 		element.addEventListener("focusin", event => {
 			keyboard.setInput(element.value);
-			keyboard.focusedElement = element;
-	
+			keyboard.focusedElement = element;	
 			document.querySelector(".simple-keyboard").classList.add('simple-keyboard-show');	
-			document.querySelector(".page").classList.add('pageWithKeyboard');			
-			
+			document.querySelector(".page").classList.add('pageWithKeyboard');
 			element.style.background = 'pink';
 		});
 		element.addEventListener("focusout", event => {		
@@ -908,71 +953,107 @@ function einstellungen_load() {
 		});		
 	});
 
-	einstellungenUpdateInterval = setInterval(function(){ einstellungen_loadInfo(); }, 2000);	
+	// Updateintervall erzeugen
+	createIntervalOnElement('page_autoEinstellungen', () => {
+		einstellungen_loadInfo();
+	}, 2000 )	
 
-	let networks = [];
-	let tempLines = status_wpaSupp.split('\n');
-	for(let i = 0;i < tempLines.length;i++){
-		let line = tempLines[i];
+	// Hostname
+	document.getElementById("sett_hostname").value = status_hostname;
+
+	// Auswertung der eingestellten Netzwerke aus der wpa_supplicant.conf
+	einstellungen_networks = [];
+	let lineArray = status_wpaSupp.split('\n');
+	for(let i = 0;i < lineArray.length;i++){
+		let line = lineArray[i];
 		if(line.indexOf('ssid') != -1) {
 			let tmp = line.split('=').pop();
 			console.log(tmp);
-			networks.push({'ssid': String(tmp).replace(/\"/g, '')});
+			einstellungen_networks.push({'ssid': String(tmp).replace(/\"/g, '')});
 		}
 		if(line.indexOf('psk') != -1) {
 			let tmp = line.split('=').pop();
 			console.log(tmp);
-			networks[networks.length -1]['psk'] =  String(tmp).replace(/\"/g, '');
+			einstellungen_networks[einstellungen_networks.length -1]['psk'] =  String(tmp).replace(/\"/g, '');
 		}
 		if(line.indexOf('priority') != -1) {
 			let tmp = line.split('=').pop();
 			console.log(tmp);
-			networks[networks.length -1]['priority'] = parseInt( String(tmp).replace(/\"/g, '') );
+			einstellungen_networks[einstellungen_networks.length -1]['priority'] = parseInt( String(tmp).replace(/\"/g, '') );
 		}
 	}
-	if(networks.length > 2) {
-		alert("Fehler: Mehr als 2 konfigurierte Netzwerke gefunden");
+
+	// Gefundene Netzwerke anzeigen
+	if(einstellungen_networks.length != 2) {
+		alert("Fehler: Mehr als 2 oder weniger als 2 konfigurierte Netzwerke gefunden");
 		return;
 	}
-	if(networks.length > 1) {
-		if(networks[0]['priority'] < networks[1]['priority']) {
-			let tmp = networks[0];
-			networks[0] = networks[1];
-			networks[1] = tmp;
+	if(einstellungen_networks.length == 2) {
+		// Netzwerke anhand Priorität sortieren
+		if(einstellungen_networks[0]['priority'] < einstellungen_networks[1]['priority']) {
+			let tmp = einstellungen_networks[0];
+			einstellungen_networks[0] = einstellungen_networks[1];
+			einstellungen_networks[1] = tmp;
 		}
-		document.getElementById("sett_nw1_ssid").value = String(networks[0]['ssid']);
-		document.getElementById("sett_nw1_psk").value = String(networks[0]['psk']);
-		document.getElementById("sett_nw2_ssid").value = String(networks[1]['ssid']);
-		document.getElementById("sett_nw2_psk").value = String(networks[1]['psk']);
-
-		status_connWlan = String(status_connWlan).replace(/\"/g, '');
-
-		console.log("SSIDs", networks[0]['ssid'], networks[1]['ssid'] );
-		console.log("Connected to " + String(status_connWlan).replace(/\"/g, ''));
-		console.log(networks[0]['ssid'], status_connWlan, networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim())
-		console.log(networks[1]['ssid'], status_connWlan, networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim())
-
-		if( networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
-			document.getElementById("sett_nw1").classList.add('highlight');
-			document.getElementById("sett_nw2").classList.remove('highlight');
-		} else if( networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
-			document.getElementById("sett_nw1").classList.remove('highlight');
-			document.getElementById("sett_nw2").classList.add('highlight');
-		}
-	} else if (networks.length > 0) {
-		document.getElementById("sett_nw2_ssid").value = networks[0]['ssid'];
-		document.getElementById("sett_nw2_psk").value = networks[0]['psk'];
-
-		if( networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
-			document.getElementById("sett_nw2").classList.add('highlight');
-		} else  {
-			document.getElementById("sett_nw2").classList.remove('highlight');
-		}
-	}
-		
+		// Input-Felder ausfüllen
+		document.getElementById("sett_nw1_ssid").value = String(einstellungen_networks[0]['ssid']);
+		document.getElementById("sett_nw1_psk").value = String(einstellungen_networks[0]['psk']);
+		document.getElementById("sett_nw2_ssid").value = String(einstellungen_networks[1]['ssid']);
+		document.getElementById("sett_nw2_psk").value = String(einstellungen_networks[1]['psk']);		
+	} 		
 }
+
+/**
+ * Updatet die Anzeige
+ */
 function einstellungen_loadInfo() {
+	// CPU Status
 	document.getElementById("sett_cpuTemp").value = status_cpuTemp + '°C';
 	document.getElementById("sett_mem").value = status_memFree + "MB / " + status_memTotal + "MB";
 	document.getElementById("sett_cpuUsage").value = (100 - parseInt(status_cpuIdle)) + '%';
+
+	// Verbundenes Netzwerk
+	if(einstellungen_networks.length == 2) {
+		status_connWlan = String(status_connWlan).replace(/\"/g, '');
+		if( einstellungen_networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+			document.getElementById("sett_nw1").classList.add('highlight');
+			document.getElementById("sett_nw2").classList.remove('highlight');
+		} else if( einstellungen_networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+			document.getElementById("sett_nw1").classList.remove('highlight');
+			document.getElementById("sett_nw2").classList.add('highlight');
+		} else {
+			document.getElementById("sett_nw1").classList.remove('highlight');
+			document.getElementById("sett_nw2").classList.remove('highlight');
+		}
+	}
+}
+
+
+async function einstellungen_save() {
+	try {
+		loading('Speichern...');
+		let data = `setWpaSupp:network={\nssid=\"${document.getElementById("sett_nw1_ssid").value}\"\npsk=\"${document.getElementById("sett_nw1_psk").value}\"\npriority=20\n}\nnetwork={\nssid=\"${document.getElementById("sett_nw2_ssid").value}\"\npsk=\"${document.getElementById("sett_nw2_psk").value}\"\npriority=10\n}`;
+		console.log("sende Daten...", data);
+		wsSteuer.send(data);
+	} catch (error) {
+		closeLoading();
+		alert('Daten konnten nicht gespeichert werden!');
+	}
+}
+
+
+function navigation_load() {
+	// Eventlistener für Virtual-Keyboard zu den inputs hinzufügen
+	Array.from(document.querySelectorAll('.input')).forEach(function(element) {
+		element.addEventListener("focusin", event => {
+			keyboard.setInput(element.value);
+			keyboard.focusedElement = element;	
+			document.querySelector(".simple-keyboard").classList.add('simple-keyboard-show');	
+			document.querySelector(".page").classList.add('pageWithKeyboard');
+			element.style.background = 'pink';
+		});
+		element.addEventListener("focusout", event => {		
+			element.style.background = '';
+		});		
+	});
 }

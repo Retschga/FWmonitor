@@ -36,6 +36,8 @@ module.exports = function () {
 	async function overpassObjects(ORT, OBJEKT) {
 		var ret = {};
 
+		if (OBJEKT == "") return ret;
+
 		// Objekt Substring
 		OBJEKT = OBJEKT.substring(OBJEKT.indexOf(' '));
 		OBJEKT = OBJEKT.substring(OBJEKT.indexOf(' '));
@@ -184,7 +186,7 @@ module.exports = function () {
 			let r = await overpassObjects(ORT, OBJEKT);
 			
 			if(r.isAddress) {				
-				debug('Benutze OSm Objekt Koordinaten');
+				debug('Benutze OSM Objekt Koordinaten');
 				ret = r;
 			}
 		}

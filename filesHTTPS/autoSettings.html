@@ -1,4 +1,4 @@
-<div class="page" style="height: calc(100vh - 52px) !important;">      
+<div class="page" id="page_autoEinstellungen" style="height: calc(100vh - 52px) !important;">      
        
 	<div class="header red-600">
 		<button class="left icon icon ion-android-arrow-back" name="button" onclick="goBack()"></button>
@@ -80,7 +80,7 @@
                     <div class="space"></div>
 
                     <div class="item">
-                        <button class="blue radius full">Speichern</button>
+                        <button class="blue radius full" onclick="einstellungen_save()">Speichern</button>
                     </div>
 
                 </div>
@@ -122,6 +122,16 @@
                                 <div class="item label-fixed">
                                     <label style="display: none;">Belegt/Gesamt</label>
                                     <input id="sett_mem" type="text" readonly value="###kB/###kB">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="item">
+                            <h2>Hostname</h2>
+                            <div class="right">
+                                <div class="item label-fixed">
+                                    <label style="display: none;">Hostname</label>
+                                    <input id="sett_hostname" type="text" readonly value="">
                                 </div>
                             </div>
                         </div>
