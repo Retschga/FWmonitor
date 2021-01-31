@@ -1059,7 +1059,10 @@ async function benutzer_loadBenutzer() {
 			
 			newDiv.className = 
 					'item ' + 
-					(response[i].status == '1' ? 'mark border-green ' : 'mark border-red ') +
+					(response[i].status == '1' ? 'mark border-green ' : ' ') +
+					(response[i].status == '2' ? 'mark border-red ' : ' ') +
+					(response[i].status == '-1' ? 'red-200 ' : ' ') +
+					(response[i].status == '-2' ? 'red-200 ' : ' ') +
 					(response[i].allowed == '1' ? ' ' : 'blue-600 ');
 			newDiv.innerHTML += 
 					'<div class="row">' +
