@@ -69,6 +69,8 @@ function notify(titel, text, tag, silent, timestamp, zeigeBis, isAlarm, actions,
 							switch (groups[gr]) {
 								case "drucker":
 									if (subscriptions[i].drucker == '1') { freigabe = true; } break;
+								case "softwareInfo":
+									if (subscriptions[i].softwareInfo == '1') { freigabe = true; } break;
 								case "admin":
 									if (subscriptions[i].admin == '1') { freigabe = true; } break;
 								case "stAGT":

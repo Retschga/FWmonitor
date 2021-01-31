@@ -1153,6 +1153,7 @@ function benutzerBearbeiten_loadBenutzer(data) {
 	document.getElementById("benutzerBearbeiten_kalender").checked = response.kalender=='1';
 	document.getElementById("benutzerBearbeiten_admin").disabled = response.telegramid == TELEGRAMID;
 	document.getElementById("benutzerBearbeiten_drucker").checked =  response.drucker=='1';
+	document.getElementById("benutzerBearbeiten_software").checked =  response.softwareInfo=='1';
 	document.getElementById("benutzerBearbeiten_erinnerung").checked = response.sendRemembers=='1';
 	document.getElementById("benutzerBearbeiten_verfuegbar").checked = response.status=='1';
 	document.getElementById("benutzerBearbeiten_statusHidden").checked = response.statusHidden=='1';

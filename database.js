@@ -83,7 +83,7 @@ module.exports = function () {
 
   // ---- User Notifications ----
   const getUserNotificationsSubscription = async function () {
-    return await dbQuery('SELECT "appNotifications", "appNotificationsSubscription" AS endpoint, telegramid, "drucker", "group", "stAGT", "stMA", "stGRF", "stZUGF", "admin"  FROM users');         
+    return await dbQuery('SELECT "appNotifications", "appNotificationsSubscription" AS endpoint, telegramid, "drucker", "softwareInfo", "group", "stAGT", "stMA", "stGRF", "stZUGF", "admin"  FROM users');         
   }
   const setUserNotificationsSubscription = async function (telid, val) {
     return await dbQuery('UPDATE "main"."users" SET "appNotificationsSubscription"=? WHERE "telegramid"=?', val, parseInt(telid));         
@@ -220,6 +220,26 @@ module.exports = function () {
 
 
   // ----------------  Datenbank updaten ---------------- 
+
+  function addColumn(db, table, name, type, defaul) {
+    db.all(`PRAGMA table_info("${table}")`).then((rows) => {
+      var exists = false;
+      rows.forEach(function (element) {
+        if (element.name == name)
+          exists = true;
+      });
+      if (!exists) {
+        db.run(`ALTER TABLE ${table} ADD ${name} ${type} ${defaul}`).then(rows => {
+          debug(`Created Column ${name} in users`);
+        }).catch(err => {
+          console.error("[APP] Database error: " + err);
+        })
+      }
+    }).catch(err => {
+      console.error("[APP] Database error: " + err);
+    });
+  }
+
   const updateDatabase = async function () {
     Database.open('save.sqlite3')
       .then(db => {
@@ -234,149 +254,28 @@ module.exports = function () {
         });
 
         // Spalte Status bis
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "statusUntil")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD statusUntil TEXT;').then(rows => {
-              debug("Created Column statusUntil in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'statusUntil', 'INTEGER', '');
 
         // Spalte isAddress
-        db.all('PRAGMA table_info("alarms")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "isAddress")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE alarms ADD isAddress INTEGER;').then(rows => {
-              debug("Created Column isAddress in alarms");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'alarms', 'isAddress', 'TEXT', '');
 
         // Spalte drucker
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "drucker")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD drucker INTEGER DEFAULT 0;').then(rows => {
-              debug("Created Column drucker in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
-
+        addColumn(db, 'users', 'drucker', 'INTEGER', 'DEFAULT 0');
+       
         // Spalte kalender
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          let exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "kalender")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD kalender INTEGER DEFAULT 0;').then(rows => {
-              debug("Created Column kalender in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
-
+        addColumn(db, 'users', 'kalender', 'INTEGER', 'DEFAULT 0');
 
         // Spalte appPasswort
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "appPasswort")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD appPasswort TEXT;').then(rows => {
-              debug("Created Column appPasswort in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'appPasswort', 'TEXT', '');
 
         // Spalte appNotifications
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "appNotifications")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD appNotifications INTEGER DEFAULT 0;').then(rows => {
-              debug("Created Column appNotifications in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'appNotifications', 'INTEGER', 'DEFAULT 0');
 
         // Spalte appNotificationsSubscription
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "appNotificationsSubscription")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD appNotificationsSubscription TEXT;').then(rows => {
-              debug("Created Column appNotificationsSubscription in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'appNotificationsSubscription', 'TEXT', '');
 
         // Spalte appNotifications
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "kalenderGroups")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD kalenderGroups INTEGER DEFAULT 1;').then(rows => {
-              debug("Created Column kalenderGroups in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'kalenderGroups', 'INTEGER', 'DEFAULT 1');
 
         // Tabelle kalenderGroups
         db.all('CREATE TABLE IF NOT EXISTS "kalenderGroups" ("id" INTEGER UNIQUE, "name" TEXT, "pattern" TEXT, PRIMARY KEY(id AUTOINCREMENT))').then(rows => {
@@ -401,7 +300,7 @@ module.exports = function () {
           ;
         });
 
-        // Tabelle kalende
+        // Tabelle kalender
         db.all('CREATE TABLE IF NOT EXISTS "kalender" ("id"	INTEGER NOT NULL UNIQUE,"summary"	TEXT,"start"	TEXT,"remind"	TEXT,"group"	TEXT,PRIMARY KEY("id" AUTOINCREMENT))')
         .then(rows => {
           debug("Created Datatable kalender");
@@ -418,42 +317,13 @@ module.exports = function () {
         });
 
         // Spalte statusPlans
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "statusPlans")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD statusPlans TEXT;').then(rows => {
-              debug("Created Column statusPlans in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        addColumn(db, 'users', 'statusPlans', 'TEXT', '');
 
-        // Spalte Status bis
-        db.all('PRAGMA table_info("users")').then((rows) => {
-          var exists = false;
-          rows.forEach(function (element) {
-            if (element.name == "statusHidden")
-              exists = true;
-          });
-          if (!exists) {
-            db.run('ALTER TABLE users ADD statusHidden INTEGER DEFAULT 0;').then(rows => {
-              debug("Created Column statusHidden in users");
-            }).catch(err => {
-              console.error("[APP] Database error: " + err);
-            })
-          }
-        }).catch(err => {
-          console.error("[APP] Database error: " + err);
-        });
+        // Spalte statusHidden
+        addColumn(db, 'users', 'statusHidden', 'INTEGER', 'DEFAULT 0');
 
-
+        // Spalte softwareInfo
+        addColumn(db, 'users', 'softwareInfo', 'INTEGER', 'DEFAULT 0');
 
 
       })

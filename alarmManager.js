@@ -8,20 +8,11 @@ module.exports = function () {
 	const moveFile = require('move-file');
 	const debug = require('debug')('alarmManager');
 
-	// ----------------  Datenbank ---------------- 
 	const db = require('./database')();
-
-	// ----------------  GEOCODING ----------------
 	var geocodeManager = require('./geocodeManager')();
-
-	// ----------------  ALARM EVENT ----------------
 	const EventEmitter = require('events');
 	var eventEmitter = new EventEmitter();
-
-	// ----------------  FAX FELDER ----------------
 	var fields = require('./alarmFax');
-
-	// ----------------  DRUCKEN ----------------
 	var print = require('./printer')();
 
 	// ---------------- Timeout Funktion ----------------

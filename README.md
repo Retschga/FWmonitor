@@ -1,4 +1,7 @@
-﻿# FWMonitor
+﻿https://www.ghostscript.com/download/gsdnld.html
+
+
+# FWMonitor
 
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem Bildschirm darzustellen. 
 Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.

@@ -708,6 +708,11 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
+			case 'software':
+				db.setUserColumn(id, "softwareInfo", value)
+					.then(() => { res.send('OK'); return; })
+					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+				break;
 			case 'gruppe':
 				db.changeUserGroup(id, value)
 					.then(() => { res.send('OK'); return; })
