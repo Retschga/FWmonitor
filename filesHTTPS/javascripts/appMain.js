@@ -53,6 +53,11 @@ function fetchWithParam(_url, _param, _json = true) {
 	});
 }
 
+function goBack() {
+	window.history.back();
+	closeLoading();	closeLoading();	closeLoading();	closeLoading();	
+}
+
 var parseKalenderSummary = function(summary) {
 	// Terminname in Text und Icon aufreilen
 	let text = summary.substring(2);
@@ -68,12 +73,12 @@ var parseKalenderSummary = function(summary) {
 }
 
 async function loadKalendergruppen() {
-	let response = await fetchWithParam('app/api/kalendergruppen', {});
+	let response = await fetchWithParam('app/api/kalender/gruppen', {});
 	return response; 
 }
 
 async function loadAlarmgruppen() {
-	let response = await fetchWithParam('app/api/alarmgruppen', {});
+	let response = await fetchWithParam('app/api/alarm/gruppen', {});
 	return response; 
 }
 
@@ -167,13 +172,10 @@ async function createKalenderElement(_response, _id, edit = false, editID) {
 	document.getElementById(_id).appendChild(newDiv); 
 }
 
-function goBack() {
-	window.history.back();
-	closeLoading();	closeLoading();	closeLoading();	closeLoading();	
-}
-
 // Icons Karte
 var styleCache = {
+	pipe: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_pipe.png"})}),
+	wall: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_wall.png"})}),
 	pillar: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_ueberflur.png"})}),
 	underground: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_unterflur.png"})}),
 	pond: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_openwater.png"})}),
@@ -305,7 +307,7 @@ async function alteAlarme_loadAlarm(count) {
 			count = count * -1;
 		}
 
-		let response = await fetchWithParam('app/api/alarmList', {offset:alteAlarme_offset, count: count});
+		let response = await fetchWithParam('app/api/alarm/list', {offset:alteAlarme_offset, count: count});
 		alteAlarme_offset += count;
 
 		for(let i = 0; i < response.length; i++) {
@@ -858,7 +860,7 @@ async function verfuegbarkeit_setStatus(status, days) {
 
 		document.getElementById("verfuegbarkeit_selectDays").classList.add('hidden');
 
-		let response = await fetchWithParam('app/api/setVerfuegbarkeit', {status: status, days: days}, false);
+		let response = await fetchWithParam('app/api/verfuegbarkeit/set', {status: status, days: days}, false);
 		
 		verfuegbarkeit_load();
 		index_loadStatus();
@@ -951,7 +953,7 @@ async function einstellungen_loadStatus() {
 async function einstellungen_setErinnerungen() {
 	try {
 
-		let response = await fetchWithParam('app/api/setErinnerungen', {value: document.getElementById("einstellunge_erinnerungenCheck").checked}, false);
+		let response = await fetchWithParam('app/api/benutzer/erinnerungen/set', {value: document.getElementById("einstellunge_erinnerungenCheck").checked}, false);
 
 		einstellungen_loadStatus();
 
@@ -976,7 +978,7 @@ async function einstellungen_setNotifications() {
 		if(document.getElementById("einstellungen_notificationsCheck").checked == true)
 			params = {value: document.getElementById("einstellungen_notificationsSlider").value}
 
-		let response = await fetchWithParam('app/api/setNotifications', params, false);
+		let response = await fetchWithParam('app/api/benutzer/notifications/set', params, false);
 	
 		einstellungen_loadStatus();
 
@@ -989,7 +991,7 @@ async function einstellungen_setNotifications() {
 async function einstellungen_setStatusHidden() {
 	try {
 
-		let response = await fetchWithParam('app/api/setStatusHidden', {value: document.getElementById("einstellungen_statusHidden").checked}, false);
+		let response = await fetchWithParam('app/api/benutzer/statushidden/set', {value: document.getElementById("einstellungen_statusHidden").checked}, false);
 
 		einstellungen_loadStatus();
 
@@ -1185,7 +1187,7 @@ function benutzerBearbeiten_loadBenutzer(data) {
 async function benutzerBearbeiten__setEinstellung(setting, value, callback) {
 	try {
 
-		let response = await fetchWithParam('app/api/setEinstellung', {id: benutzerBearbeiten_ID, setting: setting, value: value}, false);
+		let response = await fetchWithParam('app/api/benutzer/einstellung/set', {id: benutzerBearbeiten_ID, setting: setting, value: value}, false);
 
 		if(callback != undefined)
 			callback();
@@ -1296,7 +1298,7 @@ async function kalendergruppen_saveGruppen() {
 
 			var getUrl = window.location;
 			var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-			var url = new URL('app/api/setKalendergruppen', baseUrl);
+			var url = new URL('app/api/kalender/gruppen/set', baseUrl);
 
 			let response = await fetch(url, {
 				method: 'POST',
@@ -1550,7 +1552,7 @@ async function alarmgruppen_saveGruppen() {
 		
 			var getUrl = window.location;
 			var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-			var url = new URL('app/api/setAlarmgruppen', baseUrl);
+			var url = new URL('app/api/alarm/gruppen/set', baseUrl);
 
 			let response = await fetch(url, {
 				method: 'POST',
@@ -1581,7 +1583,7 @@ function alarmierung_load() {
 async function alarmierung_loadIgnoreNextAlarm() {
 	try {
 
-		let response = await fetchWithParam('app/api/getIgnoreNextAlarm', {});
+		let response = await fetchWithParam('app/api/alarm/ignorenext', {});
 
 		console.log(response);
 		if(response != false && response != 'false') {
@@ -1602,7 +1604,7 @@ async function alarmierung_loadIgnoreNextAlarm() {
 async function alarmierung_setIgnoreNextAlarm() {
 	try {
 
-		let response = await fetchWithParam('app/api/setIgnoreNextAlarm',  {value: (!alarmierung_ignoreNextAlarm)}, false);
+		let response = await fetchWithParam('app/api/alarm/ignorenext/set',  {value: (!alarmierung_ignoreNextAlarm)}, false);
 
 		alarmierung_loadIgnoreNextAlarm();
 	
@@ -1618,7 +1620,7 @@ async function alarmierung_setIgnoreNextAlarm() {
 async function praesentation_load() {
 	try {
 
-		let response = await fetchWithParam('app/api/getPraesentationen', {});
+		let response = await fetchWithParam('app/api/praesentationen', {});
 		response = JSON.parse(response);
 
 		document.getElementById("praesentation_list").innerHTML = "";
@@ -1690,7 +1692,7 @@ async function praesentation_action(action, value) {
 		}
 
 		// Daten laden
-		let response = await fetchWithParam('/app/api/setPraesentationenAction', param);
+		let response = await fetchWithParam('/app/api/praesentationen/action/set', param);
 
 	} catch (error) {
 		console.log(error);	
@@ -1908,7 +1910,7 @@ async function kalenderBearbeiten_save(newItem, callb) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setKalenderevent', baseUrl);
+		var url = new URL('app/api/kalender/event/set', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -1940,7 +1942,7 @@ function kalenderBearbeiten_loeschen(id){
 		  onclick: async function () {			
 			try {
 				closeAlert();
-				await fetchWithParam('app/api/delKalender', {id: id}, false);
+				await fetchWithParam('app/api/kalender/delete', {id: id}, false);
 				kalender_loadKalender();
 			} catch (error) {
 				console.log(error);	
@@ -2007,7 +2009,7 @@ async function hydrantenkarte_load() {
 async function clients_load() {
 	try {
 
-		let response = await fetchWithParam('app/api/getConnectedClients', {});
+		let response = await fetchWithParam('app/api/admin/clients/connected', {});
 		
 		document.getElementById("clients_list").innerHTML = "";
 
@@ -2127,9 +2129,9 @@ async function clients_action(id, action, value) {
 
 	
 		// Daten laden
-		let response = await fetchWithParam('/app/api/setClientAction', param);
+		let response = await fetchWithParam('/app/api/admin/clients/action/set', param);
 
-		clients_load();
+		setTimeout(function(){ clients_load(); }, 1000);		
 
 	} catch (error) {
 		console.log(error);	
@@ -2146,7 +2148,7 @@ async function vervuegbarkeitplaene_load() {
 
 	try {
 
-		let response = await fetchWithParam('app/api/getVervPlans', {});
+		let response = await fetchWithParam('app/api/verfuegbarkeit/plans', {});
 		if(!response.statusPlans) return;
 		response.statusPlans = JSON.parse(response.statusPlans);
 
@@ -2197,7 +2199,7 @@ async function vervuegbarkeitplaene_changeActive(id, value) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setVervPlans', baseUrl);
+		var url = new URL('app/api/verfuegbarkeit/plans/set', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -2221,7 +2223,7 @@ async function vervuegbarkeitplaeneBearbeiten_load(num) {
 
 		vervuegbarkeitplaeneBearbeiten_num = num;
 
-		let response = await fetchWithParam('app/api/getVervPlans', {});
+		let response = await fetchWithParam('app/api/verfuegbarkeit/plans', {});
 		if(!response.statusPlans) return;
 		response.statusPlans = JSON.parse(response.statusPlans);
 		
@@ -2262,7 +2264,7 @@ async function vervuegbarkeitplaeneBearbeiten_save(action) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setVervPlans', baseUrl);
+		var url = new URL('app/api/verfuegbarkeit/plans/set', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -2286,7 +2288,7 @@ async function vervuegbarkeitplaeneBearbeiten_delete(action) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setVervPlans', baseUrl);
+		var url = new URL('app/api/verfuegbarkeit/plans/set', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -2310,7 +2312,7 @@ async function vervuegbarkeitplaeneBearbeiten_delete(action) {
 async function diashow_load() {
 	try { 
 
-		let response = await fetchWithParam('app/api/getDiashow', {});
+		let response = await fetchWithParam('app/api/diashow', {});
 
 		console.log(response);
 
@@ -2442,7 +2444,7 @@ async function diashow_freigabeTrue(img) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setDiashowFreigabeTrue', baseUrl);
+		var url = new URL('app/api/diashow/freigabe/set/true', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -2463,7 +2465,7 @@ async function diashow_freigabeFalse(img) {
 
 		var getUrl = window.location;
 		var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-		var url = new URL('app/api/setDiashowFreigabeFalse', baseUrl);
+		var url = new URL('app/api/diashow/freigabe/set/false', baseUrl);
 
 		let response = await fetch(url, {
 			method: 'POST',
@@ -2494,7 +2496,7 @@ async function diashow_delete(img) {
 
 					var getUrl = window.location;
 					var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
-					var url = new URL('app/api/setDiashowDelete', baseUrl);
+					var url = new URL('app/api/diashow/freigabe/set/delete', baseUrl);
 			
 					let response = await fetch(url, {
 						method: 'POST',

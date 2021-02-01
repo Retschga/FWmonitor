@@ -52,6 +52,8 @@
 
 		</div>
 
+		<button id="backbutton" class="blue circle icon ion-close-round shadow hidden" onclick="location.href='/'" style="top: 1em; left: 1em; position: absolute;"></button>
+
 
 		<% include partials/foot %>	
 		<script>
@@ -157,6 +159,10 @@
 					}
 				}
 			})
+
+			if (location.protocol == "http:") {
+				document.getElementById("backbutton").classList.remove('hidden');
+			}
 			
 		
 		</script>

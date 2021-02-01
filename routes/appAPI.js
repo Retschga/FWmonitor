@@ -46,6 +46,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		"[out:json][timeout:25];(" +
 		"node[%22emergency%22=%22fire_hydrant%22](around:3000," + lat + "," + lng + ");" +
 		"node[%22emergency%22=%22water_tank%22](around:3000," + lat + "," + lng + ");" +
+		"node[%22emergency%22=%22suction_point%22](around:3000," + lat + "," + lng + ");" +
 		");out;%3E;out%20skel%20qt;";
 
 		// Make a request for a user with a given ID
@@ -65,10 +66,16 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			var dataElement = dataIn[i];
 			var name = "";
 
+			name = dataElement["tags"]["fire_hydrant:type"];
+
 			if (dataElement["tags"]["emergency"] == "water_tank")
-				name = "water_tank"
-			else
-				name = dataElement["tags"]["fire_hydrant:type"];
+				name = "water_tank"				
+
+			if(dataElement["tags"]["water_source"] == "pond")
+				name = "pond";
+
+			if(dataElement["tags"]["emergency"] == "suction_point")
+				name = "pond";
 
 
 			features.push({
@@ -144,7 +151,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// get Kalendergruppen
-	router.get('/api/kalendergruppen', async function (req, res) {
+	router.get('/api/kalender/gruppen', async function (req, res) {
 		let rows = await db.getKalendergruppen().catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
@@ -155,7 +162,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// post Kalendergruppen ADMIN
-	router.post('/api/setKalendergruppen', async function (req, res) {
+	router.post('/api/kalender/gruppen/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -172,7 +179,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// post Kalender Event KALENDER
-	router.post('/api/setKalenderevent', async function (req, res) {
+	router.post('/api/kalender/event/set', async function (req, res) {
 		if (!(/*req.session.isAdmin ||*/ req.session.kalender)) {	
 			res.status(500).send({ error: 'Kein Admin / Kalender' });
 			return;
@@ -194,7 +201,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// delete Kalender KALENDER
-	router.get('/api/delKalender', async function (req, res) {
+	router.get('/api/kalender/delete', async function (req, res) {
 		if (!(/*req.session.isAdmin ||*/ req.session.kalender)) {	
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -213,7 +220,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	// ---- Alarm ----
 	// post Alarmgruppen ADMIN
-	router.post('/api/setAlarmgruppen', async function (req, res) {
+	router.post('/api/alarm/gruppen/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -253,7 +260,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	}
 
 	// get Alarmliste
-	router.get('/api/alarmList', async function (req, res) {
+	router.get('/api/alarm/list', async function (req, res) {
 		let offset = req.query.offset;
 		let count = req.query.count;
 		if (offset == undefined || count == undefined) {
@@ -277,7 +284,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// get Alarmgruppen ADMIN
-	router.get('/api/alarmgruppen', async function (req, res) {
+	router.get('/api/alarm/gruppen', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -493,7 +500,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set ignoreNextAlarm ADMIN
-	router.get('/api/setIgnoreNextAlarm', async function (req, res) {
+	router.get('/api/alarm/ignorenext/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -511,7 +518,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// get ignoreNextAlarm ADMIN
-	router.get('/api/getIgnoreNextAlarm', async function (req, res) {
+	router.get('/api/alarm/ignorenext', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -549,7 +556,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set Verfügbar
-	router.get('/api/setVerfuegbarkeit', async function (req, res) {
+	router.get('/api/verfuegbarkeit/set', async function (req, res) {
 		let status = req.query.status;
 		let days = req.query.days;
 		if (status == undefined || days == undefined) {
@@ -614,7 +621,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// post setVervPlans
-	router.post('/api/setVervPlans', async function (req, res) {
+	router.post('/api/verfuegbarkeit/plans/set', async function (req, res) {
 		let plans = req.body.plans;
 		if (plans == undefined) {
 			res.status(500).send({ error: 'No Params' });
@@ -627,7 +634,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// get getVervPlans
-	router.get('/api/getVervPlans', async function (req, res) {
+	router.get('/api/verfuegbarkeit/plans', async function (req, res) {
 		let rows = await db.getUserStatusPlan(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
@@ -656,7 +663,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set Einstellung ADMIN
-	router.get('/api/setEinstellung', async function (req, res) {
+	router.get('/api/benutzer/einstellung/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -737,7 +744,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set Notifications
-	router.get('/api/setNotifications', async function (req, res) {
+	router.get('/api/benutzer/notifications/set', async function (req, res) {
 		let value = req.query.value;
 		if (value == undefined) {
 			res.status(500).send({ error: 'No Params' });
@@ -752,7 +759,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set Erinnerungen
-	router.get('/api/setErinnerungen', async function (req, res) {
+	router.get('/api/benutzer/erinnerungen/set', async function (req, res) {
 		let value = req.query.value;
 		if (value == undefined) {
 			res.status(500).send({ error: 'No Params' });
@@ -769,7 +776,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set StatusHidden
-	router.get('/api/setStatusHidden', async function (req, res) {
+	router.get('/api/benutzer/statushidden/set', async function (req, res) {
 		let value = req.query.value;
 		if (value == undefined) {
 			res.status(500).send({ error: 'No Params' });
@@ -835,7 +842,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	
 	// ---- Präsentation ----
 	// get getPraesentationen ADMIN
-	router.get('/api/getPraesentationen', async function (req, res) {
+	router.get('/api/praesentationen', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -855,7 +862,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 
 	// set setPraesentationenAction ADMIN
-	router.get('/api/setPraesentationenAction', async function (req, res) {
+	router.get('/api/praesentationen/action/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -899,7 +906,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	// ---- Verbundene Geräte ADMIN ----
 	// get getConnectedClients ADMIN
-	router.get('/api/getConnectedClients', async function (req, res) {
+	router.get('/api/admin/clients/connected', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -910,7 +917,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		ret.push({"id": "-1", "type": `{"type":"MainSoftware",
 					"name":"FWmonitor - Haupt Software",
 					"info":"Version ${process.env.VERSION}",
-					"actions":[]}`
+					"actions":[{"id": "7"}, {"id": "-1", "key": "Startzeit", "value": "${startTime}"}]}`
 				});
 		
 		_httpServer[0].wss.getOpenSockets().forEach(function each(client) {				
@@ -929,7 +936,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	});
 	
 	// set setClientAction ADMIN
-	router.get('/api/setClientAction', async function (req, res) {
+	router.get('/api/admin/clients/action/set', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -941,6 +948,18 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		if (!action || !id) {
 			res.status(500).send({ error: 'No Params' });
 			return;
+		}
+
+		if(id == -1) {
+			switch (action) {
+				case 'restart':
+					setTimeout(function () {
+						console.log("exiting")
+						process.exit(1);
+					}, 1000);
+					break;
+			}
+			res.json("ok"); return;
 		}
 
 		let dat = "";
@@ -977,7 +996,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	// ---- Diashow ----
 	// get detDiashow ADMIN
-	router.get('/api/getDiashow', async function (req, res) {
+	router.get('/api/diashow', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -1009,7 +1028,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 	});
 	// post setDiashowFreigabeTrue ADMIN
-	router.post('/api/setDiashowFreigabeTrue', async function (req, res) {
+	router.post('/api/diashow/freigabe/set/true', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -1028,7 +1047,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.json({ data: 'ok' });
 	});
 	// post setDiashowFreigabeFalse ADMIN
-	router.post('/api/setDiashowFreigabeFalse', async function (req, res) {
+	router.post('/api/diashow/freigabe/set/false', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;
@@ -1048,7 +1067,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.json({ data: 'ok' });
 	});
 	// post setDiashowDelete ADMIN
-	router.post('/api/setDiashowDelete', async function (req, res) {
+	router.post('/api/diashow/freigabe/set/delete', async function (req, res) {
 		if (!req.session.isAdmin) {
 			res.status(500).send({ error: 'Kein Admin' });
 			return;

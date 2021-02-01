@@ -95,6 +95,8 @@ function getSubDocument(embedding_element) {
 
 // Icons Karte
 var styleCache = {
+	pipe: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_pipe.png"})}),
+	wall: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_wall.png"})}),
 	pillar: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_ueberflur.png"})}),
 	underground: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_unterflur.png"})}),
 	pond: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_openwater.png"})}),
@@ -750,7 +752,7 @@ async function alteAlarme_loadAlarm(count) {
 	try {
 
 		// Alte Alarme laden
-		let response = await fetchWithParam('/app/api/alarmList', {offset:alteAlarme_offset, count: count});
+		let response = await fetchWithParam('/app/api/alarm/list', {offset:alteAlarme_offset, count: count});
 		alteAlarme_offset += count;
 
 		// Erstelle für jeden Alarm ein Listenelement

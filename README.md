@@ -1,4 +1,5 @@
 ﻿https://www.ghostscript.com/download/gsdnld.html
+sudo apt-get install ghostscript
 
 
 # FWMonitor

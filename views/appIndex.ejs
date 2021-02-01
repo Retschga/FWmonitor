@@ -65,11 +65,9 @@
 			<% if(data["nurLAN"] == "1") { %>  
 				<h1  class="text-big">LAN Modus -> Nur Einstellungen</h1>
 				<h1  class="text-big">Verbindung ist nicht sicher. Falls Zugriff über das Internet erfolgt, ist etwas falsch eingestellt.
-					Falls Zugriff im LAN über Link in Einstellungen erfolgt ist alles OK.
+					Falls Zugriff im LAN über den Link in Einstellungen erfolgt ist alles OK.
 				</h1>
-			<% } %>
-			
-			<% if(data["nurLAN"] == "0") { %>  			
+			<% } %>						
 
 			<% if(data["alarm"] == "true") { %>  
 				<button class="blue-700 full" onclick="openPage('filesHTTPS/alarm', <%= data["alarmID"] %>, alarm_loadAlarm)">
@@ -92,7 +90,6 @@
 						</h2>
 					</div>
 				</div>
-				
 				<button class="col red-600 border-red-300 radius" onclick="openPage('filesHTTPS/verfuegbarkeit', null, verfuegbarkeit_load)">
 					Ändern
 				</button>
@@ -100,7 +97,7 @@
 			
 			<div class="space"></div>	
 
-			<% } %>
+			
 			
 			<h1 class="text-big">Kalender</h1>		
 			<div class="row">			

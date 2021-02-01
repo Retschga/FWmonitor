@@ -1,2 +1,6 @@
-cd /home/pi/Desktop/FWMonitor
-sudo nodejs app
+#!/bin/sh
+#cd /home/pi/Desktop/FWMonitor
+while true
+do
+  sudo nodejs app
+done

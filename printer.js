@@ -9,6 +9,28 @@ module.exports = function () {
     const ipp = require('ipp');
     const fs = require('fs');
 
+    /**
+     * https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
+     * Executes a shell command and return it as a Promise.
+     * @param cmd {string}
+     * @return {Promise<string>}
+     */
+    function execShellCommand(cmd) {
+        const exec = require('child_process').exec;
+        return new Promise((resolve, reject) => {
+            const start = new Date();
+            console.log("EXECUTE: " + cmd);
+            exec(cmd, (error, stdout, stderr) => {
+                if (error) {
+                    console.warn(error);
+                }
+                const ms = new Date() - start;
+    			console.log('EXECUTION TIME: %sms', ms);
+                resolve(stdout? stdout : stderr);
+            });
+        });
+    }
+
     // ----------------  Papierüberwachung ---------------- 
     /**
      * Drucker Papierüberwachung
@@ -116,42 +138,19 @@ module.exports = function () {
      * Drucken FoxitReader/CUPS
      * @param {String} path 
      */
-    function print1(path) {
+    async function print1(path) {
         debug('print1');
         if (process.env.RASPIVERSION == "false") {
             // Drucke mit FoxitReader
-            if (process.env.AREADER != "") {
-                var exec = require('child_process').exec;
-                var cmd = '\"' + process.env.AREADER + '\" /p \"' + path + '\"';
-                debug(cmd);
-
-                exec(cmd, function (error, stdout, stderr) {
-                    if (error) {
-                        console.error("[printer] ", err);
-                    }
-
-                    debug(stdout)
-                    debug(stderr)
-                });
-            }
+            let out = await execShellCommand('\"' + process.env.AREADER + '\" /p \"' + path + '\"');
+            debug(out);
         } else {
-            // Drucke mit lp -> CUPS
-            debug('Drucke PDF');
-            setTimeout(function () {
-                var exec = require('child_process').exec;
-                var cmd = 'lp -d ' + process.env.DRUCKERNAME + ' \"' + path + '\"';
-                debug(cmd);
+            // Drucke PDF mit lp -> CUPS            
+            let out = await execShellCommand('lp -d ' + process.env.DRUCKERNAME + ' \"' + path + '\"');
+            debug(out);
 
-                exec(cmd, function (error, stdout, stderr) {
-                    if (error) {
-                        console.error("[printer] ", err);
-                    }
-
-                    debug(stdout)
-                    debug(stderr)
-                });
-            }, 100);
-
+            // TIFF
+            // execShellCommand(`sudo /usr/bin/tiff2ps -a -p ${path} |lpr -P Alarmdrucker`);  
         }
     }
     /**

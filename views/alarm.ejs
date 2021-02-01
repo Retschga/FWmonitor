@@ -150,6 +150,7 @@
 				"[out:json][timeout:25];(" + 
 				"node[%22emergency%22=%22fire_hydrant%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
 				"node[%22emergency%22=%22water_tank%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
+				"node[%22emergency%22=%22suction_point%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
 				");out;%3E;out%20skel%20qt;";
 			var overpassTimestamp = "";
 			var features = [];
@@ -188,6 +189,8 @@
 	
 			
 			var icons = {
+				'pipe': L.icon({iconUrl: "/images/map_marker_hydrant_pipe.png",iconSize: [24,32]}),
+				'wall': L.icon({iconUrl: "/images/map_marker_hydrant_wall.png",iconSize: [24,32]}),
 				'pillar': L.icon({iconUrl: "/images/map_marker_hydrant_ueberflur.png",iconSize: [24,32]}),
 				'underground': L.icon({iconUrl: "/images/map_marker_hydrant_unterflur.png",iconSize: [24,32]}),
 				'pond': L.icon({iconUrl: "/images/map_marker_openwater.png",iconSize: [24,32]}),
@@ -214,10 +217,16 @@
 							var dataElement = dataIn[i];
 							var name = "";
 							
-							if(dataElement["tags"]["emergency"] == "water_tank")
-								name = "water_tank"
-							else 							
-								name = dataElement["tags"]["fire_hydrant:type"];								
+							name = dataElement["tags"]["fire_hydrant:type"];
+
+							if (dataElement["tags"]["emergency"] == "water_tank")
+								name = "water_tank"				
+
+							if(dataElement["tags"]["water_source"] == "pond")
+								name = "pond";
+
+							if(dataElement["tags"]["emergency"] == "suction_point")
+								name = "pond";
 							
 							
 							features.push({

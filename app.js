@@ -2,7 +2,6 @@
 
 // ----------------  EINSTELLUNGEN ---------------- 
 require('dotenv').config();
-var RASPIVERSION = process.env.RASPIVERSION;
 
 process.env.NODE_ENV = 'production';
 //process.env.NODE_ENV = 'development';
@@ -16,15 +15,10 @@ var printer = require('./printer')();
 const calendar = require('./calendar')();
 const startupCheck = require('./startupCheck')();
 
-// ---------------- Timeout Funktion ----------------
-function timeout(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
 // ----------------  Fehlerausgabe ---------------- 
 process.on('uncaughtException', function (err) {
 	console.log('[App] Caught exception: ', err);
 });
-
 
 // --------------- VARIABLEN ---------------
 var _bot = [null];      // [null] - Pointerersatz, da Objekt -> übergabe als Referenz
@@ -34,21 +28,12 @@ var _alarmManager = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.1.6";
+process.env.VERSION = "2.2.0";
 
 
 
 
-async function startScreen() {
 
-	await startupCheck.check();
-
-	console.log("----------------------");
-	console.log("|    PROGRAMMSTART   |");
-	console.log("----------------------");
-	console.log('');
-	
-}
 
 function IgnoreNextAlarmCountDown() {
 	if (ignoreNextAlarm_min > 0) {
@@ -57,7 +42,6 @@ function IgnoreNextAlarmCountDown() {
 		ignoreNextAlarm = false;
 	}
 }
-
 var setIgnoreNextAlarm = function (value) {
 	if (value == true) {
 		ignoreNextAlarm = true;
@@ -71,7 +55,6 @@ var setIgnoreNextAlarm = function (value) {
 		console.log("[APP] ALARMIERUNG AKTIVIERT")
 	}
 }
-
 var getIgnoreNextAlarm = function () {
 	if (ignoreNextAlarm) {
 		return ignoreNextAlarm_min;
@@ -97,7 +80,6 @@ var onAlarm = async function(data) {
 		// Lösche Sessions -> Seite in App wird neu geladen
 		let rows = await db.getUserAllowed()
 			.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
-
 		rows.forEach(function (user) {
 			_httpsServer[0].destroySession(user.telegramid);	
 		});	
@@ -118,31 +100,27 @@ var onAlarm = async function(data) {
 			data.targetPath
 		);
 
-		// FWmonitor APP
-		if (process.env.APP_DNS != "") {
-			if (process.env.APP_SENDALARM != "true") {
-				console.log("[APP] APP Alamierung deaktiviert -> Keine Alarmnotification");
-			} else {
-					
-				var zeigeBis = new Date();
-				zeigeBis.setTime(zeigeBis.getTime() + (2 * 60 * 1000));
-				webNotifications.notify(
-					'ALARM: ' + data.EINSATZSTICHWORT + ' - ' + data.SCHLAGWORT,
-					data.STRASSE + ', ' + data.ORT,
-					zeigeBis,
-					false,
-					new Date(),
-					zeigeBis,
-					true,
-					[
-						{ action: "kommeJa", title: "👍 KOMME" },
-						{ action: "kommeNein", title: "👎 KOMME NICHT" },
-						{ action: "kommeSpaeter", title: "🕖 SPÄTER!" }
-					]
-				);
-			}
-		} else {
+		// APP
+		if (process.env.APP_SENDALARM != "true") {
 			console.log("[APP] APP Alamierung deaktiviert -> Keine Alarmnotification");
+		} else {
+				
+			var zeigeBis = new Date();
+			zeigeBis.setTime(zeigeBis.getTime() + (2 * 60 * 1000));
+			webNotifications.notify(
+				'ALARM: ' + data.EINSATZSTICHWORT + ' - ' + data.SCHLAGWORT,
+				data.STRASSE + ', ' + data.ORT,
+				zeigeBis,
+				false,
+				new Date(),
+				zeigeBis,
+				true,
+				[
+					{ action: "kommeJa", title: "👍 KOMME" },
+					{ action: "kommeNein", title: "👎 KOMME NICHT" },
+					{ action: "kommeSpaeter", title: "🕖 SPÄTER!" }
+				]
+			);
 		}
 	}
 }
@@ -318,16 +296,20 @@ var checkInFolder = function() {
 
 		lastStatus = status;
 		
-	}, 15000 );
+	}, 60000 * 5 );
 }
+
 
 async function main() {
 
-	await startScreen();
+	await startupCheck.check();
 
-	checkInFolder();
+	console.log("----------------------");
+	console.log("|    PROGRAMMSTART   |");
+	console.log("----------------------");
+	console.log('');
 
-	// ---------------- PROGRAMMSTART ----------------
+		// ---------------- PROGRAMMSTART ----------------
 	await db.updateDatabase();
 
 	// ---------------- Module starten ----------------
@@ -349,10 +331,13 @@ async function main() {
 	// Kalender Terminerinnerungen
 	terminerrinerrung();
 
+	// Eingangsordner Überwachung
+	checkInFolder();
+
+	global.startTime = new Date();
+
 
 	// ---------------- Verzeichnisüberwachung ----------------
-
-	await timeout(5000);
 
 	const alarmWatcher = require('./alarmWatcher')(_alarmManager);
 	alarmWatcher.start();
