@@ -796,7 +796,13 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// ---- Statistik ----
 	// get Statistik
 	router.get('/api/statistik', async function (req, res) {
-		let rows = await db.getStatistik().catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		let year = req.query.year;
+		if (year == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
+		let rows = await db.getStatistik(year).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
 			return;
@@ -824,9 +830,15 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// get Einsatzzeit
 	router.get('/api/einsatzzeit', async function (req, res) {
 
+		let year = req.query.year;
+		if (year == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
 		let rows = await db.getUserByTelId(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
-		let zeit = await fwvv.getEinsatzZeit(rows[0].name, rows[0].vorname)
+		let zeit = await fwvv.getEinsatzZeit(rows[0].name, rows[0].vorname, year)
 			.then((arr) => {
 
 				res.json({ hour: Math.floor(arr[0] / 60), minute: (arr[0] % 60), num: arr[1] });
@@ -916,7 +928,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		ret.push({"id": "-1", "type": `{"type":"MainSoftware",
 					"name":"FWmonitor - Haupt Software",
-					"info":"Version ${process.env.VERSION}",
+					"info":"v${process.env.VERSION} ${process.env.VERSION != process.env.VERSION_REMOTE ? '(v'+process.env.VERSION_REMOTE+' Verfügbar)' : ''}",
 					"actions":[{"id": "7"}, {"id": "-1", "key": "Startzeit", "value": "${startTime}"}]}`
 				});
 		

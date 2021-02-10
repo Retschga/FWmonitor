@@ -1,8 +1,4 @@
-﻿https://www.ghostscript.com/download/gsdnld.html
-sudo apt-get install ghostscript
-
-
-# FWMonitor
+﻿# FWMonitor
 
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem Bildschirm darzustellen. 
 Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.
@@ -13,37 +9,37 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 
 * Standby-Display mit Uhrzeit, Diashow, Kalender/Google Kalender, Verfügbarkeitsanzeige der Einsatzkräfte, DWD Warnungen
 * Alarm-Display
-	* Alle relevanten Infos aus dem Alarmfax
-	* Kartenanzeige
-	* Rückmeldungen der Einsatzkräfte
+    * Alle relevanten Infos aus dem Alarmfax
+    * Kartenanzeige
+    * Rückmeldungen der Einsatzkräfte
 * PDF-Display für Schulungspräsentationen etc.
 * Telegram Messenger 
-	* Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
-	* Rückmeldungen zum Alarm
-	* Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
-	* Verfügbarkeits Anzeige/Einstellung
-	* Einsatzstatistik
-	* Hydrantenposition eintragen
+    * Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
+    * Rückmeldungen zum Alarm
+    * Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
+    * Verfügbarkeits Anzeige/Einstellung
+    * Einsatzstatistik
+    * Hydrantenposition eintragen
 * Installierbare WebApp für Android und IOS
-	* Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
-	* Rückmeldungen zum Alarm
-	* Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
-	* Bearbeiten des Kalenders
-	* Verfügbarkeits Anzeige/Einstellung
-	* Verfügbarkeits Pläne (Wochentagsweise)
-	* Hydrantenkarte
-	* Einsatzstatistik
-	* Admin-Optionen
-		* Benutzereinstellungen
-		* Kalendergruppen
-		* Alarmgruppen
-		* Präsentationssteuerung
+    * Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
+    * Rückmeldungen zum Alarm
+    * Kalender mit Terminerinnerungen (Einstellbar für verschiedene Personengruppen)
+    * Bearbeiten des Kalenders
+    * Verfügbarkeits Anzeige/Einstellung
+    * Verfügbarkeits Pläne (Wochentagsweise)
+    * Hydrantenkarte
+    * Einsatzstatistik
+    * Admin-Optionen
+        * Benutzereinstellungen
+        * Kalendergruppen
+        * Alarmgruppen
+        * Präsentationssteuerung
 * Kartenausdruck
 * Adress-Koordinaten Suche über
-	* Bing
-	* Nominatim
-	* OSM Gebäudenamen
-	* Bahnübergänge
+    * Bing
+    * Nominatim
+    * OSM Gebäudenamen
+    * Bahnübergänge
 * Kalender mit Erinnerungen und Gruppen
 * Alarmdrucker Papierlevel-Warnung
 * ...
@@ -53,27 +49,27 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 Raspberry PI: 
  - GIT installieren `sudo apt-get install git`
  - CUPS installieren siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm 
- - `sudo apt-get install printer-driver-cups-pdf`
  - im Browser unter `127.0.0.1:631` CUPS konfigurieren (Login gleich wie Raspberry): 
-   gewünschten Drucker als `Alarmdrucker` (Name) einrichten; PDF-Printer als `PDFPrint` (Name) einrichten 
- - https://wiki.ubuntuusers.de/CUPS-PDF/#ndern-des-Speicherorts - Archivordner einstellen (am besten als ganzer Pfad /home/pi/...)
+   gewünschten Drucker als `Alarmdrucker` (Name) einrichten;
  - NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
  - Tesseract installieren `sudo apt-get install tesseract-ocr`  
    (Test mit: `tesseract -v`)
+ - Ghostscript installieren `sudo apt-get install ghostscript` 
  - `cd /home/pi/Desktop/`
  - Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405 und https://pypi.org/project/pdf2image/ und https://github.com/windele/alarmdisplay-ffw/blob/master/infos/Installation_auf_Raspberry_Pi.md
  - Faxeingang über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
- 
 
-Windows:	
- - Empfehlung: EM-OCR https://feuersoftware.com/forum/index.php?thread/2125-em-ocr-einsatzmonitor-pdf-tiff-txt-fax-konverter-mit-ordner%C3%BCberwachung/  
+Windows:
  - NodeJS: https://nodejs.org/de/
  - FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
  - Git: https://git-scm.com/downloads
+ - Ghostscript: https://www.ghostscript.com/download/gsdnld.html
+ - Tesseract: https://digi.bib.uni-mannheim.de/tesseract/
+   Bei Installation auswählen: Additional Language Data > German
 
 
-Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) sudo unter Windows evtl. nicht notwendig:
- - `git clone https://github.com/Retschga/FWMonitor.git`
+Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) (sudo unter Windows evtl. nicht notwendig):
+ - Aktuelle Version Datei unter Releases herunterladen, extrahieren
  - `cd "FWMonitor"`
  - `sudo npm install --unsafe-perm`
  - `sudo npm i puppeteer`
@@ -81,12 +77,14 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) sudo unter Windows
  
 ## Update
  
-- Einfach die Dateien nochmal herunterladen und die alten ersetzen
-- .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen/ändern/löschen
-- Libraries updaten `npm install`
-- Wenn nötig die verbundenen Geräte unter Einstellungen updaten
-- Software neu starten 
+ - Einfach die neue Version unter Releases herunterladen und die alten ersetzen (evtl. vorher Sicherungskopie anlegen)
+ - Achtung bei eigen veränderten Dateien, diese unter Umständen nicht überschreiben
+ - .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen/ändern/löschen
+ - Libraries updaten `npm install`
+ - Wenn nötig die verbundenen Geräte unter Einstellungen updaten
+ - Software neu starten 
  
+
 ## Einstellungen
 
 Für den Server PC/Raspberry PI sollte eine feste IP-Adresse vergeben sein!
@@ -118,13 +116,13 @@ Veränderte Einstellungen erfordern immer einen Software Neustart!
 - dann unten "Neue Freigabe", dann "MyFRITZ!-Freigabe" HTTPS-Server
 
 - Windows: 
-	- https://certbot.eff.org/lets-encrypt/windows-other befolgen
-	- Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
+    - https://certbot.eff.org/lets-encrypt/windows-other befolgen
+    - Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
 - Raspberry Pi:
-	- `cd ~`
-	- `git clone https://github.com/letsencrypt/letsencrypt`
-	- `cd letsencrypt`
-	- `./letsencrypt-auto -d ERSTE_DOMAIN -d ZWEITE_DOMAIN --redirect -m DEINE_MAIL --standalone`
+    - `cd ~`
+    - `git clone https://github.com/letsencrypt/letsencrypt`
+    - `cd letsencrypt`
+    - `./letsencrypt-auto -d ERSTE_DOMAIN -d ZWEITE_DOMAIN --redirect -m DEINE_MAIL --standalone`
 
 - Alternativ zu MyFritz kann auch ein anderer DynDNS Dienst oder eine feste IP verwendet werden
 
@@ -134,22 +132,23 @@ Veränderte Einstellungen erfordern immer einen Software Neustart!
 - Werte in .env unter "VAPID" eintragen
 
 - Auto Renew Let´s Encrypt
-	- Windows: Aufgabenplanung öffnen
-		- Eingache aufgabe erstellen (rechts) 
-		- Name: certbot 
-		- Wöchentlich 
-		- Sonntag 
-		- Programm Starten
-		- Programm/Skript: certbot
-		- Argumente hinzufügen: renew
-	- Raspberry Pi: `sudo crontab -e`
-		- `0 0 * * 0 ./letsencrypt-auto -d ERSTE_DOMAIN --redirect -m DEINE_MAIL --agree-tos --renew-by-default --standalone
+    - Windows: Aufgabenplanung öffnen
+        - Eingache aufgabe erstellen (rechts) 
+        - Name: certbot 
+        - Wöchentlich 
+        - Sonntag 
+        - Programm Starten
+        - Programm/Skript: certbot
+        - Argumente hinzufügen: renew
+    - Raspberry Pi: `sudo crontab -e`
+        - `0 0 * * 0 ./letsencrypt-auto -d ERSTE_DOMAIN --redirect -m DEINE_MAIL --agree-tos --renew-by-default --standalone
 
 
 ## Programmstart (manuell)
 
 In Konsole (Windows: Rechtsklick - Git Bash here):
- - `node app`
+ - Windows: `start.bat` oder `./start.bat`
+ - Raspberry: `sudo ./start.sh`
  
 Nun im Webbrowser die IP-Adresse:8080 des Computers eingeben, auf dem FWmonitor läuft.
 (Herauszufinden in Konsole: Windows: ipconfig; Raspberry: ifconfig; Eigener PC: 127.0.0.1)
@@ -158,22 +157,22 @@ Bsp: 192.168.2.153:8080 oder 127.0.0.1:8080
 ## Autostart / Installation des Displays
 
 Raspberry:
-	- Benötigt min. Raspian buster
-	- `sudo apt-get update`
-	- `sudo apt-get upgrade`
-	- Server:
-		- `sudo crontab -e`; darin `@reboot PFAD_ZU_FWMONITOR/start.sh > /home/pi/Desktop/log.txt` hinzufügen
-	- Display:
-		IP_ADRESSE=IP Adresse des Servers, PORT=8080 außer wenn in .env geändert
-		- `wget IP_ADRESSE:PORT/scripts/installDisplay.sh`
-		- `sudo chmod +x installDisplay.sh`
-		- `sudo ./installDisplay.sh IP_ADRESSE:PORT CLIENT_NAME`
+ - Benötigt min. Raspian buster
+ - `sudo apt-get update`
+ - `sudo apt-get upgrade`
+ - Server:
+    - `sudo crontab -e`; darin `@reboot PFAD_ZU_FWMONITOR/start.sh > /home/pi/Desktop/log.txt` hinzufügen
+ - Display:
+    IP_ADRESSE=IP Adresse des Servers, PORT=8080 außer wenn in .env geändert
+    - `wget IP_ADRESSE:PORT/scripts/installDisplay.sh`
+    - `sudo chmod +x installDisplay.sh`
+    - `sudo ./installDisplay.sh IP_ADRESSE:PORT CLIENT_NAME`
 
 Windows:
-	- Server:
- 		- unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
-	- Display:
- 		- Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
+ - Server:
+    - unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat erstellen
+ - Display:
+    - Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
 
 ## Benutzer hinzufügen
 Einfach dem erstellten Telegram-Bot /start schreiben.
@@ -217,9 +216,9 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 * Bing Geocode
 * openstreetmap - https://www.openstreetmap.org/fixthemap
 *   Hillshading - https://klokantech.github.io/dare-raster-tiles/hillshade/
-* 	Overpass - https://wiki.openstreetmap.org/wiki/DE:Overpass_API
-* 	OpenFireMap - https://wiki.openstreetmap.org/wiki/DE:OpenFireMap
-* 	Nominatim Geocode - https://nominatim.openstreetmap.org/
+*   Overpass - https://wiki.openstreetmap.org/wiki/DE:Overpass_API
+*   OpenFireMap - https://wiki.openstreetmap.org/wiki/DE:OpenFireMap
+*   Nominatim Geocode - https://nominatim.openstreetmap.org/
 * diff-match-patch - https://github.com/google/diff-match-patch
 * Diashow - https://gist.github.com/mhulse/66bcbb7099bb4beae530
 * Python Timer - https://gist.github.com/aeroaks/ac4dbed9c184607a330c
@@ -235,23 +234,23 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 | Router |-----| USB-Modem |-----| Raspberry PI |-----| Monitor | 
 ---------- |   -------------     |  Server      |     -----------
            ----------------------|  Display     |
-		   |   -----------       ----------------
+           |   -----------       ----------------
            ----| Drucker |
-			   -----------
+               -----------
 
 ------------     -------------------          ------------------------     -----------
 | Fritzbox |-----| Win10 PC Server | )))  ((( | Raspberry PI Display |-----| Monitor |
 ------------ |   -------------------          ------------------------     -----------
-			 |   -----------
+             |   -----------
              ----| Drucker |
-		  	     -----------
+                 -----------
 
 ------------          -------------------          ------------------------     -----------
 | Fritzbox | )))  ((( | Win10 PC Server | )))  ((( | Raspberry PI Display |-----| Monitor |
 ------------ |        -------------------          ------------------------     -----------
-			 |   -----------
-			 ----| Drucker |
-			     -----------
+             |   -----------
+             ----| Drucker |
+                 -----------
 ```
 
 ## Authors

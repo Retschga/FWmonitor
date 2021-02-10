@@ -122,9 +122,11 @@ module.exports = function () {
   };
 
   // ---- Statistik ----
-  const getStatistik = async function () {
-    //return await dbQuery("SELECT einsatzstichwort, count(einsatzstichwort) AS number FROM alarms WHERE strftime('%Y', date) = strftime('%Y', DATE('now')) GROUP BY einsatzstichwort");
+  const getStatistik = async function (year) {
+    if(!year)
     return await dbQuery("SELECT einsatzstichwort, count(einsatzstichwort) AS number FROM alarms WHERE strftime('%Y', date) = strftime('%Y', DATE('now')) GROUP BY einsatzstichwort ORDER BY number DESC");
+    else
+    return await dbQuery("SELECT einsatzstichwort, count(einsatzstichwort) AS number FROM alarms WHERE strftime('%Y', date)=? GROUP BY einsatzstichwort ORDER BY number DESC", year);
   }
   const addStatistik = async function (aktion, user) {
     var now = new Date();

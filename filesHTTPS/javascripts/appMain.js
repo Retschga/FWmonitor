@@ -756,17 +756,23 @@ async function kalenderFull_loadKalender() {
 
 // ----------------  STATISTIK ---------------- 
 
-async function statistik_loadStatistik() {
+async function statistik_loadStatistik(year) {
 	// Prüfe ob FWVV Anbindung aktiviert
 	if(FWVV != 'true' && FWVV != true) {
 		document.getElementById("statistik_fwvv").classList.add('hidden')
 	}
+	
+	// Aktuelles Jahr eintragen
+	if(!year)
+		year = document.getElementById("statistik_selectedYear").innerHTML = new Date().getFullYear();
 
 	try {
 
-		let response = await fetchWithParam('app/api/statistik', {});	
+		let response = await fetchWithParam('app/api/statistik', {'year': year});	
 
 		let eins = 0;
+
+		document.getElementById("statistik_list").innerHTML = '';
 
 		for(let i = 0; i < response.length; i++) {
 
@@ -794,7 +800,7 @@ async function statistik_loadStatistik() {
 async function statistik_loadEinsatzzeit() {
 	try {
 
-		let response = await fetchWithParam('app/api/einsatzzeit', {});
+		let response = await fetchWithParam('app/api/einsatzzeit', {'year': document.getElementById("statistik_selectedYear").innerHTML});
 
 		document.getElementById("statistik_einsatzzeit").innerHTML = response.hour + ' Stunden ' + response.minute + ' Minuten (' + response.num + ' Einsätze)';
 
@@ -802,6 +808,18 @@ async function statistik_loadEinsatzzeit() {
 		console.log(error);	
 		alert("Einsatzzeit konnte nicht geladen werden.");
 	}
+}
+
+function statistik_nextYear() {
+	let elemSelectedYear = document.getElementById("statistik_selectedYear");	
+	elemSelectedYear.innerHTML = parseInt(elemSelectedYear.innerHTML) + 1; 
+	statistik_loadStatistik(elemSelectedYear.innerHTML);
+}
+
+function statistik_prevYear() {
+	let elemSelectedYear = document.getElementById("statistik_selectedYear");	
+	elemSelectedYear.innerHTML = parseInt(elemSelectedYear.innerHTML) - 1; 
+	statistik_loadStatistik(elemSelectedYear.innerHTML);
 }
 
 
@@ -1080,9 +1098,10 @@ async function benutzer_loadBenutzer() {
 					'</div>' +
 					'<div>' +
 						'<span class="text-small blue radius padding">'+alarmgruppen[response[i].group-1].name.replace(/\s/g, '&nbsp;')+'</span>' +
-						(response[i].admin=='1' ? '<span class="text-small red radius padding">Admin</span>' : '') +
-						(response[i].drucker=='1' ? '<span class="text-small orange radius padding">Drucker</span>' : '') +
-						(response[i].kalender=='1' ? '<span class="text-small blue-grey-400 radius padding">Kalender</span>' : '') +
+						(response[i].admin=='1' ? '<span class="text-small red radius padding">Admin</span><wbr>' : '') +
+						(response[i].drucker=='1' ? '<span class="text-small orange radius padding">Drucker</span><wbr>' : '') +
+						(response[i].softwareInfo=='1' ? '<span class="text-small orange-400 radius padding">Softwareinfo</span><wbr>' : '') +
+						(response[i].kalender=='1' ? '<span class="text-small blue-grey-400 radius padding">Kalender</span><wbr>' : '') +
 						kalGrString +
 						(response[i].status == '-1' ? '<br>Telegr. Bot blockiert ' : ' ') +
 						(response[i].status == '-2' ? '<br>telegr. Benutzer gelöscht' : ' ') +

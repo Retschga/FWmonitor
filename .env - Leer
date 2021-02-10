@@ -1,4 +1,4 @@
-﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI
+﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI,update
 
 # Um Änderungen zu übernehmen muss das Programm neu gestartet werden
 
@@ -51,6 +51,15 @@ FOLDER_ARCHIVE=C:\Archiv
 # Telegram Bilder automatisch in Diashow ohne man. Freigabe (true/false)
 BOT_IMG_AUTOFREIGABE=true
 
+# Pfad zu Tesseract (Raspberry: siehe 'which tesseract')
+TESSERACT_PATH=C:/Program Files/Tesseract-OCR/tesseract.exe
+
+# Pfad zu Ghostscript (Raspberry: siehe 'which ghostscript')
+GHOSTSCRIPT_PATH=C:/Program Files/gs/gs9.53.3/bin/gswin64c.exe
+
+# Fax Eingang Verzögerung (sek) (evtl bei Hylafax nötig ca. 30 ??)
+FAX_INPUT_DELAY=0
+
 
 ######## STANDBY Bildschirm / Telegram Kalender ########
 
@@ -100,6 +109,12 @@ FWVV_DATENSICHERUNG=
 
 
 ######## DRUCKEN ########
+
+#Orginalfax Drucken (true/false)
+FAX_DRUCK=false
+
+#Seitenzahl
+FAX_DRUCK_SEITENZAHL=1
 
 #Alarmdruck (true/false)
 ALARMDRUCK=true

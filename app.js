@@ -14,6 +14,7 @@ var webNotifications = require('./webNotifications');
 var printer = require('./printer')();
 const calendar = require('./calendar')();
 const startupCheck = require('./startupCheck')();
+const updateManager = require('./updateManager')();
 
 // ----------------  Fehlerausgabe ---------------- 
 process.on('uncaughtException', function (err) {
@@ -29,6 +30,7 @@ var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
 process.env.VERSION = "2.2.0";
+process.env.VERSION_REMOTE = '';
 
 
 
@@ -277,6 +279,9 @@ var checkInFolder = function() {
 
 		if(status != lastStatus) {
 
+			// Telegram
+			_bot[0].sendSoftwareInfo("Eingangsordner Status: " + (status ? "Verbunden" : "Getrennt") + "!");			
+
 			// APP
 			var zeigeBis = new Date();
 			zeigeBis.setTime(zeigeBis.getTime() + (60 * 60 * 1000));
@@ -299,8 +304,49 @@ var checkInFolder = function() {
 	}, 60000 * 5 );
 }
 
+var checkForUpdate = async function() {
+	let infoSendt = false;
+	let check = async () => {
+		let ret = await updateManager.checkForUpdate();
+		if(ret.availible == true) {
+			process.env.VERSION_REMOTE = ret.version;
+			console.log();
+			console.log('UPDATE VERFÜGBAR:');
+			console.log('Version: ' + ret.version);
+			console.log('Info:\n' + ret.text);
+			console.log();
 
-async function main() {
+			if(infoSendt == false) {
+				infoSendt = true;
+
+				// Telegram
+				_bot[0].sendSoftwareInfo("Update verfügbar! " + process.env.VERSION + ' -> ' + ret.version + '\n' + ret.text);		
+
+				// APP
+				var zeigeBis = new Date();
+				zeigeBis.setTime(zeigeBis.getTime() + (60 * 60 * 1000));
+				webNotifications.notify(
+					"Software Information",
+					"Update verfügbar! " + process.env.VERSION + ' -> ' + ret.version + '\n' + ret.text,
+					zeigeBis,
+					false,
+					new Date(),
+					zeigeBis,
+					false,
+					[],
+					['softwareInfo']
+				);
+			}
+		}
+	}
+	let interval = setInterval(async () => {		
+		check();
+	}, 60000 *60 *24 );
+	check();
+}
+
+
+async function main() {	
 
 	await startupCheck.check();
 
@@ -310,7 +356,7 @@ async function main() {
 	console.log('');
 
 		// ---------------- PROGRAMMSTART ----------------
-	await db.updateDatabase();
+	await db.updateDatabase();	
 
 	// ---------------- Module starten ----------------
 	_httpServer[0] = require('./httpServer')(_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm);
@@ -335,6 +381,9 @@ async function main() {
 	checkInFolder();
 
 	global.startTime = new Date();
+
+	// Update Check
+	await checkForUpdate();
 
 
 	// ---------------- Verzeichnisüberwachung ----------------

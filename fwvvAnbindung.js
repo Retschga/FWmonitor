@@ -81,7 +81,7 @@ module.exports = function () {
 	 * @param {String} name 
 	 * @param {String} vorname 
 	 */
-	function getEinsatzZeit(name, vorname) {		
+	function getEinsatzZeit(name, vorname, year) {		
 		return new Promise((resolve, reject) => {
 			
 			debug("Einsatzzeit:  " + name + "  " + vorname);
@@ -107,8 +107,9 @@ module.exports = function () {
 					const size = entry.vars.uncompressedSize; // There is also compressedSize;
 					if (fileName === "E_PERSON.DBF") {						
 						var parser = Parser(entry);				
-						var diesesJahr = new Date().getFullYear();
-						
+						//var diesesJahr = new Date().getFullYear();
+						let diesesJahr = year;
+
 						parser.on('header', (h) => {
 							//debug('dBase file header has been parsed');
 							//debug(h);

@@ -1378,6 +1378,29 @@ _${st_nichtverf}_`,
 		}
 	}
 
+	// ---------------- Softwareinfo ----------------
+	async function sendSoftwareInfo(infotext) {
+		debug('sendSoftwareInfo', infotext);
+		try {
+
+			let rows = await db.getUserAllowed();
+
+			rows.forEach((element) => {
+				if (element.softwareInfo == 1) {
+					sendMessage(
+						element.telegramid,
+						'*Software Info:* \n _' + infotext + '_',
+						Telegraf.Extra.markdown()
+					);
+				}
+			});
+
+		} catch (error) {
+			console.error('[TelegramBot] sendPapierInfo() Fehler', error);
+		}
+	}
+
+
 
 	// ---------------- Starte Bot ----------------
 	bot.startPolling();
@@ -1391,7 +1414,8 @@ _${st_nichtverf}_`,
 		removeUser,
 		sendMsgToAll,
 		sendPapierInfo,
-		sendMessage
+		sendMessage,
+		sendSoftwareInfo
 	};
 }
 
