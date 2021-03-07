@@ -15,7 +15,7 @@ function searchElement(start, end, data) {
 }
 
 // ---------------- Fax Suchworte (RegEx) ----------------
-// Filtert Teil aus dem Fax zwischen Filter Beginn und Filter Ende (\n ist eu Zeile)
+// Filtert Teil aus dem Fax zwischen Filter Beginn und Filter Ende (\n ist neue Zeile)
 exports.EINSATZSTICHWORT = "-/-"; 				// Variable
 exports.s_EINSATZSTICHWORT = "Stichwort : ";	// Filter Beginn
 exports.e_EINSATZSTICHWORT = "\n";				// Filter Ende
@@ -58,6 +58,28 @@ exports.CAR1 = process.env.FW_NAME;				// Filter um als eigenes Fahrzeug erkannt
 // ---------------- Fax Ersetzungen ----------------
 exports.replaceData = function(data) {
     data = data.replace(/[—_*`]/g, '-');
+
+    data = data.replace(/2222+/g, '--------');
+    data = data.replace(/---([-\s\.](?!\n))+/g, '--------');
+    data = data.replace(/Kinsatz/g, 'Einsatz');
+
+    data = data.replace(/BI/g, 'B1');
+    data = data.replace(/Bl/g, 'Bl');
+    data = data.replace(/1NF/g, 'INF');
+    data = data.replace(/TH1/g, 'THL');
+
+    data = data.replace(/5tra/g, 'Stra');
+    data = data.replace(/ßrand/g, 'Brand');
+    data = data.replace(/1dean/g, 'ldean');
+    data = data.replace(/1age/g, 'lage');
+    data = data.replace(/ZUQ/g, 'ZUG');
+    data = data.replace(/ßauteil/g, 'Bauteil');
+    data = data.replace(/ßaum/g, 'Baum');
+    data = data.replace(/ßerg/g, 'Berg');
+    data = data.replace(/A1arm/g, 'Alarm');
+    data = data.replace(/5tall/g, 'Stall');
+    data = data.replace(/SonstigeS/g, 'Sonstiges');
+    data = data.replace(/BEinsatzplan/g, 'Einsatzplan');
 
     return data;
 }

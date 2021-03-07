@@ -1,7 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
     <head>
-
 		<!-- HTML EINSTELLUNGEN -->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -95,7 +94,7 @@
 			</div>
 			<button class="red-600 full border-bottom-white selectedButton" onclick="window.location.href = '/';" >Standby Ansicht</button>
 			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/einstell';" >Einstellungen</button>
-			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/alarm?manuell=true';" >Letzter Alarm</button>
+			<button class="red-600 full border-bottom-white" onclick="goToAlarm();" >Letzter Alarm</button>
 			<button class="red-600 full border-bottom-white" onclick="alert('F11 drücken')" >Vollbild</button>
 		</div>
 		
@@ -121,6 +120,7 @@
 					
             <article class="left" style="max-width: 50vw">
 
+				<!-- DWD Warnung -->
 				<% if(data["dwd_position"] == "1") { %>
 				<div id="warnung" class="padding border-grey-200 shadow radius-right orange-300" style="visibility: hidden; margin-bottom: 2em; padding-left: 2em;">
 					<h6 id="warnHeader" style="margin-bottom: 0.8em;">Warnungen</h6>	
@@ -128,6 +128,7 @@
 				</div>
 			    <% } %>	 
 
+				<!-- Verfügbarkeit -->
                 <div class="verfuegbarkeit">
 
                     <div style="<% if(data["st_verf_hidden"] == "true") { %>display: none;<% } %>">
@@ -157,6 +158,8 @@
 			</article>   
 			     
             <aside  class="right">
+
+				<!-- DWD Warnung -->
 				<% if(data["dwd_position"] == "2") { %>  						
                 <div id="warnung" class="padding border-grey-200 shadow radius-left orange-300" style="visibility: hidden; margin-bottom: 2em;">
 					<h6 id="warnHeader" style="margin-bottom: 0.8em;">Warnungen</h6>	
@@ -164,7 +167,9 @@
 				</div>
 				<% } %>				
 				
+				<!-- Kalender -->
                 <div id="kalender"></div>
+
             </aside>
         </div>
 		
@@ -215,11 +220,21 @@
 				return "";
 			}
 		
+			// Kalenderelement Anzahl
 			var kalenderElemente = getCookie("kal_elem");
 			if(kalenderElemente == "") {
 				kalenderElemente = 5;
 			}
 			kalenderElemente = parseInt(kalenderElemente);
+
+			// Wechselt zur Alarmanzeige
+			function goToAlarm(id) {
+				if(id) {
+					window.location.href = '/alarm?tempID=' + id + '&name=' + clientName;
+				} else {
+					window.location.href = '/alarm?manuell=true&name=' + clientName;
+				}
+			}
 
 			// -------- Diashow --------
             /*! slides | https://gist.github.com/mhulse/66bcbb7099bb4beae530 */
@@ -278,6 +293,7 @@
 				slideshow();				
 			}(jQuery));
                    
+
 			// -------- Uhrzeit --------
             setInterval(() => {
                 var d = new Date();
@@ -287,8 +303,9 @@
                 document.getElementById('time').innerHTML = time + " - " + date;
             }, 1000)
 
+
 			// -------- Kalender --------
-			function getCalendar() {
+			function getCalendar(count) {
 				var getUrl = window.location;
 				var baseUrl = getUrl .protocol + "//" + getUrl.host + "/";
 				var url = new URL('api/kalender', baseUrl);
@@ -305,7 +322,7 @@
 
 					document.getElementById("kalender").innerHTML = "";					
 
-					for(let i = 0; i < response.length && i < kalenderElemente; i++) {
+					for(let i = 0; i < response.length && i < count; i++) {
 						
 						let dat = new Date(response[i].start);
 						let m = dat.getMonth();
@@ -389,8 +406,8 @@
 					return;
 				});
 			}
-			setInterval(getCalendar, 60000*10);
-			getCalendar();
+			setInterval(getCalendar, 60000*10, kalenderElemente);
+			getCalendar(kalenderElemente);
 
 			// -------- Reload --------
 			setInterval(function() {
@@ -437,8 +454,8 @@
 				}
 	
 				// Alarm
-				if(topic == 'alarm')
-					window.location.href = '/alarm?tempID=' + msg[0] + '&name=' + clientName;
+				if(topic == 'alarm')					
+					goToAlarm(msg[0]);
 				if(topic == 'letzteralarm')
 					window.location.href = '/alarm?manuell=true&name=' + clientName;
 			
@@ -452,7 +469,7 @@
 
 				// Kalender
 				if(topic == 'kal_reload')
-					getCalendar();
+					getCalendar(kalenderElemente);
 				if(topic == 'kal_elemnum') {
 					setCookie("kal_elem", msg[0], 1000);
 					location.reload(); 
@@ -501,12 +518,9 @@
 						}
 					}
 					
-					elChild.prepend(elClear);
-					
+					elChild.prepend(elClear);					
 					elChild.prepend(msg[0]);
-
 					elChild.id = "st_"+msg[0].replace(/ /g,"_");
-
 					el.append(elChild);
 				}
 			}
@@ -515,12 +529,22 @@
             // Websocket für Dynamische Inhalte, Alarm
             function connect() {			
 				var keepAliveInterval = null;
-                var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+                var ws = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
 				
 				// Event: Socket geöffnet
                 ws.onopen = function() {
                     console.log("WebSocketClient connected:");
-					this.send('{"type":"WebClient","name":"Alarmdisplay - '+clientName+'","info":"Index","actions":[{"id":"0"},{"id":"1"},{"id":"2"},{"id":"3", "value": '+kalenderElemente+'},{"id":"4"}]}');
+					this.send(`{
+						"type":"WebClient",
+						"name":"Alarmdisplay - ${clientName}",
+						"info":"Index",
+						"actions":[
+							{"id":"0"},
+							{"id":"1"},
+							{"id":"2"},
+							{"id":"3", "value": ${kalenderElemente}},
+							{"id":"4"}
+						]}`);
 					
 					
 					lastKeepAlive = new Date();					
@@ -587,8 +611,7 @@
 								var prop_headline = entry.properties.HEADLINE;
 								var prop_begin = entry.properties.ONSET.replace(/[TZ]/g, ' ');
 								var prop_end = entry.properties.EXPIRES.replace(/[TZ]/g, ' ');
-								var prop_description = entry.properties.DESCRIPTION;
-								
+								var prop_description = entry.properties.DESCRIPTION;								
 								
 								let newDiv = document.createElement("div");	
 								newDiv.className = '';
@@ -617,15 +640,16 @@
 								document.getElementById("warnung_container").appendChild(newDiv); 
 							});
 							
-							//document.getElementById("warnung_container").innerHTML  = "<div class='warnung_elem' id='warnung_ueberschrift'>Deutscher Wetterdienst</div>" + htmlStr;
-							//document.getElementById("warnung_container").innerHTML  = htmlStr;
-							
 							if(myObj.features.length > 0) {
 								document.getElementById("warnung_container").style.visibility = "visible"; 
 								
 								document.getElementById("warnung").style.height = "auto"; 
 								document.getElementById("warnung").style.visibility = "visible"; 
 								document.getElementById("warnung").style.position = "static"; 
+
+								<% if(data["dwd_position"] == "2") { %> 
+									getCalendar(kalenderElemente-2);
+								<% } %>	
 							} else {
 								document.getElementById("warnung_container").style.visibility = "hidden"; 
 								

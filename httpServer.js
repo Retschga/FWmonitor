@@ -4,7 +4,7 @@
 module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, getIgnoreNextAlarm) {
 
     const debugWSS = require('debug')('wss');
-    //const logger = require('morgan');
+//    const logger = require('morgan');
     const http = require('http');
     const express = require('express');
     const session = require('express-session');

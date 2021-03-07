@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="de">
-
     <head>	
-	
+		<!-- HTML EINSTELLUNGEN -->	
 		<% include partials/head %>	
-        <title>FWmonitor - APP</title>	
-        		
-    </head>
-	
+        <title>FWmonitor - APP</title>	        		
+    </head>	
     <body class="grey-200">
 
-
+		<!-- CONTENT -->
 		<div class="content">
 
+			<!-- Titel -->
 			<div class="row padding red-600">
 				<div class="col-25 padding">
 				  <img class="avatar circle" src="/icons/icon-384x384.png" />
@@ -25,6 +23,7 @@
 
 			<div class="space"></div>
 
+			<!-- Eingabebereich -->
 			<div class="padding">
 
 				<h1 class="align-center text-big">LOGIN</h1>
@@ -52,6 +51,7 @@
 
 		</div>
 
+		<!-- Zurück Knopf -->
 		<button id="backbutton" class="blue circle icon ion-close-round shadow hidden" onclick="location.href='/'" style="top: 1em; left: 1em; position: absolute;"></button>
 
 
@@ -92,7 +92,7 @@
 				return "";
 			}
 		
-			function loginUser(){
+			function loginUser(autologin){
 
 				loadingElement('loginbutton');
 				
@@ -120,15 +120,15 @@
 					} else{
 						closeLoading('loginbutton');	
 						console.log("Telegram ID oder Passwort fehlerhaft!");
-						alert("Telegram ID oder Passwort fehlerhaft!");
-						document.getElementById("userpasscontainer").classList.remove('hidden');	
-						document.getElementById("userpasscontainer").classList.remove('hidden');						
+						if(!autologin) alert("Telegram ID oder Passwort fehlerhaft!");
+						document.getElementById("userpasscontainer").classList.remove('hidden');		
+						document.getElementById("changeusercontainer").classList.add('hidden');					
 					}
 				}) 
 				.catch((err) => {
 					console.error("Login Fehler: ", err);
-					document.getElementById("userpasscontainer").classList.remove('hidden');	
 					document.getElementById("userpasscontainer").classList.remove('hidden');
+					document.getElementById("changeusercontainer").classList.add('hidden');		
 					closeLoading('loginbutton');		
 				})
 			}
@@ -156,10 +156,15 @@
 						document.getElementById("userpasscontainer").classList.add('hidden');		
 						//document.getElementById("submitcontainer").classList.add('hidden');
 						loginUser();
+						setInterval(function(){ 
+							if(document.getElementById("in_telid").value == '' && document.getElementById("in_passwort").value == '')
+							loginUser(true); 
+						}, 15000);
 					}
 				}
 			})
 
+			// Zurück Button für LAN Modus
 			if (location.protocol == "http:") {
 				document.getElementById("backbutton").classList.remove('hidden');
 			}

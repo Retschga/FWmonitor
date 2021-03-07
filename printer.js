@@ -127,6 +127,7 @@ module.exports = function () {
      * @param {String} path 
      */
     function print(path) {
+        debug("printing " + path);
         if (process.env.DRUCKERURL != '') {
             print2(path);
         }

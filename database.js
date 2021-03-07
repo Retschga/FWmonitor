@@ -288,9 +288,12 @@ module.exports = function () {
 
         // Tabelle kalenderGroups Daten
         db.all('INSERT INTO kalenderGroups("id","name","pattern") VALUES (1,"Alle","{{alle}}")').then(rows => {
-          debug("Created Datatable kalenderGroups");
+          debug("Created Datatable kalenderGroups");          
+        }).catch(err => {
+          ;
+        });
 
-          for (let i = 1; i < 8; i++) {
+        for (let i = 1; i < 16; i++) {
             // Tabelle kalenderGroups Daten
             db.all('INSERT INTO kalenderGroups("id","name","pattern") VALUES (' + (i + 1) + ',"Gruppe ' + i + '","{{gr' + i + '}}")').then(rows => {
               debug('#');
@@ -298,9 +301,6 @@ module.exports = function () {
               ;
             })
           }
-        }).catch(err => {
-          ;
-        });
 
         // Tabelle kalender
         db.all('CREATE TABLE IF NOT EXISTS "kalender" ("id"	INTEGER NOT NULL UNIQUE,"summary"	TEXT,"start"	TEXT,"remind"	TEXT,"group"	TEXT,PRIMARY KEY("id" AUTOINCREMENT))')

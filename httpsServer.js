@@ -5,7 +5,7 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 
 	const debug = require('debug')('httpsServer'); 
 	const debugWSS = require('debug')('wss');
-    const logger = require('morgan');
+//    const logger = require('morgan');
     const https = require('https');
     const tls = require('tls');
     const express = require('express');
@@ -125,6 +125,10 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 
 		appHTTPS.use(express.static(path.join(__dirname, 'filesPublic')));
 		appHTTPS.use('/app', routesApp);
+
+		var routesScripts = require('./routes/scripts');
+		appHTTPS.use('/', routesScripts);
+
 
 		appHTTPS.use(function (err, req, res, next) {
 			console.error(err.message);

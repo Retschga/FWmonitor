@@ -158,7 +158,7 @@ async function createKalenderElement(_response, _id, edit = false, editID) {
 							${ edit ? 
 							`<div class="col-10 item">
 								<div class="buttons-group full small align-right">
-									<button class="blue icon-text small radius-left" onclick="openPage('filesHTTPS/kalenderBearbeiten', {id: ${editID}, callback: () => {kalender_loadKalender()}}, kalenderBearbeiten_load);">
+									<button class="blue icon-text small radius-left" onclick="openPage('filesHTTPS/appKalenderBearbeiten', {id: ${editID}, callback: () => {kalender_loadKalender()}}, kalenderBearbeiten_load);">
 										&nbsp;<i class="icon ion-edit"></i>
 									</button>
 									<button class="red icon-text small radius-right" onclick="kalenderBearbeiten_loeschen(${editID});">
@@ -170,6 +170,23 @@ async function createKalenderElement(_response, _id, edit = false, editID) {
 							}
 						</div>`;			
 	document.getElementById(_id).appendChild(newDiv); 
+}
+
+function loadCollapsibles() {
+	let coll = document.getElementsByClassName("collapsible");
+	let i;
+
+	for (i = 0; i < coll.length; i++) {
+		coll[i].addEventListener("click", function() {
+		this.classList.toggle("active");
+		let content = this.nextElementSibling;
+		if (content.style.display === "block") {
+			content.style.display = "none";
+		} else {
+			content.style.display = "block";
+		}
+		});
+	} 
 }
 
 // Icons Karte
@@ -1103,13 +1120,13 @@ async function benutzer_loadBenutzer() {
 						(response[i].softwareInfo=='1' ? '<span class="text-small orange-400 radius padding">Softwareinfo</span><wbr>' : '') +
 						(response[i].kalender=='1' ? '<span class="text-small blue-grey-400 radius padding">Kalender</span><wbr>' : '') +
 						kalGrString +
-						(response[i].status == '-1' ? '<br>Telegr. Bot blockiert ' : ' ') +
-						(response[i].status == '-2' ? '<br>telegr. Benutzer gelöscht' : ' ') +
+						(response[i].status == '-1' ? '<br>Telegr. Bot blockiert -> Benutzer muss /start an den Bot schreiben' : ' ') +
+						(response[i].status == '-2' ? '<br>telegr. Benutzer gelöscht -> Benutzer muss /start an den Bot schreiben' : ' ') +
 						(response[i].allowed != '1' ? '<br>Noch nicht freigegeben!' : ' ') +
 					'</div>	';
 
 			newDiv.addEventListener("click", () => {
-				openPage('filesHTTPS/benutzerBearbeiten', {response: response[i], kalendergruppen: kalendergruppen, alarmgruppen: alarmgruppen}, benutzerBearbeiten_loadBenutzer);
+				openPage('filesHTTPS/appBenutzerBearbeiten', {response: response[i], kalendergruppen: kalendergruppen, alarmgruppen: alarmgruppen}, benutzerBearbeiten_loadBenutzer);
 			}); 
 			
 			document.getElementById("benutzer_list").appendChild(newDiv); 
@@ -1145,6 +1162,8 @@ function benutzerBearbeiten_onChange() {
 };
 
 function benutzerBearbeiten_loadBenutzer(data) {
+
+	loadCollapsibles();
 
 	let response = data.response;
 	benutzerBearbeiten_kalendergruppen = data.kalendergruppen;
@@ -1356,86 +1375,99 @@ async function alarmgruppen_loadGruppen() {
 			newDiv2.className = 'space';	
 									
 			newDiv.className = 'list';
-			newDiv.innerHTML += '<div class="item small-space grey-300 text-grey-700  label-fixed">' +
-									'<label class="text-black">Name</label>' +
-									'<input id="alarmgruppen_name_'+i+'" type="text">' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Einsatzstichwort</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_einsatzstichwort_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Schlagwort</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_schlagwort_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Objekt</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_objekt_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Straße</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_strasse_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Ortsteil</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_ortsteil_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Ort</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_ort_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Bemerkung</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_bemerkung_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Einsatzmittel-eigen</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_cars1_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Einsatzmittel-andere</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_cars2_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Sende Fax</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_fax_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Karte</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_karte_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>' +
-								'<div class="item">' +
-									'<h2>Hydrantenkarte</h2>' +
-									'<div class="right">' +
-										'<input id="alarmgruppen_karteemg_'+i+'" type="checkbox" class="switch green">' +
-									'</div>' +
-								'</div>';
+			newDiv.innerHTML += `<div class="collapsible item small-space grey-300 text-grey-700  label-fixed">
+									<button class="radius icon-text" tabindex="0">
+										<i class="icon ion-chevron-down"></i> Gruppe: 
+									</button>	
+									<input id="alarmgruppen_name_${i}_disp" type="text" readonly disabled>								
+								</div>
+								<div class="collapsible-content">
+									<div class="item">
+										<h2>Name</h2>
+										<div class="right">
+											<label class="text-black hidden">Name</label>
+											<input id="alarmgruppen_name_${i}" type="text" autofocus="false" tabindex="10">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Einsatzstichwort</h2>
+										<div class="right">
+											<input id="alarmgruppen_einsatzstichwort_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Schlagwort</h2>
+										<div class="right">
+											<input id="alarmgruppen_schlagwort_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Objekt</h2>
+										<div class="right">
+											<input id="alarmgruppen_objekt_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Straße</h2>
+										<div class="right">
+											<input id="alarmgruppen_strasse_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Ortsteil</h2>
+										<div class="right">
+											<input id="alarmgruppen_ortsteil_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Ort</h2>
+										<div class="right">
+											<input id="alarmgruppen_ort_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Bemerkung</h2>
+										<div class="right">
+											<input id="alarmgruppen_bemerkung_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Einsatzmittel-eigen</h2>
+										<div class="right">
+											<input id="alarmgruppen_cars1_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Einsatzmittel-andere</h2>
+										<div class="right">
+											<input id="alarmgruppen_cars2_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Sende Fax</h2>
+										<div class="right">
+											<input id="alarmgruppen_fax_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Karte</h2>
+										<div class="right">
+											<input id="alarmgruppen_karte_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+									<div class="item">
+										<h2>Hydrantenkarte</h2>
+										<div class="right">
+											<input id="alarmgruppen_karteemg_${i}" type="checkbox" class="switch green">
+										</div>
+									</div>
+								</div>`;
 
 			
 			document.getElementById("alarmgruppen_list").appendChild(newDiv); 
 			document.getElementById("alarmgruppen_list").appendChild(newDiv2); 
+
+			document.getElementById("alarmgruppen_name_"+i+"_disp").value = response[i].name; 
 
 			document.getElementById("alarmgruppen_name_"+i).value = response[i].name; 
 			document.getElementById("alarmgruppen_name_"+i).addEventListener("input", () => {
@@ -1505,6 +1537,8 @@ async function alarmgruppen_loadGruppen() {
 			alarmgruppen_count = i;
 		
 		}
+
+		loadCollapsibles();
 
 	} catch (error) {
 		console.log(error);	
@@ -2091,7 +2125,7 @@ async function clients_load() {
 					} else if(elem.id == "4") {
 						newDiv.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Präsentation</label>
-												<button class="red-400 small right" onclick="openPage('filesHTTPS/praesentation', null, praesentation_load)">Ausführen</button>
+												<button class="red-400 small right" onclick="openPage('filesHTTPS/appPraesentation', null, praesentation_load)">Ausführen</button>
 											</div>`
 					// Seite Zurück
 					} else if(elem.id == "5") {
@@ -2182,7 +2216,7 @@ async function vervuegbarkeitplaene_load() {
 			newDiv.innerHTML += `<div class="item">
 					<h2 
 						class="icon ion-edit"
-						onclick="openPage('filesHTTPS/verfuegbarkeitPlanBearbeiten', ${i}, vervuegbarkeitplaeneBearbeiten_load);"
+						onclick="openPage('filesHTTPS/appVerfuegbarkeitPlanBearbeiten', ${i}, vervuegbarkeitplaeneBearbeiten_load);"
 					>&nbsp;&nbsp;${ response.statusPlans["plans"][i].name }</h2>
 					<div class="right">
 						<input 

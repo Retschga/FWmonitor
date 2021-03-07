@@ -1,13 +1,12 @@
 ﻿<!DOCTYPE html>
 <html lang="de">
-
     <head>	
-	
+		<!-- HTML EINSTELLUNGEN -->	
 		<% include partials/head %>	
         <title>FWmonitor - APP</title>	
 		
-    </head>
-	
+		<script src="/app/appClient.js"></script>	
+    </head>	
     <body class="bodybg">
 		
 		<!-- HEADER -->
@@ -36,22 +35,22 @@
 			</div>
 			<% if(data["nurLAN"] == "0") { %>  
 			<% } %>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/kalender', null, kalender_loadKalender)" >Kalender</button>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/alarmList', -5, alteAlarme_loadAlarm)">Letzte Einsätze</button>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/statistik', null, statistik_loadStatistik)">Statistik</button>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/verfuegbarkeit', null, verfuegbarkeit_load)">Verfügbarkeit</button>
-			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/hydrantenkarte', null, hydrantenkarte_load)">Hydrantenkarte</button>
-			<button class="red-600 full" onclick="openPage('filesHTTPS/einstellungen', null, einstellungen_load)">Einstellungen</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appKalender', null, kalender_loadKalender)" >Kalender</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appAlarmList', -5, alteAlarme_loadAlarm)">Letzte Einsätze</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appStatistik', null, statistik_loadStatistik)">Statistik</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appVerfuegbarkeit', null, verfuegbarkeit_load)">Verfügbarkeit</button>
+			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appHydrantenkarte', null, hydrantenkarte_load)">Hydrantenkarte</button>
+			<button class="red-600 full" onclick="openPage('filesHTTPS/appEinstellungen', null, einstellungen_load)">Einstellungen</button>
 			
 			<% if(data["admin"] == "1") { %>  
 				<p class="align-center">Administrator Bereich</p>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/benutzer', null, benutzer_loadBenutzer)">Benutzer</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/kalenderGruppen', null, kalendergruppen_loadGruppen)">Kalendergruppen</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/alarmGruppen', null, alarmgruppen_loadGruppen)">Alarmgruppen</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/alarmierung', null, alarmierung_load)">Alarmierung</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/clients', null, clients_load)">Verb. Geräte</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/praesentation', null, praesentation_load)">Präsentation</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/slideshow', null, diashow_load)">Diashowbilder</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appBenutzer', null, benutzer_loadBenutzer)">Benutzer</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appKalenderGruppen', null, kalendergruppen_loadGruppen)">Kalendergruppen</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appAlarmGruppen', null, alarmgruppen_loadGruppen)">Alarmgruppen</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appAlarmEinstellungen', null, alarmierung_load)">Alarmierung</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appClients', null, clients_load)">Verb. Geräte</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appPraesentation', null, praesentation_load)">Präsentation</button>
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appSlideshow', null, diashow_load)">Diashowbilder</button>
 				<p></p>
 			<% } %>
 			<button class="red-600 full border-top-white" onclick="window.location.replace('/app/api/logout');">Abmelden</button>
@@ -69,13 +68,14 @@
 				</h1>
 			<% } %>						
 
+			<!-- Aktueller Alarm -->
 			<% if(data["alarm"] == "true") { %>  
-				<button class="blue-700 full" onclick="openPage('filesHTTPS/alarm', <%= data["alarmID"] %>, alarm_loadAlarm)">
+				<button class="blue-700 full" onclick="openPage('filesHTTPS/appAlarm', <%= data["alarmID"] %>, alarm_loadAlarm)">
 					Aktuellen Einsatz öffnen
 				</button>
 			<% } %>
 
-			
+			<!-- Verfügbarkeit -->
 			<h1 class="text-big">Verfügbarkeit:</h1>
 			<div class="padding border-grey-300 row">
 				<div class="col-20">
@@ -90,15 +90,14 @@
 						</h2>
 					</div>
 				</div>
-				<button class="col red-600 border-red-300 radius" onclick="openPage('filesHTTPS/verfuegbarkeit', null, verfuegbarkeit_load)">
+				<button class="col red-600 border-red-300 radius" onclick="openPage('filesHTTPS/appVerfuegbarkeit', null, verfuegbarkeit_load)">
 					Ändern
 				</button>
 			</div>	
 			
 			<div class="space"></div>	
-
 			
-			
+			<!-- Kalender -->
 			<h1 class="text-big">Kalender</h1>		
 			<div class="row">			
 				<div class="list">
@@ -109,16 +108,14 @@
 					</div>
 					
 					<div class="padding">
-						<button class="item red-600 border-grey-200 radius small" onclick="openPage('filesHTTPS/kalender', null, kalender_loadKalender)">
+						<button class="item red-600 border-grey-200 radius small" onclick="openPage('filesHTTPS/appKalender', null, kalender_loadKalender)">
 							Kalender Öffnen
 						</button>
 					</div>
 				</div>
 			</div>
 			<div class="space"></div>	
-<!--
-			<input id="file" type="file" accept="image/*">
--->		
+
 		</div>
 
 	  
@@ -151,24 +148,20 @@
 		</script>
 
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"></script>		
-		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>		
 		
-		<script src="/app/appClient.js"></script>	
 		<script src="filesHTTPS/javascripts/appMain.js"></script>	
 		<script src="/javascripts/calendar.js"></script>			
     
 		<script>
-
 			var firststart = true;
-		//	setTimeout(function() { 
-		//		firststart = false;			
-		//	}, 1000);
 		
+			// Fix dass 1. Seite immer #0 hat (siehe umbau MobileUI Router)
 			let h = parseInt(location.hash.substring(1));
 			if(h != 0)
 				history.pushState({}, 'Start', '#0')
 	
-		
+			// App gestartet
 			window.onload = function () {
 				console.log('Dokument geladen');
 				index_loadKalender();
@@ -176,22 +169,22 @@
 				firststart = false;	
 
 				<% if(data["alarm"] == "true") { %>  
-					openPage('filesHTTPS/alarm', <%= data["alarmID"] %>, alarm_loadAlarm);
+					openPage('filesHTTPS/appAlarm', <%= data["alarmID"] %>, alarm_loadAlarm);
 				<% } %>
 			}			
+
+			// Zu App gewechselt
 			document.addEventListener("visibilitychange", function() {
 				if (document.visibilityState === 'visible' && !firststart) {
 					console.log("open");	
 					index_loadKalender();	
 					index_loadStatus();		
-				//	<% if(data["nurLAN"] == "0") { %> 
-				//		index_loadStatus();		
-				//	<% } %>
 				} else {
 					console.log("close");
 				}
 			});
 
+			// App-Einstellung aktiviert
 			<% if(data["nurLAN"] == "0") { %>  					
 
 				// ----------------  ProgressivWebApp ---------------- 
@@ -231,10 +224,9 @@
 							});
 						};						
 					}, 1000);
-				} else {	
-					
-					var deferredPrompt;
 
+				} else {
+					var deferredPrompt;
 					var pwa_install = function() {						
 						// Show the prompt
 						deferredPrompt.prompt();
@@ -258,7 +250,6 @@
 						deferredPrompt = e;
 
 						setTimeout(function(){ 
-
 							alert({
 								title:'App Installation',
 								message:'App installieren?',
@@ -281,13 +272,9 @@
 									}
 								]
 							});
-
 						}, 2000);	
-					});
-
+					});					
 				}
-
-
 			<% } %>			
 
 		</script>

@@ -8,17 +8,37 @@ module.exports = function (_alarmManager) {
     // ----------------  LIBRARIES ---------------- 
     const chokidar = require('chokidar');
     const moveFile = require('move-file');
-    var print = require('./printer')();
+    const fs = require('fs');
+    const imaps = require('imap-simple');
+    const simpleParser = require('mailparser').simpleParser;
+    const print = require('./printer')();
+    const debug = require('debug')('alarmWatcher');
+ 
 
-	const EventEmitter = require('events');
-    var eventEmitter = new EventEmitter();
 
-    // ---------------- Timeout Funktion ----------------
+
     function timeout(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    function getFormattedTime(date) {        
+        var today = new Date();
+        if(date) today = new Date(date);
 
+        var y = today.getFullYear();
+        // JavaScript months are 0-based.
+        var m = today.getMonth() + 1;
+        if(m<10) m = '0' + m;
+        var d = parseInt(today.getDate());
+        if(d<10) d = '0' + d;
+        var h = parseInt(today.getHours());
+        if(h<10) h = '0' + h;
+        var mi = parseInt(today.getMinutes());
+        if(mi<10) mi = '0' + mi;
+        var s = parseInt(today.getSeconds());
+        if(s<10) s = '0' + s;
+        return y + "-" + m + "-" + d + " " + h + "-" + mi + "-" + s;
+    }
 
     /**
      * https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
@@ -44,7 +64,7 @@ module.exports = function (_alarmManager) {
 
 
     async function convertPdfToTiff(file, targetPath) {
-        await execShellCommand(`"${process.env.GHOSTSCRIPT_PATH}" -dBATCH -sDEVICE=tiffg4 -dNOPAUSE -r600x600 -sOutputFile="${targetPath}" "${file}"`);
+        await execShellCommand(`"${process.env.GHOSTSCRIPT_PATH}" -dBATCH -sDEVICE=tiffg4 -dNOPAUSE -r300x300 -sOutputFile="${targetPath}" "${file}"`);
         console.log("PDF -> TIFF    FERTIG\n")
     }
 
@@ -69,11 +89,18 @@ module.exports = function (_alarmManager) {
         }
     }
 
-
     async function start() {
+        if(process.env.ALARM_IN_FAX == 'true') {
+            startFax();
+        }
+        if(process.env.ALARM_IN_EMAIL == 'true') {
+            startEmail();
+        }
+    }
 
-        // ---------------- Raspberry PI Version ----------------
-        console.log("[APP] gestartet");
+    async function startFax() {
+
+        console.log("[APP] FAX Auswertung gestartet");
 
         // Verzeichnisüberwachung
         chokidar.watch(process.env.FOLDER_IN, {
@@ -95,7 +122,7 @@ module.exports = function (_alarmManager) {
             await timeout(parseInt(process.env.FAX_INPUT_DELAY) * 1000);
 
             let filetype = path.split('.').pop().toLowerCase();   
-            let file = path.split(/[/\\]/g).pop().split('.')[0];
+            let file = getFormattedTime(); //path.split(/[/\\]/g).pop().split('.')[0];
 
             console.log(`[App] Filetype: ${filetype}`);
 
@@ -169,9 +196,113 @@ module.exports = function (_alarmManager) {
 
     }
     
+    async function startEmail() {
 
-	return {
-        eventEmitter,
+        console.log("[APP] E-Mail Auswertung gestartet");
+
+        let connection;
+        var config = {
+            imap: {
+                user: process.env.ALARM_IN_EMAIL_ADRESSE,
+                password: process.env.ALARM_IN_EMAIL_PASSWORT,
+                host: process.env.ALARM_IN_EMAIL_HOST,
+                tlsOptions: { 
+                    servername: process.env.ALARM_IN_EMAIL_SERVERNAME, // See nodejs/node#28167
+                },
+                port: process.env.ALARM_IN_EMAIL_PORT,
+                tls: true,
+                authTimeout: 3000
+            },
+            onmail: function (numNewMail) {
+                console.log("Neue Email empfangen - Anzahl:" + numNewMail);
+                // -> Emails abrufen
+                getEmails(connection);
+            }
+        };
+
+        try {
+            connection = await imaps.connect(config);  
+            await connection.openBox('INBOX');
+        } catch (error) {
+            console.error(error);
+            return;
+        }         
+             
+    }
+
+    async function getEmails(connection) { 
+
+        var searchCriteria = [
+            'UNSEEN'                    
+        ];
+
+        if(process.env.FILTER_EMAIL_BETREFF != '') {
+            searchCriteria.push(['HEADER', 'SUBJECT', process.env.FILTER_EMAIL_BETREFF]);
+        }  
+
+        var fetchOptions = {
+            bodies: [''],
+            markSeen: false
+        };
+    
+        return connection.search(searchCriteria, fetchOptions).then(function (results) {
+
+            results.forEach(function (item) {
+
+                let all = item.parts.filter(function (part) {
+                    return part.which === '';
+                })[0]
+
+                var id = item.attributes.uid;
+                var idHeader = "Imap-Id: "+id+"\r\n";
+                simpleParser(idHeader+all.body, (err, mail) => {
+                    console.log("\n---- EMAIL ----");
+                    //console.log(mail.from)
+                    console.log(mail.subject)
+                    console.log(mail.date)
+                    console.log(mail.text)
+                    console.log()
+
+                    // Faxfilter anwenden
+                    var regex = RegExp(process.env.FILTER_EMAIL_INHALT, 'gi');
+                    if (!regex.test(mail.text)) {
+                        return;
+                    }
+
+                    connection.addFlags(id, ['\\Seen'], function (err) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log("Marked as read!")
+                        }
+                    });
+
+
+                    console.log('Alarm Email eingegangen -> Verarbeiten');
+                    processAlarmMail(mail.text, mail.date);
+
+                });
+            });
+    
+        });        
+
+    }
+
+    async function processAlarmMail(data, date) {
+        let file = './temp/' + getFormattedTime(date) + '.txt';
+
+
+        fs.writeFile(file, data, function (err) {
+            if (err) return console.log(err);
+            console.log(data + ' > ' + file);
+        });
+
+        // Textdatei verarbeiten
+        _alarmManager[0].parseFile(file, true);
+    }
+
+
+	return {        
         start
 	};
 }

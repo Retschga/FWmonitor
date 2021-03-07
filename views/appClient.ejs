@@ -67,6 +67,18 @@ async function askPermission() {
 	});
 }
 
+function invokeServiceWorkerUpdateFlow(registration) {
+    // TODO implement your own UI notification element
+	alert("Update... Bitte warten ...");
+    notification.show("New version of the app is available. Refresh now?");
+    notification.addEventListener('click', () => {
+        if (registration.waiting) {
+            // let waiting Service Worker know it should became active
+            registration.waiting.postMessage('SKIP_WAITING')
+        }
+    })
+}
+
 
 // -------- Register a Service Worker--------
 async function serviceWorker_run() {
@@ -74,8 +86,46 @@ async function serviceWorker_run() {
 	// Registriere Service Worker
 	console.log('Registering service worker');	
 	serviceWorker_registration = await navigator.serviceWorker.
-		register('/app/appWorker.js', { scope: "/app/" });		
+		register('/app/appWorker.js', { scope: "/app/" });
+		
+	
+		// updatefound is fired if service-worker.js changes.
+		serviceWorker_registration.onupdatefound = function() {
+			var installingWorker = serviceWorker_registration.installing;
+	
+			installingWorker.onstatechange = function() {
+			switch (installingWorker.state) {
+				case 'installed':
+					if (navigator.serviceWorker.controller) {
+						// At this point, the old content will have been purged and the fresh content will
+						// have been added to the cache.
+						// It's the perfect time to display a "New content is available; please refresh."
+						// message in the page's interface.
+						console.log('New or updated content is available.');
+						if(!alert("update....")) window.location.reload();
+					} else {
+						// At this point, everything has been precached.
+						// It's the perfect time to display a "Content is cached for offline use." message.
+						console.log('Content is now available offline!');
+					}
+					break;
+	
+				case 'redundant':
+					console.error('The installing service worker became redundant.');
+					break;
+			}
+			};
+		};
+		  
+	
+
 	console.log('Registered service worker');
+
+	// ensure the case when the updatefound event was missed is also handled
+	// by re-invoking the prompt when there's a waiting Service Worker
+	if (serviceWorker_registration.waiting) {
+		invokeServiceWorkerUpdateFlow(serviceWorker_registration)
+	}
   
 	await navigator.serviceWorker.ready;
 }
@@ -85,6 +135,17 @@ async function serviceWorker_run() {
 async function start() {
 	console.log('Initiate Service Worker');
 	await serviceWorker_run().catch(error => console.error(error));
+
+	let refreshing = false;
+	// detect controller change and refresh the page
+	navigator.serviceWorker.addEventListener('controllerchange', () => {
+		if (!refreshing) {
+			//if(!alert("update...."))
+			//window.location.reload()
+			refreshing = true
+		}
+	})
+
 
 	// -------- Feature Detection --------
 	if ('serviceWorker' in navigator) {

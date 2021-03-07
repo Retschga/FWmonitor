@@ -128,7 +128,7 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 							m.keyboard(mainKeyboard).resize()
 						));
 
-						await setVervTrue(ctx.from.id);
+						await setVerfTrue(ctx.from.id);
 				}
 
 			} else {
@@ -780,7 +780,7 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 	});
 	onCallback.on('VerfuegbarJA', async (ctx) => {
 
-		await setVervTrue(ctx.from.id);
+		await setVerfTrue(ctx.from.id);
 
 		ctx.answerCbQuery("🚒 Status -> 🟩  Verfügbar", false);
 		ctx.editMessageText("🚒 Status -> 🟩  Verfügbar");
@@ -817,7 +817,7 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			result = "";
 		}
 
-		await setVervFalse(ctx.from.id, result);
+		await setVerfFalse(ctx.from.id, result);
 
 		ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
 		ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
@@ -885,7 +885,7 @@ _${st_nichtverf}_`,
 					if (element.statusUntil != "") {
 						let dateUntil = new Date(element.statusUntil);
 						if (dateUntil < dateNow) {
-							await setVervTrue(element.telegramid);
+							await setVerfTrue(element.telegramid);
 							bot.telegram.sendMessage(element.telegramid, '🚒 Status -> 🟩  Verfügbar', Telegraf.Extra.markdown());
 						}
 					} else if(
@@ -902,7 +902,7 @@ _${st_nichtverf}_`,
 								let dateUntil = new Date();
 								dateUntil.setHours(plan.to.split(':')[0]);
 								dateUntil.setMinutes(plan.to.split(':')[1]);
-								await setVervFalse(element.telegramid, dateUntil);
+								await setVerfFalse(element.telegramid, dateUntil);
 								bot.telegram.sendMessage(element.telegramid, '🚒 Status ->  Nicht Verfügbar', Telegraf.Extra.markdown());
 							}
 						});
@@ -919,8 +919,8 @@ _${st_nichtverf}_`,
 	 * Setze User auf Verfügbar
 	 * @param {Integer} telID 
 	 */
-	async function setVervTrue(telID) {
-		debug('setVervTrue', telID);
+	async function setVerfTrue(telID) {
+		debug('setVerfTrue', telID);
 		try {
 
 			await db.setUserStatus(telID, 1, "");
@@ -938,7 +938,7 @@ _${st_nichtverf}_`,
 			db.addStatistik(db.STATISTIK.SET_VERV, telID);
 
 		} catch (error) {
-			console.error('[TelegramBot] setVervTrue() Fehler', error);
+			console.error('[TelegramBot] setVerfTrue() Fehler', error);
 		}
 	}
 
@@ -947,8 +947,8 @@ _${st_nichtverf}_`,
 	 * @param {Integer} telID 
 	 * @param {Date} until 
 	 */
-	async function setVervFalse(telID, until) {
-		debug('setVervFalse', telID);
+	async function setVerfFalse(telID, until) {
+		debug('setVerfFalse', telID);
 		try {
 
 			if(!until) until = "";
@@ -967,7 +967,7 @@ _${st_nichtverf}_`,
 			db.addStatistik(db.STATISTIK.SET_VERV, telID);
 
 		} catch (error) {
-			console.error('[TelegramBot] setVervFalse() Fehler', error);
+			console.error('[TelegramBot] setVerfFalse() Fehler', error);
 		}
 	}
 

@@ -358,9 +358,7 @@ function createMap(dest, hydrantenCache, center = false) {
 			}, 50);
 			console.log("MAP CENTER 1", alarm_map_pos, alarm_map_moved);
 		}
-		setTimeout(function(){ 
-			alarm_mapCenter(); 
-		}, 1500);
+		alarm_mapCenter(); 
 	}
 
 	setTimeout(function(){ 
@@ -399,6 +397,8 @@ var alarm_setupMap = function(response) {
 
 	// Zielkoordinaten
 	let dest = {lat:response.lat, lng:response.lng};
+
+	console.log("Alarm dest: ", dest);
 	
 	// Karte erstellen
 	let ret = createMap(dest, response.hydrantenCache, true);
@@ -517,7 +517,8 @@ var alarm_setupMap = function(response) {
 		GPS_hasChanged = () => {	
 			console.log("GPS change", alarm_map_moved);	
 
-			let pos = {lat:GPS_now.lat, lng:GPS_now.lng};		
+			let pos = {lat:GPS_now.lat, lng:GPS_now.lng};	
+			if(pos.lng == 0 || pos.lat == 0) return;				
 			alarm_map_pos = [pos.lng, pos.lat];
 			posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(alarm_map_pos)) : null);
 			

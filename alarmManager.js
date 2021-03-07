@@ -20,9 +20,9 @@ module.exports = function () {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
+	
 
-
-	function parseFile(path) {
+	function parseFile(path, nofilter) {
 
 		// TXT Datei einlesen
 		fs.readFile(path, 'utf8', async function (err, data) {
@@ -40,7 +40,7 @@ module.exports = function () {
 
 			// Faxfilter anwenden
 			var regex = RegExp(process.env.FAXFILTER, 'gi');
-			if (!regex.test(data)) {
+			if (!nofilter && !regex.test(data)) {
 				debug('Faxfilter nicht gefunden -> kein Alarm');
 				return;
 			}
@@ -93,7 +93,7 @@ module.exports = function () {
 
 			// Alarmusdruck erzeugen
 			const puppeteer = require('puppeteer');
-			if (process.env.ALARMDRUCK == 'true') {
+			//if (process.env.ALARMDRUCK == 'true') {
 
 				debug('Starte Puppeteer');
 				const browser = await puppeteer.launch({args: ['--allow-file-access-from-files', '--enable-local-file-accesses']})
@@ -111,6 +111,7 @@ module.exports = function () {
 					"&lat=" + geoData.lat +
 					"&lng=" + geoData.lng +
 					"&isAddress=" + (geoData.isAddress == true ? 1 : 0),
+					"&noMap=" + (fields.STRASSE == "" && geoData.isAddress == false ? 1 : 0),
 					{waitUntil: 'networkidle2'}
 				);
 
@@ -141,6 +142,9 @@ module.exports = function () {
 
 				await browser.close();
 
+				debug('Fertig');
+
+			if (process.env.ALARMDRUCK == 'true') {
 				debug('Fertig -> Drucken');
 
 				for(let i = 0; i < parseInt(process.env.ALARMDRUCKSEITENZAHL); i++) {

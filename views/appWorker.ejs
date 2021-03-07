@@ -1,22 +1,49 @@
-console.log('Loaded service worker!');
+const staticCacheName = 'cache-vers-2021-03-07-028';
 
-const staticCacheName = 'pages-cache-Vers.-2021-02-10-001';
+console.log('Loaded service worker! Cache Version ' + staticCacheName);
+
 
 const filesToCache = [
-//	'/app/404.html',
 	'/app/offline.html',
-//  '/app/index.html',
-	'/stylesheets/normalize.min.css',
-	'/app/appClient.js',
-	'/app/filesHTTPS/javascripts/appMain.js',
 
 	'/app/auto/index.html',
-	'/app/filesHTTPS/javascripts/autoMain.js',
+	'/app/filesHTTPS/autoAlarm.html',
 	'/app/filesHTTPS/autoFunk.html',
 	'/app/filesHTTPS/autoGPS.html',
 	'/app/filesHTTPS/autoKarte.html',
-	'/app/filesHTTPS/autoAlarm.html',
+//	'/app/filesHTTPS/autoNavi.html',
 	'/app/filesHTTPS/autoSettings.html',
+
+//  '/app/index.html',
+	'/app/filesHTTPS/appAlarm.html',
+	'/app/filesHTTPS/appAlarmEinstellungen.html',
+	'/app/filesHTTPS/appAlarmGruppen.html',
+	'/app/filesHTTPS/appAlarmList.html',
+	'/app/filesHTTPS/appBenutzer.html',
+	'/app/filesHTTPS/appBenutzerBearbeiten.html',
+	'/app/filesHTTPS/appClients.html',
+	'/app/filesHTTPS/appEinstellungen.html',
+	'/app/filesHTTPS/appHydrantenkarte.html',
+	'/app/filesHTTPS/appKalender.html',
+	'/app/filesHTTPS/appKalenderBearbeiten.html',
+	'/app/filesHTTPS/appKalenderGruppen.html',
+	'/app/filesHTTPS/appKalenderKomplett.html',
+	'/app/filesHTTPS/appPraesentation.html',
+	'/app/filesHTTPS/appSlideshow.html',
+	'/app/filesHTTPS/appStatistik.html',
+//	'/app/filesHTTPS/appUploadImage.html',
+	'/app/filesHTTPS/appVerfuegbarkeit.html',
+	'/app/filesHTTPS/appVerfuegbarkeitPlan.html',
+	'/app/filesHTTPS/appVerfuegbarkeitPlanBearbeiten.html',
+
+
+//	'/app/appClient.js',
+	'/app/filesHTTPS/javascripts/appMain.js',
+	'/app/filesHTTPS/javascripts/autoMain.js',
+	'/javascripts/calendar.js',
+	'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js',
+	'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js',
+	
 
 	'/images/AGT.png',
 	'/images/MA.png',
@@ -28,7 +55,12 @@ const filesToCache = [
 	'/app/filesHTTPS/manifest.json',
 	'/app/filesHTTPS/images/funkstatus.png',
 
+
+	'/stylesheets/normalize.min.css',
 	'/stylesheets/appMain.css',
+	'/stylesheets/calendar.min.css',
+	'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css',
+
 	'/mobileui/base/reset.css',
 	'/mobileui/base/mobileui.css',
 	'/mobileui/base/colors.css',
@@ -54,9 +86,7 @@ const filesToCache = [
 	'/mobileui/alert/script.js',
 	'/mobileui/page/script.js',
 	'/mobileui/tab/script.js',
-	'/mobileui/base/fonts/ionicons.woff?v=2.0.0',
- 
-	'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css',
+	'/mobileui/base/fonts/ionicons.woff?v=2.0.0'
 ];
 
 
@@ -173,7 +203,7 @@ self.addEventListener('notificationclick', function(event) {
 
 // -------- Service Worker FETCH --------
 this.addEventListener('fetch', function(event) {
-	console.log('Fetch event for ', event.request.url);
+//	console.log('Fetch event for ', event.request.url);
   	event.respondWith(
     	caches.match(event.request)
     	.then(response => {
@@ -206,7 +236,7 @@ this.addEventListener('fetch', function(event) {
 });
 
 
-
+/*
 this.addEventListener('install', event => {
 	console.log('Attempting to install service worker and cache static assets');
 	event.waitUntil(
@@ -215,7 +245,58 @@ this.addEventListener('install', event => {
 			return cache.addAll(filesToCache);
 	  	})
 	);
-});
+});*/
+
+self.addEventListener('install', (event) => {
+	// prevents the waiting, meaning the service worker activates
+	// as soon as it's finished installing
+	// NOTE: don't use this if you don't want your sw to control pages
+	// that were loaded with an older version
+	self.skipWaiting();
+  
+	event.waitUntil((async () => {
+	  try {
+		const cache = await caches.open(staticCacheName);
+		const total = filesToCache.length;
+		let installed = 0;
+  
+		await Promise.all(filesToCache.map(async (url) => {
+		  let controller;
+  
+		  try {
+			controller = new AbortController();
+			const { signal } = controller;
+			// the cache option set to reload will force the browser to
+			// request any of these resources via the network,
+			// which avoids caching older files again
+			const req = new Request(url, { cache: 'reload' });
+			const res = await fetch(req, { signal });
+  
+			if (res && res.status === 200) {
+			  await cache.put(req, res.clone());
+			  installed += 1;
+			} else {
+			  console.info(`unable to fetch ${url} (${res.status})`);
+			}
+		  } catch (e) {
+			console.info(`unable to fetch ${url}, ${e.message}`);
+			// abort request in any case
+			controller.abort();
+		  }
+		}));
+  
+		if (installed === total) {
+		  console.info(`application successfully installed (${installed}/${total} files added in cache)`);
+		} else {
+		  console.info(`application partially installed (${installed}/${total} files added in cache)`);
+		}
+	  } catch (e) {
+		console.error(`unable to install application, ${e.message}`);
+	  }
+	})());
+  });
+
+
   
 
 self.addEventListener('activate', event => {
@@ -234,5 +315,23 @@ self.addEventListener('activate', event => {
 			);
 	  	})
 	);
+	console.log('Activating new service worker... DONE');
 });
   
+
+self.addEventListener('updatefound', () => {
+	if (registration.installing) {
+		// wait until the new Service worker is actually installed (ready to take over)
+		registration.installing.addEventListener('statechange', () => {
+			if (registration.waiting) {
+				// if there's an existing controller (previous Service Worker), show the prompt
+				if (navigator.serviceWorker.controller) {
+					invokeServiceWorkerUpdateFlow(registration)
+				} else {
+					// otherwise it's the first install, nothing to do
+					console.log('Service Worker initialized for the first time')
+				}
+			}
+		})
+	}
+})

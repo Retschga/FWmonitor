@@ -1,4 +1,4 @@
-﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI,update
+﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI,update,alarmWatcher
 
 # Um Änderungen zu übernehmen muss das Programm neu gestartet werden
 
@@ -27,9 +27,6 @@ ORS_KEY=
 BOT_SENDALARM=false
 APP_SENDALARM=false
 
-# Regex Faxfilter (kann leer bleiben) (Groß/Kleinschreibung egal) https://regexr.com/
-FAXFILTER=
-
 # Für filter von Fax bei Einsatzmittel
 FW_NAME=Feuerwehr Name 
 
@@ -37,19 +34,50 @@ FW_NAME=Feuerwehr Name
 ALARM_VISIBLE=250
 
 
-######## ORDNER ########
+######## EMAIL ALARM ########
+
+# Alarmeingang  (true/false)
+ALARM_IN_EMAIL=false
+
+# Betreff-Filter (kann leer bleiben)
+FILTER_EMAIL_BETREFF=
+
+# Regex Inhalt-Filter (leer = kein Filter) (Groß/Kleinschreibung egal) https://regexr.com/
+FILTER_EMAIL_INHALT=
+
+# Emailadresse
+ALARM_IN_EMAIL_ADRESSE=
+
+# Emailpasswort
+ALARM_IN_EMAIL_PASSWORT=
+
+# Emailhost
+# Bei Gmail muss diese Einstellung getätigt werden: https://www.google.com/settings/security/lesssecureapps
+ALARM_IN_EMAIL_HOST=imap.gmail.com
+
+# Email Port
+ALARM_IN_EMAIL_PORT=993
+
+# TLS Servername (wird anscheinend bei Gmail gebrauch = Emailhost, sonst freilassen)
+ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
+
+
+
+######## FAX ALARM ########
+
+# Alarmeingang  (true/false)
+ALARM_IN_FAX=true
+
+# Fax Eingang Verzögerung (sek) (evtl bei Hylafax nötig ca. 30 ??)
+FAX_INPUT_DELAY=0
+
+# Regex Faxfilter (leer = kein Filter) (Groß/Kleinschreibung egal) https://regexr.com/
+FAXFILTER=
 
 # Faxeingangs Ordner (Unter Windows: Ausgangsordner von EM-OCR; Raspberry: Faxordner Hylafax)
 # lokaler Pfad C:/ordner/ordner/
 # bei Netzwerk \\netzwerkpc\ordner\
 FOLDER_IN=C:\Eingang
-
-# Archiv Ordner (Unter Windows: bevorzugt der gleiche wie in EM-OCR eingestellt)
-# lokaler Pfad C:/ordner/ordner/
-FOLDER_ARCHIVE=C:\Archiv
-
-# Telegram Bilder automatisch in Diashow ohne man. Freigabe (true/false)
-BOT_IMG_AUTOFREIGABE=true
 
 # Pfad zu Tesseract (Raspberry: siehe 'which tesseract')
 TESSERACT_PATH=C:/Program Files/Tesseract-OCR/tesseract.exe
@@ -57,11 +85,19 @@ TESSERACT_PATH=C:/Program Files/Tesseract-OCR/tesseract.exe
 # Pfad zu Ghostscript (Raspberry: siehe 'which ghostscript')
 GHOSTSCRIPT_PATH=C:/Program Files/gs/gs9.53.3/bin/gswin64c.exe
 
-# Fax Eingang Verzögerung (sek) (evtl bei Hylafax nötig ca. 30 ??)
-FAX_INPUT_DELAY=0
+
+######## ORDNER ########
+
+# Archiv Ordner
+# lokaler Pfad C:/ordner/ordner/
+# bei Netzwerk \\netzwerkpc\ordner\
+FOLDER_ARCHIVE=C:\Archiv
+
+# Telegram Bilder automatisch in Diashow ohne man. Freigabe (true/false)
+BOT_IMG_AUTOFREIGABE=true
 
 
-######## STANDBY Bildschirm / Telegram Kalender ########
+######## STANDBY Bildschirm ########
 
 # DWD Warncellid (https://www.dwd.de/DE/leistungen/opendata/help/warnungen/cap_warncellids_csv.csv)
 DWD_WARCELLID=
@@ -71,12 +107,6 @@ DWD_SHOWWARNINGS=true
 
 # DWD Warnungen anzeigen - Posiion (1=links, 2=rechts)
 DWD_WARNINGSPOSITION=1
-
-# Kalender (ICAL Link) (https://support.google.com/calendar/answer/37648?hl=de)
-# Unter Einstellungen, Betreffenden Kalender auswählen, "Privatadresse im iCal-Format" kopieren
-# Terminnamen Format: "🚒 Hauptübung {{alle}}" (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...)
-# eingetragene Terminerinnerungen werden durch den Bot/App versendet
-ICAL_LINK=
 
 # Für Anzeige bei Standby
 FW_NAME_STANDBY=Freiwillige Feuerwehr Name
@@ -97,6 +127,16 @@ DIASHOW_RANDOM=false
 ST_VERV_HIDDEN=false
 
 
+######## STANDBY Bildschirm / Google Kalender ########
+
+# Kalender (ICAL Link) (https://support.google.com/calendar/answer/37648?hl=de)
+# Unter Einstellungen, Betreffenden Kalender auswählen, "Privatadresse im iCal-Format" kopieren
+# Terminnamen Format: "🚒 Hauptübung {{alle}}" (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...)
+# eingetragene Terminerinnerungen werden durch den Bot/App versendet
+# leer = kein ICAL Kalender -> nur APP Kalender
+ICAL_LINK=
+
+
 ######## FWVV Anbindung ########
 
 # FWVV Anbindung (true/false)
@@ -110,38 +150,33 @@ FWVV_DATENSICHERUNG=
 
 ######## DRUCKEN ########
 
-#Orginalfax Drucken (true/false)
+# Orginalfax drucken (true/false)
 FAX_DRUCK=false
 
-#Seitenzahl
+# Seitenzahl Orginal Fax
 FAX_DRUCK_SEITENZAHL=1
 
-#Alarmdruck (true/false)
+# Alarmdruck Fax/Email (true/false)
 ALARMDRUCK=true
 
-#Kopien
+# Kopien
 ALARMDRUCKSEITENZAHL=1
 
-## Version A ##
+## Version A ## (funktioniert nicht mit jedem Drucker)
 
 #Alarmdrucker URL (siehe verfügbare Drucker bei Programmstart)
 DRUCKERURL=
 
-###############
-
 ## Version B ##
 
 #Alarmdrucker Name (Nur relevant bei Raspi Version, sonst ist es immer der Standarddrucker)
-#DRUCKERNAME=Microsoft Print to PDF
 DRUCKERNAME=
 
-# Drucken mit Foxit Reader (Nur relevant unter Windows) (eines einfach freilassen)
+# Pfad zu Foxit Reader (Nur relevant unter Windows)
 # lokaler Pfad C:/ordner/ordner/
-# Foxit Reader (BEVORZUGT / Funktioniert besser)
-#AREADER=C:/Programme...
+#AREADER=C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe
 AREADER=
 
-###############
 
 ######## PAPIERÜBERWACHUNG ########
 
@@ -153,11 +188,13 @@ AREADER=
 # (Bsp: http://192.168.2.33/start/papier.html)
 PRINTER_PATH=
 # Regex Filter für Papier wenn nicht leer (Bsp: CassLevel[1] = "Nicht Leer";) https://regexr.com/
+# Herauszufinden über: Seite im Browser aufrufen -> Quelltext anzeigen -> Stelle mit Papierlevel finden
+# Filter erstellen, welcher alle "nicht leeren" Texte enthält
 PRINTER_REGEX=
 
 
 ######## APP ########
-# Wenn nicht benötigt/gewollt, einfach nichts eintragen
+# Wenn APP-Funktion nicht benötigt/gewollt, einfach nichts eintragen
 
 # VAPID Keys (Konsolenkommando: "./node_modules/.bin/web-push generate-vapid-keys")
 VAPID_PUBLIC=
@@ -165,7 +202,7 @@ VAPID_PRIVATE=
 # Admin Email
 VAPID_EMAIL=
 
-# DynDns Adresse / MyFritz Adresse (empfohlen) (Bsp. www.example.com)
+# DynDns Adresse / MyFritz Adresse (Bsp. www.app.feuerwehr.de, einsatzpc.erbivuervhie.myfritz.net, ...)
 APP_DNS=
 
 # HTTPS Zertifikat (https://certbot.eff.org/lets-encrypt/windows-other)

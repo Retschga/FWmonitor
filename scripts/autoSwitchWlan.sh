@@ -26,4 +26,9 @@ fi
 if iwlist wlan0 scan | grep -q "$1"; then
   echo "WLAN verfügbar -> Wechseln"
   systemctl restart dhcpcd
+  /sbin/dhclient -v -r
+  /sbin/ifconfig 'wlan0' down
+  sleep 5
+  /sbin/ifconfig 'wlan0' up
+  /sbin/dhclient -r
 fi

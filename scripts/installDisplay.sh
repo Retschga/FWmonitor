@@ -1,8 +1,8 @@
 #!/bin/bash
 # Installation FWmonitor-Alarmdisplay-WebClient on Raspberry PI
-# Für Raspian/Raspberry OS mit GUI
+# Für Raspian/Raspberry OS Full
 # (c) 2020 Johannes Resch
-# Version 1.0
+# Version 1.1
 
 promptyn () {
     while true; do
@@ -29,11 +29,18 @@ if [[ $# -lt 2 ]] ; then
     echo "# Aufruf: installDisplay.sh SERVER_IP:SERVER_PORT CLIENT_NAME"
     exit 1
 fi
+echo '# Server Adresse: ' ${1}
+echo '# Clientname:     ' ${2}
 
-echo '# Server IP: ${1}'
+# Setze RPI Hostname
+/usr/bin/raspi-config nonint do_hostname rpi-${2}
 
 # Bind current directory
 nomInstalDir=$(pwd)
+
+# Installiere Programme
+echo "Installiere Programme"
+sudo apt -y install --no-install-recommends unclutter
 
 # Herunterladen der Skripte
 echo "Lade Skripte herunter"
@@ -62,13 +69,29 @@ sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' /home/pi/.config/chromi
 sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /home/pi/.config/chromium/Default/Preferences
 
 @unclutter -idle 0
+@chromium-browser \
+--disable-features=InfiniteSessionRestore \
+--disable-session-crashed-bubble \
+--disk-cache-dir=/dev/null \
+--overscroll-history-navigation=0 \
+--disable-pinch \
+--no-first-run \
+--noerrors \
+--disable-infobars \
+--enable-webgl \
+--ignore-gpu-blacklist \
+--start-fullscreen \
+--disable-translate \
+--disable-features=TranslateUI \
+--fast \
+--fast-start \
+--app=http://${1}/?name=${2}
 EOF
-echo "@chromium-browser --disable-features=InfiniteSessionRestore --disable-session-crashed-bubble --no-first-run --noerrors --disable-infobars --enable-webgl --ignore-gpu-blacklist --start-fullscreen --app=http://${1}/?name=${2}" >> ${varAutostart}
 
 # Installation watchdog
 if promptyn "# Watchdog installieren? (y/n)"; then
     echo "# Installation watchdog"
-    sudo apt-get install watchdog
+    sudo apt install watchdog
     watchdogentry="  watchdog-device        = /dev/watchdog"
     sudo cat /etc/watchdog.conf | grep -q "${watchdogentry}"  && echo 'entry already exists' || ( (echo "${watchdogentry}") >> /etc/watchdog.conf )
     watchdogentry="  max-load-5             = 24"

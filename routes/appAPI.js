@@ -334,14 +334,24 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 
 		// URL Overpass-API für Hydranten    siehe Ovepass turbo
-		let overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data=" +
-			"[out:json][timeout:25];(" +
-			"way[%22name%22=%22" + rows.strasse + "%22](around:5000," + rows.lat + "," + rows.lng + ");" +
-			");out geom;%3E;out%20skel%20qt;";
-		let overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data=" +
-			"[out:json][timeout:25];(" +
-			"way[building](around:200," + rows.lat + "," + rows.lng + ");" +
-			");out geom;%3E;";
+		let overpassStrassenUrl = `http://overpass-api.de/api/interpreter?data=
+			[out:json][timeout:25];
+			(
+			way[%22name%22~%22${rows.strasse.replace(/ss|ß/g, '(ss|%C3%9F)')}%22]
+			(around:1000,${rows.lat}, ${rows.lng});
+			);
+			out geom;
+			%3E;
+			out%20skel%20qt;`;		
+			
+		var overpassGebaudeUrl = `http://overpass-api.de/api/interpreter?data=
+			[out:json][timeout:25];
+			(
+			way[building]
+			(around:200,${rows.lat}, ${rows.lng});
+			);
+			out geom;
+			%3E;`;
 
 
 		
@@ -359,6 +369,8 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 			let dataIn = responseJSON["elements"];
 			let polylinePoints = [];
+
+//			console.log("strassenData", overpassStrassenUrl, dataIn)
 
 			if (dataIn.length < 1)
 				return;
@@ -928,7 +940,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 		ret.push({"id": "-1", "type": `{"type":"MainSoftware",
 					"name":"FWmonitor - Haupt Software",
-					"info":"v${process.env.VERSION} ${process.env.VERSION != process.env.VERSION_REMOTE ? '(v'+process.env.VERSION_REMOTE+' Verfügbar)' : ''}",
+					"info":"v${process.env.VERSION} ${process.env.VERSION != process.env.VERSION_REMOTE && process.env.VERSION_REMOTE != '' ? '(v'+process.env.VERSION_REMOTE+' Verfügbar)' : ''}",
 					"actions":[{"id": "7"}, {"id": "-1", "key": "Startzeit", "value": "${startTime}"}]}`
 				});
 		

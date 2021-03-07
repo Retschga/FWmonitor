@@ -4,6 +4,7 @@ Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des
 Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.
 
 Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmFax.js Datei angepasst werden).
+E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 
 ## Funktionsumfang
 
@@ -44,6 +45,7 @@ Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anf
 * Alarmdrucker Papierlevel-Warnung
 * ...
 
+
 ## Installation Server
 
 Raspberry PI: 
@@ -78,7 +80,7 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) (sudo unter Window
 ## Update
  
  - Einfach die neue Version unter Releases herunterladen und die alten ersetzen (evtl. vorher Sicherungskopie anlegen)
- - Achtung bei eigen veränderten Dateien, diese unter Umständen nicht überschreiben
+ - Achtung bei eigens veränderten Dateien, diese unter Umständen nicht überschreiben
  - .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge hinzufügen/ändern/löschen
  - Libraries updaten `npm install`
  - Wenn nötig die verbundenen Geräte unter Einstellungen updaten
@@ -94,13 +96,12 @@ Für den Server PC/Raspberry PI sollte eine feste IP-Adresse vergeben sein!
 `.env - Leer` Datei zu `.env` umbenennen (Konsole: Windows: `ren ".env - Leer" ".env"`; Raspberry: `mv ".env - Leer" ".env"`)
 
 Alle relevanten Einstellungen in der .env Datei bearbeiten
-Der Archivordner sollte der gleiche sein, in dem die Orginal Fax PDF´s / TIFF´s abgelegt werden (für Telegram Alarmfaxsendefunktion)
 
 Logo unter `public/images/logo.png` austauschen
 
 Bilder für Diashow im Standby unter `public/images/slideshow` einfügen
 
-Forst Rettungspunkte Datei  ( https://www.kwf-online.de/index.php/wissenstransfer/waldarbeit/84-rettungspunkte-download ) Filtern (mit Excel/LibreOffice), dann
+Forst Rettungspunkte Datei  ( https://kwf2020.kwf-online.de/rettungspunkte-download/ ) Filtern (mit Excel/LibreOffice), dann
 alle Kommas durch Punkte ersetzen (über suchen und ersetzen), dann mit http://www.convertcsv.com/csv-to-geojson.htm zu GeoJSON umwandeln, 
 dann unter `/public/rettPunkte.geojson` speichern
 
@@ -154,6 +155,7 @@ Nun im Webbrowser die IP-Adresse:8080 des Computers eingeben, auf dem FWmonitor 
 (Herauszufinden in Konsole: Windows: ipconfig; Raspberry: ifconfig; Eigener PC: 127.0.0.1)
 Bsp: 192.168.2.153:8080 oder 127.0.0.1:8080
 
+
 ## Autostart / Installation des Displays
 
 Raspberry:
@@ -174,14 +176,17 @@ Windows:
  - Display:
     - Um den Browser automatisch zu starten: siehe https://blog.moortaube.de/2017/02/21/google-chrome-im-fullscreen-%C3%B6ffnen/
 
+
 ## Benutzer hinzufügen
 Einfach dem erstellten Telegram-Bot /start schreiben.
 Nun kann der Benutzer über die Einstellungen freigegeben werden.
+
 
 ## Telegram
 
 - Nutzer-Erstverbindung: Dem erstellten bot /start schreiben bzw. Knopf drücken. Nun muss der Benutzer unter Einstellungen freigegeben werden.
 - Falls die Telegram Tastatur nicht mehr angezeigt wird, einfach irgendeinen Text an den Bot senden und es sollte wider erscheinen.
+
 
 ## Hydrantenfunktion
 
@@ -189,10 +194,12 @@ Mit Telegram unter Einstellungen können Positionen von Hydranten gesendet werde
 Diese befinden sich dann im Hydrantenordner. Mithilfe von https://www.osmhydrant.org/de/ können diese
 in OpenStreetMap eingetragen werden.
 
+
 ## Alarmdrucker Papierüberwachung
 
 Es wird eine Warnung an ausgewählte Personen gesendet, falls das Druckerpapier leer ist.
 In .env die Internetseite des Alarm-Netzwerkdruckers und das zu suchende Pattern eintragen, auf der der Papierlevel angezeigt wird.
+
 
 ## Bewegungsmelder Steuerskript (Raspberry PI)
 - Anschluss des PIR siehe anschlussplan.PNG (Bei Verwendung eines Relais an 230V: Anschluss nur durch berechtigte Personen. Verwenden auf eigene Gefahr!)
@@ -201,6 +208,7 @@ In .env die Internetseite des Alarm-Netzwerkdruckers und das zu suchende Pattern
 
 Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk/MonitorActivation
 
+
 ## Fragen / Anregungen
 
 Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstellen.
@@ -208,12 +216,12 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 
 ## Built With
 
-* nodejs - The web framework used
-* npm - Dependency Management
-* jquery
-* leaflet
-* OpenLayers 3
-* Bing Geocode
+* nodejs - https://nodejs.org/
+* npm - https://www.npmjs.com/
+* jquery - https://jquery.com/
+* leaflet - https://leafletjs.com/
+* OpenLayers 3 - https://openlayers.org/
+* Bing Geocode - https://www.bing.com/api/maps/sdk/mapcontrol/isdk/searchbyaddress
 * openstreetmap - https://www.openstreetmap.org/fixthemap
 *   Hillshading - https://klokantech.github.io/dare-raster-tiles/hillshade/
 *   Overpass - https://wiki.openstreetmap.org/wiki/DE:Overpass_API
@@ -224,6 +232,20 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 * Python Timer - https://gist.github.com/aeroaks/ac4dbed9c184607a330c
 * MobileUi - https://mobileui.github.io/
 * Bahnübergänge - https://data.deutschebahn.com/dataset/geo-bahnuebergang
+* Forst Rettungspunkte - https://rettungspunkte-forst.de
+* Google Noto Font - https://www.google.com/get/noto/help/emoji/
+* Kalender - https://codepen.io/peanav/pen/ulkof
+* PDF.js - https://mozilla.github.io/pdf.js/
+
+
+## Hardware Empfehlung
+ - Server:
+    - Windows PC 
+    - min. Raspberry PI 3
+ - Client:
+    - min. Raspberry PI 2
+    - für WLAN min. Raspberry PI 3
+
 
 ## Getestete Aufbauten
 ```
@@ -257,9 +279,11 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 
 *  *Johannes Resch - Freiwillige Feuerwehr Fischbachau*
 
+
 ## License
 
 This project is licensed under the GNU GPLv3  License - see the [LICENSE.md](LICENSE.md) file for details
+
 
 ## Haftungsausschluss und Datenschutz
 

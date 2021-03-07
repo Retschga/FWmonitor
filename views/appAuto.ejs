@@ -3,11 +3,14 @@
 
     <head>	
 	
+		<!-- HTML EINSTELLUNGEN -->
 		<% include partials/head %>	
 		<title>FWmonitor - Auto</title>	 
 
+		<!-- Virtual Keyboard-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
 		
+		<!-- CSS -->
 		<style>
 			.content {
 				background-color: #cecece !important;
@@ -125,7 +128,7 @@
 					</div>
 				</div>
 				<div class="col-20 grey-100">
-					<div class="padding border-grey-400 shadow radius align-center" onclick="alteAlarme_offset = 0; openPage('/app/filesHTTPS/alarmList', 5, alteAlarme_loadAlarm)">
+					<div class="padding border-grey-400 shadow radius align-center" onclick="alteAlarme_offset = 0; openPage('/app/filesHTTPS/appAlarmList', 5, alteAlarme_loadAlarm)">
 						<i class="icon ion-ios-flame-outline"></i>
 						<p>
 							<br>Alarme<br>
@@ -409,6 +412,11 @@
 				return this * Math.PI / 180;
 			}
 
+			/**
+			 * Aktualisieren der gefahrenen Wegstrecke
+			 * @param _POS_last {lat: xx, lng: yy}
+			 * @param _POS_now {lat: xx, lng: yy}
+			*/
 			function updateDistance(_POS_last, _POS_now) {
 				let dist = _getCoordsDistance_accurate(_POS_last, _POS_now);
 				GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);				
@@ -442,15 +450,12 @@
 					if(e.data == "-1") {
 						index_status_GPS(1);
 
-					// Memory Free
 					} else if (e.data.indexOf('memFree') != -1) {
 						status_memFree = e.data.split(':')[1];
 
-					// Memory Total
 					} else if (e.data.indexOf('memTotal') != -1) {
 						status_memTotal = e.data.split(':')[1];
 
-					// Wlan
 					} else if (e.data.indexOf('wpaSupp') != -1) {
 						status_wpaSupp = e.data.split(':')[1];
 
@@ -471,7 +476,6 @@
 						alert('Daten gespeichert!');
 
 					} else {
-
 						// Positionsdaten verarbeiten
 						let dat = JSON.parse(e.data);
 
@@ -578,10 +582,8 @@
 				// Bildschirm aktivieren
 				wsSteuer.send('dispON');				
 			}
-//			var bdy  = document.getElementById ('body');
-//			bdy.addEventListener ('click', () => {
-//				dispAktiv()
-//			});
+
+			// Touch listener un Display zu aktivieren / Tastatur zu öffnen
 			window.onclick = function() {
 				// Bei Touch auf Display AUS
 				if (event.target.closest('.dispOFF')) {
@@ -603,16 +605,14 @@
 						document.querySelector(".page").classList.remove('pageWithKeyboard');
 					} catch (error) {}
 					
-
 					dispAktiv();					
-				}
-				
+				}				
 			}
 
 
 			// Websocket Server Verbindung
 			function connectFWmonitor() {			
-				wsFWmonitor = new WebSocket('wss://'+window.location.hostname+':443');
+				wsFWmonitor = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
 				let wsStatusInterval = null;
 				var keepAliveInterval = null;
 				let log = "";
@@ -672,18 +672,19 @@
 						} catch (error) {
 							console.log('Alarm -> Bildschirm konnte nicht aktiviert werden.')
 						}	
-
-						if(!tempID_timeout) {
-							location.reload(); 
-						}
-
-						// DPS Statistik für Einsatz zurücksetzen
+			
+						// GPS Statistik für Einsatz zurücksetzen
 						GPS_alt_max = GPS_last.alt;
 						GPS_alt_min = GPS_last.alt
 						GPS_dist_sum = 0;	
 						localStorage.setItem('gps.distSum', GPS_dist_sum);
 						localStorage.setItem('gps.altMax', GPS_alt_max);
 						localStorage.setItem('gps.altMin', GPS_alt_min);
+
+						// Seite neu laden
+						if(!tempID_timeout) {
+							location.reload(); 
+						}
 					}
 
 					if(topic == 'keepAlive') {
@@ -692,7 +693,7 @@
 					}
 
 					if(topic == 'reload') {
-						location.reload();
+						location.reload(true);
 					}
 					
 					if(topic == 'rebootScreen') {

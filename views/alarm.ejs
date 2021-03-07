@@ -26,17 +26,15 @@
 		<link rel="stylesheet" href="/mobileui/loading/style.css">
 		<link rel="stylesheet" href="/mobileui/alert/style.css">
 		<link rel="stylesheet" href="/mobileui/toast/style.css">
-
-
-
     </head>
     <body>
+
+		<!-- HEADER -->		
 		<header class="header red-600">
 			<div class="left">
 				<button class="icon ion-navicon-round"  name="button"  onclick="openMenu('leftMenu')"></button>
 			</div>		
-			<div class="right" id="time">--:--:-- - --.--.----</div>
-			
+			<div class="right" id="time">--:--:-- - --.--.----</div>			
 			<div class="right align-center"  id="fwlogo">
 				<i id="symbol1" style="margin-right: 1em;" class="icon"></i>
 				<span  id="elapsedtime">00m 00s</span>
@@ -44,6 +42,7 @@
 			</div>	
 		</header>
 
+		<!--MENÜ -->		
 		<div class="menu red-300" id="leftMenu">
 			<div class="cover align-center red-600 border-bottom-white">
 				<div class="space"></div>
@@ -51,15 +50,16 @@
 				<h1 class="">FWmonitor</h1>
 				<div class="space"></div>
 			</div>
-			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/';" >Standby Ansicht</button>
+			<button class="red-600 full border-bottom-white" onclick="goToIndex();" >Standby Ansicht</button>
 			<button class="red-600 full border-bottom-white" onclick="window.location.href = '/einstell';" >Einstellungen</button>
-			<button class="red-600 full border-bottom-white selectedButton" onclick="window.location.href = '/alarm?manuell=true';" >Letzter Alarm</button>
+			<button class="red-600 full border-bottom-white selectedButton" onclick="" >Letzter Alarm</button>
 			<button class="red-600 full border-bottom-white" onclick="alert('F11 drücken')" >Vollbild</button>
 		</div>
 
-
+		<!-- CONTENT -->		
         <div id="main_content" class="has-header">
             
+			<!-- Alarminfo -->		
             <div id="top">
                 <div id="einsatzstichw">
 					<%= alarmdata["EINSATZSTICHWORT"] %> - 
@@ -71,12 +71,14 @@
                 </div>
             </div>           
             
+			<!-- Alarmort -->		
             <div id="ort">
 				<%= alarmdata["STRASSE"] %>, 
 				<%= alarmdata["ORTSTEIL"] %>, 
 				<%= alarmdata["ORT"] %>
             </div>
             
+			<!-- Autos, Karte, Kommen -->		
             <div id="center">
                 <div id="fahrzeuge">
                     <div id="fz_eigen">
@@ -99,17 +101,13 @@
 						<div id="count_nicht">0</div>
 						<div id="count_später">0</div>
 					</div>
-                    <div id="st_komme">
-
-                    </div>
+                    <div id="st_komme"></div>
                     <div id="st_nicht">
 						 <% for(i in alarmdata["st_nichtverf"]) { %>
 								<div class="stdiv st_telegram" id="<%= alarmdata["st_nichtverfID"][i] %>">Telegram: <%= alarmdata["st_nichtverf"][i] %></div>
 						<% } %>
                     </div>
-                    <div id="st_später">
-
-                    </div>
+                    <div id="st_später"></div>
                 </div>
             </div>       
         </div> 
@@ -128,9 +126,7 @@
 		<script src="/mobileui/loading/script.js"></script>
 		<script src="/mobileui/alert/script.js"></script>		
 
-		<script>       
-			
-			var einsatzstichwort = '<%= alarmdata["EINSATZSTICHWORT"] %>';
+		<script> 
 
 			// -------- GET Parameter auslesen --------
 			var parts = window.location.search.substr(1).split("&");
@@ -140,31 +136,56 @@
 				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
 			}
 
+			// Einstellungen
 			var tempID = parseInt($_GET['tempID']);
 			var clientName = $_GET['name'];			
 			console.log("Clientname: ", clientName);
+			var einsatzstichwort = '<%= alarmdata["EINSATZSTICHWORT"] %>';
+
+			/**
+			 * Wechselt zur Index Seite
+			 */
+			function goToIndex() {
+				window.location.href = '/?name=' + clientName;
+			}
 
 			
-			// -------- URL Overpass-API für Hydranten --------     siehe Ovepass turbo
-			var overpassHydrantenUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"node[%22emergency%22=%22fire_hydrant%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				"node[%22emergency%22=%22water_tank%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				"node[%22emergency%22=%22suction_point%22](around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out;%3E;out%20skel%20qt;";
+			// -------- Overpass-API URLs --------     siehe Ovepass turbo
+			var overpassHydrantenUrl = `http://overpass-api.de/api/interpreter?data=
+				[out:json][timeout:25];
+				(
+				node[%22emergency%22=%22fire_hydrant%22]
+				(around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);
+				node[%22emergency%22=%22water_tank%22]
+				(around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);
+				node[%22emergency%22=%22suction_point%22]
+				(around:2000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);
+				);
+				out;
+				%3E;
+				out%20skel%20qt;`;
 			var overpassTimestamp = "";
 			var features = [];
-			var overpassStrassenUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"way[%22name%22=%22<%= alarmdata["STRASSE"] %>%22](around:5000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out geom;%3E;out%20skel%20qt;";		
-			var overpassGebaudeUrl = "http://overpass-api.de/api/interpreter?data="+
-				"[out:json][timeout:25];(" + 
-				"way[building](around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);" + 
-				");out geom;%3E;";				
+			var overpassStrassenUrl = `http://overpass-api.de/api/interpreter?data=
+				[out:json][timeout:25];
+				(
+				way[%22name%22~%22${'<%= alarmdata["STRASSE"] %>'.replace(/ss|ß/g, '(ss|ß)')}%22]
+				(around:1000,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);
+				);
+				out geom;
+				%3E;
+				out%20skel%20qt;`;		
+			var overpassGebaudeUrl = `http://overpass-api.de/api/interpreter?data=
+				[out:json][timeout:25];
+				(
+				way[building]
+				(around:200,<%= alarmdata["LAT"] %>, <%= alarmdata["LNG"] %>);
+				);
+				out geom;
+				%3E;`;				
 		
 		
-			// -------- Bemerkung Schriftgröße an bemerkungslänge anpassen --------
+			// -------- Bemerkung Schriftgröße an Textlänge anpassen --------
 			var lvalue=document.getElementById("bemerk").innerHTML.length;
 			if(lvalue>200)
 				document.getElementById("bemerk").style.fontSize = "1em";
@@ -268,6 +289,8 @@
 						var dataIn = responseJSON["elements"];
 						var polylinePoints = [];
 
+						console.log('Strassendaten', dataIn);
+
 						if(dataIn.length < 1)
 							return;
 
@@ -370,7 +393,7 @@
 			else if(stichwort.includes("rd")) {
 				color = 'orange-800';
 				icon = "ion-ios-medkit-outline";
-			} 
+			}
 			document.getElementById("top").classList.add(color);
 			document.getElementById("symbol1").classList.add(icon);
 			document.getElementById("symbol2").classList.add(icon);
@@ -378,34 +401,34 @@
 			// -------- 1 Sekunden nach Seite geladen --------
 			setTimeout(function() {						
 				
-				// Karte genau ? sonst keine Karte
+				// Karte genau? sonst keine Karte
 				if(<%= alarmdata["noMap"] %> == true) {
 					var imageUrl = '/images/noMap.png',
-					imageBounds = [center, map.getBounds()];
-
+					imageBounds = [center, map.getBounds()];					
 					L.imageOverlay(imageUrl, imageBounds).addTo(map);
+
 				} else {
 					loadHydrantenData();
-					loadForstRettPkt();
-					
+					loadForstRettPkt();					
 					
 					if(<%= alarmdata["ISADDRESS"] %> == 1) {
+						console.log("Adresse: Ja -> lade Gebäudedaten");
 						var circle = L.circle(center, {
 							color: 'red',
 							fillColor: '#f03',
 							fillOpacity: 0.5,
 							radius: 30
-						}).addTo(map);
-						
-						loadGebaudeData();
+						}).addTo(map);			
+						//loadGebaudeData();
+
 					} else {
+						console.log("Adresse: Nein -> lade Strassendaten");
 						map.setView(center, 15);
-						console.log('Lade strassendaten');
 						loadStrassenData();
 					}
 				}
 				
-				// Uhranzeige
+				// Uhrzeitanzeige
 				setInterval(() => {
 					var d = new Date();
 					var options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -415,7 +438,7 @@
 					ticken();
 				  }, 1000);            
 
-				// Anzeige Alarmzeit
+				// Alarmzeitanzeige
 				var startDate = new Date("<%= alarmdata["time"] %>");			
 				function ticken(){
 					var stunden, minuten, sekunden;
@@ -439,7 +462,7 @@
 					if($_GET['manuell'] != "true") {
 						var elapsedMinutes = Math.floor(diff / (1000*60));
 						if(elapsedMinutes > <%= alarmdata["VISIBLETIME"] %>)
-						window.location.href = '/';
+						goToIndex();
 					}
 					
 					var tag = Math.floor(diff / (1000*60*60*24));
@@ -457,12 +480,11 @@
 					if (SekundenZahl < 10) {sekunden = "0" + SekundenZahl + "s ";}
 						else {sekunden = SekundenZahl + "s ";}
 					zeit = stunden + minuten + sekunden;
-					
-					//elapsedtime.innerHTML = zeit;
+
 					elapsedtime.innerHTML = "Alarm: " + alarmzeit +" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "+ zeit;
 				}
 
-				// Anzeige Kommen/Komme Nicht
+				// Anzahl Kommen/Komme Nicht
 				function countNumbers() {
 					document.getElementById('count_komme').innerHTML = document.getElementById("st_komme").childElementCount;
 					document.getElementById('count_nicht').innerHTML = document.getElementById("st_nicht").childElementCount;
@@ -472,7 +494,7 @@
 				
 				// Websocket Verbindung
 				function connect() {
-					var ws = new WebSocket('ws://'+window.location.hostname+':8080');
+					var ws = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
 					ws.onopen = function() {
 						console.log("WebSocketClient connected:");
 						this.send(`{"type":"WebClient",
@@ -496,10 +518,12 @@
 							window.location.href = '/alarm?tempID=' + msg[0] + '&name=' + clientName;
 							//location.reload();
 						} 
-								
+							
+						// Zurück zum Standby
 						if(topic == 'zurueck')
 							window.location.href = '/?name=' + clientName;
 
+						// Seite neu laden
 						if(topic == 'reload')
 							location.reload(); 
 						
@@ -507,16 +531,13 @@
 						var el = undefined;
 						if(topic == 'st_komme') {
 							el = document.getElementById('st_komme');                        
-						};
-
+						}
 						if(topic == 'st_nicht') {
 							el = document.getElementById('st_nicht');
-						};
-
+						}
 						if(topic == 'st_später') {
 							el = document.getElementById('st_später');                        
-						};
-						
+						}						
 						if(el != undefined) {						
 							var myElem = document.getElementById("st_"+msg[0].replace(/ /g,"_"));
 							var elChild = null;
@@ -555,8 +576,7 @@
 							
 							el.prepend(elChild);
 						}
-						countNumbers();
-					   
+						countNumbers();					   
 					};
 
 					// Socket geschlossen

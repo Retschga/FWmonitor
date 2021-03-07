@@ -106,9 +106,11 @@ module.exports = function () {
 					const type = entry.type; // 'Directory' or 'File'
 					const size = entry.vars.uncompressedSize; // There is also compressedSize;
 					if (fileName === "E_PERSON.DBF") {						
-						var parser = Parser(entry);				
-						//var diesesJahr = new Date().getFullYear();
+						var parser = Parser(entry);		
 						let diesesJahr = year;
+						if(year != undefined) {
+							diesesJahr = new Date().getFullYear();
+						}
 
 						parser.on('header', (h) => {
 							//debug('dBase file header has been parsed');
