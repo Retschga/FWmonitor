@@ -8,8 +8,8 @@ module.exports = function (_httpServer, destroySession) {
 	const debug = require('debug')('telegram');
 
 	// ----------------  TELEGRAM ---------------- 
-	const Telegraf = require('telegraf');
-	const Router = require('telegraf/router');
+	const { Telegraf, Router, Markup } = require('telegraf');
+//	const Router = require('telegraf/router');
 
 	// ----------------  KALENDER/FWVV/Datenbank ---------------- 
 	const calendar = require('./calendar')();
@@ -113,22 +113,28 @@ module.exports = function (_httpServer, destroySession) {
 
 				// Antwort senden
 				if (!existing) {
-					ctx.reply('Warte auf Freigabe (bitte bescheidgeben)', Telegraf.Extra.HTML().markup((m) =>
-						m.keyboard([
-							['/start']
-						]).resize()
-					));
+					ctx.replyWithHTML(
+						'Warte auf Freigabe (bitte bescheidgeben)',
+						{
+							...Markup.keyboard([
+								['/start']
+							]).resize()
+						}
+					);
 				} else {
-					ctx.reply(
-						`Anmeldung erfolgreich: ${user.name} ${user.vorname}
+					ctx.replyWithMarkdown(
+`Anmeldung erfolgreich: ${user.name} ${user.vorname}
 *Funktionen:*
 _ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
 _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
-						Telegraf.Extra.markdown().markup((m) =>
-							m.keyboard(mainKeyboard).resize()
-						));
+						{
+							...Markup.keyboard(
+								mainKeyboard
+							).resize()
+						}
+					);
 
-						await setVerfTrue(ctx.from.id);
+					await setVerfTrue(ctx.from.id);
 				}
 
 			} else {
@@ -140,13 +146,13 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 				if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
 
 					// Antwort senden
-					ctx.reply(
+					ctx.replyWithHTML(
 						'Bitte zuerst Vor- und Nachnamen in Telegram eintragen (Unter Einstellungen, ..., Name bearbeiten), dann erneut Start drücken.',
-						Telegraf.Extra.HTML().markup((m) =>
-							m.keyboard([
+						{
+							...Markup.keyboard([
 								['/start']
-							]).resize()
-						)
+							]).resize()	
+						}					
 					);
 
 				} else {
@@ -155,13 +161,13 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 					db.addUser(ctx.from.id, ctx.from.last_name, ctx.from.first_name);
 
 					// Antwort senden
-					ctx.reply(
+					ctx.replyWithHTML(
 						'Warte auf Freigabe (bitte bescheidgeben)',
-						Telegraf.Extra.HTML().markup((m) =>
-							m.keyboard([
+						{
+							...Markup.keyboard([
 								['/start']
 							]).resize()
-						)
+						}
 					);
 
 				}
@@ -205,14 +211,21 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 			let keyboard = [];
 
-			keyboard.push(Telegraf.Extra.Markup.callbackButton('🔑 APP Zugang', 'einstell_appLogin'));
+			keyboard.push(
+				Markup.button.callback('🔑 APP Zugang', 'einstell_appLogin')
+			);
+
 			if (process.env.APP_DNS != "") {
-				keyboard.push(Telegraf.Extra.Markup.urlButton('📱 APP - Link', "https://" + process.env.APP_DNS + "/app"));
+				keyboard.push(
+					Markup.button.url('📱 APP - Link', "https://" + process.env.APP_DNS + "/app")
+				);
 			}
 
-			ctx.reply(
+			ctx.replyWithMarkdown(
 				'*📱 FWmonitor APP*',
-				Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard(keyboard))
+				{
+					...Markup.inlineKeyboard(keyboard)
+				}
 			);
 			
 		} catch (error) {
@@ -234,7 +247,12 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			if (err) {
 
 				console.error('[TelegramBot] #einstell_appLogin Fehler', err);
-				ctx.answerCbQuery("Fehler: Zugangsdaten konnten nicht erstellt werden.", true);
+				ctx.answerCbQuery(
+					"Fehler: Zugangsdaten konnten nicht erstellt werden.", 
+					{
+						'show_alert': true
+					}
+				);
 
 			} else {
 
@@ -242,14 +260,26 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 				ctx.editMessageText(
 					'*APP Zugangsdaten: Telegram ID, Passwort*',
-					Telegraf.Extra.markdown()
+					{
+						'parse_mode': 'Markdown'
+					}
 				);
 
-				sendMessage(ctx.from.id, "_" + ctx.from.id + "_", Telegraf.Extra.markdown());
+				sendMessage(
+					ctx.from.id, "_" + ctx.from.id + "_", 
+					{
+						'parse_mode': 'Markdown'
+					}
+				);
 
 				await timeout(500);
 
-				sendMessage(ctx.from.id, "_" + password + "_", Telegraf.Extra.markdown());
+				sendMessage(
+					ctx.from.id, "_" + password + "_", 
+					{
+						'parse_mode': 'Markdown'
+					}
+				);
 
 			}
 		});
@@ -261,21 +291,25 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 	bot.hears('🔥 Einsätze', (ctx) => {
 		if (process.env.FWVV != "true") {
-			ctx.reply(
+			ctx.replyWithMarkdown(
 				'*🔥 Einsätze*',
-				Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
-					m.callbackButton('📜 Letzte Alarme', 'showAlarm:0'),
-					m.callbackButton('📈 Statistik', 'showStatistik')
-				]))
+				{
+					...Markup.inlineKeyboard([
+						Markup.button.callback('📜 Letzte Alarme', 'showAlarm:0'),
+						Markup.button.callback('📈 Statistik', 'showStatistik')
+					])
+				}
 			);
 		} else {
-			ctx.reply(
+			ctx.replyWithMarkdown(
 				'*🔥 Einsätze*',
-				Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard([
-					m.callbackButton('📜 Letzte Alarme', 'showAlarm:0'),
-					m.callbackButton('📈 Statistik', 'showStatistik'),
-					m.callbackButton('⏱️ Einsatzzeit', 'showEinsatzZeit')
-				]))
+				{
+					...Markup.inlineKeyboard([
+						Markup.button.callback('📜 Letzte Alarme', 'showAlarm:0'),
+						Markup.button.callback('📈 Statistik', 'showStatistik'),
+						Markup.button.callback('⏱️ Einsatzzeit', 'showEinsatzZeit')
+					])
+				}
 			);
 		}
 	});
@@ -288,7 +322,9 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 		try {
 			await ctx.editMessageText(
 				'*⌛ lädt ⌛*',
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			)
 			ctx.replyWithChatAction('typing');
 
@@ -308,16 +344,17 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			var date = d.toLocaleDateString('de-DE', options);
 
 			ctx.editMessageText(
-				`*📜 ${date} ${time}*
-				_${rows_alarmList[alarmNum].einsatzstichwort}
-				${rows_alarmList[alarmNum].schlagwort}
-				${rows_alarmList[alarmNum].ort}_`,
-				Telegraf.Extra.markdown().markup((m) =>
-					m.inlineKeyboard([
-						m.callbackButton('<', 'showAlarm:' + (alarmNum - 1)),
-						m.callbackButton('>', 'showAlarm:' + (alarmNum + 1))
+`*📜 ${date} ${time}*
+_${rows_alarmList[alarmNum].einsatzstichwort}
+${rows_alarmList[alarmNum].schlagwort}
+${rows_alarmList[alarmNum].ort}_`,
+				{
+					'parse_mode': 'Markdown',
+					...Markup.inlineKeyboard([
+						Markup.button.callback('<', 'showAlarm:' + (alarmNum - 1)),
+						Markup.button.callback('>', 'showAlarm:' + (alarmNum + 1))
 					])
-				)
+				}
 			)
 
 			user_botIsLoading[ctx.from.id] = false;
@@ -360,7 +397,9 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 			ctx.editMessageText(
 				str,
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			);
 
 		} catch (error) {
@@ -377,7 +416,9 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			
 			await ctx.editMessageText(
 				"*⌛ lädt ⌛*",
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			);
 			ctx.replyWithChatAction('typing');
 
@@ -392,7 +433,9 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 			ctx.editMessageText(
 				str,
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			);
 
 			user_botIsLoading[ctx.from.id] = false;
@@ -402,7 +445,9 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			console.error('[TelegramBot] #showStatistik Fehler', error);
 			ctx.editMessageText(
 				"Fehler: Daten konnten nicht geladen werden.",
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			);
 			user_botIsLoading[ctx.from.id] = false;
 		}
@@ -419,25 +464,30 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			var keyboard;
 			if (rows_userById[0].admin == 1) {
 				keyboard = [
-//					Telegraf.Extra.Markup.callbackButton('👤 Benutzer', 'einstell_Benutzer:0'),
-					Telegraf.Extra.Markup.callbackButton('📅 Erinnerungen', 'einstell_Kalender'),
-					Telegraf.Extra.Markup.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant'),
-//					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
+//					Markup.button.callback('👤 Benutzer', 'einstell_Benutzer:0'),
+					Markup.button.callback('📅 Erinnerungen', 'einstell_Kalender'),
+					Markup.button.callback('🧯 Hydrant eintragen', 'einstell_Hydrant'),
+//					Markup.button.url('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
+					Markup.button.url('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
 				];
 			} else {
 				keyboard = [
-					Telegraf.Extra.Markup.callbackButton('📅 Erinnerungen', 'einstell_Kalender'),
-					Telegraf.Extra.Markup.callbackButton('🧯 Hydrant eintragen', 'einstell_Hydrant'),
-//					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
-					Telegraf.Extra.Markup.urlButton('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
+					Markup.button.callback('📅 Erinnerungen', 'einstell_Kalender'),
+					Markup.button.callback('🧯 Hydrant eintragen', 'einstell_Hydrant'),
+//					Markup.button.url('🗺️ Karte', 'https://wambachers-osm.website/emergency/#zoom=12&lat=47.7478&lon=11.8824&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT'),
+					Markup.button.url('🗺️ Karte', 'http://www.openfiremap.org/?zoom=13&lat=47.74236&lon=11.90217&layers=B0000T')
 				];
 			}
 
 			// Antwort senden
-			ctx.reply(
+			ctx.replyWithMarkdown(
 				'*️▪️ Mehr:*',
-				Telegraf.Extra.markdown().markup((m) => m.inlineKeyboard(keyboard, { columns: 2 }))
+				{
+					...Markup.inlineKeyboard(
+						keyboard, 
+						{ columns: 2 }
+					)
+				}
 			)
 
 		} catch (error) {
@@ -447,10 +497,13 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 	onCallback.on('einstell_Kalender', (ctx) => {
 		ctx.editMessageText(
 			'📅 Kalender Erinnerungen',
-			Telegraf.Extra.markup((m) => m.inlineKeyboard([
-				m.callbackButton('An', 'einstell_Kalender_set:1'),
-				m.callbackButton('Aus', 'einstell_Kalender_set:0')
-			]))
+			{
+				'parse_mode': 'Markdown',
+				...Markup.inlineKeyboard([
+					Markup.button.callback('An', 'einstell_Kalender_set:1'),
+					Markup.button.callback('Aus', 'einstell_Kalender_set:0')
+				])
+			}			
 		);
 	});
 	onCallback.on('einstell_Kalender_set', async (ctx) => {
@@ -462,19 +515,33 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			await db.changeUserReminders(userid, val);
 
 			if (val == 1) {
-				ctx.answerCbQuery("📅 Kalender Erinnerungen -> Ein", false);
-				ctx.editMessageText("📅 Kalender Erinnerungen -> Ein");
+				ctx.answerCbQuery(
+					"📅 Kalender Erinnerungen -> Ein", 
+					{
+						'show_alert': false
+					}
+				);
+				ctx.editMessageText(
+					"📅 Kalender Erinnerungen -> Ein"
+				);
 			}
 			else {
-				ctx.answerCbQuery("📅 Kalender Erinnerungen -> Aus", false);
-				ctx.editMessageText("📅 Kalender Erinnerungen -> Aus");
+				ctx.answerCbQuery(
+					"📅 Kalender Erinnerungen -> Aus", 
+					{
+						'show_alert': false
+					}
+				);
+				ctx.editMessageText(
+					"📅 Kalender Erinnerungen -> Aus"
+				);
 			}
 
 		} catch (error) {
 			console.error('[TelegramBot] #einstell_Kalender_set Fehler', error);
 		}
 	});
-	
+	/*
 	onCallback.on('einstell_Benutzer', async (ctx) => {
 		try {
 
@@ -491,31 +558,37 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			if (rows_allUsers[usernum].allowed == 1) {
 				ctx.editMessageText(
 					'Benutzer: ' + rows_allUsers[usernum].name + " " + rows_allUsers[usernum].vorname + " \nGruppe: " + grupp,
-					Telegraf.Extra.markup((m) =>
-						m.inlineKeyboard([
-							m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
-							m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
-							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
-							m.callbackButton('Gruppe: Standard', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-1"),
-							m.callbackButton('Gruppe: 1', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-2"),
-							m.callbackButton('Gruppe: 2', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-3"),
-							m.callbackButton('Gruppe: 3', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-4"),
-							m.callbackButton('Gruppe: 4', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-5")
-
-						], { columns: 3 })
-					)
+					{
+						'parse_mode': 'Markdown',
+						...Markup.inlineKeyboard(
+							[
+								Markup.button.callback('<', 'einstell_Benutzer:' + (usernum - 1)),
+								Markup.button.callback('>', 'einstell_Benutzer:' + (usernum + 1)),
+								Markup.button.callback('🚫 Löschen', 'einstell_Benutzer_deletefrage:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
+								Markup.button.callback('Gruppe: Standard', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-1"),
+								Markup.button.callback('Gruppe: 1', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-2"),
+								Markup.button.callback('Gruppe: 2', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-3"),
+								Markup.button.callback('Gruppe: 3', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-4"),
+								Markup.button.callback('Gruppe: 4', 'einstell_Benutzer_gruppe:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id + "-5")
+							], 
+							{ columns: 3 }
+						)
+					}
 				)
 			} else {
 				ctx.editMessageText(
 					'Benutzer: ' + rows_allUsers[usernum].name + " " + rows_allUsers[usernum].vorname,
-					Telegraf.Extra.markup((m) =>
-						m.inlineKeyboard([
-							m.callbackButton('<', 'einstell_Benutzer:' + (usernum - 1)),
-							m.callbackButton('>', 'einstell_Benutzer:' + (usernum + 1)),
-							m.callbackButton('✔️ Freigeben', 'einstell_Benutzer_allow:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
-							m.callbackButton('🚫 Löschen', 'einstell_Benutzer_delete:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id)
-						], { columns: 2 })
-					)
+					{
+						...Markup.inlineKeyboard(
+							[
+								Markup.button.callback('<', 'einstell_Benutzer:' + (usernum - 1)),
+								Markup.button.callback('>', 'einstell_Benutzer:' + (usernum + 1)),
+								Markup.button.callback('✔️ Freigeben', 'einstell_Benutzer_allow:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id),
+								Markup.button.callback('🚫 Löschen', 'einstell_Benutzer_delete:' + rows_allUsers[usernum].id + "-" + rows_allUsers[usernum].id)
+							], 
+							{ columns: 2 }
+						)
+					}					
 				)
 			}
 
@@ -527,10 +600,16 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 		var userid = parseInt(ctx.state.amount.split("-")[0], 10);
 		var usernum = ctx.state.amount.split("-")[1];
 
-		ctx.editMessageText('Aktiviert!', Telegraf.Extra.markup((m) =>
-			m.inlineKeyboard([
-				m.callbackButton('OK', 'einstell_Benutzer:' + (usernum))
-			], { columns: 3 }))
+		ctx.editMessageText(
+			'Aktiviert!', 
+			{
+				...Markup.inlineKeyboard(
+					[
+						Markup.button.callback('OK', 'einstell_Benutzer:' + (usernum))
+					], 
+					{ columns: 3 }
+				)
+			}					
 		);
 
 		allowUser(userid)
@@ -539,21 +618,27 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 	onCallback.on('einstell_Benutzer_deletefrage', (ctx) => {
 		var usernum = ctx.state.amount.split("-")[1];
 
-		ctx.editMessageText('Sicher?', Telegraf.Extra.markup((m) =>
-			m.inlineKeyboard([
-				m.callbackButton('Ja', 'einstell_Benutzer_delete:' + (ctx.state.amount)),
-				m.callbackButton('Nein', 'einstell_Benutzer:' + (usernum))
-			]))
+		ctx.editMessageText(
+			'Sicher?', 
+			{
+				...Markup.inlineKeyboard([
+					Markup.button.callback('Ja', 'einstell_Benutzer_delete:' + (ctx.state.amount)),
+					Markup.button.callback('Nein', 'einstell_Benutzer:' + (usernum))
+				])
+			}		
 		);
 	});
 	onCallback.on('einstell_Benutzer_delete', (ctx) => {
 		var userid = parseInt(ctx.state.amount.split("-")[0], 10);
 		var usernum = ctx.state.amount.split("-")[1];
 
-		ctx.editMessageText('Gelöscht!', Telegraf.Extra.markup((m) =>
-			m.inlineKeyboard([
-				m.callbackButton('OK', 'einstell_Benutzer:' + (usernum))
-			]))
+		ctx.editMessageText(
+			'Gelöscht!', 
+			{
+				...Markup.inlineKeyboard([
+					Markup.button.callback('OK', 'einstell_Benutzer:' + (usernum))
+				])
+			}
 		);
 
 		removeUser(userid)
@@ -566,13 +651,18 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 		changeUserGroup(userid, group)
 			.then(() => {
-				ctx.editMessageText('Gruppe geändert!', Telegraf.Extra.markup((m) =>
-					m.inlineKeyboard([
-						m.callbackButton('OK', 'einstell_Benutzer:' + (usernum))
-					])));
+				ctx.editMessageText(
+					'Gruppe geändert!', 
+					{
+						...Markup.inlineKeyboard([
+							Markup.button.callback('OK', 'einstell_Benutzer:' + (usernum))
+						])
+					}
+				);
 			})
 			.catch((err) => { console.error('[TelegramBot] Datenbank Fehler', err) });
 	});
+	*/
 	
 	/**
 	 * Gibt einen Benutzer frei
@@ -589,9 +679,11 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			bot.telegram.sendMessage(
 				user.telegramid,
 				'Benutzer freigeschaltet! \n Für die FWmonitor APP: siehe "Mehr"',
-				Telegraf.Extra.HTML().markup((m) =>
-					m.keyboard(mainKeyboard).resize()
-				)
+				{
+					...Markup.keyboard(
+						mainKeyboard
+					).resize()
+				}
 			);
 
 		} catch (error) {
@@ -620,11 +712,11 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			await bot.telegram.sendMessage(
 				user.telegramid,
 				'Benutzer gelöscht!',
-				Telegraf.Extra.HTML().markup((m) =>
-					m.keyboard([
+				{
+					...Markup.keyboard([
 						['/start']
 					]).resize()
-				)
+				}
 			);
 		} catch (error) {
 			console.error('[TelegramBot] removeUser() Fehler', error);
@@ -640,31 +732,38 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 		ctx.editMessageText('🧯 Hydrant eintragen');
 		ctx.reply(
 			'GPS einschalten, Handy über Hydranten halten, Knopf drücken',
-			Telegraf.Extra.markup((markup) => {
-				return markup.resize()
-					.keyboard([
-						markup.locationRequestButton('📍 Position senden'),
+			{
+				...Markup.keyboard(
+					[
+						Markup.button.locationRequest('📍 Position senden'),
 						'⬅️ zurück'
-					], { columns: 2 })
-					.oneTime()
-			})
+					], 
+					{ columns: 2 }
+				)
+				.resize()
+				.oneTime()
+			}
 		);
 	});
 
 	bot.on('location', async (ctx) => {
 		ctx.reply(
 			'Position empfangen.',
-			Telegraf.Extra.markup((m) => m.removeKeyboard())
+			{
+				...Markup.removeKeyboard()
+			}
 		);
 
 		await timeout(500);
 
 		ctx.reply(
 			'Position OK? ',
-			Telegraf.Extra.markup((m) => m.inlineKeyboard([
-				m.callbackButton('Ja', 'hydrPosOK:' + ctx.message.message_id),
-				m.callbackButton('Nein', 'einstell_Hydrant')
-			]))
+			{
+				...Markup.inlineKeyboard([
+					Markup.button.callback('Ja', 'hydrPosOK:' + ctx.message.message_id),
+					Markup.button.callback('Nein', 'einstell_Hydrant')
+				])
+			}			
 		);
 
 		user_location[ctx.from.id] = ctx.message.location;
@@ -674,21 +773,27 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 		ctx.editMessageText(
 			'Art des Hydranten?: ',
-			Telegraf.Extra.markup((m) => m.inlineKeyboard([
-				m.callbackButton('📍 U-Flur', 'hydrTyp:Unterflur-' + message_id),
-				m.callbackButton('📍 O-Flur', 'hydrTyp:Oberflur-' + message_id),
-				m.callbackButton('📍 Saugstelle', 'hydrTyp:Saugstelle-' + message_id),
-				m.callbackButton('📍 Becken', 'hydrTyp:Becken-' + message_id),
-			]))
+			{
+				...Markup.inlineKeyboard([
+					Markup.button.callback('📍 U-Flur', 'hydrTyp:Unterflur-' + message_id),
+					Markup.button.callback('📍 O-Flur', 'hydrTyp:Oberflur-' + message_id),
+					Markup.button.callback('📍 Saugstelle', 'hydrTyp:Saugstelle-' + message_id),
+					Markup.button.callback('📍 Becken', 'hydrTyp:Becken-' + message_id),
+				])
+			}			
 		);
 	});
 	onCallback.on('hydrTyp', (ctx) => {
 		var typ = ctx.state.amount.split("-")[0];
 		var message_id = ctx.state.amount.split("-")[1];
 
-		ctx.editMessageText('Typ: ' + typ);
+		ctx.editMessageText(
+			'Typ: ' + typ
+		);
 
-		ctx.reply('Bitte ein Bild mit der Umgebung des Hydranten senden zur besseren Lokalisierung (  über 📎 Büroklammer Symbol unten ).');
+		ctx.reply(
+			'Bitte ein Bild mit der Umgebung des Hydranten senden zur besseren Lokalisierung (  über 📎 Büroklammer Symbol unten ).'
+		);
 		user_hydrantPicRequested[ctx.from.id] = true;
 
 		var d = new Date();
@@ -763,15 +868,18 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 				stat = "🟥" + "  " + bis;
 			}
 
-			ctx.reply(
+			ctx.replyWithMarkdown(
 				'*🚒 Verfügbarkeit: *' + stat,
-				Telegraf.Extra.markdown().markup((m) =>
-					m.inlineKeyboard([
-						m.callbackButton('🟩  Verfügbar', 'VerfuegbarJA'),
-						m.callbackButton('🟥  Nicht Verfügbar', 'VerfuegbarNEINOptionen'),
-						m.callbackButton('📜 Anzeigen', 'VerfuegbarZeige')
-					], { columns: 2 })
-				)
+				{
+					...Markup.inlineKeyboard(
+						[
+							Markup.button.callback('🟩  Verfügbar', 'VerfuegbarJA'),
+							Markup.button.callback('🟥  Nicht Verfügbar', 'VerfuegbarNEINOptionen'),
+							Markup.button.callback('📜 Anzeigen', 'VerfuegbarZeige')
+						], 
+						{ columns: 2 }
+					)
+				}
 			);
 
 		} catch (error) {
@@ -782,25 +890,36 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 		await setVerfTrue(ctx.from.id);
 
-		ctx.answerCbQuery("🚒 Status -> 🟩  Verfügbar", false);
-		ctx.editMessageText("🚒 Status -> 🟩  Verfügbar");
+		ctx.answerCbQuery(
+			"🚒 Status -> 🟩  Verfügbar", 
+			{
+				'show_alert': false
+			}
+			);
+		ctx.editMessageText(
+			"🚒 Status -> 🟩  Verfügbar"
+		);
 	});
 	onCallback.on('VerfuegbarNEINOptionen', (ctx) => {
 		ctx.editMessageText(
 			'*🟥 Dauer (Tage):*',
-			Telegraf.Extra.markdown().markup((m) =>
-				m.inlineKeyboard([
-					m.callbackButton('1', 'VerfuegbarNEIN:1'),
-					m.callbackButton('2', 'VerfuegbarNEIN:2'),
-					m.callbackButton('3', 'VerfuegbarNEIN:3'),
-					m.callbackButton('4', 'VerfuegbarNEIN:4'),
-					m.callbackButton('5', 'VerfuegbarNEIN:5'),
-					m.callbackButton('6', 'VerfuegbarNEIN:6'),
-					m.callbackButton('7', 'VerfuegbarNEIN:7'),
-					m.callbackButton('14', 'VerfuegbarNEIN:14'),
-					m.callbackButton('🔁 Unbegrenzt', 'VerfuegbarNEIN:-1'),
-				], { columns: 4 })
-			)
+			{
+				'parse_mode': 'Markdown',
+				...Markup.inlineKeyboard(
+					[
+						Markup.button.callback('1', 'VerfuegbarNEIN:1'),
+						Markup.button.callback('2', 'VerfuegbarNEIN:2'),
+						Markup.button.callback('3', 'VerfuegbarNEIN:3'),
+						Markup.button.callback('4', 'VerfuegbarNEIN:4'),
+						Markup.button.callback('5', 'VerfuegbarNEIN:5'),
+						Markup.button.callback('6', 'VerfuegbarNEIN:6'),
+						Markup.button.callback('7', 'VerfuegbarNEIN:7'),
+						Markup.button.callback('14', 'VerfuegbarNEIN:14'),
+						Markup.button.callback('🔁 Unbegrenzt', 'VerfuegbarNEIN:-1'),
+					], 
+					{ columns: 4 }
+				)
+			}					
 		);
 	});
 	onCallback.on('VerfuegbarNEIN', async (ctx) => {
@@ -819,8 +938,18 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 
 		await setVerfFalse(ctx.from.id, result);
 
-		ctx.answerCbQuery("🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, false);
-		ctx.editMessageText("🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", Telegraf.Extra.markdown().markup());
+		ctx.answerCbQuery(
+			"🚒 Status -> 🟥  Nicht Verfügbar bis  " + bis, 
+			{
+				'show_alert': false
+			}
+		);
+		ctx.editMessageText(
+			"🚒 Status -> 🟥  Nicht Verfügbar bis  _" + bis + "_", 
+			{
+				'parse_mode': 'Markdown'
+			}
+		);
 
 	});
 	onCallback.on('VerfuegbarZeige', async (ctx) => {
@@ -845,11 +974,13 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			});
 
 			ctx.editMessageText(
-				`*🟩  Verfügbar: (${st_vervNum} )*
+`*🟩  Verfügbar: (${st_vervNum} )*
 _${st_verv}_
 *🟥  Nicht Verfügbar: ( ${st_nichtverfNum} )*
 _${st_nichtverf}_`,
-				Telegraf.Extra.markdown()
+				{
+					'parse_mode': 'Markdown'
+				}
 			);
 
 			db.addStatistik(db.STATISTIK.SHOW_VERV, ctx.from.id);
@@ -886,7 +1017,10 @@ _${st_nichtverf}_`,
 						let dateUntil = new Date(element.statusUntil);
 						if (dateUntil < dateNow) {
 							await setVerfTrue(element.telegramid);
-							bot.telegram.sendMessage(element.telegramid, '🚒 Status -> 🟩  Verfügbar', Telegraf.Extra.markdown());
+							bot.telegram.sendMessage(
+								element.telegramid, 
+								'🚒 Status -> 🟩  Verfügbar',
+							);
 						}
 					} else if(
 						element.statusPlans != "" 
@@ -903,7 +1037,10 @@ _${st_nichtverf}_`,
 								dateUntil.setHours(plan.to.split(':')[0]);
 								dateUntil.setMinutes(plan.to.split(':')[1]);
 								await setVerfFalse(element.telegramid, dateUntil);
-								bot.telegram.sendMessage(element.telegramid, '🚒 Status ->  Nicht Verfügbar', Telegraf.Extra.markdown());
+								bot.telegram.sendMessage(
+									element.telegramid, 
+									'🚒 Status ->  Nicht Verfügbar'
+								);
 							}
 						});
 					}
@@ -974,13 +1111,12 @@ _${st_nichtverf}_`,
 
 	// ---------------- Alarm ----------------
 	var extra =
-		Telegraf.Extra.markdown().markup((m) =>
-			m.inlineKeyboard([
-				m.callbackButton('👍 JA!', 'KommenJa'),
-				m.callbackButton('👎 NEIN!', 'KommenNein'),
-				m.callbackButton('🕖 SPÄTER!', 'KommenSpäter')
-			])
-		);
+		Markup.inlineKeyboard([
+			Markup.button.callback('👍 JA!', 'KommenJa'),
+			Markup.button.callback('👎 NEIN!', 'KommenNein'),
+			Markup.button.callback('🕖 SPÄTER!', 'KommenSpäter')
+		]);
+		
 
 	async function sendAlarm(
 		EINSATZSTICHWORT,
@@ -1034,7 +1170,6 @@ _${st_nichtverf}_`,
 
 				// Alarmmeldung
 				var alarmMessage = '*⚠️ ⚠️ ⚠️    Alarm   ⚠️ ⚠️ ⚠️*';
-				var delay = 0;
 
 				// Informationsmeldung
 				var tmp = EINSATZSTICHWORT.toLowerCase();
@@ -1046,11 +1181,20 @@ _${st_nichtverf}_`,
 					alarmMessage = '* 🚧   Kein Einsatz   🚧*\n*Verkehrssicherung*';
 
 				// Beginn Telegramnachricht
-				sendMessage(element.telegramid, '❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗', Telegraf.Extra.markdown());
+				sendMessage(
+					element.telegramid, 
+					'❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗'
+				);
 
 				await timeout(8000);
 
-				sendMessage(element.telegramid, alarmMessage, Telegraf.Extra.markdown());
+				sendMessage(
+					element.telegramid, 
+					alarmMessage, 
+					{
+						'parse_mode': 'Markdown'
+					}					
+				);
 
 
 				// Fax PDF
@@ -1062,18 +1206,29 @@ _${st_nichtverf}_`,
 					fs.stat(filePath1, function (err, stat) {
 						if (err == null) {
 							var faxPDF = fs.readFileSync(filePath1);
-							bot.telegram.sendDocument(element.telegramid, { source: faxPDF, filename: filePath1.split(/[/\\]/g).pop() })
-								.catch((err) => {
-									console.error("[Telegram] ERROR sendDocument (ChatID " + element.telegramid + "): " + err);
-								});
+							bot.telegram.sendDocument(
+								element.telegramid, 
+								{ 
+									source: faxPDF, 
+									filename: filePath1.split(/[/\\]/g).pop() 
+								}
+							)
+							.catch((err) => {
+								console.error("[Telegram] ERROR sendDocument (ChatID " + element.telegramid + "): " + err);
+							});
 						} else {
 							var filePath2 = filePath.replace(/.txt/g, ".tif");
 							fs.stat(filePath2, function (err, stat) {
 								if (err == null) {
-									bot.telegram.sendPhoto(element.telegramid, { source: filePath2 })
-										.catch((err) => {
-											console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
-										});
+									bot.telegram.sendPhoto(
+										element.telegramid, 
+										{ 
+											source: filePath2 
+										}
+									)
+									.catch((err) => {
+										console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
+									});
 								} else {
 									console.error("[Telegram] Error: PDF/TIFF nicht gefunden.");
 								}
@@ -1091,7 +1246,13 @@ _${st_nichtverf}_`,
 
 					await timeout(4000);
 
-					sendMessage(element.telegramid, text[i] + " ", Telegraf.Extra.markdown());
+					sendMessage(
+						element.telegramid, 
+						text[i] + " ",
+						{
+							'parse_mode': 'Markdown'
+						}
+					);
 				}
 
 				// Karte
@@ -1099,15 +1260,24 @@ _${st_nichtverf}_`,
 					await timeout(4000);
 
 					if (lat != undefined && lng != undefined && STRASSE != "") {
-						bot.telegram.sendLocation(element.telegramid, lat, lng)
-							.catch((err) => {
-								console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
-							});
+						bot.telegram.sendLocation(
+							element.telegramid, 
+							lat, 
+							lng
+						)
+						.catch((err) => {
+							console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
+						});
 					} else {
-						bot.telegram.sendPhoto(element.telegramid, { source: 'public/images/noMap.png' })
-							.catch((err) => {
-								console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
-							});
+						bot.telegram.sendPhoto(
+							element.telegramid, 
+							{ 
+								source: 'public/images/noMap.png' 
+							}
+						)
+						.catch((err) => {
+							console.error("[Telegram] ERROR sendPhoto (ChatID " + element.telegramid + "): " + err);
+						});
 					}
 
 				}
@@ -1117,10 +1287,11 @@ _${st_nichtverf}_`,
 
 					sendMessage(
 						element.telegramid,
-						//	[- Link Karte](https://wambachers-osm.website/emergency/#zoom=18&lat=${lat}&lon=${lng}&layer=Mapbox%20Streets&overlays=FFTTFTFFFFFT)
-						`*Hydrantenkarten:*							
-							[- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${lat}&lon=${lng}&layers=B0000T)`,
-						Telegraf.Extra.markdown()
+`*Hydrantenkarten:*							
+	[- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${lat}&lon=${lng}&layers=B0000T)`,
+						{
+							'parse_mode': 'Markdown'
+						}							
 					);
 
 				}
@@ -1143,8 +1314,14 @@ _${st_nichtverf}_`,
 	onCallback.on('KommenNein', async (ctx) => {
 		try {
 
-			ctx.answerCbQuery("Status -> 👎  Kommen: Nein", true);
-			ctx.editMessageText("Status -> Kommen: Nein", extra);
+			ctx.answerCbQuery(
+				"Status -> 👎  Kommen: Nein", {
+					'show_alert': true
+				}
+			);
+			ctx.editMessageText(
+				"Status -> Kommen: Nein", extra
+			);
 
 			let rows_userById = await db.getUserByTelId(ctx.from.id);
 			let user = rows_userById[0];
@@ -1163,8 +1340,16 @@ _${st_nichtverf}_`,
 	onCallback.on('KommenJa', async (ctx) => {
 		try {
 
-			ctx.answerCbQuery("Status -> 👍  Kommen: Ja", true);
-			ctx.editMessageText("Status -> Kommen: Ja", extra);
+			ctx.answerCbQuery(
+				"Status -> 👍  Kommen: Ja", 
+				{
+					'show_alert': ftruealse
+				}
+			);
+			ctx.editMessageText(
+				"Status -> Kommen: Ja", 
+				extra
+			);
 
 			let rows_userById = await db.getUserByTelId(ctx.from.id);
 			let user = rows_userById[0];
@@ -1182,8 +1367,16 @@ _${st_nichtverf}_`,
 	onCallback.on('KommenSpäter', async (ctx) => {
 		try {
 
-			ctx.answerCbQuery("Status -> 🕖  Kommen: Später", true);
-			ctx.editMessageText("Status -> Kommen: Später", extra);
+			ctx.answerCbQuery(
+				"Status -> 🕖  Kommen: Später", 
+				{
+					'show_alert': true
+				}
+			);
+			ctx.editMessageText(
+				"Status -> Kommen: Später", 
+				extra
+			);
 
 			let rows_userById = await db.getUserByTelId(ctx.from.id);
 			let user = rows_userById[0];
@@ -1209,7 +1402,13 @@ _${st_nichtverf}_`,
 			let rows = await db.getUserAllowed();
 
 			rows.forEach((element) => {
-				sendMessage(element.telegramid, msg, Telegraf.Extra.markdown());
+				sendMessage(
+					element.telegramid, 
+					msg, 
+					{
+						'parse_mode': 'Markdown'
+					}
+				);
 			});
 
 		} catch (error) {
@@ -1249,14 +1448,22 @@ _${st_nichtverf}_`,
 			}
 		}
 		if (gesamt) {
-			ctx.editMessageText("<b>Alle Termine:</b>\n" + str, Telegraf.Extra.HTML());
+			ctx.editMessageText(
+				"<b>Alle Termine:</b>\n" + str, 
+				{
+					'parse_mode': 'HTML'
+				}
+			);
 		} else {
-			ctx.reply("<b>Deine Termine:</b>\n" + str, Telegraf.Extra.HTML().markup((m) =>
-				m.inlineKeyboard([
-					m.callbackButton('Gesamter Kalender', 'KalenderGes'),
-				]
-				)
-			));
+			ctx.reply(
+				"<b>Deine Termine:</b>\n" + str, 
+				{
+					'parse_mode': 'HTML',
+					...Markup.inlineKeyboard([
+						Markup.button.callback('Gesamter Kalender', 'KalenderGes'),
+					])
+				}				
+			);
 		}
 
 		db.addStatistik(db.STATISTIK.SHOW_KALENDER, ctx.from.id);
@@ -1274,10 +1481,7 @@ _${st_nichtverf}_`,
 	});
 	onCallback.on('KalenderGes', async (ctx) => {
 		try {
-
 			sendKalender(ctx, true);
-
-
 		} catch (error) {
 			console.error('[TelegramBot] #KalenderGes Fehler', error);
 		}
@@ -1319,13 +1523,19 @@ _${st_nichtverf}_`,
 					await response.data.pipe(writer);
 
 					if (user_hydrantPicRequested[ctx.from.id] == true) {
-						ctx.reply('Fertig.', Telegraf.Extra.markup((markup) => {
-							return markup.resize()
-								.keyboard([
-									'	⬅️ zurück'
-								], { columns: 2 })
+						ctx.reply(
+							'Fertig.', 
+							{
+								...Markup.keyboard(
+									[
+										'	⬅️ zurück'
+									], 
+									{ columns: 2 }
+								)
+								.resize()
 								.oneTime()
-						}));
+							}	
+						);
 					} else {
 						ctx.reply(`Bild gespeichert.`);
 					}
@@ -1348,9 +1558,11 @@ _${st_nichtverf}_`,
 
 		ctx.reply(
 			'Telegram Bot der' + process.env.FW_NAME_BOT,
-			Telegraf.Extra.HTML().markup((m) =>
-				m.keyboard(mainKeyboard).resize()
-			)
+			{
+				...Markup.keyboard(
+					mainKeyboard
+				).resize()
+			}
 		);
 
 	});
@@ -1368,7 +1580,9 @@ _${st_nichtverf}_`,
 					sendMessage(
 						element.telegramid,
 						'*🖨️ Drucker Information 🖨️:* \n _Alarm-Drucker: ' + (status ? 'Papier wieder voll' : 'Papier LEER') + '!_',
-						Telegraf.Extra.markdown()
+						{
+							'parse_mode': 'Markdown'
+						}
 					);
 				}
 			});
@@ -1390,7 +1604,9 @@ _${st_nichtverf}_`,
 					sendMessage(
 						element.telegramid,
 						'*Software Info:* \n _' + infotext + '_',
-						Telegraf.Extra.markdown()
+						{
+							'parse_mode': 'Markdown'
+						}
 					);
 				}
 			});
@@ -1402,8 +1618,12 @@ _${st_nichtverf}_`,
 
 
 
-	// ---------------- Starte Bot ----------------
-	bot.startPolling();
+	// ---------------- Starte Bot ----------------	
+	bot.launch()
+
+	// Enable graceful stop
+	process.once('SIGINT', () => bot.stop('SIGINT'))
+	process.once('SIGTERM', () => bot.stop('SIGTERM'))
 
 
 

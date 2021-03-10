@@ -31,6 +31,10 @@ function fetchWithParam(_url, _param, _json = true) {
 				headers: { "Content-Type": "application/json; charset=utf-8" },
 				signal
 			})
+			if(response.status == 401) {
+				window.location.href = '/app/login.html';
+				return null;
+			}
 			clearTimeout(timeoutId);
 			if(_json) response = await response.json();
 
