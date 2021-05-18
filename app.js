@@ -29,7 +29,7 @@ var _alarmManager = [null];
 var ignoreNextAlarm = false;
 var ignoreNextAlarm_min = 0;
 
-process.env.VERSION = "2.3.0";
+process.env.VERSION = "2.4.0";
 process.env.VERSION_REMOTE = '';
 
 
