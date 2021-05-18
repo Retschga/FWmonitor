@@ -1,0 +1,757 @@
+:root {
+    --bg_loader: #525252;
+    --bg_navbar: #ef5350;
+    --color_navbar: rgba(255, 255, 255, .9);
+    --color_border: #e0e0e0;
+    --bg_list_item: #eee;
+    --bg_list_item_dark: #cecece;
+    --bg_list_item_selected: #ccc;
+    --bg_list_subitem: #fdfdfd;
+    --bg_veryLight: #f7f7f7;
+}
+
+html {
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 18px;
+    font-family: Roboto,"Helvetica Neue",sans-serif;
+}
+
+body {
+    min-width: 100%;
+    min-height: 100%;
+    background-color: #313133;  
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+
+
+
+/* -------- Content -------- */
+.content {        
+    position: initial !important;    
+    flex-grow: 1;
+    overflow-x: auto;
+}
+
+.wrapper {
+    max-width: 600px;
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff ;
+    overflow: hidden;
+}
+
+
+
+
+/* -------- Navigation -------- */
+.navbar {
+    background-color: var(--bg_navbar);   
+    color: var(--color_navbar);   
+
+    padding-left: 0.2em;     
+    display: flex;
+    vertical-align: middle;  
+}
+
+.navbar > * {
+    display: inline-block;
+    font-size: 1.15em;
+    font-weight: 400;
+}
+
+.navbar button {
+    font-size: 1.6em;
+    color: var(--color_navbar); 
+}
+
+
+/* -------- Helper -------- */
+.hidden {
+    display: none !important;
+}
+
+.flex_column {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.flex_row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex_grow {
+    flex-grow: 1;
+}
+
+.flex_center_vertical {
+    justify-content: center;
+}
+
+.flex_center_horizontal {
+    align-items: center;
+}
+
+.flex_wrap {
+    flex-wrap: wrap;
+}
+
+.text_align_center {
+    text-align: center;
+}
+
+.text_align_right {
+    text-align: right;
+}
+
+.border_left {
+    border-left: 1px solid var(--color_border) !important;
+}
+
+.border_right {
+    border-right: 1px solid var(--color_border) !important;
+}
+
+.border_top {
+    border-top: 1px solid var(--color_border) !important;
+}
+
+.border_bottom {
+    border-bottom: 1px solid var(--color_border) !important;
+}
+
+.padding_none {
+    padding: 0 !important;
+}
+
+.margin_none {
+    margin: 0 !important;
+}
+
+.margin_top_0_5 {
+    margin-top: 0.5em !important;
+}
+
+.margin_top_1 {
+    margin-top: 1em !important;
+}
+
+.margin_bottom_1 {
+    margin-bottom: 1em !important;
+}
+
+.margin_top_2 {
+    margin-top: 2em !important;
+}
+
+.float_left {
+    float: left;
+}
+
+.float_right {
+    float: right;
+}
+
+.padding_left_1 {
+    padding-left: 1em !important;
+}
+
+.padding_right_1 {
+    padding-right: 1em !important;
+}
+
+.padding_top_1 {
+    padding-top: 1em !important;
+}
+
+.padding_bottom_1 {
+    padding-bottom: 1em !important;
+}
+
+.rounded {
+    border-radius: 5%;;
+}
+
+/* -------- Page loader -------- */
+
+.loader {                
+    background-color: var(--bg_loader);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    z-index: 1000;             
+}
+
+.loader_in {
+    visibility: visible;
+
+    -webkit-animation : loader_moveIn 1s;
+    -moz-animation    : loader_moveIn 1s;
+    -o-animation      : loader_moveIn 1s;
+    animation         : loader_moveIn 1s;
+}
+
+.loader_out {
+    visibility: hidden;
+
+    -webkit-animation : loader_moveOut 0.5s;
+    -moz-animation    : loader_moveOut 0.5s;
+    -o-animation      : loader_moveOut 0.5s;
+    animation         : loader_moveOut 0.5s;
+}
+
+@keyframes loader_moveIn {
+    from {
+        transform: translate3d(0,-30%,0) skewY(-10deg) translateY(-100%);
+        visibility: visible;
+    }
+    to {
+        transform: skewY(-10deg) translateY(-40%);
+        visibility: visible;
+    }
+}
+@keyframes loader_moveOut {
+    from {
+        transform: translate3d(0,-30%,0) skewY(-10deg) translateY(0);
+        visibility: visible;
+    }
+    to {
+        transform: skewY(-10deg) translateY(60%);
+        visibility: visible;
+    }
+}
+
+.loader_in > * {
+    opacity:1;
+}
+
+.loader_out > * {
+    opacity:0;
+}
+
+.loader .info {
+    position: absolute;
+    left: 50%;
+    top: 25%;
+    transform: translate(-50%, -50%);
+}
+
+.spinner_rotateplane {
+    width: 40px;
+    height: 40px;
+    background-color: #ef5350;
+
+    margin: 0 auto;
+    -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+    animation: sk-rotateplane 1.2s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-rotateplane {
+    0% { -webkit-transform: perspective(120px) }
+    50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+    100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+}
+
+@keyframes sk-rotateplane {
+    0% { 
+        transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg) 
+    } 50% { 
+        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg) 
+    } 100% { 
+        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
+}
+
+
+
+/* ------- FORMS -------*/
+.input-container {
+    display: -ms-flexbox; /* IE10 */
+    display: flex;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.input-container .material-icons {
+    padding: 10px;
+    background: dodgerblue;
+    color: white;
+    min-width: 50px;
+    text-align: center;
+}
+
+.input-container .input-field {
+    width: 100%;
+    padding: 10px;
+    outline: none;
+}
+  
+.input-container .input-field:focus {
+    border: 2px solid dodgerblue;
+}
+
+.btn {
+    background-color: dodgerblue;
+    color: white;
+    padding: 15px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+}
+  
+.btn:hover {
+    opacity: 1;
+}
+
+
+/* -------- BADGE -------- */
+.badge {    
+    padding: 0.2em 0.4em 0.2em 0.4em; 
+    border-radius: 5px;
+    line-height: 1.8;
+    font-size: 0.8em;
+}
+
+
+/* ------- COLORS -------- */
+.blue {
+    background-color: cornflowerblue !important;
+}
+
+.red {
+    background-color: #ffa9a8 !important;
+}
+
+.grey {
+    background-color: #e0e0e0 !important;
+}
+
+.green {
+    background-color: #74dd6c !important;
+}
+
+.grblueey {
+    background-color: blue !important;
+}
+
+.orange {
+    background-color: orange !important;
+}
+
+.mark_red {
+    border-left: 5px solid #ffa9a8;
+}
+
+.mark_green {
+    border-left: 5px solid #74dd6c;
+}
+
+.mark_blue {
+    border-left: 5px solid blue;
+}
+
+.mark_orange {
+    border-left: 5px solid orange;
+}
+
+
+/* -------- LIST --------*/
+
+.list {
+    margin-top: 1em;
+    border-top: 1px solid var(--color_border);
+    border-bottom: 1px solid var(--color_border);
+}
+
+.list > * {
+    border-bottom: 1px solid var(--color_border);
+    padding: 0.5em;
+    background-color: var(--bg_list_item);
+}
+.listDark > * {
+    background-color: var(--bg_list_item_dark);
+}
+
+.list .item {
+    display:  flex; 
+    align-content: center;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: 0.8em;
+    padding-bottom: 0.8em;
+    
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Old versions of Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
+}
+
+.list .item .text {
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+.list .item .left {
+    margin-right: 1em;
+    flex-grow: 0;
+}
+
+.list .item .right {
+    margin-left: 1em;
+    flex-grow: 0;
+}
+
+.list .subitem {
+    margin: 0;
+    background-color: var(--bg_list_subitem);
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    font-size: 0.8em;
+}
+
+.list .smallitem {
+    margin: 0;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    font-size: 0.9em;
+}
+
+.list > *:last-child {
+    border-bottom: none;
+}
+
+
+
+
+/* -------- SWITCH --------*/
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 2.6em; /*60px;*/
+    height: 1.6em; /*34px;*/
+}
+  
+  /* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+  
+/* The slider */
+.switch  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+  
+.switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 1.2em; /*26px;*/
+    width: 1.2em; /*26px;*/
+    left: 0.2em; /*4px;*/
+    bottom: 0.2em; /*4px;*/
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+  
+.switch input:checked + .slider {
+    background-color: #2196F3;
+}
+
+.switch input:disabled + .slider {
+    background-color: #A6CAE8;
+}
+  
+.switch input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+  
+.switch input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(1em);
+}
+  
+/* Rounded sliders */
+.switch .slider.round {
+    border-radius: 34px;
+}
+  
+.switch .slider.round:before {
+    border-radius: 50%;
+} 
+
+  /* -------- TABS --------*/
+  /* Style tab links */
+.tablink {
+    background-color: #555;
+    color: white;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    font-size: 17px;
+    width: 25%;
+}
+
+.tablink_active {
+    background-color: #777;
+}
+  
+.tablink:hover {
+    background-color: #777;
+}
+
+.tabcontent {
+    display: none;
+}
+
+
+/* -------- ACCORDION -------- */
+
+/* Style the buttons that are used to open and close the accordion panel */
+.accordion {
+    background-color: var(--bg_list_item);
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    outline: none;
+    transition: 0.4s;
+}
+  
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.accordion_active, .accordion:hover {
+    background-color: var(--bg_list_item_selected);
+}
+
+.accordion_panel {
+    display: none;
+    background-color: var(--bg_list_subitem);
+}
+
+.accordion:after {
+    content: '\02795'; /* Unicode character for "plus" sign (+) */
+    font-size: 0.7em;
+    color: #777;
+    float: right;
+    margin-left: 0.6em;
+}
+  
+.accordion_active:after {
+    content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+
+/* -------- CHECKBOX -------- */
+
+/* Customize the label (the container) */
+.checkmark_container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.checkmark_container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+.checkmark_container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.checkmark_container input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+
+.checkmark_container input:disabled ~ .checkmark {
+    background-color: #A6CAE8;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+/* Show the checkmark when checked */
+.checkmark_container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Style the checkmark/indicator */
+.checkmark_container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+} 
+
+
+
+
+/* -------- MODAL -------- */
+/* https://www.w3schools.com/howto/howto_css_delete_modal.asp */
+
+/* Set a style for all buttons */
+.modal button {
+    background-color: #04AA6D;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+}
+  
+.modal button:hover {
+    opacity:1;
+}
+  
+/* Float cancel and delete buttons and add an equal width */
+.modal .cancelbtn, .deletebtn {
+    float: left;
+    width: 50%;
+}
+  
+/* Add a color to the cancel button */
+.modal .cancelbtn {
+    background-color: #ccc;
+    color: black;
+}
+  
+/* Add a color to the delete button */
+.modal .deletebtn {
+    background-color: #f44336;
+}
+  
+/* Add padding and center-align text to the container */
+.modal .container {
+    padding: 16px;
+    text-align: center;
+}
+  
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: var(--bg_loader);
+    padding-top: 50px;
+}
+  
+/* Modal Content/Box */
+.modal .modal-content {
+    background-color: #fefefe;
+    margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+  
+/* Style the horizontal ruler */
+.modal hr {
+    border: 1px solid #f1f1f1;
+    margin-bottom: 25px;
+}
+  
+/* The Modal Close Button (x) */
+.modal .close {
+    position: absolute;
+    right: 35px;
+    top: 15px;
+    font-size: 40px;
+    font-weight: bold;
+    color: #f1f1f1;
+}
+  
+.modal .close:hover,
+.modal .close:focus {
+    color: #f44336;
+    cursor: pointer;
+}
+  
+/* Clear floats */
+.modal .clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+  
+/* Change styles for cancel button and delete button on extra small screens */
+@media screen and (max-width: 300px) {
+    .modal  .cancelbtn, .modal  .deletebtn {
+      width: 100%;
+    }
+}

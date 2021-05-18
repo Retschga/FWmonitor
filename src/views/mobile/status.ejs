@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_status.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Status</h1>      
+
+            </div>
+
+            <div class="content">
+
+              
+                <div
+                    class="var_statuscolor"
+                    style="margin: 0 auto; border: 1px solid var(--border_color); width: 80%; border-radius: 5%; padding: 1em; text-align: center; margin-top: 1em;"
+                >
+                    <span>Aktuell: &nbsp;</span><span class="var_statustext">########</span><br>
+                    <span class="var_until" style="font-size: 0.8em;">##.##.#### ##:##</span>
+                </div>
+                
+
+                <div style="display: flex; justify-content: space-around; position: fixed; bottom: 1em; width: 100%;">
+                    <button class="btn green" onclick="updateStatus(user_id, 1)" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">done</span>
+                    </button>
+                    <button class="btn red" onclick="updateStatus(user_id, 2)" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">close</span>
+                    </button>
+                    <button class="btn grey" onclick="" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">list</span>
+                    </button>
+                </div>
+
+                <div class="flex_row" style="margin-top: 2em; padding: 1em;">
+
+                    <div class="flex_column flex_grow text_align_center border_right" style="width: 100%; padding-bottom: 1em;">
+                        <p class="border_bottom">
+                            Verfügbar:
+                        </p>
+                        <template id="template-verfuegbar">
+                            <p class="margin_none var_name">####r</p>
+                        </template>
+                        <div class="list_verfuegbar" style="max-height: 40vh; overflow-y: auto; font-size: 0.7em;">    
+
+                        </div>
+                    </div>
+                    <div class="flex_column flex_grow text_align_center" style="width: 100%;">
+                        <p class="border_bottom">
+                            Nicht verfügbar:
+                        </p>
+                        <template id="template-nichtverfuegbar">
+                            <p class="margin_none var_name">####r</p>
+                        </template>
+                        <div class="list_nichtverfuegabr" style="max-height: 40vh; overflow-y: auto; font-size: 0.7em;">
+                            
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadStatus(id) {
+                let userStatus = await fetch_get('/api/v1/user/status/' + id, true);
+                console.log('user status', userStatus);
+                if(!userStatus) return;
+
+                const date = userStatus.until ? new Date(userStatus.until) : undefined;   
+             
+                const var_text   = document.querySelector(".var_statustext");
+                const var_until   = document.querySelector(".var_until");
+                const var_statuscolor   = document.querySelector(".var_statuscolor");
+
+                var_text.innerHTML = userStatus.statustext;
+                if (date){
+                    var_until.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + date.getFullYear() + ' - ' + 
+                                        ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                } else {
+                    var_until.innerHTML = '';
+                }
+
+                var_statuscolor.classList.remove('red');
+                var_statuscolor.classList.remove('green');
+                var_statuscolor.classList.add(userStatus.status == 1 ? 'green' : 'red'); 
+
+            }
+
+            async function loadList() {
+                let userStatusList = await fetch_get('/api/v1/user/status/all', true);
+                console.log('user status all', userStatusList);
+                if(!userStatusList) return;
+
+                var target_verfuegbar = document.querySelector(".list_verfuegbar");
+                var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
+
+                target_verfuegbar.innerHTML = '';
+                target_nichtverfuegbar.innerHTML = '';
+
+                for(let i = 0; i < userStatusList.length; i++) {
+
+                    const userstatus = userStatusList[i];
+
+                    if(userstatus.status == 1) {
+                        const template = document.querySelector('#template-verfuegbar');                
+                        const var_text   = template.content.querySelector(".var_name");
+                        var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                        var clone = document.importNode(template.content, true);
+                        target_verfuegbar.appendChild(clone);
+                    } else {
+                        const template = document.querySelector('#template-nichtverfuegbar');                
+                        const var_text   = template.content.querySelector(".var_name");
+                        var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                        var clone = document.importNode(template.content, true);
+                        target_nichtverfuegbar.appendChild(clone);
+                    }
+                        
+                    
+                }
+            }
+
+            async function updateStatus(id, value, until = null) {
+                loaderIn();
+                let response = await fetch_post('/api/v1/user/status/update/' + id, {value: value, until: null});
+                console.log('updateStatus', response);               
+                await loadStatus(id);
+                await loadList();
+                loaderOut();
+            }
+
+            loadStatus(user_id);
+            loadList();
+
+
+        </script>
+
+       
+    </body>
+	
+</html>

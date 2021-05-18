@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1 class="var_name">Benutzer</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list">
+
+                    <button class="accordion element1" onclick="accordion_switch(this)">Alarmgruppe / Berechtigungen</button>
+                    <div class="accordion_panel element2">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">notifications_active</span>
+                            <span class="text">Alarmgruppe</span>
+                            <select class="var_alarmgroup" style="min-width: 30%; margin-right: 10px;">
+                            </select>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Administrator</span>
+                            <label class="right checkmark_container">
+                                <input class="var_admin" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">edit_calendar</span>
+                            <span class="text">Kalender</span>
+                            <select class="var_calendar" style="min-width: 30%; margin-right: 10px;">
+                                <option value="0">Nur Lesen</option>
+                                <option value="1">Eigene Gruppen</option>
+                                <option value="2">Vollzugriff</option>
+                            </select>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">call</span>
+                            <span class="text">Telefonliste</span>
+                            <label class="right checkmark_container">
+                                <input class="var_telefone" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">print</span>
+                            <span class="text">Drucker Papierinfo</span>
+                            <label class="right checkmark_container">
+                                <input class="var_printer" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">info</span>
+                            <span class="text">Software Statusinfos</span>
+                            <label class="right checkmark_container">
+                                <input class="var_software" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <button class="accordion element3" onclick="accordion_switch(this)">Kalendergruppen</button>
+                    <div class="accordion_panel calendarGroup_list element4">
+
+                        <template id="template-calendarGroup">
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">calendar_today</span>
+                                <span class="text var_name">####</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_value" type="checkbox">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                        </template>
+
+                    </div>
+
+                    <button class="accordion element5" onclick="accordion_switch(this)">Status</button>
+                    <div class="accordion_panel element6">
+                        <div class="item smallitem">
+                            <span class="left material-icons">notifications_active</span>
+                            <span class="text">Terminerinnerungen</span>
+                            <label class="switch right">
+                                <input class="var_notifications" type="checkbox" disabled>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>                        
+                        <div class="item smallitem">
+                            <span class="left material-icons">visibility</span>
+                            <span class="text">Status verborgen</span>
+                            <label class="switch right">
+                                <input class="var_statushidden" type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Verfügbar</span>
+                            <label class="right checkmark_container">
+                                <input class="var_status" type="checkbox" disabled>
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="accordion element7" onclick="accordion_switch(this)">Ausbildung</button>
+                    <div class="accordion_panel element8">
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Atemschutz</span>
+                            <label class="right checkmark_container">
+                                <input class="var_AGT" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Maschinist</span>
+                            <label class="right checkmark_container">
+                                <input class="var_MA" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Gruppenführer</span>
+                            <label class="right checkmark_container">
+                                <input class="var_GRF" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Zugführer</span>
+                            <label class="right checkmark_container">
+                                <input class="var_ZUGF" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="accordion accordion_active" onclick="accordion_switch(this)">Freigabe / Speichern</button>
+                    <div class="accordion_panel" style="display: block;">
+                        <div class="item smallitem padding_top_1">
+                            <div class="red left item rounded deletebutton"  onclick="openDeleteModal()">
+                                <span class="left material-icons">delete</span>
+                                <span class="text">Löschen</span>                                
+                            </div>
+                            <div class="flex_grow"></div>
+                            <div class="green right item rounded savebutton" onclick="saveUser()">
+                                <span class="text text_align_right">Speichern</span>
+                                <span class="right material-icons">save</span>
+                            </div>  
+                            <div class="green right item rounded freigabebutton" onclick="approveUser()">
+                                <span class="text text_align_right">Freigeben</span>
+                                <span class="right material-icons">verified_user</span>
+                            </div>                            
+                            
+                        </div>
+                    </div>
+
+
+                </div>
+               
+            </div>
+
+            <div id="modal_delete" class="modal">
+                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <h1>Account löschen</h1>
+                        <p>Benutzer sicher löschen?</p>
+                
+                        <div class="clearfix">
+                            <button type="button" class="cancelbtn" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
+                            <button type="button" class="deletebtn">JA</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        <%- include('partials/foot') -%>
+        
+        <script>
+
+            const id = $_GET['id'];
+
+            async function loadUser() {                
+
+                const userList = await fetch_get(`/api/v1/user/` + id, true);
+                console.log('userList', userList);
+                if(!userList) return;
+                const user = userList[0];
+
+                if(user.approved == 1) {
+                    document.querySelector(".freigabebutton").classList.add('hidden');
+                } else {
+                    document.querySelector(".savebutton").classList.add('hidden');
+                    document.querySelector(".element1").classList.add('hidden');
+                    document.querySelector(".element2").classList.add('hidden');
+                    document.querySelector(".element3").classList.add('hidden');
+                    document.querySelector(".element4").classList.add('hidden');
+                    document.querySelector(".element5").classList.add('hidden');
+                    document.querySelector(".element6").classList.add('hidden');
+                    document.querySelector(".element7").classList.add('hidden');
+                    document.querySelector(".element8").classList.add('hidden');
+                    return;
+                }
+
+                if (id == user_id) {
+                    document.querySelector(".deletebutton").classList.add('hidden');
+                }
+
+                const groupList = await fetch_get(`/api/v1/calendarGroups`, true);
+                console.log('groupList', groupList);
+                if(!groupList) return;
+
+                const alarmGroups = await fetch_get(`/api/v1/group`, true);
+                console.log('alarmGroups', alarmGroups);
+                if(!alarmGroups) return;                
+
+                const var_name           = document.querySelector(".var_name");
+                var_name.innerHTML = user.name + ' ' + user.vorname;
+
+                const var_alarmgroup      = document.querySelector(".var_alarmgroup");
+                let tempStr = '';
+                for(let i = 0; i < alarmGroups.length; i++) {
+                    tempStr += '<option value="'+alarmGroups[i].id+'">'+alarmGroups[i].name+'</option>';
+                }
+                var_alarmgroup.innerHTML = tempStr;
+                setSelectedIndex(var_alarmgroup, user.group);
+                
+                
+                const var_admin            = document.querySelector(".var_admin"); 
+                const var_calendar         = document.querySelector(".var_calendar"); 
+                const var_telefone         = document.querySelector(".var_telefone"); 
+                const var_printer          = document.querySelector(".var_printer"); 
+                const var_software         = document.querySelector(".var_software"); 
+                var_admin.checked          = user.admin == 1;
+                setSelectedIndex(var_calendar, user.kalender);
+                var_telefone.checked       = user.telefonliste == 1;
+                var_printer.checked        = user.drucker == 1;
+                var_software.checked       = user.softwareInfo == 1;
+
+                const calendarGroup_list  = document.querySelector(".calendarGroup_list"); 
+                const kalGruppenArray     = user.kalenderGroups.split('|');
+                for(let i = 1; i < groupList.length; i++) {
+                    const element = groupList[i];
+
+                    const template     = document.querySelector('#template-calendarGroup');       
+                    const var_name     = template.content.querySelector(".var_name");      
+                    const var_value    = template.content.querySelector(".var_value");
+                    
+                    var_name.innerHTML = element.name;
+                    var_value.checked  = kalGruppenArray.includes(String(element.id));
+                    var_value.id = element.id;
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen
+                    var target = document.querySelector(".calendarGroup_list");
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);                
+                }             
+
+                const var_notifications   = document.querySelector(".var_notifications"); 
+                const var_statushidden    = document.querySelector(".var_statushidden"); 
+                const var_status          = document.querySelector(".var_status"); 
+                var_notifications.checked = user.sendRemembers == 1;
+                var_statushidden.checked  = user.statusHidden == 1;
+                var_status.checked        = user.status == 1;
+
+                const var_AGT    = document.querySelector(".var_AGT"); 
+                const var_MMA    = document.querySelector(".var_MA"); 
+                const var_GRF    = document.querySelector(".var_GRF"); 
+                const var_ZUGF   = document.querySelector(".var_ZUGF"); 
+                var_AGT.checked  = user.stAGT == 1;
+                var_MMA.checked  = user.stMA == 1;
+                var_GRF.checked  = user.stGRF == 1;
+                var_ZUGF.checked = user.stZUGF == 1;
+
+            }
+
+            async function saveUser() {
+
+                loaderIn();
+
+                const var_alarmgroup      = document.querySelector(".var_alarmgroup").value;
+
+                const var_admin            = document.querySelector(".var_admin").checked ? 1 : 0; 
+                const var_calendar         = document.querySelector(".var_calendar").value; 
+                const var_telefone         = document.querySelector(".var_telefone").checked ? 1 : 0; 
+                const var_printer          = document.querySelector(".var_printer").checked ? 1 : 0; 
+                const var_software         = document.querySelector(".var_software").checked ? 1 : 0; 
+
+                const var_calendarGroups   = document.querySelectorAll(".var_value");
+                var calendarGroup = '';
+                for(let i = 0; i < var_calendarGroups.length; i++) {
+                    console.log(var_calendarGroups[i].checked);
+                    if(var_calendarGroups[i].checked) {
+                        calendarGroup += '|' + var_calendarGroups[i].id;
+                    }
+                }
+                calendarGroup = calendarGroup.substring(1);
+
+                const var_statushidden     = document.querySelector(".var_statushidden").checked ? 1 : 0;  
+
+                const var_AGT              = document.querySelector(".var_AGT").checked ? 1 : 0; 
+                const var_MMA              = document.querySelector(".var_MA").checked ? 1 : 0; 
+                const var_GRF              = document.querySelector(".var_GRF").checked ? 1 : 0;  
+                const var_ZUGF             = document.querySelector(".var_ZUGF").checked ? 1 : 0; 
+
+                let response = await fetch_post('/api/v1/user/' + id, {
+                    group: var_alarmgroup,
+                    admin: var_admin,
+                    kalender: var_calendar,
+                    telefonliste: var_telefone,
+                    drucker: var_printer,
+                    softwareInfo: var_software,
+                    kalenderGroups: calendarGroup,
+                    statusHidden: var_statushidden,
+                    stAGT: var_AGT,
+                    stMA: var_MMA,
+                    stGRF: var_GRF,
+                    stZUGF: var_ZUGF
+                });
+
+                loaderOut();
+
+            }
+
+            async function deleteUser() {
+
+            }
+
+            async function approveUser() {
+                
+            }
+
+            function openDeleteModal() {                
+                const modal = document.querySelector('#modal_delete');
+                modal.style.display = 'block';
+                modal.querySelector('.deletebtn').onclick = () => deleteUser();
+            }
+
+
+            loadUser();
+
+        </script>
+
+    </body>
+	
+</html>

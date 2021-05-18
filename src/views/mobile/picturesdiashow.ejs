@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_picturesdiashow.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">                
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Alarme</h1>    
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_row">
+                    <button class="tablink flex_grow tablink_active" onclick="tab_switch('tab_active', this)">Aktiv</button>
+                    <button class="tablink flex_grow" onclick="tab_switch('tab_inactive', this)">Inakiv</button>
+                </div>
+               
+                
+                <div id="tab_active" class="tabcontent" style="display: block;">
+                    <div class="flex_row flex_wrap">
+
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                        <img src="wedding.jpg">
+                        <img src="rocks.jpg">
+                        <img src="falls2.jpg">
+                        <img src="paris.jpg">
+                        <img src="nature.jpg">
+                        <img src="mist.jpg">
+                        <img src="paris.jpg">
+                            
+                    </div>
+                </div>                
+                <div id="tab_inactive" class="tabcontent">
+                   
+                </div>   
+                
+            </div>
+
+        <%- include('partials/foot') -%>
+
+       
+    </body>
+	
+</html>

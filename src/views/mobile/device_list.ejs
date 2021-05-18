@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Verbundene Geräte</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list">
+
+                    <button class="accordion" onclick="accordion_switch(this)">Anzeigename</button>
+                    <div class="accordion_panel">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">badge</span>
+                            <span class="text">Anzeigename</span>
+                            <input type="right" placeholder="Name...">
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">person</span>
+                            <span class="text">Benutzername</span>
+                            <input type="right" placeholder="Benutzer...">
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">password</span>
+                            <span class="text">Passwort</span>
+                            <input type="right" placeholder="Passwort...">
+                        </div>
+
+                        <div class="item smallitem padding_top_1">
+                            <div class="red left item rounded">
+                                <span class="left material-icons">delete</span>
+                                <span class="text">Löschen</span>                                
+                            </div>
+                            <div class="flex_grow"></div>
+                            <div class="green right item rounded">
+                                <span class="text text_align_right">Speichern</span>
+                                <span class="right material-icons">save</span>
+                            </div>                            
+                            
+                        </div>
+
+                    </div>
+                    
+                    <button class="accordion margin_top_1" onclick="accordion_switch(this)">Section 2</button>
+                    <div class="accordion_panel">
+                      <p>Lorem ipsum...</p>
+                    </div>
+                    
+                    <button class="accordion margin_top_1" onclick="accordion_switch(this)">Section 3</button>
+                    <div class="accordion_panel">
+                      <p>Lorem ipsum...</p>
+                    </div> 
+
+                    
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+       
+    </body>
+	
+</html>

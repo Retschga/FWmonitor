@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_calendar.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Kalender</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="calendar_list">
+
+                    <template id="template-calendarelement">
+
+                        <div class="calendar_element">
+
+                            <div style="display: flex; margin-bottom: 0.5em;">                            
+                                <div style="flex-grow: 1;">
+                                    <span class="var_text">
+                                        Text
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div class="var_emoji" style="padding-left: 0.5em;">
+                                    <span>📖</span>
+                                </div>
+                            </div>
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>      
+        
+                        </div>
+
+                    </template>
+
+
+                </div>
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadCalendar() {       
+                const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
+                console.log('calendarUpcoming', calendarElements);
+                if(!calendarElements) return;
+
+                for(let i = 0; i < calendarElements.length; i++) {
+                    const element = calendarElements[i];
+
+                    const date = new Date(element.start);   
+                    const {text, icon} = parseKalenderSummary(element.summary);
+                    let badge = "";
+                    for(let j = 0; j < element.group.length; j++) {
+                        badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                    }
+
+                    const template   = document.querySelector('#template-calendarelement');                
+                    const var_text   = template.content.querySelector(".var_text");
+                    const var_date   = template.content.querySelector(".var_date");
+                    const var_time   = template.content.querySelector(".var_time");
+                    const var_groups = template.content.querySelector(".var_groups");
+                    const var_emoji  = template.content.querySelector(".var_emoji");
+
+                    var_text.innerHTML   = text;
+                    var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                    var_groups.innerHTML = badge;
+                    var_emoji.innerHTML  = icon;
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen
+                    var target = document.querySelector(".calendar_list");
+                    var clone = document.importNode(template.content, true);
+                    target.appendChild(clone);
+
+                }
+
+                
+            }
+
+            loadCalendar();
+
+
+
+        </script>
+       
+    </body>
+	
+</html>

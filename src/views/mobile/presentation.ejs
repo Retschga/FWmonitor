@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Präsentation</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    
+                    <div class="list">
+
+                        <div class="item">
+                            <span class="left material-icons">chevron_left</span>
+                            <span class="text text_align_center">Foliensteuerung</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="left material-icons">pause</span>
+                            <span class="text text_align_center">Folien verstecken</span>
+                            <span class="right material-icons">play_arrow</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="text text_align_center">Präsentation beenden</span>
+                        </div>
+
+                    </div>
+
+                    <div class="list">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Foliensatz 1</span>
+                            <span class="right material-icons">tv</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Foliensatz 2</span>
+                            <span class="right material-icons">tv</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Foliensatz 3</span>
+                            <span class="right material-icons">tv</span>
+                        </div>
+
+                    </div>
+                    
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+       
+    </body>
+	
+</html>

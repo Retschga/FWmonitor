@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Menü</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    <!-- LINKS -->
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('map');">
+                            <span class="left material-icons">map</span>
+                            <span class="text">Hydrantenkarte</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div>
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('alarmsettings');">
+                            <span class="left material-icons">edit_notifications</span>
+                            <span class="text">Alarmierung</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item" onclick="loaderIn('presentation');">
+                            <span class="left material-icons">present_to_all</span>
+                            <span class="text">Präsentation</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+                        <div class="item" onclick="loaderIn('picturesdiashow');">
+                            <span class="left material-icons">photo_library</span>
+                            <span class="text">Diashowbilder</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div> 
+
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('settings_user');">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Einstellungen - Benutzer</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item" onclick="loaderIn('settings_alarm');">
+                            <span class="left material-icons">settings</span>
+                            <span class="text">Einstellungen - Alarm</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div>      
+                    
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('user_list');">
+                            <span class="left material-icons">manage_accounts</span>
+                            <span class="text">Benutzer</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item" onclick="loaderIn('car_list');">
+                            <span class="left material-icons">settings</span>
+                            <span class="text">Auto Bildschirme</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div> 
+
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('calendar_groups');">
+                            <span class="left material-icons">perm_contact_calendar</span>
+                            <span class="text">Kalendergruppen</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item" onclick="loaderIn('alarm_groups');">
+                            <span class="left material-icons">group</span>
+                            <span class="text">Alarmgruppen</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div>   
+                    
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('device_list');">
+                            <span class="left material-icons">devices</span>
+                            <span class="text">Verbundene Geräte</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div> 
+
+
+
+                    <div class="flex_grow"></div>
+
+                    <!-- LOGOUT -->
+                    <div class="list">
+
+                        <div class="item" onclick="logout()">
+                            <span class="left material-icons">logout</span>
+                            <span class="text">Abmelden</span>
+                        </div>
+
+                    </div> 
+
+                    <div class="flex_row" style="margin-top: 0.4em; padding: 0 0.2em 0 0.2em;">
+                        <span>2021 FWmonitor&nbsp;</span>
+                        <div class="flex_grow"></div> 
+                        <span>Version&nbsp;</span>
+                        <span>2.2.0</span>
+                    </div>
+                    
+                </div>
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+       
+    </body>
+	
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar flex_row">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Auto - Bildschirme</h1>    
+                
+                <div class="flex_grow"></div>
+
+                <button class="material-icons" onclick="createCar();">add_circle_outline</button>
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list car_list">
+
+                    <template id="template-carelement">
+                        <div class="carelement margin_none padding_none">
+
+                            <button class="accordion var_headername" onclick="accordion_switch(this)">Anzeigename</button>
+                            <div class="accordion_panel">
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Anzeigename</span>
+                                    <input class="var_name" type="text" placeholder="Name...">
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">person</span>
+                                    <span class="text">Benutzername</span>
+                                    <input class="var_user" type="text" placeholder="Benutzer...">
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">password</span>
+                                    <span class="text">Passwort</span>
+                                    <span class="left material-icons newpasswordbutton">autorenew</span>
+                                    <input class="var_password" type="text" placeholder="Passwort..." disabled>                                    
+                                </div>
+
+                                <div class="item smallitem padding_top_1">
+                                    <div class="red left item rounded deletebutton">
+                                        <span class="left material-icons">delete</span>
+                                        <span class="text">Löschen</span>                                
+                                    </div>
+                                    <div class="flex_grow"></div>
+                                    <div class="green right item rounded savebutton">
+                                        <span class="text text_align_right">Speichern</span>
+                                        <span class="right material-icons">save</span>
+                                    </div>                            
+                                    
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </template>
+                                        
+                    
+                </div>
+
+            </div>
+
+            <div id="modal_delete" class="modal">
+                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <h1>Account löschen</h1>
+                        <p>Auto-Account sicher löschen?</p>
+                
+                        <div class="clearfix">
+                            <button type="button" class="cancelbtn" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
+                            <button type="button" class="deletebtn">JA</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadCars() {   
+                const carList = await fetch_get(`/api/v1/car`, true);
+                console.log('carList', carList);
+                if(!carList) return;
+
+                for(let i = 0; i < carList.length; i++) {
+                    const element = carList[i];
+
+                    const template            = document.querySelector('#template-carelement');       
+                    const var_headername      = template.content.querySelector(".var_headername");      
+                    const var_name            = template.content.querySelector(".var_name");      
+                    const var_user            = template.content.querySelector(".var_user");
+                    const var_password        = template.content.querySelector(".var_password");          
+                    
+                    var_headername.innerHTML  = element.name; 
+                    var_name.value            = element.name; 
+                    var_user.value            = element.appBenutzer; 
+                    var_password.value        = element.appPasswort; 
+                
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen
+                    var target = document.querySelector(".car_list");
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);
+
+                    clone.id = 'car_' + element.id;
+                    const savebutton = clone.querySelector(".savebutton");  
+                    savebutton.addEventListener("click", () => {
+                        updateCar(element.id);
+                    });
+                    const deletebutton = clone.querySelector(".deletebutton");  
+                    deletebutton.addEventListener("click", () => {
+                        openeDeleteModal(element.id);
+                    });
+                    const newpasswordbutton = clone.querySelector(".newpasswordbutton");  
+                    newpasswordbutton.addEventListener("click", () => {
+                        getNewPassword(element.id);
+                    });
+
+                }
+
+            }
+
+            async function updateCar(id) {
+                loaderIn();
+
+                const carelement = document.querySelector('#car_' + id);       
+
+                const name     = carelement.querySelector('.var_name').value;
+                const user     = carelement.querySelector('.var_user').value;
+                const password = carelement.querySelector('.var_password').value;
+
+                carelement.querySelector('.var_headername').innerHTML = name;
+
+                if(password != '****') {
+                    let response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user, appPasswort: password});
+                    console.log('updateCar', response);
+                } else {
+                    let response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user});
+                    console.log('updateCar', response);
+                }               
+                               
+                loaderOut();
+            }
+
+            async function deleteCar(id) {
+                loaderIn();
+                let response = await fetch_get('/api/v1/car/delete/' + id);
+                console.log('deleteCar', response);               
+                location.reload(); 
+            }
+
+            async function createCar() {
+                let response = await fetch_get('/api/v1/car/create');
+                console.log('createCar', response); 
+                location.reload();        
+            }
+
+            async function getNewPassword(id) {
+                let response = await fetch_get('/api/v1/car/password', true);
+                console.log('getNewPassword', response);      
+                
+                const carelement = document.querySelector('#car_' + id);   
+                const password   = carelement.querySelector('.var_password'); 
+
+                password.value = response.password;
+            }
+
+            function openeDeleteModal(id) {                
+                const modal = document.querySelector('#modal_delete');
+                modal.style.display = 'block';
+                modal.querySelector('.deletebtn').onclick = () => deleteCar(id);
+            }
+
+            loadCars();
+        </script>
+       
+    </body>
+	
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Benutzereinstellungen</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    
+                    <div class="list">
+
+                        <div class="item">
+                            <span class="left material-icons">notifications_active</span>
+                            <span class="text">Terminerinnerungen</span>
+                            <label class="switch right">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="item">
+                            <span class="left material-icons">hide_source</span>
+                            <span class="text">Status verbergen</span>
+                            <label class="switch right">
+                                <input type="checkbox">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                    </div>
+                    
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+       
+    </body>
+	
+</html>

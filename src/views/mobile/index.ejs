@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">local_fire_department</button>
+
+                <h1>FWmonitor</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <!-- STATUS TEMPLATE -->  
+                <template id="template-status">          
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon">
+                                <span class="material-icons">
+                                    clear
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Aktueller Status: </span><br>
+                                    <span class="var_text">
+                                        Statustext
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>    
+
+
+
+                <!-- CALENDAR TEMPLATE -->
+                <template id="template-calendar">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon grey">
+                                <span class="material-icons">
+                                    calendar_today
+                                </span>
+                            </div>
+                        </div>                    
+                    
+                        <div class="index_container_content grey">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Nächster Termin:</span>
+                                    <p class="var_text">
+                                        Termintext
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="var_emoji">#</span>
+                                </div>
+                            </div>
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>                        
+                        </div>                    
+                    </div>
+                </template>
+
+                <%- include('partials/footer_nav') -%>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+            
+            async function loadCalendar() {       
+                let calendarElement = await fetch_get('/api/v1/calendar/next', true);
+                console.log('calendar', calendarElement);
+                if(!calendarElement) return;
+
+                const date = new Date(calendarElement.start);   
+                const {text, icon} = parseKalenderSummary(calendarElement.summary);
+                let badge = "";
+                for(let j = 0; j < calendarElement.group.length; j++) {
+                    badge += '<span class="badge green">'+calendarElement.group[j].name+'</span>';
+                }
+
+                const template   = document.querySelector('#template-calendar');                
+                const var_text   = template.content.querySelector(".var_text");
+                const var_date   = template.content.querySelector(".var_date");
+                const var_time   = template.content.querySelector(".var_time");
+                const var_groups = template.content.querySelector(".var_groups");
+                const var_emoji  = template.content.querySelector(".var_emoji");
+
+                var_text.innerHTML   = text;
+                var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                var_groups.innerHTML = badge;
+                var_emoji.innerHTML  = icon;
+
+                // Neue Zeile (row) klonen und in die Tabelle einfügen
+                var target = document.querySelector(".content");
+                var clone = document.importNode(template.content, true);
+                target.appendChild(clone);
+            }
+
+            async function loadStatus(id) {
+                let userStatus = await fetch_get('/api/v1/user/status/' + id, true);
+                console.log('user status', userStatus);
+                if(!userStatus) return;
+
+                const date = userStatus.until ? new Date(userStatus.until) : undefined;  
+
+                const template = document.querySelector('#template-status');                
+                const var_text   = template.content.querySelector(".var_text");
+                const var_date   = template.content.querySelector(".var_date");
+                const var_time   = template.content.querySelector(".var_time");
+                const index_container_icon   = template.content.querySelector(".index_container_icon");
+                const index_container_content   = template.content.querySelector(".index_container_content");
+
+                var_text.innerHTML = userStatus.statustext;
+                if (date){
+                    var_date.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                } else {
+                    var_date.innerHTML = '';
+                    var_time.innerHTML = '';
+                }
+               
+
+                if(userStatus.status == 1) {
+                    index_container_icon.classList.add('green');
+                    index_container_content.classList.add('green');
+                } else {
+                    index_container_icon.classList.add('red');
+                    index_container_content.classList.add('red');
+                }
+
+
+                var target = document.querySelector(".content");
+                var clone = document.importNode(template.content, true);
+                target.appendChild(clone);
+            }
+
+            redirect_if_logged_out(); 
+            loadCalendar();
+            loadStatus(user_id);
+            
+        </script>
+
+       
+    </body>
+	
+</html>

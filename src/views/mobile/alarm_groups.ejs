@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Alarmgruppen</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list alarmgroup_list">
+
+                    <template id="template-alarmgroup">
+                        <div class="alarmgroup margin_none padding_none">
+                            <button class="accordion var_groupheader" onclick="accordion_switch(this)">Gruppe 1</button>
+                            <div class="accordion_panel">
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Anzeigename</span>
+                                    <input class="right var_name" type="text" placeholder="Name...">
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Einsatzstichwort</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_einsatzstichwort" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Schlagwort</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_schlagwort" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Objekt</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_objekt" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Straße</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_strasse" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Ortsteil</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_ortsteil" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Ort</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_ort" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Bemerkung</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_bemerkung" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Einsatzmittel - Eigen</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_car1" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Einsatzmittel - Andere</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_car2" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">FAX PDF</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_fax" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Karte</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_map" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Hydrantenkarte</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_hydranten" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem padding_top_1">        
+                                    <div class="flex_grow"></div>
+                                    <div class="green right item rounded savebutton">
+                                        <span class="text text_align_right">Speichern</span>
+                                        <span class="right material-icons">save</span>
+                                    </div>                            
+                                    
+                                </div>
+
+                            </div>
+                        </div>
+                    </template>
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadGroups() {   
+                const groupList = await fetch_get(`/api/v1/group`, true);
+                console.log('groupList', groupList);
+                if(!groupList) return;
+
+                for(let i = 0; i < groupList.length; i++) {
+                    const element = groupList[i];
+
+                    const date = new Date(element.date);   
+
+
+                    const template              = document.querySelector('#template-alarmgroup');       
+                    const var_groupheader       = template.content.querySelector(".var_groupheader");      
+                    const var_name              = template.content.querySelector(".var_name");
+                    const var_einsatzstichwort  = template.content.querySelector(".var_einsatzstichwort");
+                    const var_schlagwort        = template.content.querySelector(".var_schlagwort");
+                    const var_objekt            = template.content.querySelector(".var_objekt");
+                    const var_strasse           = template.content.querySelector(".var_strasse");
+                    const var_ortsteil          = template.content.querySelector(".var_ortsteil");
+                    const var_ort               = template.content.querySelector(".var_ort");
+                    const var_bemerkung         = template.content.querySelector(".var_bemerkung");
+                    const var_car1              = template.content.querySelector(".var_car1");
+                    const var_car2              = template.content.querySelector(".var_car2");
+                    const var_fax               = template.content.querySelector(".var_fax");
+                    const var_map               = template.content.querySelector(".var_map");
+                    const var_hydranten         = template.content.querySelector(".var_hydranten");                    
+                    
+
+                    var_groupheader.innerHTML       = 'Gruppe ' + (i);
+                    var_name.value                  = element.name; 
+                    var_einsatzstichwort.checked    = element.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1; 
+                    var_schlagwort.checked          = element.pattern.indexOf('{{SCHLAGWORT}}') != -1; 
+                    var_objekt.checked              = element.pattern.indexOf('{{OBJEKT}}') != -1; 
+                    var_strasse.checked             = element.pattern.indexOf('{{STRASSE}}') != -1; 
+                    var_ortsteil.checked            = element.pattern.indexOf('{{ORTSTEIL}}') != -1; 
+                    var_ort.checked                 = element.pattern.indexOf('{{ORT}}') != -1; 
+                    var_bemerkung.checked           = element.pattern.indexOf('{{BEMERKUNG}}') != -1; 
+                    var_car1.checked                = element.pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') != -1; 
+                    var_car2.checked                = element.pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') != -1; 
+                    var_fax.checked                 = element.pattern.indexOf('{{FAX}}') != -1; 
+                    var_map.checked                 = element.pattern.indexOf('{{KARTE}}') != -1; 
+                    var_hydranten.checked           = element.pattern.indexOf('{{KARTE_EMG}}') != -1; 
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen
+                    var target = document.querySelector(".alarmgroup_list");
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);
+
+                    clone.id = 'group_' + element.id;
+                    const savebutton            = clone.querySelector(".savebutton");  
+                    savebutton.addEventListener("click", () => {
+                        updateGroup(element.id);
+                    });
+                    
+
+                }
+
+            }
+
+            async function updateGroup(id) {
+                loaderIn();
+
+                const alarmgroup              = document.querySelector('#group_' + id);       
+
+                let pattern  = '';
+                const name = alarmgroup.querySelector('.var_name').value;
+
+				if(alarmgroup.querySelector('.var_einsatzstichwort').checked) {
+					pattern += '   *{{EINSATZSTICHWORT}}*';
+				}
+				if(alarmgroup.querySelector('.var_map').checked) {
+					pattern += ' {{KARTE}}';
+				}
+				if(alarmgroup.querySelector('.var_hydranten').checked) {
+					pattern += ' {{KARTE_EMG}}';
+				}
+				if(alarmgroup.querySelector('.var_fax').checked) {
+					pattern += ' {{FAX}}';
+				}
+				pattern += '\n';
+				if(alarmgroup.querySelector('.var_schlagwort').checked) {
+					pattern += '_> {{SCHLAGWORT}}_' + '\n';
+				}
+				if(alarmgroup.querySelector('.var_objekt').checked) {
+					pattern += '_> {{OBJEKT}}_' + '\n';
+				}
+				if(alarmgroup.querySelector('.var_strasse').checked) {
+					pattern += '_> {{STRASSE}}_' + '\n';
+				}
+				if(alarmgroup.querySelector('.var_ortsteil').checked) {
+					pattern += '_> {{ORTSTEIL}}_' + '\n';
+				}
+				if(alarmgroup.querySelector('.var_ort').checked) {
+					pattern += '_> {{ORT}}_' + '\n';
+				}
+				if(alarmgroup.querySelector('.var_bemerkung').checked) {
+					pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
+				}
+				if(alarmgroup.querySelector('.var_car1').checked) {
+					pattern += '{{newline}}' + '\n' + '*Einsatzmittel:*' + '\n' + '_{{EINSATZMITTEL_EIGEN}}_';
+				}
+				if(alarmgroup.querySelector('.var_car2').checked) {
+					pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
+				}
+
+                let response = await fetch_post('/api/v1/group/' + id, {name: name, pattern: pattern});
+                console.log('updateGroup', response);               
+                loaderOut();
+            }
+
+            loadGroups();
+        </script>
+       
+    </body>
+	
+</html>

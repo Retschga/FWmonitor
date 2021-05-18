@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Benutzer</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column" style="background-color: var(--bg_veryLight);">
+
+                    <div class="padding_top_1 padding_left_1 padding_right_1">
+
+                        <select 
+                            id="benutzer_filter" 
+                            style="width: 100%;" 
+                            onChange="benutzer_filter(this.options[this.selectedIndex].value)">
+                    	</select>
+
+                    </div>
+
+                    <div class="user_list">
+                   
+                        <template id="template-userelement">
+                            <div class="userelement margin_none padding_none">
+
+                                <div class="list listDark border_left border_right mark_green">
+
+                                    <div class="item smallitem">
+                                        <span class="text var_name">Max Mustermann</span>
+                                        <span class="text right var_st">AGT MA ZUGF GF</span>
+                                    </div>
+
+                                    <div class="item subitem flex_wrap var_group">
+                                        <span class="badge green">Gruppe ####</span>
+                                    </div>
+                                    <div class="item subitem flex_wrap var_permissions">
+                                        <span class="badge"></span>
+                                    </div>
+                                    <div class="item subitem flex_wrap var_telegramerror red">
+                                        <span class="badge">Telegram Fehler -> Benutzer muss /start an den Bot senden</span>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </template>
+                        
+                        <template id="template-userelement-nf">
+
+                            <div class="userelement margin_none padding_none">
+
+                                <div class="list border_left border_right mark_green">
+    
+                                    <div class="item smallitem blue">
+                                        <span class="text var_name">Max Mustermann</span>
+                                        <span class="text right var_st">NICHT Freigegeben</span>
+                                    </div>
+    
+                                </div>
+    
+                            </div>
+
+                        </template>
+
+                        
+
+                    </div>
+
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+        
+        <script>
+
+            var target = document.querySelector(".user_list");
+
+            async function loadUsers() {   
+                const userList = await fetch_get(`/api/v1/user`, true);
+                console.log('userList', userList);
+                if(!userList) return;
+
+                const calendarGroups = await fetch_get(`/api/v1/calendarGroups`, true);
+                console.log('calendarGroups', calendarGroups);
+                if(!calendarGroups) return;
+
+                const alarmGroups = await fetch_get(`/api/v1/group`, true);
+                console.log('alarmGroups', alarmGroups);
+                if(!alarmGroups) return;
+
+                // Filter
+                let tempStr = 
+						'<option value="">Filter: Alle</option>' +
+						'<option value="Admin">Admin</option>' +
+						'<option value="Drucker">Drucker Papierinfo</option>' +					
+						'<option value="AGT">Ausbildung: Atemschutz</option>' +
+						'<option value="MA">Ausbildung: Maschinist</option>' +
+						'<option value="GRF">Ausbildung: Gruppenführer</option>' +
+						'<option value="ZUGF">Ausbildung: Zugführer</option>';
+
+                for(let i = 0; i < alarmGroups.length; i++) {
+                    tempStr += '<option value="'+alarmGroups[i].name+'">Alarmgruppe: '+alarmGroups[i].name+'</option>';
+                }
+                for(let i = 1; i < calendarGroups.length; i++) {
+                    tempStr += '<option value="'+calendarGroups[i].name+'">Kalendergruppe: '+calendarGroups[i].name+'</option>';
+                }
+                document.getElementById("benutzer_filter").innerHTML = tempStr;
+
+                 // Benutzerliste
+                 for(let i = 0; i < userList.blocked.length; i++) {
+                    const element = userList.blocked[i];
+
+                    const template            = document.querySelector('#template-userelement-nf');       
+                    const var_name            = template.content.querySelector(".var_name");       
+                    
+                    var_name.innerHTML        = element.name + ' ' + element.vorname; 
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen                    
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);
+
+                    clone.addEventListener("click", () => {
+                        loaderIn('user?id=' + element.id);
+                    });
+                }
+
+                // Benutzerliste
+                for(let i = 0; i < userList.approved.length; i++) {
+                    const element = userList.approved[i];
+                    const kalGruppenArray = element.kalenderGroups.split('|');
+
+                    const template            = document.querySelector('#template-userelement');       
+                    const var_name            = template.content.querySelector(".var_name");      
+                    const var_st              = template.content.querySelector(".var_st");      
+                    const var_group           = template.content.querySelector(".var_group");
+                    const var_permissions     = template.content.querySelector(".var_permissions");
+                    const var_telegramerror   = template.content.querySelector(".var_telegramerror");          
+                    
+                    var_name.innerHTML        = element.name + ' ' + element.vorname; 
+                    var_st.innerHTML        = `${element.stAGT == 1 ? 'AGT' : ''}${element.stMA == 1 ? ' MA' : ''}${element.stGRF == 1 ? ' GRF' : ''}${element.stZUGF == 1 ? ' ZUGF' : ''}`; 
+                
+                    // Groups
+                    let badge_group = "";
+                    badge_group += `<span class="badge blue">${alarmGroups.find(x => x.id == element.group).name}</span>`;
+                    for(let j = 0; j < kalGruppenArray.length; j++) {
+                        badge_group += `<span class="badge green">${calendarGroups.find(x => x.id == kalGruppenArray[j]).name}</span>`;
+                    }                    
+                    var_group.innerHTML = badge_group;
+
+                    // Permissions
+                    let badge_permission = '';
+                    if(element.admin == 1) badge_permission +=  `<span class="badge green">Admin</span>`;
+                    if(element.drucker == 1) badge_permission +=  `<span class="badge green">Drucker</span>`;
+                    if(element.softwareInfo == 1) badge_permission +=  `<span class="badge green">Software-Info</span>`;
+                    if(element.kalender == 1) badge_permission +=  `<span class="badge green">Kalender</span>`;
+                    if(element.kalender == 2) badge_permission +=  `<span class="badge green">Kalender</span>`;
+                    var_permissions.innerHTML = badge_permission;
+                    if(badge_permission != '') {
+                        var_permissions.classList.remove('hidden');
+                    } else {
+                        var_permissions.classList.add('hidden');
+                    }
+
+                    // Telegram Error
+                    if(element.status != 1 && element.status != 2) {
+                        var_telegramerror.classList.remove('hidden');
+                    } else {
+                        var_telegramerror.classList.add('hidden');
+                    }
+
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen                    
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);
+
+                    clone.addEventListener("click", () => {
+                        loaderIn('user?id=' + element.id);
+                    });
+                }
+
+               
+
+            }
+
+            function benutzer_filter(filter) {
+
+                ul = target;
+                li = ul.getElementsByClassName('userelement');
+
+                // Loop through all list items, and hide those who don't match the search query
+                for (i = 0; i < li.length; i++) {
+                    a = li[i].innerHTML.replace(/\s/g, '&nbsp;');
+
+                    if (a.indexOf(filter.replace(/\s/g, '&nbsp;')) > -1) {
+                        li[i].style.display = "";
+                    } else {
+                        li[i].style.display = "none";
+                    }
+                }
+            }
+
+            loadUsers();
+        </script>
+
+    </body>
+	
+</html>

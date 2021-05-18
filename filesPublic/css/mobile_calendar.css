@@ -1,0 +1,9 @@
+
+.calendar_list {
+    padding: 0.5em;
+}
+
+.calendar_element {
+    border: 1px solid var(--color_border);
+    padding: 0.5em;
+}

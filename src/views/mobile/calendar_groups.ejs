@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Kalendergruppen</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list margin_none groups_list">
+
+                    <button class="accordion" onclick="accordion_switch(this)">Verwendung im Google/ICAL Kalender:</button>
+                    <div class="accordion_panel" style="font-size: 0.8em;">
+                        Terminnamen Format: "🚒 Hauptübung {{alle}}" <br>
+                        (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...) <br>
+                        Wird Keine Gruppe angegeben wird automatisch {{alle}} angenommen.
+                    </div>
+
+                    <div class="item margin_top_2">
+                        <span class="text">Gruppen:</span>
+                        <div class="green right item rounded savebutton" onclick="updateGroup();">
+                            <span class="text text_align_right">Speichern</span>
+                            <span class="right material-icons">save</span>
+                        </div>
+                    </div>
+
+                    <template id="template-groupelement">
+                        <div class="groupelement">
+                            <div class="padding_none border_bottom margin_top_0_5">
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Name</span>
+                                    <input class="var_name" type="right" placeholder="Name...">
+                                </div>
+                                <div class="item smallitem">
+                                    <span class="left material-icons">pin</span>
+                                    <span class="text">ICAL Pattern</span>
+                                    <input class="var_pattern" type="right" placeholder="Pattern...">
+                                </div>                        
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadGroups() {   
+                const groupList = await fetch_get(`/api/v1/calendarGroups`, true);
+                console.log('groupList', groupList);
+                if(!groupList) return;
+
+                for(let i = 0; i < groupList.length; i++) {
+                    const element = groupList[i];
+
+                    const date = new Date(element.date);   
+
+
+                    const template              = document.querySelector('#template-groupelement');       
+                    const var_name              = template.content.querySelector(".var_name");      
+                    const var_pattern           = template.content.querySelector(".var_pattern");
+
+                    var_name.value              = element.name; 
+                    var_pattern.value           = element.pattern; 
+
+                    var_name.disabled = i == 0;
+                    var_pattern.disabled = i == 0;
+           
+
+                    // Neue Zeile (row) klonen und in die Tabelle einfügen
+                    var target = document.querySelector(".groups_list");
+                    var clone = document.importNode(template.content.firstElementChild, true);
+                    target.append(clone);
+
+                    clone.id = 'group_' + element.id;
+
+                    addFormatter(clone.querySelector(".var_pattern"), regexPrefix(/^{{.+}}$/, '{{}}'));
+                  
+
+                }
+
+            }
+
+            async function updateGroup() {
+                loaderIn();
+
+                const groups = document.querySelectorAll('.groupelement');       
+
+                for(let i = 1; i < groups.length; i++) {
+
+                    const group = groups[i];
+
+                    const id      = group.id.split('_')[1];
+                    const name    = group.querySelector('.var_name').value;
+                    const pattern = group.querySelector('.var_pattern').value;
+
+                    let response = await fetch_post('/api/v1/calendarGroups/' + id, {name: name, pattern: pattern});
+                    console.log('updateGroup', response);   
+
+                }
+                            
+                loaderOut();
+            }
+
+            loadGroups();
+        </script>
+       
+    </body>
+	
+</html>
