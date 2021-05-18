@@ -2,7 +2,7 @@
 <html lang="de">
     <head>	
 		<!-- HTML EINSTELLUNGEN -->	
-		<% include partials/head %>	
+		<%- include('partials/head') -%>	
         <title>FWmonitor - APP</title>	
 		
 		<script src="/app/appClient.js"></script>	
@@ -40,18 +40,14 @@
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appStatistik', null, statistik_loadStatistik)">Statistik</button>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appVerfuegbarkeit', null, verfuegbarkeit_load)">Verfügbarkeit</button>
 			<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appHydrantenkarte', null, hydrantenkarte_load)">Hydrantenkarte</button>
-			<button class="red-600 full" onclick="openPage('filesHTTPS/appEinstellungen', null, einstellungen_load)">Einstellungen</button>
-			
+			<% if(data["telefonliste"] == "1") { %>  
+				<button class="red-600 full border-bottom-white" onclick="openPage('filesHTTPS/appTelefonliste', null, telefonliste_load)">Telefonliste</button>
+			<% } %>
+			<button class="red-600 full" onclick="openPage('filesHTTPS/appEinstellungen', null, einstellungen_load)">APP Einstellungen</button>			
 			<% if(data["admin"] == "1") { %>  
-				<p class="align-center">Administrator Bereich</p>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appBenutzer', null, benutzer_loadBenutzer)">Benutzer</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appKalenderGruppen', null, kalendergruppen_loadGruppen)">Kalendergruppen</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appAlarmGruppen', null, alarmgruppen_loadGruppen)">Alarmgruppen</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appAlarmEinstellungen', null, alarmierung_load)">Alarmierung</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appClients', null, clients_load)">Verb. Geräte</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appPraesentation', null, praesentation_load)">Präsentation</button>
-				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appSlideshow', null, diashow_load)">Diashowbilder</button>
-				<p></p>
+				<!--<p class="align-center">Administrator Bereich</p>-->
+				<button class="red-600 full border-top-white" onclick="openPage('filesHTTPS/appFwMonEinstellungen')">FWmonitor Einstellungen</button>
+				<!--<p></p>-->
 			<% } %>
 			<button class="red-600 full border-top-white" onclick="window.location.replace('/app/api/logout');">Abmelden</button>
 		</div>
@@ -120,10 +116,12 @@
 
 	  
 		<!-- JS -->
-		<% include partials/foot %>			
+		<%- include('partials/foot') -%>			
 		<script>
 			const TELEGRAMID = <%= data["telegramID"] %>;
 			const KALENDER = <%= data["kalender"] %>;
+			const KALENDER_FULL = <%= data["kalenderFull"] %>;
+			const TELEFONLISTE = <%= data["telefonliste"] %>;
 			const FWVV = <%= data["fwvv"] %>;
 
 			function isIos() {
@@ -150,6 +148,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"></script>		
 		<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>		
 		
+		<script src="filesHTTPS/javascripts/beide.js"></script>
 		<script src="filesHTTPS/javascripts/appMain.js"></script>	
 		<script src="/javascripts/calendar.js"></script>			
     

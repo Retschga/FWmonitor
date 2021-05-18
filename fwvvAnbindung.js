@@ -51,124 +51,131 @@ module.exports = function () {
       }
       return costs[s2.length];
     }
+
 	
 	/**
-	 * Suche neuerste Sicherungsdatei
-	 * @param {*} files Dateien
-	 * @param {*} path  Pfad zu den Dateien
-	 */
-	function getNewestFile(files, path) {
-		var out = [];
-		
-		files.forEach(function(file) {
-			if(file.indexOf("FWVVSDAT") != -1) {
-				var stats = fs.statSync(path + "/" +file);
-				if(stats.isFile()) {
-					out.push({"file":file, "mtime": stats.mtime.getTime()});
-				}
-			}
-		});
-		
-		out.sort(function(a,b) {
-			return b.mtime - a.mtime;
-		})
-		
-		return (out.length>0) ? out[0].file : "";
-	}
-	
-	/**
-	 * Lese Einsatzzeit einer Person aus FWVV Sicherungsdatei
+	 * Lese Einsatzzeit einer Person aus FWVV Datei
 	 * @param {String} name 
 	 * @param {String} vorname 
 	 */
 	function getEinsatzZeit(name, vorname, year) {		
 		return new Promise((resolve, reject) => {
 			
-			debug("Einsatzzeit:  " + name + "  " + vorname);
+			debug("Einsatzzeit:  " + name + "  " + vorname + "  " + year);
 		
 			var zeit = 0;
 			var anzahl = 0;
 			
-			var filepath = String(process.env.FWVV_DATENSICHERUNG);
-			
+			var filepath = String(process.env.FWVV_DAT_FOLDER);			
 			debug("Pfad: " + filepath);
-			
-			fs.readdir(filepath, function(err, files) {
-				if (err) reject(err);
+
+			var parser = Parser(fs.createReadStream(filepath + "E_PERSON.DBF"));
 				
-				var newestFile = getNewestFile(files, filepath);
-				debug("Datei: " + newestFile);			
-		
-				fs.createReadStream(filepath + newestFile)
-				.pipe(unzipper.Parse())
-				.on('entry', function (entry) {
-					const fileName = entry.path;
-					const type = entry.type; // 'Directory' or 'File'
-					const size = entry.vars.uncompressedSize; // There is also compressedSize;
-					if (fileName === "E_PERSON.DBF") {						
-						var parser = Parser(entry);		
-						let diesesJahr = year;
-						if(year != undefined) {
-							diesesJahr = new Date().getFullYear();
-						}
+			let diesesJahr = year;
+			if(year == undefined) {
+				diesesJahr = new Date().getFullYear();
+			}
 
-						parser.on('header', (h) => {
-							//debug('dBase file header has been parsed');
-							//debug(h);
-						});
-						 
-						parser.on('record', (record) => {							
-							var eintragJahr = record.E_DATUM.substring(0,4);					
-							
-							if(
-								record["@deleted"] != true
-								&& eintragJahr == diesesJahr
-								&& record.NAME == name
-								&& similarity(record.VORNAME, vorname) > 0.25								
-								
-							) {								
-								anzahl++;								
-								if(record.E_VON != "" && record.BIS_DATUM != "" && record.E_BIS != "" ) {
-								
-									var eintragMonat = record.E_DATUM.substring(4,6);
-									var eintragTag = record.E_DATUM.substring(6,8);		
+			parser.on('header', (h) => {
+				//debug('dBase file header has been parsed');
+				//debug(h);
+			});
+				
+			parser.on('record', (record) => {				
+				
+				if(record["@deleted"] == true) return;	
 
-									var bisJahr = record.BIS_DATUM.substring(0,4);
-									var bisMonat = record.BIS_DATUM.substring(4,6);
-									var bisTag = record.BIS_DATUM.substring(6,8);
+				var eintragJahr = record.E_DATUM.substring(0,4);				
+				if(eintragJahr != diesesJahr || record.NAME != name || similarity(record.VORNAME, vorname) < 0.25) return;				
+										
+				anzahl++;								
+				if(record.E_VON != "" && record.BIS_DATUM != "" && record.E_BIS != "" ) {
+				
+					var eintragMonat = record.E_DATUM.substring(4,6);
+					var eintragTag = record.E_DATUM.substring(6,8);		
+
+					var bisJahr = record.BIS_DATUM.substring(0,4);
+					var bisMonat = record.BIS_DATUM.substring(4,6);
+					var bisTag = record.BIS_DATUM.substring(6,8);
+					
+					var startTime = new Date(eintragJahr+'-'+eintragMonat+'-'+eintragTag+'T' + record.E_VON + 'Z');
+					var endTime = new Date(bisJahr+'-'+bisMonat+'-'+bisTag+'T' + record.E_BIS + 'Z');
+					
+					var diff =(startTime.getTime() - endTime.getTime()) / 1000;
+					diff /= 60;	
+					
+					zeit += Math.abs(Math.round(diff));									
+					
+					//debug(record);
+					//debug(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));								
+				}								
 									
-									var startTime = new Date(eintragJahr+'-'+eintragMonat+'-'+eintragTag+'T' + record.E_VON + 'Z');
-									var endTime = new Date(bisJahr+'-'+bisMonat+'-'+bisTag+'T' + record.E_BIS + 'Z');
-									
-									var diff =(startTime.getTime() - endTime.getTime()) / 1000;
-									diff /= 60;	
-									
-									zeit += Math.abs(Math.round(diff));									
-									
-									//debug(record);
-									//debug(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));								
-								}								
-							}								
-						});
-						
-						parser.on('end', () => {
-							debug('Gesamt Minuten: ' + zeit + " ( " + Math.floor(zeit/60) + "h " + (zeit%60) + " ) "); 
-							resolve([zeit, anzahl]);
-						});
-						
-					} else {
-						entry.autodrain();
-					}
-				});
+			});
 			
-			})
+			parser.on('end', () => {
+				debug(diesesJahr + ': Gesamt Minuten: ' + zeit + " ( " + Math.floor(zeit/60) + "h " + (zeit%60) + " ) "); 
+				resolve([zeit, anzahl]);
+			});
 		
 		});
+	}
 
+	/**
+	 * Lese Telefonnummern aus einer FWVV Datei
+	 * @param {String} name 
+	 * @param {String} vorname 
+	 */
+	 function getTelNr(name, vorname, year) {		
+		return new Promise((resolve, reject) => {
+			
+			debug("Lese Telefonnummern aus...");
+
+			var filepath = String(process.env.FWVV_DAT_FOLDER);			
+			debug("Pfad: " + filepath);
+
+			var parser = Parser(fs.createReadStream(filepath + "MITGLIED.DBF"));
+				
+			let list = [];
+
+			parser.on('header', (h) => {
+				//debug('dBase file header has been parsed');
+				//debug(h);
+			});
+				
+			parser.on('record', (record) => {							
+				
+				if(record["@deleted"] == true) return;				
+				if(!record.TEL && !record.TEL_DIENST && !record.MOBIL_TEL) return;
+
+				list.push({
+					'name': record.NAME,
+					'vorname': record.VORNAME,
+					'tel': record.TEL,
+					'tel_dienst': record.TEL_DIENST,
+					'tel_mobil': record.MOBIL_TEL
+				});
+/*
+				debug(record.NAME);
+				debug(record.VORNAME);
+
+				debug(record.TEL);
+				debug(record.TEL_DIENST);
+				debug(record.MOBIL_TEL);
+				debug("\n-------------------------\n")			
+*/						
+			});
+			
+			parser.on('end', () => {
+				debug("Fertig"); 
+				resolve(list);
+			});
+		
+		});
 	}
 
 
     return {
-        getEinsatzZeit
+        getEinsatzZeit,
+		getTelNr
     }; 
 }

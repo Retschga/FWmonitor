@@ -7,11 +7,11 @@ import serial
 import sys
 
 if len(sys.argv) < 2:
-    print("Aufruf: u-blox_agps.py UBLOX_API_KEY")
+    print("Aufruf: u-blox_agps.py UBLOX_API_KEY GPS_DEVICE")
 
 #Edit me!!
 token = sys.argv[1]      #Token getted from u-blox
-comPort = "/dev/ttyACM0" #GPS Com port
+comPort = sys.argv[2] #GPS Com port
 
 print("Connecting to u-blox")
 r = requests.get("http://online-live1.services.u-blox.com/GetOnlineData.ashx?token=" + token + ";gnss=gps;datatype=eph,alm,aux,pos;filteronpos;format=aid", stream=True)

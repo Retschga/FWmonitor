@@ -17,8 +17,10 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
     const WebSocket = require('ws');
     const path = require('path');   
     const fs = require('fs');
+	const jwt = require("jsonwebtoken");
 
-
+	const jwtKey = process.env.BOT_TOKEN + process.env.VAPID_PRIVATE + process.env.FW_NAME_STANDBY + process.env.FW_NAME_BOT + process.env.GEOBING_KEY + process.env.DWD_WARCELLID + process.env.FOLDER_ARCHIVE + process.env.FOLDER_IN;
+	
     // ----------------  SESSION STORE ---------------- 
     var sessionStore = new memoryStore({
 		checkPeriod: 86400000 // clear expired every 24h
@@ -140,7 +142,7 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 		});
 
 		// ---------------- WebSocket IO ----------------
-		wss = new WebSocket.Server({ server: serverHTTPS });
+		wss = new WebSocket.Server({ /*server: serverHTTPS*/ noServer: true });
 
 		wss.getUniqueID = function () {
 			function s4() {
@@ -149,7 +151,46 @@ var self = module.exports = function (_httpServer, _httpsServer, _bot, setIgnore
 			return s4() + s4() + '-' + s4();
 		};
 
-		wss.on('connection', function connection(ws) {
+
+		function verifyJWT(token) {
+			try {
+				// Parse the JWT string and store the result in `payload`.
+				// Note that we are passing the key in this method as well. This method will throw an error
+				// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+				// or if the signature does not match
+				let payload = jwt.verify(token, jwtKey);
+				return true;
+			} catch (e) {
+				return false;
+			}
+			return false;
+		}
+		
+		serverHTTPS.on('upgrade', async function upgrade(request, socket, head) {
+	
+			try {
+				if(verifyJWT(request.url.split('=')[1]) == false) {
+					debugWSS("wesocket jwt Unauthorized")
+					socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+					socket.destroy();
+					return;
+				}
+			} catch (e) {
+				debugWSS("wesocket jwt error")
+				socket.write('HTTP/1.1 500 internal server error\r\n\r\n');
+				socket.destroy();
+				return;
+			}
+		
+			debugWSS("wesocket jwt ok")
+			wss.handleUpgrade(request, socket, head, function done(ws) {
+				wss.emit('connection', ws, request);
+			});
+		});
+
+		wss.on('connection', function connection(ws, request) {
+			//console.log("++++++++++++++++++++++++url: ", request.url);
+
 			ws.interval = setInterval(function(){ 
 				ws.send('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 	
 				debugWSS('keepAlive|' + String(new Date().toISOString()).replace(/[:]/g, '-')); 	

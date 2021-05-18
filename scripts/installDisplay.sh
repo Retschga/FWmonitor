@@ -1,6 +1,6 @@
 #!/bin/bash
 # Installation FWmonitor-Alarmdisplay-WebClient on Raspberry PI
-# Für Raspian/Raspberry OS Full
+# Für Raspian/Raspberry OS
 # (c) 2020 Johannes Resch
 # Version 1.1
 

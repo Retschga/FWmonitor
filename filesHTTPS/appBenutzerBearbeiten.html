@@ -41,7 +41,20 @@
                     <div class="item">
                         <h2>Kalender bearbeiten</h2>
                         <div class="right">
-                            <input id="benutzerBearbeiten_kalender" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('kalender', this.checked ? '1' : '0')">
+                           <!-- <input id="benutzerBearbeiten_kalender" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('kalender', this.checked ? '1' : '0')">
+                           -->
+                            <select id="benutzerBearbeiten_kalender" onChange="benutzerBearbeiten__setEinstellung('kalender',this.options[this.selectedIndex].value)">
+                                <option value="0">Nur Lesen</option>
+                                <option value="1">Eigene Gruppen</option>
+                                <option value="2">Vollzugriff</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="item">
+                        <h2>Telefonliste</h2>
+                        <div class="right">
+                            <input id="benutzerBearbeiten_telefonliste" type="checkbox" class="switch green" onchange="benutzerBearbeiten__setEinstellung('telefonliste', this.checked ? '1' : '0')">
                         </div>
                     </div>
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Installation FWmonitor-Autoclient on Raspberry PI - Raspberry PI OS Lite
-# Für Raspian/Raspberry OS Lite
+# Installation FWmonitor-Autoclient on Raspberry PI - Raspberry PI OS
+# Für Raspian/Raspberry OS Full
 # (c) 2020 Johannes Resch
 # Version 1.1
 
@@ -26,8 +26,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Prüfe ob Server IP übergeben wurde
-if [[ $# -lt 5 ]] ; then
-    echo "# Aufruf: installDisplay.sh SERVER_ADRESSE:SERVER_PORT CLIENT_NAME UBLOX_API_KEY WLAN_SSID WLAN_PASSWORD"
+if [[ $# -lt 6 ]] ; then
+    echo "# Aufruf: installDisplay.sh SERVER_ADRESSE:SERVER_PORT CLIENT_NAME UBLOX_API_KEY WLAN_SSID WLAN_PASSWORD GPS_DEVICE"
     exit 1
 fi
 echo '# Server Adresse: ' ${1}
@@ -35,6 +35,7 @@ echo '# Clientname:     ' ${2}
 echo '# U-Blox API Kex: ' ${3}
 echo '# WLAN SSID:      ' ${4}
 echo '# WLAN Password:  ' ${5}
+echo '# GPS DEVICE:     ' ${6}
 echo ''
 
 # Setup Wlan
@@ -74,11 +75,42 @@ do
 done
 
 
+## Unnötige Programme entfernen
+## https://github.com/dumbo25/unsed_rpi/
+#echo remove unused raspbian packages
+#echo size before removal 
+#df -h
+
+#echo packages to remove:
+#sudo apt-get remove --purge libreoffice* -y
+#sudo apt-get remove --purge wolfram-engine -y
+#sudo apt-get remove -—purge chromium-browser -y
+#sudo apt-get remove --purge scratch2 -y
+#sudo apt-get remove --purge minecraft-pi  -y
+#sudo apt-get remove --purge sonic-pi  -y
+#sudo apt-get remove --purge dillo -y
+#sudo apt-get remove --purge gpicview -y
+#sudo apt-get remove --purge penguinspuzzle -y
+#sudo apt-get remove --purge oracle-java8-jdk -y
+#sudo apt-get remove --purge openjdk-7-jre -y
+#sudo apt-get remove --purge oracle-java7-jdk -y 
+#sudo apt-get remove --purge openjdk-8-jre -y
+
+#sudo apt-get clean
+#sudo apt-get autoremove -y
+
+#echo size after removing packages
+#df -h
+
+## Installationsfenster entfernen
+sudo mv /etc/xdg/autostart/piwiz.desktop /etc/xdg/autostart/piwiz.desktop.bak
+
+
 ## RPI Update
-apt update
-apt upgrade -y 
-apt autoremove -y
-apt autoclean -y
+#apt update
+#apt upgrade -y 
+#apt autoremove -y
+#apt autoclean -y
 
 # Herunterladen der Skripte
 echo "Lade Skripte herunter"
@@ -145,11 +177,11 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-features=TranslateUI \
 --fast \
 --fast-start \
---app=https://${1}/app/?name=${2}
+--app=https://${1}/app/auto/?name=${2}&auto=true
 EOF2
 
 # Autostart für Steuerskripte
-cronentry="@reboot sleep 30  && /usr/bin/python3 /home/pi/auto.py ${3} ${1}                 # >> /home/pi/log.txt 2>&1"
+cronentry="@reboot sleep 30  && /usr/bin/python3 /home/pi/auto.py ${3} ${1} ${6}                # >> /home/pi/log.txt 2>&1"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
 cronentry="* * * * * /home/pi/autoSwitchWlan.sh"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
@@ -187,14 +219,14 @@ do_ssh 0                  # Enable remote ssh login
 do_spi 1                  # Disable spi bus
 do_memory_split 128        # Set the GPU memory limit to 64MB
 do_i2c 1                  # Disable the i2c bus
-do_serial 1               # Disable the RS232 serial bus
+#do_serial 1               # Disable the RS232 serial bus
 do_boot_behaviour B4
 #                 B1      # Boot to CLI & require login
 #                 B2      # Boot to CLI & auto login as pi user
 #                 B3      # Boot to Graphical & require login
 #                 B4      # Boot to Graphical & auto login as pi user
 do_onewire 1              # Disable onewire on GPIO4
-do_audio 0                # Auto select audio output device
+do_audio 2                # 0 Auto select audio output device
 #        1                # Force audio output through 3.5mm analogue jack
 #        2                # Force audio output through HDMI digital interface
 #do_gldriver G1           # Enable Full KMS Opengl Driver - must install deb package first
@@ -203,7 +235,7 @@ do_audio 0                # Auto select audio output device
 #do_rgpio 1               # Enable gpio server - must install deb package first
 
 # System Configuration
-do_configure_keyboard de                     # Specify US Keyboard
+do_configure_keyboard de                     # Specify DE Keyboard
 #do_hostname rpi-auto                       # Set hostname to 'rpi-test'
 do_wifi_country DE                           # Set wifi country as Australia
 #do_wifi_ssid_passphrase wifi_name password   # Set wlan0 network to join 'wifi_name' network using 'password'
@@ -251,6 +283,7 @@ fi
 
 
 
-sudo bash /home/pi/autoUpdate.sh
+sudo bash /home/pi/autoUpdate.sh $1
+
 
 /sbin/shutdown -r now                         # Reboot after all changes above complete

@@ -3,8 +3,8 @@
 // ----------------  EINSTELLUNGEN ---------------- 
 require('dotenv').config();
 
-process.env.NODE_ENV = 'production';
-//process.env.NODE_ENV = 'development';
+//process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = 'development';
 
 // ----------------  LIBRARIES ---------------- 
 const debug = require('debug')('app');
@@ -68,6 +68,14 @@ var alarmNummer = Math.floor(Math.random() * 1000);
 var onAlarm = async function(data) {
 	alarmNummer++;
 
+	// Lösche Sessions -> Seite in App wird neu geladen
+	let rows = await db.getUserAllowed()
+		.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
+
+	rows.forEach(function (user) {
+		_httpsServer[0].destroySession(user.telegramid);	
+	});	
+
 	// Bildschirm umschalten
 	console.log("[APP] APP Alamierung -> Schalte Bildschirme um");
 	for(let i = 0; i < 60; i++) {
@@ -77,14 +85,7 @@ var onAlarm = async function(data) {
 		}, 2000 * i);
 	}
 
-	if (!ignoreNextAlarm) {
-
-		// Lösche Sessions -> Seite in App wird neu geladen
-		let rows = await db.getUserAllowed()
-			.catch((err) => { console.error('[Terminerinnerung] Datenbank Fehler', err) });
-		rows.forEach(function (user) {
-			_httpsServer[0].destroySession(user.telegramid);	
-		});	
+	if (!ignoreNextAlarm) {		
 
 		// Telegram
 		_bot[0].sendAlarm(
@@ -232,13 +233,12 @@ var terminerrinerrung = function() {
 
 								if (send) {
 									// BOT
-									const Telegraf = require('telegraf');
 									_bot[0].sendMessage(
 										user.telegramid,
 										`<b>Terminerinnerung:</b> \n <i>${d}.${m} ${hh}:${mm} - ${termine[i].summary} ${termine[i].location}</i>`,
-										Telegraf.Extra.markdown().HTML().markup((m) =>
-											m.keyboard(_bot[0].mainKeyboard).resize()
-										)
+										{
+											'parse_mode': 'HTML'
+										}
 									);
 									// APP
 									var zeigeBis = new Date();

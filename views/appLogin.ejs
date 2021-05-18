@@ -2,13 +2,13 @@
 <html lang="de">
     <head>	
 		<!-- HTML EINSTELLUNGEN -->	
-		<% include partials/head %>	
+		<%- include('partials/head') -%>	
         <title>FWmonitor - APP</title>	        		
     </head>	
     <body class="grey-200">
 
 		<!-- CONTENT -->
-		<div class="content">
+		<div class="content" id="content1">
 
 			<!-- Titel -->
 			<div class="row padding red-600">
@@ -55,7 +55,7 @@
 		<button id="backbutton" class="blue circle icon ion-close-round shadow hidden" onclick="location.href='/'" style="top: 1em; left: 1em; position: absolute;"></button>
 
 
-		<% include partials/foot %>	
+		<%- include('partials/foot') -%>	
 		<script>
 
 			/**
@@ -145,6 +145,11 @@
 				var temp = parts[i].split("=");
 				$_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
 			}		
+
+			// Ist Auto?
+			if($_GET['auto'] == 'true') {
+				document.getElementById("content1").style.maxWidth  = "none"; 
+			}
 			
 			// Geladen
 			document.addEventListener('DOMContentLoaded', (event) => {

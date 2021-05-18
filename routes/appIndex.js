@@ -8,7 +8,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	const path = require('path');
 	const jwt = require("jsonwebtoken");
 
-	const jwtKey = process.env.FW_NAME_STANDBY + process.env.FW_NAME_BOT + process.env.GEOBING_KEY + process.env.DWD_WARCELLID + process.env.FOLDER_ARCHIVE + process.env.FOLDER_IN;
+	const jwtKey = process.env.BOT_TOKEN + process.env.VAPID_PRIVATE + process.env.FW_NAME_STANDBY + process.env.FW_NAME_BOT + process.env.GEOBING_KEY + process.env.DWD_WARCELLID + process.env.FOLDER_ARCHIVE + process.env.FOLDER_IN;
 	const jwtExpirySeconds = 60 * 60 * 24 * 31;
 
 	// ---------------- AUTHIFICATION ---------------- 
@@ -96,25 +96,34 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		let getLogin = async function(_telid) {
 			if(_telid.length > 4 && _telid.substring(0, 4) == "AUTO") {
 				isAuto = true;
-				return await db.getAutoLogin(_telid)
+				return await db.getAutoLogin(_telid);
 			}
-			return await db.getUserLogin(_telid)	
+			return await db.getUserLogin(_telid);
 		}
 		
-		let loginOK = function(_telid) {
-			
+		let setupSession = function(_telid) {
+
 			// Session
 			req.session.telegramID = _telid;
 			if(!isAuto) { 
 				req.session.isAdmin = (login[0].admin == '1' ? true : false);
-				req.session.kalender = (login[0].kalender == '1' ? true : false);
+				req.session.kalender = ((login[0].kalender == '1' || login[0].kalender == '2'  ) ? true : false);
+				req.session.kalenderFull = (login[0].kalender == '2' ? true : false);
+				req.session.telefonliste = (login[0].telefonliste == '1' ? true : false);				
 			} else {
 				req.session.isAuto = true;
+				req.session.telefonliste = true;	
 				req.session.autoname = login[0].name;
 				req.session.autoid = login[0].id;
 			}
 
-			console.log("telid: " + req.session.telegramID + " + sessionid:" + req.sessionID, 'Auto: ' + isAuto);
+			console.log("telid: " + req.session.telegramID);
+			console.log("sessionid:" + req.sessionID);
+			console.log('Auto: ' + req.session.isAuto);
+			console.log('kalender: ' + req.session.kalender);
+			console.log('kalenderFull: ' + req.session.kalenderFull);
+			console.log('telefonliste: ' + req.session.telefonliste);
+
 			_httpsServer[0].addSession(req.sessionID, _telid);
 
 			// Remember me token neu vergeben
@@ -168,7 +177,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					msg: 'Telegram ID oder Passwort fehlerhaft!'
 				});
 			});
-			return loginOK(payload._telid);	
+			return setupSession(payload._telid);	
 		}
 
 		// Passwort Login
@@ -210,8 +219,9 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 				// good password
 				if (bResult) {
-					return loginOK(req.body.telegramID);					
+					return setupSession(req.body.telegramID);					
 				}
+
 				// otherwise, return a bad request error	
 				res.cookie("token", '', {
 					secure: true,
@@ -284,7 +294,9 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			data: {
 				alarm: alarm,
 				admin: req.session.isAdmin ? '1' : '0',
+				telefonliste: req.session.telefonliste ? '1' : '0',
 				kalender: req.session.kalender ? '1' : '0',
+				kalenderFull: req.session.kalenderFull ? '1' : '0',
 				telegramID: req.session.telegramID,
 				alarmID: (alarm == 'true' ? isAlarm[0].id : -1),
 				nurLAN: (req.connection.encrypted ? '0' : '1'),//(process.env.APP_DNS == "" ? '1' : '0'),

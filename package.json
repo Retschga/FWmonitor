@@ -39,7 +39,7 @@
     "serve-favicon": "^2.3.0",
     "sharp": "^0.27.2",
     "sqlite-async": "^1.1.1",
-    "telegraf": "^4.1.2",
+    "telegraf": "^4.2.1",
     "unzipper": "^0.10.11",
     "web-push": "^3.4.4",
     "ws": "^7.4.4"

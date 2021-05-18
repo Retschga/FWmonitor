@@ -12,6 +12,10 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	const debug = require('debug')('appAPI');
 	const sharp = require('sharp');
 
+	// ---------------- AUTHIFICATION ---------------- 
+	const bcrypt = require('bcryptjs');
+	const generator = require('generate-password');
+
 	// ----------------  WEB PUSH NOTIFICATIONS ---------------- 
 	const webNotifications = require('../webNotifications');
 
@@ -54,12 +58,16 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			.catch(function (error) {
 				console.log("Load Hydranten", error);
 			})
+		
+		let features = [];
+
+		if(!response) return features;
 
 		var responseJSON = response.data;
 
 		// Hydranten ausgeben
 		let dataIn = responseJSON["elements"];
-		let features = [];
+		
 
 		for (let i = 0; i < dataIn.length; i++) {
 
@@ -181,6 +189,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 	// post Kalender Event KALENDER
 	router.post('/api/kalender/event/set', async function (req, res) {
 		if (!(/*req.session.isAdmin ||*/ req.session.kalender)) {	
+
 			res.status(500).send({ error: 'Kein Admin / Kalender' });
 			return;
 		}
@@ -325,6 +334,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		} else {
 			user = await db.getUserAlarmPattern(req.session.telegramID).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		}
+		
 		let rows = await db.getAlarmAll(req.query.id).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 		if (rows == undefined) {
 			res.send("Fehler");
@@ -352,7 +362,6 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 			);
 			out geom;
 			%3E;`;
-
 
 		
 		if (hydrantenCache[id] == undefined)
@@ -396,7 +405,7 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 			strassenCache[id] = polylinePoints;
 		}
-		if (strassenCache[id] == undefined && rows.isAddress != 1 && rows.strasse != "")
+		if (strassenCache[id] == undefined && rows.isAddress != 1 && rows.strasse != "" && rows.strasse != undefined)
 			await loadStrassenData();
 
 		async function loadGebaudeData() {
@@ -417,32 +426,32 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 
 
 		if(process.env.FW_KOORD != "" && process.env.ORS_KEY != "") {
-			// add your api_key here
 			var Directions = new openrouteservice.Directions({
 				api_key: process.env.ORS_KEY,
 			});
-
 			if (routeCache[id] == undefined && rows.lat != "" && rows.lng != "") {
-				let direct = await Directions.calculate({
-					coordinates: [process.env.FW_KOORD.split(','), [rows.lng, rows.lat]],
-					profile: 'driving-car',
-					restrictions: {  },
-					extra_info: ["waytype"],
-					radiuses: [1000,5000],
-					format: 'json'
-				})
+				let direct = await Directions.calculate(
+					{
+						coordinates: [process.env.FW_KOORD.split(','), [rows.lng, rows.lat]],
+						profile: 'driving-car',
+						extra_info: ["waytype"],
+						radiuses: [1000,5000],
+						format: 'json'
+					}
+				)
 				.catch(function(err) {
 					var str = "An error occured: " + err;
-					console.log("Route Error: " + str);
+					console.log("[appAPI] Route Error: " + str);
 					// TODO Sende Info bei Fehler an admin
 				});
+
 	//			console.log(direct);
 				routeCache[id] = JSON.stringify(direct);
 			} 
 		} else {
 			console.log("[appAPI] keine FW_KOORD oder kein ORS_KEY angegeben -> keine Route berechnet");
 		}
-
+		
 
 		// Gruppenpattern
 		var pattern = user[0].pattern;
@@ -732,6 +741,11 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 					.then(() => { res.send('OK'); return; })
 					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
 				break;
+			case 'telefonliste':
+				db.setUserColumn(id, "telefonliste", value)
+					.then(() => { res.send('OK'); return; })
+					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+				break;
 			case 'gruppe':
 				db.changeUserGroup(id, value)
 					.then(() => { res.send('OK'); return; })
@@ -802,6 +816,124 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		await db.setUserStatusHidden(req.session.telegramID, value).catch((err) => { console.error('[appIndex] DB Fehler', err) });
 
 		res.send('OK');
+	});
+
+
+	// ---- Auto - Bildschirme ----
+	// get Autos ADMIN
+	router.get('/api/auto', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		let rows_allAutos = await db.getAutoAll().catch((err) => { console.error('[appIndex] DB Fehler', err) });
+		if (rows_allAutos == undefined) {
+			res.send("Fehler");
+			return;
+		}
+		res.json(rows_allAutos);
+	});
+
+	// add Autos ADMIN
+	router.get('/api/auto/add', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		db.addAuto('Neues Auto Display', '', '')
+			.then(() => { res.send('OK'); return; })
+			.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+		
+	});
+
+	// delete Autos ADMIN
+	router.get('/api/auto/delete', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		let id = req.query.id;
+		if (id == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
+		db.deleteAuto(id)
+			.then(() => { res.send('OK'); return; })
+			.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+
+		
+	});
+
+	// new Password ADMIN
+	router.get('/api/auto/password/new', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		let id = req.query.id;
+		if (id == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
+		let password = generator.generate({
+			length: 10,
+			numbers: true,
+			excludeSimilarCharacters: true
+		});
+
+		bcrypt.hash(password, 10, async (err, hash) => {
+			if (err) {
+
+				console.error('[appAPI] #einstell_appLogin Fehler', err);
+
+			} else {
+
+				db.setAutoPassword(id, hash)
+					.then(() => { res.json({"pw": password}); return; })
+					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+
+			}
+		});
+
+		
+	});
+
+	// set Einstellung ADMIN
+	router.get('/api/auto/einstellung/set', async function (req, res) {
+		if (!req.session.isAdmin) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		let id = req.query.id;
+		let setting = req.query.setting;
+		let value = req.query.value;
+		if (setting == undefined || value == undefined) {
+			res.status(500).send({ error: 'No Params' });
+			return;
+		}
+
+		console.log(setting, value);
+
+		switch (setting) {
+			case 'name':
+				db.setAutoColumn(id, "name", value)
+					.then(() => { res.send('OK'); return; })
+					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+				break;		
+			case 'appBenutzer':
+				db.setAutoColumn(id, "appBenutzer", value)
+					.then(() => { res.send('OK'); return; })
+					.catch((err) => { console.error('[appApi] Datenbank Fehler: ', err) });
+				break;		
+
+		}
 	});
 	
 
@@ -1104,8 +1236,26 @@ module.exports = function (_httpServer, _httpsServer, _bot, setIgnoreNextAlarm, 
 		res.json({ data: 'ok' });
 	});
 
-	
 
+	// ---- Telefonliste ----
+	// get Telefonliste TELEFONLISTE
+	router.get('/api/telefonliste', async function (req, res) {
+
+		if (!req.session.telefonliste) {
+			res.status(500).send({ error: 'Kein Admin' });
+			return;
+		}
+
+		try {
+			let arr = await fwvv.getTelNr()
+			res.json(arr);
+		} catch (error) {
+			res.send("Fehler");
+		}		
+
+	});
+
+	
 
 	
 	// ---- Service Worker ----

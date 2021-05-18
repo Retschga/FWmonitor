@@ -177,14 +177,17 @@ function loadCollapsibles() {
 	let i;
 
 	for (i = 0; i < coll.length; i++) {
+		if(coll[i].dataset.collevent == true) continue;
+		coll[i].dataset.collevent = true;
+
 		coll[i].addEventListener("click", function() {
-		this.classList.toggle("active");
-		let content = this.nextElementSibling;
-		if (content.style.display === "block") {
-			content.style.display = "none";
-		} else {
-			content.style.display = "block";
-		}
+			this.classList.toggle("active");
+			let content = this.nextElementSibling;
+			if (content.style.display === "block") {
+				content.style.display = "none";
+			} else {
+				content.style.display = "block";
+			}
 		});
 	} 
 }
@@ -712,14 +715,33 @@ async function kalender_loadKalender() {
 
 		document.getElementById("kalender_list").innerHTML = '';
 
-		if(KALENDER == 1) {
+		let hasGroups = String(index_userKalenderGruppen).length > 1;
+
+		if((KALENDER == true && hasGroups) || KALENDER_FULL == true) {
 			document.getElementById("kalender_btnAdd").classList.remove('hidden');
 		}
 
-		for(let i = 0; i < response.length; i++) {			
+		for(let i = 0; i < response.length; i++) {	
+			
+			let edit = false;
+			// Prüfe ob Termin die Gruppe des Benutzers enthät
+			if(response[i].group.length > 0) {
+				for(let j = 0; j < response[i].group.length; j++) {
+					if(String(index_userKalenderGruppen).indexOf(response[i].group[j].id) != -1) {
+						edit = true;
+					}
+				}
+			} else { 
+				// Keine Gruppe -> Alle
+				edit = true;
+			}
 			
 			// Erstelle Kalender element
-			createKalenderElement(response[i], 'kalender_list', KALENDER == 1 && response[i].id ? true : false, response[i].id);
+			createKalenderElement(
+				response[i], 'kalender_list', 
+				((KALENDER == 1 && edit == true && hasGroups) || KALENDER_FULL == true) && (response[i].id ? true : false), 
+				response[i].id
+				);
 		
 		}
 
@@ -777,8 +799,9 @@ async function statistik_loadStatistik(year) {
 	// Prüfe ob FWVV Anbindung aktiviert
 	if(FWVV != 'true' && FWVV != true) {
 		document.getElementById("statistik_fwvv").classList.add('hidden')
-	}
-	
+	}	
+	document.getElementById("statistik_einsatzzeit").innerHTML = '<button class="red-600 full radius-left adius-right" onclick="statistik_loadEinsatzzeit()">aktualisieren</button>';
+
 	// Aktuelles Jahr eintragen
 	if(!year)
 		year = document.getElementById("statistik_selectedYear").innerHTML = new Date().getFullYear();
@@ -1119,6 +1142,7 @@ async function benutzer_loadBenutzer() {
 						(response[i].drucker=='1' ? '<span class="text-small orange radius padding">Drucker</span><wbr>' : '') +
 						(response[i].softwareInfo=='1' ? '<span class="text-small orange-400 radius padding">Softwareinfo</span><wbr>' : '') +
 						(response[i].kalender=='1' ? '<span class="text-small blue-grey-400 radius padding">Kalender</span><wbr>' : '') +
+						(response[i].kalender=='2' ? '<span class="text-small blue-grey-400 radius padding">Kalender</span><wbr>' : '') +
 						kalGrString +
 						(response[i].status == '-1' ? '<br>Telegr. Bot blockiert -> Benutzer muss /start an den Bot schreiben' : ' ') +
 						(response[i].status == '-2' ? '<br>telegr. Benutzer gelöscht -> Benutzer muss /start an den Bot schreiben' : ' ') +
@@ -1182,7 +1206,7 @@ function benutzerBearbeiten_loadBenutzer(data) {
 	} else {
 		document.getElementById("benutzerBearbeiten_einstellungen").classList.add('hidden');
 		document.getElementById("benutzerBearbeiten_btnFreigabe").classList.remove('hidden');
-		document.getElementById("benutzerBearbeiten_btnLoeschen").classList.add('hidden');
+		document.getElementById("benutzerBearbeiten_btnLoeschen").classList.remove('hidden');
 	}
 	
 
@@ -1190,10 +1214,11 @@ function benutzerBearbeiten_loadBenutzer(data) {
 	document.getElementById("benutzerBearbeiten_name").innerHTML = response.name + ' ' + response.vorname;
 	document.getElementById("benutzerBearbeiten_alarmgruppe").selectedIndex = response.group -1;
 	document.getElementById("benutzerBearbeiten_admin").checked = response.admin=='1';
-	document.getElementById("benutzerBearbeiten_kalender").checked = response.kalender=='1';
+	document.getElementById("benutzerBearbeiten_kalender").selectedIndex = response.kalender;
 	document.getElementById("benutzerBearbeiten_admin").disabled = response.telegramid == TELEGRAMID;
 	document.getElementById("benutzerBearbeiten_drucker").checked =  response.drucker=='1';
 	document.getElementById("benutzerBearbeiten_software").checked =  response.softwareInfo=='1';
+	document.getElementById("benutzerBearbeiten_telefonliste").checked =  response.telefonliste=='1';
 	document.getElementById("benutzerBearbeiten_erinnerung").checked = response.sendRemembers=='1';
 	document.getElementById("benutzerBearbeiten_verfuegbar").checked = response.status=='1';
 	document.getElementById("benutzerBearbeiten_statusHidden").checked = response.statusHidden=='1';
@@ -1849,7 +1874,14 @@ async function kalenderBearbeiten_load(obj) {
 			for(let i = 1; i < kalendergruppen.length; i++) {	
 				if(document.getElementById("kalenderBearbeiten_kalGrName_"+i).checked) checked = true;
 			}
-			document.getElementById("kalenderBearbeiten_kalGrName_0").checked = !checked;
+
+			if(KALENDER_FULL == false && !checked) {
+				let userKalGroups = String(index_userKalenderGruppen).split('|');
+				document.getElementById("kalenderBearbeiten_kalGrName_"+(parseInt(userKalGroups[1])-1)).checked = true;
+				document.getElementById("kalenderBearbeiten_kalGrName_0").checked = false;
+			} else {
+				document.getElementById("kalenderBearbeiten_kalGrName_0").checked = !checked; 
+			}
 		}
 
 		let textIcon = parseKalenderSummary(event.summary);
@@ -1886,10 +1918,17 @@ async function kalenderBearbeiten_load(obj) {
 		document.getElementById("kalenderBearbeiten_dateStart").value = event.start;
 		document.getElementById("kalenderBearbeiten_dateRemind").value = event.remind;
 
-		for(let i = 0; i < kalendergruppen.length; i++) {			
+		for(let i = 0; i < kalendergruppen.length; i++) {	
+			
+			let enabled = true;
+			if(KALENDER_FULL == false && String(index_userKalenderGruppen).indexOf(kalendergruppen[i].id) == -1 && i != 0) {
+				//continue;
+				enabled = false;
+			}
+			
 			let newDiv = document.createElement("div");		
 
-			let disabled = i == 0 ? 'disabled' : '';
+			let disabled = (i == 0 || enabled == false) ? ' disabled' : '';
 									
 			newDiv.className = 'item label-fixed';
 			newDiv.innerHTML += `<label>${kalendergruppen[i].name}</label>
@@ -1905,7 +1944,7 @@ async function kalenderBearbeiten_load(obj) {
 
 		for(let i = 0; i < event.group.length; i++) {		
 			document.getElementById("kalenderBearbeiten_kalGrName_"+(parseInt(event.group[i].id)-1)).checked = true; 
-		}
+		}		
 
 		evalChecked();
 
@@ -2014,6 +2053,11 @@ function kalenderBearbeiten_loeschen(id){
 	}));
 }
 
+function kalenderBearbeiten_copyErinnerung() {
+	let val = document.getElementById("kalenderBearbeiten_dateStart").value;
+	document.getElementById("kalenderBearbeiten_dateRemind").value = val;
+}
+
 
 // ----------------  HYDRANTENKARTE ---------------- 
 
@@ -2030,6 +2074,7 @@ async function hydrantenkarte_load() {
 		maximumAge: 4000
 	};	
 
+
 	async function success(position) {
 		let latitude  = position.coords.latitude;
 		let longitude = position.coords.longitude;
@@ -2038,6 +2083,52 @@ async function hydrantenkarte_load() {
 		let hydrantenCache = await fetchWithParam('/app/api/hydranten.geojson', pos);
 
 		let ret = createMap(pos, hydrantenCache, true);
+
+
+
+		Number.prototype.toRad = function() {
+			return this * Math.PI / 180;
+		}
+		
+		Number.prototype.toDeg = function() {
+			return this * 180 / Math.PI;
+		}
+
+		function moveCoord(coord, brng, dist) {
+			dist = dist / 6371;  
+			brng = brng.toRad();  
+		 
+			var lat1 = coord.lat.toRad(), lon1 = coord.lng.toRad();
+		 
+			var lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) + 
+								 Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
+		 
+			var lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
+										 Math.cos(lat1), 
+										 Math.cos(dist) - Math.sin(lat1) *
+										 Math.sin(lat2));
+		 
+			if (isNaN(lat2) || isNaN(lon2)) return null;
+
+			return {lat:lat2.toDeg(), lng:lon2.toDeg()};		
+		 }
+
+		let radius = 3.1;
+		let p1 = moveCoord(pos, 0, radius);
+		let p2 = moveCoord(pos, 90, radius);
+		let p3 = moveCoord(pos, 180, radius);
+		let p4 = moveCoord(pos, 270, radius);
+
+		let boundingExtent  = new ol.extent.boundingExtent([[p1.lng, p1.lat], [p2.lng, p2.lat], [p3.lng, p3.lat], [p4.lng, p4.lat]]);
+		boundingExtent = ol.proj.transformExtent(boundingExtent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
+
+		ret.map.setView(
+			new ol.View({
+				center: ol.proj.fromLonLat([pos.lng, pos.lat]),
+				extent: boundingExtent ,   
+				zoom: ret.map.getView().getZoom()
+			  })
+			);
 		
 		loadForstRettPkt(ret.map);
 	};
@@ -2073,46 +2164,50 @@ async function clients_load() {
 				let responseID = response[i].id;
 				
 				let newDiv = document.createElement("div");		
-				let newDiv2 = document.createElement("div");	
+				let newDiv2 = document.createElement("div");
+				let newDiv3 = document.createElement("div");	
 				newDiv2.className = 'space';
+				newDiv3.className = 'collapsible-content';
+
 				newDiv.className = 'list';
-				newDiv.innerHTML += `<div class="item small-space grey-300 text-grey-700  label-fixed">
+				newDiv.innerHTML += `<div class="item collapsible small-space grey-300 text-grey-700  label-fixed">
 										<label class="text-black">Name</label>
 										<input id="clients_name_${i}" type="text" value="${dat.name}" readonly>
-									</div>
-									<div class="item  label-fixed">
+									</div>`
+				newDiv3.innerHTML += `<div class="item  label-fixed">
 										<label class="text-black">Info</label>
 										<input class="" id="client_page_${i}" style="text-align:right;" value="${dat.info}" readonly>
 									</div>`
+
 				for(let j = 0; j < dat.actions.length; j++) {
 					let elem = dat.actions[j];
 					// Textanzeige
 					if(elem.id == "-1") {
-						newDiv.innerHTML +=	`<div class="item  label-fixed">
+						newDiv3.innerHTML +=	`<div class="item  label-fixed">
 												<label class="text-black">${elem.key}</label>
 												<input class="" id="client_data_${i}" value="${elem.value}" style="text-align:right;" readonly>
 											</div>`
 					// Seite Reload
 					} else if(elem.id == "0") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Seite neu laden</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'reload', '');">Ausführen</button>
 											</div>`
 					// Wechsle zu Letzter Alarm
 					} else if(elem.id == "1") {
-						newDiv.innerHTML +=	`<div class="item  label-fixed">
+						newDiv3.innerHTML +=	`<div class="item  label-fixed">
 												<label class="text-black">Letzter Alarm anzeigen</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'letzteralarm', '');">Ausführen</button>
 											</div>`
 					// Diashow
 					//} else if(elem.id == "2") {
-					//	newDiv.innerHTML +=	`<div class="item  label-fixed">
+					//	newDiv3.innerHTML +=	`<div class="item  label-fixed">
 					//							<label class="text-black">Diashow</label>
 					//							<button class="red-400 small right" onclick="">Ausführen</button>
 					//						</div>`
 					// Kalender Reload
 					} else if(elem.id == "3") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Kalender neu laden</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'kalReload', '');">Ausführen</button>
 											</div>
@@ -2123,49 +2218,54 @@ async function clients_load() {
 											</div>`
 					// Wechsle zu Präsentations-Steuerung
 					} else if(elem.id == "4") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Präsentation</label>
 												<button class="red-400 small right" onclick="openPage('filesHTTPS/appPraesentation', null, praesentation_load)">Ausführen</button>
 											</div>`
 					// Seite Zurück
 					} else if(elem.id == "5") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Zurück</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'zurueck', '');">Ausführen</button>
 											</div>`
 					// Neustart
 					} else if(elem.id == "7") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Neustart</label>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'restart', '');">Ausführen</button>
 											</div>`
 					// Update
 					} else if(elem.id == "8") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">Version</label>
 												<input class="" id="client_data_${i}" value="${elem.value}" style="margin-right: 10em; text-align:right;" readonly>
 												<button class="red-400 small right" onclick="clients_action('${responseID}', 'updateScript', '');">Update</button>
 											</div>`
 					// GPS Position
 					} else if(elem.id == "9") {
-						newDiv.innerHTML += `<div class="item  label-fixed">
+						newDiv3.innerHTML += `<div class="item  label-fixed">
 												<label class="text-black">GPS Pos.</label>
 												<input class="" id="client_data_${i}" value="${elem.value}" style="margin-right: 10em; text-align:right;" readonly>
 												<button class="red-400 small right" onclick="location.href='geo:${elem.value}'">Karte</button>
 											</div>`
-					}
+					}					
 				}	
-				
-				document.getElementById("clients_list").appendChild(newDiv); 
-				document.getElementById("clients_list").appendChild(newDiv2); 
 
-				document.getElementById("clients_name_"+i).addEventListener("input", () => {
+				newDiv.appendChild(newDiv3); 
+				document.getElementById("clients_list").appendChild(newDiv); 
+				document.getElementById("clients_list").appendChild(newDiv2); 				
+
+				/*document.getElementById("clients_name_"+i).addEventListener("input", () => {
 					// Name speichern
-				}); 
+				}); */
+
+				
 			} catch (error) {
 				console.error(error);
 			}
 		}
+
+		loadCollapsibles();
 
 	} catch (error) {
 		console.log(error);	
@@ -2269,6 +2369,7 @@ async function vervuegbarkeitplaene_changeActive(id, value) {
 	}
 }
 
+
 // ----------------  Verfügbarkeit Pläne Bearbeiten ----------------
 vervuegbarkeitplaeneBearbeiten_num = 0;
 async function vervuegbarkeitplaeneBearbeiten_load(num) {
@@ -2360,6 +2461,7 @@ async function vervuegbarkeitplaeneBearbeiten_delete(action) {
 		alert("Kalender Termin konnte nicht gespeichert werden.");
 	}
 }
+
 
 // ----------------  Diashow ----------------
 async function diashow_load() {
@@ -2576,4 +2678,175 @@ async function diashow_delete(img) {
 		]
 	}));
 	
+}
+
+
+// ----------------  Autos ----------------
+
+auto_length = 0;
+
+async function auto_loadAuto() {
+	try {
+
+		// https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
+		// Util function
+		function addFormatter (input, formatFn) {
+			let oldValue = input.value;
+			
+			const handleInput = event => {
+			const result = formatFn(input.value, oldValue, event);
+			if (typeof result === 'string') {
+				input.value = result;
+			}
+			
+			oldValue = input.value;
+			}
+		
+			handleInput();
+			input.addEventListener("input", handleInput);
+		}
+		
+		// Example implementation
+		// HOF returning regex prefix formatter
+		function regexPrefix (regex, prefix) {
+			return (newValue, oldValue) => regex.test(newValue) ? newValue : (newValue ? oldValue : prefix);
+		}		
+		
+
+		let response = await fetchWithParam('app/api/auto', {});
+		
+		document.getElementById("auto_list").innerHTML = "";
+
+		auto_length = response.length;
+
+		for(let i = 0; i < response.length; i++) {
+			try {				
+				
+				let auto = response[i];
+				
+				let div_container_head = document.createElement("div");		
+				let div_space = document.createElement("div");
+				let div_container_body = document.createElement("div");
+
+				div_space.className = 'space';				
+
+				div_container_head.className = 'list';
+				div_container_head.innerHTML += `<div class="item collapsible small-space grey-300 text-grey-700  label-fixed">
+										<label class="text-black">Name</label>
+										<input id="auto_name1_${auto.id}" type="text" value="${auto.name}" readonly>
+										<button class="blue-grey-900 circle icon small ion-android-delete" onclick="deleteAuto(${auto.id});"></button>
+										<button class="blue-grey-900 circle icon small ion-android-done-all" onclick="auto_speichern(${auto.id});"  style="margin-left:1em;"></button>
+									</div>`
+
+				div_container_body.className = 'collapsible-content';
+				div_container_body.innerHTML += `<div class="item  label-fixed">
+										<label class="text-black">Anzeigename</label>
+										<input class="" id="auto_name2_${auto.id}" style="text-align:right;" value="${auto.name}">										
+									</div>
+									<div class="item  label-fixed">
+										<label class="text-black">Benutzername</label>
+										<input class="" id="auto_appBenutzer_${auto.id}" style="text-align:right;" value="${auto.appBenutzer}">
+									</div>
+									<div class="item  label-fixed">
+										<label class="text-black">Passwort</label>
+										<input class="" id="auto_appPasswort_${auto.id}" style="text-align:right;" value="********" readonly>
+										<button class="blue-grey-900 circle icon small ion-android-sync" style='margin-left:1.5em;' onclick="auto_newPW(${auto.id});"></button>
+									</div>`
+	
+				div_container_head.appendChild(div_container_body); 
+				document.getElementById("auto_list").appendChild(div_container_head); 
+				document.getElementById("auto_list").appendChild(div_space); 	
+				
+				// Apply formatter
+				const input = document.getElementById(`auto_appBenutzer_${auto.id}`);
+				addFormatter(input, regexPrefix(/^AUTO/, 'AUTO'));
+
+				
+			} catch (error) {
+				console.error(error);
+			}
+		}
+
+		loadCollapsibles();
+
+	} catch (error) {
+		console.log(error);	
+		goBack();
+		alert("Geräte konnten nicht geladen werden.");
+	}
+}
+
+async function auto_newAuto() {
+	try {		
+
+		let response = await fetchWithParam('app/api/auto/add', {}, false);
+		auto_loadAuto();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Einstellungen konnte nicht gespeichert werden.");
+	}
+}
+
+async function deleteAuto(uid) {
+	try {		
+
+		console.log(alert({
+			title:'Löschen',
+			message:'Element wirklich löschen?',
+			class:'red',
+			buttons:[
+			  {
+				label: 'Ja',
+				class:'red-900',
+				onclick: async function () {
+					closeAlert();			
+					let response = await fetchWithParam('app/api/auto/delete', {id: uid}, false);
+					auto_loadAuto();	
+				}
+			  },
+			  {
+				label:'Nein',
+				class:'text-white',
+				onclick: function () {
+				  closeAlert();
+				}
+			  }
+			]
+		}));		
+
+	} catch (error) {
+		console.log(error);	
+		alert("Einstellungen konnte nicht gespeichert werden.");
+	}
+}
+
+async function auto_newPW(uid) {
+	try {		
+
+		let response = await fetchWithParam('app/api/auto/password/new', {id: uid});
+
+		document.getElementById(`auto_appPasswort_${uid}`).value = response.pw;
+
+	} catch (error) {
+		console.log(error);	
+		alert("Einstellungen konnte nicht gespeichert werden.");
+	}
+}
+
+async function auto_speichern(uid) {
+	try {
+
+		const appname = document.getElementById(`auto_name2_${uid}`).value;
+		const appBen = document.getElementById(`auto_appBenutzer_${uid}`).value;
+
+		let response1 = await fetchWithParam('app/api/auto/einstellung/set', {id: uid, setting: 'name', value: appname}, false);
+		let response2 = await fetchWithParam('app/api/auto/einstellung/set', {id: uid, setting: 'appBenutzer', value: appBen}, false);
+
+		auto_loadAuto();
+
+	} catch (error) {
+		console.log(error);	
+		alert("Einstellungen konnte nicht gespeichert werden.");
+	}
 }

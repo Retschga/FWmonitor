@@ -9,7 +9,6 @@ module.exports = function (_httpServer, destroySession) {
 
 	// ----------------  TELEGRAM ---------------- 
 	const { Telegraf, Router, Markup } = require('telegraf');
-//	const Router = require('telegraf/router');
 
 	// ----------------  KALENDER/FWVV/Datenbank ---------------- 
 	const calendar = require('./calendar')();
@@ -140,7 +139,7 @@ _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
 			} else {
 
 				// Antwort senden
-				ctx.reply('Telegram Bot der' + process.env.FW_NAME_BOT);
+				ctx.reply('Telegram Bot der' + process.env.FW_NAME_BOT + ' (Intern)');
 
 				// Prüfe ob in Telegram Vor- und Nachname eingetragen ist
 				if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
@@ -955,7 +954,7 @@ ${rows_alarmList[alarmNum].ort}_`,
 	onCallback.on('VerfuegbarZeige', async (ctx) => {
 		try {
 
-			let rows_allUsers = await db.getUserAll();
+			let rows_allUsers = await db.getUserAllowed();
 			var st_verv = "";
 			var st_vervNum = 0;
 			var st_nichtverf = "";
@@ -1447,6 +1446,8 @@ _${st_nichtverf}_`,
 				str += '<i><b>' + termine[i].string + "</b></i>\n";
 			}
 		}
+		str = str.replace(/<br>/g, '\n');
+
 		if (gesamt) {
 			ctx.editMessageText(
 				"<b>Alle Termine:</b>\n" + str, 

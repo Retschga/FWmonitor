@@ -142,10 +142,10 @@ ICAL_LINK=
 # FWVV Anbindung (true/false)
 FWVV=false
 
-# FWVV Datensicherung Ordner 
+# FWVV FWVVDAT Ordner
 # lokaler Pfad C:/ordner/ordner/
 # bei Netzwerk \\netzwerkpc\ordner\
-FWVV_DATENSICHERUNG=
+FWVV_DAT_FOLDER=
 
 
 ######## DRUCKEN ########

@@ -34,7 +34,7 @@ pirpin = int(sys.argv[3])
 uartport = sys.argv[4]
 
 starttime = str(datetime.datetime.now())
-version = "2.1.6"
+version = "2.3.1"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = b'\xAA\x11\xFE\x01\x01\x11'
@@ -151,7 +151,7 @@ class WebSocketRetry:
                     self.connected = True
                     await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
 
-                    while True:               
+                    while self.connected:               
                         # Senden         
                         if self._dataToSend != "":
                             await asyncio.wait_for(printLog("Websocket: ...sende", self._dataToSend), 5)
@@ -180,6 +180,7 @@ class WebSocketRetry:
                         except:
                             await asyncio.wait_for(printLog("Connection error"), 5)
                             self.connected = False
+                            raise
                         
 
             except (asyncio.TimeoutError, ConnectionClosedOK, ConnectionClosedError):
@@ -195,8 +196,11 @@ class WebSocketRetry:
 
     async def sendPing(self, data):
         if self.connected:
-            await asyncio.wait_for(printLog("Websocket: PING"), 5)
-            await self._websocket_connection.ping()
+            try:
+                await asyncio.wait_for(printLog("Websocket: PING"), 5)
+                await self._websocket_connection.ping()
+            except:
+                await asyncio.wait_for(printLog("PING error"), 5)
 
 
     async def close(self):
@@ -222,22 +226,25 @@ async def keepAlive(asyncState):
 
 async def mainLoop(asyncState):
     while True:
-        await asyncio.sleep(1)         
+        try:
+            await asyncio.sleep(1)         
 
-        asyncState.timer5 += 1
-        if asyncState.timer5 >= 5:
-            asyncState.timer5 = 0
-            await checkPIR(asyncState)
-        
-        asyncState.timer15 += 1
-        if asyncState.timer15 >= 15:
-            asyncState.timer15 = 0
-            await keepAlive(asyncState)
-        
-        asyncState.timer300 += 1
-        if asyncState.timer300 >= 300:
-            asyncState.timer300 = 0
-            await create3hLog(asyncState)
+            asyncState.timer5 += 1
+            if asyncState.timer5 >= 5:
+                asyncState.timer5 = 0
+                await checkPIR(asyncState)
+            
+            asyncState.timer15 += 1
+            if asyncState.timer15 >= 15:
+                asyncState.timer15 = 0
+                await keepAlive(asyncState)
+            
+            asyncState.timer300 += 1
+            if asyncState.timer300 >= 300:
+                asyncState.timer300 = 0
+                await create3hLog(asyncState)
+        except:
+            await asyncio.wait_for(printLog("MAIN LOOP error"), 5)
 
 
 # -------------- Programmstart --------------

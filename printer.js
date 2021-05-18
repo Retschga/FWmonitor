@@ -47,10 +47,11 @@ module.exports = function () {
         }
         if (process.env.PRINTER_PATH != '' && process.env.PRINTER_REGEX != '') {
             let r = await isNotFull1();
-            if (r) {
-                ret = true;
-                return ret;
-            }
+//            if (r) {
+//                ret = true;
+//                return ret;
+//            }
+            return r;
         }
 
         return ret;

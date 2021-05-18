@@ -72,13 +72,31 @@ module.exports = function () {
     return await dbQuery('UPDATE "main"."users" SET "appPasswort" = ? WHERE "telegramid"= ? ', value, parseInt(telid));
   }
   const getUserLogin = async function (telid) {
-		return await dbQuery("SELECT appPasswort, admin, kalender FROM users WHERE telegramid=?", parseInt(telid));       
-  }
+		return await dbQuery("SELECT appPasswort, admin, kalender, telefonliste FROM users WHERE telegramid=?", parseInt(telid));       
+  }  
+  const setUserColumn = async function (uid, type, value) {
+		return await dbQuery('UPDATE "main"."users" SET "' + type + '"= ? WHERE "id"= ? ', value, parseInt(uid));
+  };
+
+  // ---- Auto - Bildschirme ----
   const getAutoLogin = async function (appBenutzer) {
 		return await dbQuery("SELECT appPasswort, appBenutzer, name, id FROM autos WHERE appBenutzer=?", appBenutzer);       
   }
-  const setUserColumn = async function (uid, type, value) {
-		return await dbQuery('UPDATE "main"."users" SET "' + type + '"= ? WHERE "id"= ? ', value, parseInt(uid));
+  const getAutoAll = async function () {
+    return await dbQuery('SELECT * FROM autos');
+  }
+  const addAuto = async function (name, appBenutzer, appPasswort) {
+    // war mit .run()
+    return await dbQuery('INSERT INTO "main"."autos"("id", "name","appBenutzer","appPasswort") VALUES (NULL,?,?,?)', name, appBenutzer, appPasswort);
+  }
+  const deleteAuto = async function (uid) {
+    return await dbQuery('DELETE FROM "main"."autos" WHERE _rowid_ IN(?)', parseInt(uid));
+  } 
+  const setAutoPassword = async function (uid, value) {
+    return await dbQuery('UPDATE "main"."autos" SET "appPasswort" = ? WHERE "id"= ? ', value, parseInt(uid));
+  }
+  const setAutoColumn = async function (uid, type, value) {
+		return await dbQuery('UPDATE "main"."autos" SET "' + type + '"= ? WHERE "id"= ? ', value, parseInt(uid));
   };
 
   // ---- User Notifications ----
@@ -279,6 +297,9 @@ module.exports = function () {
         // Spalte appNotifications
         addColumn(db, 'users', 'kalenderGroups', 'INTEGER', 'DEFAULT 1');
 
+         // Spalte telefonliste
+         addColumn(db, 'users', 'telefonliste', 'INTEGER', 'DEFAULT 0');
+
         // Tabelle kalenderGroups
         db.all('CREATE TABLE IF NOT EXISTS "kalenderGroups" ("id" INTEGER UNIQUE, "name" TEXT, "pattern" TEXT, PRIMARY KEY(id AUTOINCREMENT))').then(rows => {
           debug("Created Datatable kalenderGroups");
@@ -326,6 +347,164 @@ module.exports = function () {
 
         // Spalte softwareInfo
         addColumn(db, 'users', 'softwareInfo', 'INTEGER', 'DEFAULT 0');
+
+
+
+
+         // Tabelle autos
+         db.all('CREATE TABLE IF NOT EXISTS "migrations" ("id"	INTEGER, "name"	TEXT NOT NULL, "up"	TEXT NOT NULL, "down"	TEXT NOT NULL, PRIMARY KEY("id"))')
+         .then(rows => {
+           debug("Created Datatable migrations");
+
+           
+          var up = `--------------------------------------------------------------------------------
+
+          --------------------------------------------------------------------------------
+          
+          CREATE TABLE "users" (
+            "id"							INTEGER NOT NULL,
+            "allowed"						INTEGER DEFAULT 0,
+            "telegramid"					TEXT,
+            "name"							TEXT,
+            "vorname"						TEXT,	
+          
+            "status"						INTEGER DEFAULT 1,
+            "statusUntil"					TEXT,
+            "statusPlans"					TEXT,
+            "statusHidden"					INTEGER DEFAULT 0,
+            
+            "kalenderGroups"				TEXT    DEFAULT 1,
+            "sendRemembers"					INTEGER DEFAULT 1,
+            
+            "appPasswort"					TEXT,
+            "appNotifications"				INTEGER DEFAULT 0,
+            "appNotificationsSubscription"	TEXT,
+          
+            "group"							INTEGER DEFAULT 1,
+            
+            "admin"							INTEGER DEFAULT 0,	
+            "stAGT"							INTEGER DEFAULT 0,
+            "stGRF"							INTEGER DEFAULT 0,
+            "stMA"							INTEGER DEFAULT 0,
+            "stZUGF"						INTEGER DEFAULT 0,	
+            "drucker"						INTEGER DEFAULT 0,
+            "softwareInfo"					INTEGER DEFAULT 0,
+            "telefonliste"					INTEGER DEFAULT 0,
+            "kalender"						INTEGER DEFAULT 0,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          CREATE TABLE "groups" (
+            "id"							INTEGER NOT NULL,
+            "name"							TEXT,
+            "pattern"						TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          CREATE TABLE "autos" (
+            "id"							INTEGER NOT NULL UNIQUE,
+            "name"							TEXT,
+            "appBenutzer"					TEXT,
+            "appPasswort"					TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          CREATE TABLE "alarms" (
+            "id"							INTEGER UNIQUE,
+            "date"							TEXT NOT NULL,
+            "einsatzstichwort"				REAL,
+            "schlagwort"					TEXT,
+            "objekt"						TEXT,
+            "bemerkung"						TEXT,
+            "strasse"						TEXT,
+            "ortsteil"						TEXT,
+            "ort"							TEXT,
+            "lat"							TEXT,
+            "lng"							TEXT,
+            "cars1"							TEXT,
+            "cars2"							TEXT,
+            "isAddress"						INTEGER,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          CREATE TABLE "kalender" (
+            "id"							INTEGER NOT NULL UNIQUE,
+            "summary"						TEXT,
+            "start"							TEXT,
+            "remind"						TEXT,
+            "group"							TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          CREATE TABLE "kalenderGroups" (
+            "id"							INTEGER UNIQUE,
+            "name"							TEXT,
+            "pattern"						TEXT,
+            PRIMARY KEY("id" AUTOINCREMENT)
+          );
+          
+          INSERT INTO groups (name, pattern) VALUES ('Standard', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}}
+          _> {{SCHLAGWORT}}_
+          _> {{OBJEKT}}_
+          _> {{STRASSE}}_
+          _> {{ORTSTEIL}}_
+          _> {{ORT}}_
+          {{newline}}
+          *Bemerkung:*
+          _{{BEMERKUNG}}_{{newline}}
+          *Einsatzmittel:*
+          _{{EINSATZMITTEL_EIGEN}}_');
+          INSERT INTO groups (name, pattern) VALUES ('Fax', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}} {{FAX}}
+          _> {{SCHLAGWORT}}_
+          _> {{OBJEKT}}_
+          _> {{STRASSE}}_
+          _> {{ORTSTEIL}}_
+          _> {{ORT}}_
+          {{newline}}
+          *Bemerkung:*
+          _{{BEMERKUNG}}_{{newline}}
+          *Einsatzmittel:*
+          _{{EINSATZMITTEL_EIGEN}}_');
+          INSERT INTO groups (name, pattern) VALUES ('Keine Infos', '');
+          INSERT INTO groups (name, pattern) VALUES ('Gruppe 4', '');
+          INSERT INTO groups (name, pattern) VALUES ('Gruppe 5', '');
+          
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Alle', '{{alle}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Maschinisten', '{{ma}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Atemschutz', '{{at}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppenführer', '{{gf}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Zugführer', '{{zf}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 5', '{{5}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 6', '{{6}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 7', '{{7}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 8', '{{8}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 9', '{{9}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 10', '{{10}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 11', '{{11}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 12', '{{12}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 13', '{{13}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 14', '{{14}}');
+          INSERT INTO kalenderGroups (name, pattern) VALUES ('Gruppe 15', '{{15}}');
+          
+          --------------------------------------------------------------------------------`;
+          var down = `--------------------------------------------------------------------------------
+
+          DROP TABLE "users";
+          DROP TABLE "groups";
+          DROP TABLE "autos";
+          DROP TABLE "alarms";
+          DROP TABLE "kalender";
+          DROP TABLE "kalenderGroups";`;
+          up = up.replace(/\'/g, '"');
+          down = down.replace(/\'/g, '"');
+          db.all('INSERT INTO "migrations" ("id","name","up", "down") VALUES (1, "initial", \''+up+'\', \''+down+'\')').then(rows => {
+            debug('#');
+          }).catch(err => {
+            console.error("[APP] Database error: " + err);
+          })
+         }).catch(err => {
+           console.error("[APP] Database error: " + err);
+         });
 
 
       })
@@ -380,7 +559,12 @@ module.exports = function () {
     getUserStatusPlan,
     getUserStatusHidden,
     setUserStatusHidden,
-    updateDatabase,
+    getAutoAll,
+    addAuto,
+    deleteAuto,
+    setAutoPassword,
+    setAutoColumn,
+    updateDatabase,    
     USER_STATUS,
     USER_STATUSHIDDEN,
     STATISTIK
