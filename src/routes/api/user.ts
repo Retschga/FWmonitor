@@ -31,6 +31,11 @@ router.post(
     ValidatorsUser.updateUserStatusHidden,
     awaitHandlerFactory(userController.update_user_statusHidden_id.bind(userController))
 );
+router.post(
+    '/notifications/app',
+    ValidatorsUser.updateNotificationsApp,
+    awaitHandlerFactory(userController.update_user_notifications_app_id.bind(userController))
+);
 
 router.get('/', awaitHandlerFactory(userController.get_user_all.bind(userController)));
 
@@ -40,6 +45,14 @@ router.post(
     '/:id',
     ValidatorsUser.updateUser,
     awaitHandlerFactory(userController.update_user_id.bind(userController))
+);
+router.get(
+    '/approve/:id',
+    awaitHandlerFactory(userController.approve.bind(userController))
+);
+router.get(
+    '/delete/:id',
+    awaitHandlerFactory(userController.delete.bind(userController))
 );
 
 export = router;

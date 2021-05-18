@@ -198,6 +198,20 @@ class UserController {
         }
         res.send('OK');
     }
+
+    // Notifications
+    public async update_user_notifications_app_id(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'update_user_appNotifications_id');
+        checkValidation(req);
+
+        try {
+            await UserService.update_notifications_app(Number(req.params.id), Number(req.body.value), 'dsfsdfsdfsdfsf');
+        } catch (error) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+        }
+        res.send('OK');
+    }
+
 }
 
 export default new UserController();

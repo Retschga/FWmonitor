@@ -31,7 +31,7 @@
                             <span class="left material-icons">notifications_active</span>
                             <span class="text">Telegram</span>
                             <label class="switch right">
-                                <input type="checkbox">
+                                <input type="checkbox" checked disabled>
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -40,7 +40,7 @@
                             <span class="left material-icons">notifications_active</span>
                             <span class="text">App</span>
                             <label class="switch right">
-                                <input type="checkbox">
+                                <input class="var_appnotifications" type="checkbox" onchange="updateSettings()">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -54,6 +54,38 @@
 
 
         <%- include('partials/foot') -%>
+
+        <script>
+
+            async function loadSettings(id) {
+                let userList = await fetch_get('/api/v1/user/notifications/app/' + id, true);
+                console.log('user' , userList);
+                if(!userList) return;
+
+                const user = userList[0];
+
+                const var_appnotifications = document.querySelector('.var_appnotifications');      
+                var_appnotifications.checked = user.var_appnotifications > 0 ;
+
+            }
+
+            async function updateSettings() {
+
+                const var_appnotifications = document.querySelector('.var_appnotifications').checked;
+                
+                if(var_appnotifications) {
+                    if (Notification.permission !== "granted") {
+                        if (Notification.permission !== "granted") {
+                    }
+                }
+
+                // save value, subscription
+
+            }
+
+            loadSettings(user_id);
+
+        </script>
        
     </body>
 	

@@ -37,7 +37,7 @@
                     <div class="user_list">
                    
                         <template id="template-userelement">
-                            <div class="userelement margin_none padding_none">
+                            <div class="userelement margin_none padding_none deleteme">
 
                                 <div class="list listDark border_left border_right mark_green">
 
@@ -63,7 +63,7 @@
                         
                         <template id="template-userelement-nf">
 
-                            <div class="userelement margin_none padding_none">
+                            <div class="userelement margin_none padding_none deleteme">
 
                                 <div class="list border_left border_right mark_green">
     
@@ -106,6 +106,9 @@
                 const alarmGroups = await fetch_get(`/api/v1/group`, true);
                 console.log('alarmGroups', alarmGroups);
                 if(!alarmGroups) return;
+
+                var elements = target.getElementsByClassName("deleteme");
+                while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
 
                 // Filter
                 let tempStr = 

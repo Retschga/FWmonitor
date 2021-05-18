@@ -189,7 +189,7 @@ class UserService {
         };
     }
 
-    public async update_notifications_app(id: number, value: boolean, subscription: string) {
+    public async update_notifications_app(id: number, value: number, subscription: string) {
         let affectedRows = await UserModel.model.update(Number(id), {
             appNotifications: value,
             appNotificationsSubscription: subscription

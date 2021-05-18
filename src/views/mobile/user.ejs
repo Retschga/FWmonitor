@@ -356,11 +356,17 @@
             }
 
             async function deleteUser() {
-
+                loaderIn();               
+                let response = await fetch_get('/api/v1/user/delete/' + id);
+                console.log('deleteUser', response);
+                goBack();
             }
 
             async function approveUser() {
-                
+                loaderIn();               
+                let response = await fetch_get('/api/v1/user/approve/' + id);
+                console.log('approveUser', response);
+                location.reload(); 
             }
 
             function openDeleteModal() {                

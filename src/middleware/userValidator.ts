@@ -49,3 +49,15 @@ export const updateUser = [
     body('stGRF').exists().withMessage('stGRF is required'),
     body('stZUGF').exists().withMessage('stZUGF is required')
 ];
+
+export const updateNotificationsApp = [
+    body('value')
+        .exists()
+        .withMessage('value is required')
+        .isNumeric() 
+        .withMessage('value is must be numeric'),
+    body('subscription')
+        .exists()
+        .withMessage('subscription is required')
+        
+];
