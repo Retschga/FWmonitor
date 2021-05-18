@@ -1,0 +1,25 @@
+1x Waveshare 7inch HDMI LCD (H)  -  https://www.waveshare.com/wiki/7inch_HDMI_LCD_(H)
+1x 8 Ohm 5W Lautsprecher passend für Waveshare Displays
+1x Micro HDMI Adapterkabel D-Stecker - A-Buchse
+1x HDMI 180° Winkeladapter A Stecker - A Stecker
+1x USB 2.0 Hi-Speed Kabel A Stecker – Micro B Stecker 90° Winkel schwarz
+
+1x Raspberry Pi 4 Computer Modell B, 2GB RAM
+1x SD Karte >= 8GB
+1x Netzteilmodul 9 - 36V -> 5V / 5A 
+1x HC-SR505 Mini PIR Sensor - Infrarot Bewegungsmelder
+
+1x u-blox NEO-6M GPS TTL Empfänger
+1x NL-281GG SMA Stecker GLONASS +GPS Multi GNSS Antenne 3 m
+1x Antennenadapterkabel U.FL - SMA Anschluss
+
+1x Wippschalter, 1-polig, schwarz, ON-OFF Montagedurchbruch 13 x 19 mm
+1x 1,80m KFZ Auto Zigaretten Anzünder Kabel - DC Stecker / Hohlstecker 5,5 x 2,1mm
+1x DC-Einbaubuchse für Hohlstecker 5,5x2,1mm, Metallausführung - Lötanschluss
+
+Schrauben M6x6
+Schrauben M6x10
+
+1x SMD mikrotaster 6x6x4,3
+1x Satz Jumper Kabel Female
+3D-Drucker, Lötkolben, Seitenschneider, etc.

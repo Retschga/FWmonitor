@@ -3,8 +3,8 @@
 // ----------------  EINSTELLUNGEN ---------------- 
 require('dotenv').config();
 
-//process.env.NODE_ENV = 'production';
-process.env.NODE_ENV = 'development';
+process.env.NODE_ENV = 'production';
+//process.env.NODE_ENV = 'development';
 
 // ----------------  LIBRARIES ---------------- 
 const debug = require('debug')('app');
