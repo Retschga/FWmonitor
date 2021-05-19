@@ -33,7 +33,7 @@
 
                     <div class="item margin_top_2">
                         <span class="text">Gruppen:</span>
-                        <div class="green right item rounded savebutton" onclick="updateGroup();">
+                        <div class="green right item rounded savebutton" onclick="update_groups_all();">
                             <span class="text text_align_right">Speichern</span>
                             <span class="right material-icons">save</span>
                         </div>
@@ -65,64 +65,65 @@
 
         <script>
 
-            async function loadGroups() {   
-                const groupList = await fetch_get(`/api/v1/calendarGroups`, true);
-                console.log('groupList', groupList);
-                if(!groupList) return;
+            // Laden
+            async function load_groups_all() {   
+                try {
+                    const groups = await fetch_get(`/api/v1/calendarGroups`, true);
+                    console.log('groups', groups);
 
-                for(let i = 0; i < groupList.length; i++) {
-                    const element = groupList[i];
+                    const target = document.querySelector(".groups_list");
 
-                    const date = new Date(element.date);   
+                    for(let i = 0; i < groups.length; i++) {
+                        const group = groups[i];
 
+                        const template              = document.querySelector('#template-groupelement');       
+                        const var_name              = template.content.querySelector(".var_name");      
+                        const var_pattern           = template.content.querySelector(".var_pattern");
 
-                    const template              = document.querySelector('#template-groupelement');       
-                    const var_name              = template.content.querySelector(".var_name");      
-                    const var_pattern           = template.content.querySelector(".var_pattern");
+                        const date = new Date(group.date);   
 
-                    var_name.value              = element.name; 
-                    var_pattern.value           = element.pattern; 
+                        var_name.value       = group.name; 
+                        var_pattern.value    = group.pattern; 
 
-                    var_name.disabled = i == 0;
-                    var_pattern.disabled = i == 0;
-           
+                        var_name.disabled    = i == 0;
+                        var_pattern.disabled = i == 0;            
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
 
-                    // Neue Zeile (row) klonen und in die Tabelle einfügen
-                    var target = document.querySelector(".groups_list");
-                    var clone = document.importNode(template.content.firstElementChild, true);
-                    target.append(clone);
-
-                    clone.id = 'group_' + element.id;
-
-                    addFormatter(clone.querySelector(".var_pattern"), regexPrefix(/^{{.+}}$/, '{{}}'));
-                  
-
-                }
-
+                        clone.id = 'group_' + group.id;
+                        addFormatter(clone.querySelector(".var_pattern"), regexPrefix(/^{{.+}}$/, '{{}}'));   
+                    }
+                } catch (error) {
+                    console.error('load_groups_all', error)
+                }       
             }
 
-            async function updateGroup() {
+            // Speichern
+            async function update_groups_all() {
                 loaderIn();
+                try {
+                    const groups = document.querySelectorAll('.groupelement');       
 
-                const groups = document.querySelectorAll('.groupelement');       
+                    for(let i = 1; i < groups.length; i++) {
+                        const group = groups[i];
 
-                for(let i = 1; i < groups.length; i++) {
+                        const id      = group.id.split('_')[1];
+                        const name    = group.querySelector('.var_name').value;
+                        const pattern = group.querySelector('.var_pattern').value;
 
-                    const group = groups[i];
+                        const response = await fetch_post('/api/v1/calendarGroups/' + id, {name: name, pattern: pattern});
+                        console.log('update_groups_all', response);   
 
-                    const id      = group.id.split('_')[1];
-                    const name    = group.querySelector('.var_name').value;
-                    const pattern = group.querySelector('.var_pattern').value;
-
-                    let response = await fetch_post('/api/v1/calendarGroups/' + id, {name: name, pattern: pattern});
-                    console.log('updateGroup', response);   
-
-                }
-                            
+                    }
+                } catch (error) {
+                    console.error('update_groups_all', error);
+                }       
                 loaderOut();
             }
 
-            loadGroups();
+            // Funktionsaufrufe
+            load_groups_all();
         </script>
        
     </body>

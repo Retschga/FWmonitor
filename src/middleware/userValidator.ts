@@ -61,3 +61,11 @@ export const updateNotificationsApp = [
         .withMessage('subscription is required')
         
 ];
+
+export const updateNotificationsCalendar = [
+    body('value')
+        .exists()
+        .withMessage('value is required')
+        .isBoolean()
+        .withMessage('value is no valid bool')
+];

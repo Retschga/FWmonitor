@@ -31,7 +31,7 @@
                             <span class="left material-icons">notifications_active</span>
                             <span class="text">Terminerinnerungen</span>
                             <label class="switch right">
-                                <input type="checkbox">
+                                <input class="var_notifications_calendar" type="checkbox" onchange="update_notifications_calendar();">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -40,7 +40,7 @@
                             <span class="left material-icons">hide_source</span>
                             <span class="text">Status verbergen</span>
                             <label class="switch right">
-                                <input type="checkbox">
+                                <input class="var_status_hidden" type="checkbox" onchange="update_status_hidden();">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -54,6 +54,58 @@
 
 
         <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_settings_all() {
+                try {
+                    const user = await fetch_get('/api/v1/user/' + user_id, true)[0];
+                    console.log('user' , user);
+
+                    const var_notifications_calendar = document.querySelector('.var_notifications_calendar');      
+                    const var_status_hidden          = document.querySelector('.var_status_hidden');  
+
+                    var_notifications_calendar.checked = user.sendRemembers == 1;
+                    var_status_hidden.checked          = user.statusHidden == 1;
+
+                } catch (error) {
+                    console.error('load_settings_all', error);
+                }    
+            }
+
+            // Speichern
+            async function update_notifications_calendar() {
+                loaderIn();
+                try {
+                    const var_notifications_calendar = document.querySelector('.var_notifications_calendar').checked;  
+
+                    let response = await fetch_post('/api/v1/user/notifications/calendar/' + user_id, {value: var_notifications_calendar});
+                    console.log('update_notifications_calendar' , response);
+                } catch (error) {
+                    console.error('update_notifications_calendar', error);
+                }
+               
+                loaderOut();
+            }
+
+            async function update_status_hidden() {    
+                loaderIn();
+                try {
+                    const var_status_hidden   = document.querySelector('.var_status_hidden').checked;  
+                
+                    let response = await fetch_post('/api/v1/user/status/hidden/update/' + user_id, {value: var_status_hidden});
+                    console.log('update_status_hidden' , response);                    
+                } catch (error) {
+                    console.error('update_status_hidden', error);
+                }                
+                loaderOut();
+            }            
+
+            // Funktionsaufrufe
+            load_settings_all();
+
+        </script>
        
     </body>
 	

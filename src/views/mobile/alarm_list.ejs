@@ -98,7 +98,7 @@
                     </template>
 
 
-                    <button class="btn alarm_list_loadmore margin_top_1" onclick="loadAlarms(offset, limit); offset += limit;">
+                    <button class="btn alarm_list_loadmore margin_top_1" onclick="load_alarms(offset, limit); offset += limit;">
                         Weitere laden...
                     </button>                   
           
@@ -114,63 +114,67 @@
             const limit = 5;
             let offset = 0;
 
-            async function loadAlarms(offset, limit) {   
+            // Laden
+            async function load_alarms(offset, limit) {   
                 if(offset == undefined || limit == undefined) {
                     console.log('offset & limit required');
                     return;
                 }
-                
-                const alarmList = await fetch_get(`/api/v1/alarm/list?offset=${offset}&limit=${limit}`, true);
-                console.log('alarmList', alarmList);
-                if(!alarmList) return;
 
-                for(let i = 0; i < alarmList.length; i++) {
-                    const element = alarmList[i];
+                try {
+                    const alarmList = await fetch_get(`/api/v1/alarm/list?offset=${offset}&limit=${limit}`, true);
+                    console.log('alarmList', alarmList);
 
-                    const date = new Date(element.date);   
+                    const target        = document.querySelector(".alarm_list");
+                    const target_before = document.querySelector(".alarm_list_loadmore");
 
-                    let color = 'green';
-                    switch (element.color) {
-                        case 3:
-                            color = 'green';
-                            break;
-                        case 2:
-                            color = 'blue';
-                            break;
-                        case 1:
-                            color = 'orange';
-                            break;
-                        case 0:
-                            color = 'red';
-                            break;
-                        default:
-                            break;
+                    for(let i = 0; i < alarmList.length; i++) {
+                        const element = alarmList[i];
+
+                        const date = new Date(element.date);   
+
+                        let color = 'green';
+                        switch (element.color) {
+                            case 3:
+                                color = 'green';
+                                break;
+                            case 2:
+                                color = 'blue';
+                                break;
+                            case 1:
+                                color = 'orange';
+                                break;
+                            case 0:
+                                color = 'red';
+                                break;
+                            default:
+                                break;
+                        }
+
+
+                        const template   = document.querySelector('#template-alarm-' + color);                
+                        const var_text   = template.content.querySelector(".var_text");
+                        const var_date   = template.content.querySelector(".var_date");
+                        const var_street   = template.content.querySelector(".var_street");
+                        const var_city = template.content.querySelector(".var_city");
+
+                        var_text.innerHTML   = element.einsatzstichwort + ' - ' + element.schlagwort;
+                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + 
+                                ' - ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                        var_street.innerHTML = element.strasse;
+                        var_city.innerHTML  = element.ort;
+
+                        const clone = document.importNode(template.content, true);
+                        target.insertBefore(clone, target_before);
+
                     }
-
-
-                    const template   = document.querySelector('#template-alarm-' + color);                
-                    const var_text   = template.content.querySelector(".var_text");
-                    const var_date   = template.content.querySelector(".var_date");
-                    const var_street   = template.content.querySelector(".var_street");
-                    const var_city = template.content.querySelector(".var_city");
-
-                    var_text.innerHTML   = element.einsatzstichwort + ' - ' + element.schlagwort;
-                    var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + 
-                            ' - ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-                    var_street.innerHTML = element.strasse;
-                    var_city.innerHTML  = element.ort;
-
-                    // Neue Zeile (row) klonen und in die Tabelle einfügen
-                    var target = document.querySelector(".alarm_list");
-                    var target_before = document.querySelector(".alarm_list_loadmore");
-                    var clone = document.importNode(template.content, true);
-                    target.insertBefore(clone, target_before);
-
+                } catch (error) {
+                    console.erro('load_alarms', error);
                 }
-
             }
 
-            loadAlarms(offset, limit);
+            // Funktionsaufrufe
+            load_alarms(offset, limit);
             offset += limit;
 
 

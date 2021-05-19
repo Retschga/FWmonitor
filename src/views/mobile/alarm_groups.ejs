@@ -26,13 +26,13 @@
 
                     <template id="template-alarmgroup">
                         <div class="alarmgroup margin_none padding_none">
-                            <button class="accordion var_groupheader" onclick="accordion_switch(this)">Gruppe 1</button>
+                            <button class="accordion var_group_header" onclick="accordion_switch(this)">Gruppe 1</button>
                             <div class="accordion_panel">
 
                                 <div class="item smallitem">
                                     <span class="left material-icons">badge</span>
                                     <span class="text">Anzeigename</span>
-                                    <input class="right var_name" type="text" placeholder="Name...">
+                                    <input class="right var_group_name" type="text" placeholder="Name...">
                                 </div>
 
                                 <div class="item smallitem">
@@ -165,117 +165,123 @@
 
         <script>
 
-            async function loadGroups() {   
-                const groupList = await fetch_get(`/api/v1/group`, true);
-                console.log('groupList', groupList);
-                if(!groupList) return;
+            // Laden
+            async function load_groups_all() {  
+                try {                   
+                    const groups = await fetch_get(`/api/v1/group`, true);
+                    console.log('groups', groups);
 
-                for(let i = 0; i < groupList.length; i++) {
-                    const element = groupList[i];
+                    const target = document.querySelector(".alarmgroup_list");
 
-                    const date = new Date(element.date);   
+                    for(let i = 0; i < groups.length; i++) {
+                        const group = groups[i];
+                      
+                        const template              = document.querySelector('#template-alarmgroup');       
+                        const var_group_header      = template.content.querySelector(".var_group_header");      
+                        const var_group_name        = template.content.querySelector(".var_group_name");
+                        const var_einsatzstichwort  = template.content.querySelector(".var_einsatzstichwort");
+                        const var_schlagwort        = template.content.querySelector(".var_schlagwort");
+                        const var_objekt            = template.content.querySelector(".var_objekt");
+                        const var_strasse           = template.content.querySelector(".var_strasse");
+                        const var_ortsteil          = template.content.querySelector(".var_ortsteil");
+                        const var_ort               = template.content.querySelector(".var_ort");
+                        const var_bemerkung         = template.content.querySelector(".var_bemerkung");
+                        const var_car1              = template.content.querySelector(".var_car1");
+                        const var_car2              = template.content.querySelector(".var_car2");
+                        const var_fax               = template.content.querySelector(".var_fax");
+                        const var_map               = template.content.querySelector(".var_map");
+                        const var_hydranten         = template.content.querySelector(".var_hydranten");                    
+                        
+                        const date = new Date(group.date); 
 
+                        var_group_header.innerHTML      = 'Gruppe ' + (i);
+                        var_group_name.value            = group.name; 
+                        var_einsatzstichwort.checked    = group.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1; 
+                        var_schlagwort.checked          = group.pattern.indexOf('{{SCHLAGWORT}}') != -1; 
+                        var_objekt.checked              = group.pattern.indexOf('{{OBJEKT}}') != -1; 
+                        var_strasse.checked             = group.pattern.indexOf('{{STRASSE}}') != -1; 
+                        var_ortsteil.checked            = group.pattern.indexOf('{{ORTSTEIL}}') != -1; 
+                        var_ort.checked                 = group.pattern.indexOf('{{ORT}}') != -1; 
+                        var_bemerkung.checked           = group.pattern.indexOf('{{BEMERKUNG}}') != -1; 
+                        var_car1.checked                = group.pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') != -1; 
+                        var_car2.checked                = group.pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') != -1; 
+                        var_fax.checked                 = group.pattern.indexOf('{{FAX}}') != -1; 
+                        var_map.checked                 = group.pattern.indexOf('{{KARTE}}') != -1; 
+                        var_hydranten.checked           = group.pattern.indexOf('{{KARTE_EMG}}') != -1; 
+                        
+                        const clone  = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
 
-                    const template              = document.querySelector('#template-alarmgroup');       
-                    const var_groupheader       = template.content.querySelector(".var_groupheader");      
-                    const var_name              = template.content.querySelector(".var_name");
-                    const var_einsatzstichwort  = template.content.querySelector(".var_einsatzstichwort");
-                    const var_schlagwort        = template.content.querySelector(".var_schlagwort");
-                    const var_objekt            = template.content.querySelector(".var_objekt");
-                    const var_strasse           = template.content.querySelector(".var_strasse");
-                    const var_ortsteil          = template.content.querySelector(".var_ortsteil");
-                    const var_ort               = template.content.querySelector(".var_ort");
-                    const var_bemerkung         = template.content.querySelector(".var_bemerkung");
-                    const var_car1              = template.content.querySelector(".var_car1");
-                    const var_car2              = template.content.querySelector(".var_car2");
-                    const var_fax               = template.content.querySelector(".var_fax");
-                    const var_map               = template.content.querySelector(".var_map");
-                    const var_hydranten         = template.content.querySelector(".var_hydranten");                    
-                    
+                        clone.id = 'group_' + group.id;
+                        const savebutton = clone.querySelector(".savebutton");  
+                        savebutton.addEventListener("click", () => {
+                            update_group_id(group.id);
+                        });
+                        
 
-                    var_groupheader.innerHTML       = 'Gruppe ' + (i);
-                    var_name.value                  = element.name; 
-                    var_einsatzstichwort.checked    = element.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1; 
-                    var_schlagwort.checked          = element.pattern.indexOf('{{SCHLAGWORT}}') != -1; 
-                    var_objekt.checked              = element.pattern.indexOf('{{OBJEKT}}') != -1; 
-                    var_strasse.checked             = element.pattern.indexOf('{{STRASSE}}') != -1; 
-                    var_ortsteil.checked            = element.pattern.indexOf('{{ORTSTEIL}}') != -1; 
-                    var_ort.checked                 = element.pattern.indexOf('{{ORT}}') != -1; 
-                    var_bemerkung.checked           = element.pattern.indexOf('{{BEMERKUNG}}') != -1; 
-                    var_car1.checked                = element.pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') != -1; 
-                    var_car2.checked                = element.pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') != -1; 
-                    var_fax.checked                 = element.pattern.indexOf('{{FAX}}') != -1; 
-                    var_map.checked                 = element.pattern.indexOf('{{KARTE}}') != -1; 
-                    var_hydranten.checked           = element.pattern.indexOf('{{KARTE_EMG}}') != -1; 
+                    }
 
-                    // Neue Zeile (row) klonen und in die Tabelle einfügen
-                    var target = document.querySelector(".alarmgroup_list");
-                    var clone = document.importNode(template.content.firstElementChild, true);
-                    target.append(clone);
-
-                    clone.id = 'group_' + element.id;
-                    const savebutton            = clone.querySelector(".savebutton");  
-                    savebutton.addEventListener("click", () => {
-                        updateGroup(element.id);
-                    });
-                    
-
-                }
-
+                } catch (error) {
+                    console.error('load_groups_all', error);
+                } 
             }
 
-            async function updateGroup(id) {
+            // Speichern
+            async function update_group_id(id) {
                 loaderIn();
+                try {
+                    const alarmgroup = document.querySelector('#group_' + id); 
+                    const name = alarmgroup.querySelector('.var_group_name').value;     
 
-                const alarmgroup              = document.querySelector('#group_' + id);       
+                    let pattern  = '';   
+                    if(alarmgroup.querySelector('.var_einsatzstichwort').checked) {
+                        pattern += '   *{{EINSATZSTICHWORT}}*';
+                    }
+                    if(alarmgroup.querySelector('.var_map').checked) {
+                        pattern += ' {{KARTE}}';
+                    }
+                    if(alarmgroup.querySelector('.var_hydranten').checked) {
+                        pattern += ' {{KARTE_EMG}}';
+                    }
+                    if(alarmgroup.querySelector('.var_fax').checked) {
+                        pattern += ' {{FAX}}';
+                    }
+                    pattern += '\n';
+                    if(alarmgroup.querySelector('.var_schlagwort').checked) {
+                        pattern += '_> {{SCHLAGWORT}}_' + '\n';
+                    }
+                    if(alarmgroup.querySelector('.var_objekt').checked) {
+                        pattern += '_> {{OBJEKT}}_' + '\n';
+                    }
+                    if(alarmgroup.querySelector('.var_strasse').checked) {
+                        pattern += '_> {{STRASSE}}_' + '\n';
+                    }
+                    if(alarmgroup.querySelector('.var_ortsteil').checked) {
+                        pattern += '_> {{ORTSTEIL}}_' + '\n';
+                    }
+                    if(alarmgroup.querySelector('.var_ort').checked) {
+                        pattern += '_> {{ORT}}_' + '\n';
+                    }
+                    if(alarmgroup.querySelector('.var_bemerkung').checked) {
+                        pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
+                    }
+                    if(alarmgroup.querySelector('.var_car1').checked) {
+                        pattern += '{{newline}}' + '\n' + '*Einsatzmittel:*' + '\n' + '_{{EINSATZMITTEL_EIGEN}}_';
+                    }
+                    if(alarmgroup.querySelector('.var_car2').checked) {
+                        pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
+                    }
 
-                let pattern  = '';
-                const name = alarmgroup.querySelector('.var_name').value;
-
-				if(alarmgroup.querySelector('.var_einsatzstichwort').checked) {
-					pattern += '   *{{EINSATZSTICHWORT}}*';
-				}
-				if(alarmgroup.querySelector('.var_map').checked) {
-					pattern += ' {{KARTE}}';
-				}
-				if(alarmgroup.querySelector('.var_hydranten').checked) {
-					pattern += ' {{KARTE_EMG}}';
-				}
-				if(alarmgroup.querySelector('.var_fax').checked) {
-					pattern += ' {{FAX}}';
-				}
-				pattern += '\n';
-				if(alarmgroup.querySelector('.var_schlagwort').checked) {
-					pattern += '_> {{SCHLAGWORT}}_' + '\n';
-				}
-				if(alarmgroup.querySelector('.var_objekt').checked) {
-					pattern += '_> {{OBJEKT}}_' + '\n';
-				}
-				if(alarmgroup.querySelector('.var_strasse').checked) {
-					pattern += '_> {{STRASSE}}_' + '\n';
-				}
-				if(alarmgroup.querySelector('.var_ortsteil').checked) {
-					pattern += '_> {{ORTSTEIL}}_' + '\n';
-				}
-				if(alarmgroup.querySelector('.var_ort').checked) {
-					pattern += '_> {{ORT}}_' + '\n';
-				}
-				if(alarmgroup.querySelector('.var_bemerkung').checked) {
-					pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
-				}
-				if(alarmgroup.querySelector('.var_car1').checked) {
-					pattern += '{{newline}}' + '\n' + '*Einsatzmittel:*' + '\n' + '_{{EINSATZMITTEL_EIGEN}}_';
-				}
-				if(alarmgroup.querySelector('.var_car2').checked) {
-					pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
-				}
-
-                let response = await fetch_post('/api/v1/group/' + id, {name: name, pattern: pattern});
-                console.log('updateGroup', response);               
+                    const response = await fetch_post('/api/v1/group/' + id, {name: name, pattern: pattern});
+                    console.log('update_group_id', response);  
+                } catch (error) {
+                    console.error('update_group_id', error);
+                }                             
                 loaderOut();
             }
 
-            loadGroups();
+            // Funktionsaufrufe
+            load_groups_all();
         </script>
        
     </body>

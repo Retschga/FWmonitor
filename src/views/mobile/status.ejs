@@ -35,10 +35,10 @@
                 
 
                 <div style="display: flex; justify-content: space-around; position: fixed; bottom: 1em; width: 100%;">
-                    <button class="btn green" onclick="updateStatus(user_id, 1)" style="border-radius: 50%; width: 5em; height: 5em;">
+                    <button class="btn green" onclick="update_status_id(user_id, 1)" style="border-radius: 50%; width: 5em; height: 5em;">
                         <span class="material-icons">done</span>
                     </button>
-                    <button class="btn red" onclick="updateStatus(user_id, 2)" style="border-radius: 50%; width: 5em; height: 5em;">
+                    <button class="btn red" onclick="update_status_id(user_id, 2)" style="border-radius: 50%; width: 5em; height: 5em;">
                         <span class="material-icons">close</span>
                     </button>
                     <button class="btn grey" onclick="" style="border-radius: 50%; width: 5em; height: 5em;">
@@ -80,75 +80,88 @@
 
         <script>
 
-            async function loadStatus(id) {
-                let userStatus = await fetch_get('/api/v1/user/status/' + id, true);
-                console.log('user status', userStatus);
-                if(!userStatus) return;
+            // Laden
+            async function load_status_id(id) {
+                try {
+                    const user_status = await fetch_get('/api/v1/user/status/' + id, true);
+                    console.log('user status', user_status);
 
-                const date = userStatus.until ? new Date(userStatus.until) : undefined;   
-             
-                const var_text   = document.querySelector(".var_statustext");
-                const var_until   = document.querySelector(".var_until");
-                const var_statuscolor   = document.querySelector(".var_statuscolor");
+                    const date = user_status.until ? new Date(user_status.until) : undefined;   
+                
+                    const var_text   = document.querySelector(".var_statustext");
+                    const var_until   = document.querySelector(".var_until");
+                    const var_statuscolor   = document.querySelector(".var_statuscolor");
 
-                var_text.innerHTML = userStatus.statustext;
-                if (date){
-                    var_until.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + date.getFullYear() + ' - ' + 
-                                        ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-                } else {
-                    var_until.innerHTML = '';
-                }
-
-                var_statuscolor.classList.remove('red');
-                var_statuscolor.classList.remove('green');
-                var_statuscolor.classList.add(userStatus.status == 1 ? 'green' : 'red'); 
-
-            }
-
-            async function loadList() {
-                let userStatusList = await fetch_get('/api/v1/user/status/all', true);
-                console.log('user status all', userStatusList);
-                if(!userStatusList) return;
-
-                var target_verfuegbar = document.querySelector(".list_verfuegbar");
-                var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
-
-                target_verfuegbar.innerHTML = '';
-                target_nichtverfuegbar.innerHTML = '';
-
-                for(let i = 0; i < userStatusList.length; i++) {
-
-                    const userstatus = userStatusList[i];
-
-                    if(userstatus.status == 1) {
-                        const template = document.querySelector('#template-verfuegbar');                
-                        const var_text   = template.content.querySelector(".var_name");
-                        var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
-                        var clone = document.importNode(template.content, true);
-                        target_verfuegbar.appendChild(clone);
+                    var_text.innerHTML = user_status.statustext;
+                    if (date){
+                        var_until.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + date.getFullYear() + ' - ' + 
+                                            ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
                     } else {
-                        const template = document.querySelector('#template-nichtverfuegbar');                
-                        const var_text   = template.content.querySelector(".var_name");
-                        var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
-                        var clone = document.importNode(template.content, true);
-                        target_nichtverfuegbar.appendChild(clone);
+                        var_until.innerHTML = '';
                     }
-                        
-                    
+
+                    var_statuscolor.classList.remove('red');
+                    var_statuscolor.classList.remove('green');
+                    var_statuscolor.classList.add(user_status.status == 1 ? 'green' : 'red');
+
+                } catch (error) {
+                    console.erro('load_status_id', error);
                 }
             }
 
-            async function updateStatus(id, value, until = null) {
+            async function load_statuslist() {
+                try {
+                    const userStatusList = await fetch_get('/api/v1/user/status/all', true);
+                    console.log('user status all', userStatusList);
+
+                    var target_verfuegbar = document.querySelector(".list_verfuegbar");
+                    var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
+
+                    target_verfuegbar.innerHTML = '';
+                    target_nichtverfuegbar.innerHTML = '';
+
+                    for(let i = 0; i < userStatusList.length; i++) {
+
+                        const userstatus = userStatusList[i];
+
+                        if(userstatus.status == 1) {
+                            const template = document.querySelector('#template-verfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_verfuegbar.appendChild(clone);
+                        } else {
+                            const template = document.querySelector('#template-nichtverfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_nichtverfuegbar.appendChild(clone);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('load_statuslist', error);
+                }                
+            }
+
+            // Speichern
+            async function update_status_id(id, value, until = null) {
                 loaderIn();
-                let response = await fetch_post('/api/v1/user/status/update/' + id, {value: value, until: null});
-                console.log('updateStatus', response);               
-                await loadStatus(id);
-                await loadList();
+                try {
+                    const response = await fetch_post('/api/v1/user/status/update/' + id, {value: value, until: null});
+                    console.log('update_status_id', response);               
+                    await load_status_id(id);
+                    await load_statuslist();
+
+                } catch (error) {
+                    console.error('update_status_id', error);
+                }               
                 loaderOut();
             }
 
-            loadStatus(user_id);
-            loadList();
+            // Funktionsaufrufe
+            load_status_id(user_id);
+            load_statuslist();
 
 
         </script>

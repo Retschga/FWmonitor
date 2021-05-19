@@ -19,7 +19,7 @@
                 
                 <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="createCar();">add_circle_outline</button>
+                <button class="material-icons" onclick="create_car();">add_circle_outline</button>
 
             </div>
 
@@ -30,7 +30,7 @@
                     <template id="template-carelement">
                         <div class="carelement margin_none padding_none">
 
-                            <button class="accordion var_headername" onclick="accordion_switch(this)">Anzeigename</button>
+                            <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
                             <div class="accordion_panel">
 
                                 <div class="item smallitem">
@@ -48,17 +48,17 @@
                                 <div class="item smallitem">
                                     <span class="left material-icons">password</span>
                                     <span class="text">Passwort</span>
-                                    <span class="left material-icons newpasswordbutton">autorenew</span>
+                                    <span class="left material-icons button_newPassword">autorenew</span>
                                     <input class="var_password" type="text" placeholder="Passwort..." disabled>                                    
                                 </div>
 
                                 <div class="item smallitem padding_top_1">
-                                    <div class="red left item rounded deletebutton">
+                                    <div class="red left item rounded button_delete">
                                         <span class="left material-icons">delete</span>
                                         <span class="text">Löschen</span>                                
                                     </div>
                                     <div class="flex_grow"></div>
-                                    <div class="green right item rounded savebutton">
+                                    <div class="green right item rounded button_save">
                                         <span class="text text_align_right">Speichern</span>
                                         <span class="right material-icons">save</span>
                                     </div>                            
@@ -83,8 +83,8 @@
                         <p>Auto-Account sicher löschen?</p>
                 
                         <div class="clearfix">
-                            <button type="button" class="cancelbtn" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
-                            <button type="button" class="deletebtn">JA</button>
+                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
+                            <button type="button" class="button_delete">JA</button>
                         </div>
                     </div>
                 </form>
@@ -95,101 +95,123 @@
 
         <script>
 
-            async function loadCars() {   
-                const carList = await fetch_get(`/api/v1/car`, true);
-                console.log('carList', carList);
-                if(!carList) return;
+            // Laden
+            async function load_cars_all() {   
+                try {
+                    const cars = await fetch_get(`/api/v1/car`, true);
+                    console.log('cars', cars);
 
-                for(let i = 0; i < carList.length; i++) {
-                    const element = carList[i];
+                    const target = document.querySelector(".car_list");
 
-                    const template            = document.querySelector('#template-carelement');       
-                    const var_headername      = template.content.querySelector(".var_headername");      
-                    const var_name            = template.content.querySelector(".var_name");      
-                    const var_user            = template.content.querySelector(".var_user");
-                    const var_password        = template.content.querySelector(".var_password");          
-                    
-                    var_headername.innerHTML  = element.name; 
-                    var_name.value            = element.name; 
-                    var_user.value            = element.appBenutzer; 
-                    var_password.value        = element.appPasswort; 
-                
+                    for(let i = 0; i < cars.length; i++) {
+                        const car = cars[i];
 
-                    // Neue Zeile (row) klonen und in die Tabelle einfügen
-                    var target = document.querySelector(".car_list");
-                    var clone = document.importNode(template.content.firstElementChild, true);
-                    target.append(clone);
+                        const template            = document.querySelector('#template-carelement');       
+                        const var_header_name     = template.content.querySelector(".var_header_name");      
+                        const var_name            = template.content.querySelector(".var_name");      
+                        const var_user            = template.content.querySelector(".var_user");
+                        const var_password        = template.content.querySelector(".var_password");          
+                        
+                        var_header_name.innerHTML = car.name; 
+                        var_name.value            = car.name; 
+                        var_user.value            = car.appBenutzer; 
+                        var_password.value        = car.appPasswort; 
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
 
-                    clone.id = 'car_' + element.id;
-                    const savebutton = clone.querySelector(".savebutton");  
-                    savebutton.addEventListener("click", () => {
-                        updateCar(element.id);
-                    });
-                    const deletebutton = clone.querySelector(".deletebutton");  
-                    deletebutton.addEventListener("click", () => {
-                        openeDeleteModal(element.id);
-                    });
-                    const newpasswordbutton = clone.querySelector(".newpasswordbutton");  
-                    newpasswordbutton.addEventListener("click", () => {
-                        getNewPassword(element.id);
-                    });
+                        clone.id = 'car_' + car.id;
+                        const button_save = clone.querySelector(".button_save");  
+                        button_save.addEventListener("click", () => {
+                            update_cars_id(car.id);
+                        });
+                        const button_delete = clone.querySelector(".button_delete");  
+                        button_delete.addEventListener("click", () => {
+                            openModal_delete_id(car.id);
+                        });
+                        const button_newPassword = clone.querySelector(".button_newPassword");  
+                        button_newPassword.addEventListener("click", () => {
+                            get_password_new_id(car.id);
+                        });
 
-                }
-
+                    }
+                } catch (error) {
+                    console.error('load_cars_all', error);
+                }   
             }
 
-            async function updateCar(id) {
+            // Speichern
+            async function update_cars_id(id) {
                 loaderIn();
+                try {
+                    const carelement = document.querySelector('#car_' + id);       
 
-                const carelement = document.querySelector('#car_' + id);       
+                    const name     = carelement.querySelector('.var_name').value;
+                    const user     = carelement.querySelector('.var_user').value;
+                    const password = carelement.querySelector('.var_password').value;
 
-                const name     = carelement.querySelector('.var_name').value;
-                const user     = carelement.querySelector('.var_user').value;
-                const password = carelement.querySelector('.var_password').value;
+                    carelement.querySelector('.var_header_name').innerHTML = name;
 
-                carelement.querySelector('.var_headername').innerHTML = name;
-
-                if(password != '****') {
-                    let response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user, appPasswort: password});
-                    console.log('updateCar', response);
-                } else {
-                    let response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user});
-                    console.log('updateCar', response);
-                }               
-                               
+                    if(password != '****') {
+                        const response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user, appPasswort: password});
+                        console.log('updateCar', response);
+                    } else {
+                        const response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user});
+                        console.log('updateCar', response);
+                    }        
+                } catch (error) {
+                    console.error('update_cars_id', error);
+                }       
                 loaderOut();
             }
 
-            async function deleteCar(id) {
+            async function delete_car_id(id) {
                 loaderIn();
-                let response = await fetch_get('/api/v1/car/delete/' + id);
-                console.log('deleteCar', response);               
+                try {
+                    const response = await fetch_get('/api/v1/car/delete/' + id);
+                    console.log('delete_car_id', response);   
+                } catch (error) {
+                    console.error('delete_car_id', error);
+                }                            
                 location.reload(); 
             }
 
-            async function createCar() {
-                let response = await fetch_get('/api/v1/car/create');
-                console.log('createCar', response); 
+            async function create_car() {
+                loaderIn();
+                try {
+                    const response = await fetch_get('/api/v1/car/create');
+                    console.log('create_car', response); 
+                } catch (error) {
+                    console.error('create_car', error);
+                }                
                 location.reload();        
             }
 
-            async function getNewPassword(id) {
-                let response = await fetch_get('/api/v1/car/password', true);
-                console.log('getNewPassword', response);      
-                
-                const carelement = document.querySelector('#car_' + id);   
-                const password   = carelement.querySelector('.var_password'); 
+            async function get_password_new_id(id) {
+                loaderIn();
+                try {
+                    const response = await fetch_get('/api/v1/car/password', true);
+                    console.log('get_password_new_id', response);      
+                    
+                    const carelement = document.querySelector('#car_' + id);   
+                    const password   = carelement.querySelector('.var_password'); 
 
-                password.value = response.password;
+                    password.value = response.password;
+                } catch (error) {
+                    console.error('get_password_new_id', error)
+                }
+                loaderOut();
             }
 
-            function openeDeleteModal(id) {                
+            // Hilfsfunktionen
+            function openModal_delete_id(id) {                
                 const modal = document.querySelector('#modal_delete');
                 modal.style.display = 'block';
-                modal.querySelector('.deletebtn').onclick = () => deleteCar(id);
+                modal.querySelector('.button_delete').onclick = () => delete_car_id(id);
             }
 
-            loadCars();
+            // Funktionsaufrufe
+            load_cars_all();
         </script>
        
     </body>

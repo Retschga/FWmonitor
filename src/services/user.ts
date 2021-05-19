@@ -156,6 +156,16 @@ class UserService {
         }
     }
 
+    public async update_notifications_calendar(id: number, value: boolean) {
+        let affectedRows = await UserModel.model.update(Number(id), {
+            sendRemembers: value
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update_calendarRemind - No rows changed');
+        }
+    }
+
     // App Settings
     public async get_login(id: Number) {
         let result = await this.find({ id: id });

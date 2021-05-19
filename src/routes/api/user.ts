@@ -36,6 +36,11 @@ router.post(
     ValidatorsUser.updateNotificationsApp,
     awaitHandlerFactory(userController.update_user_notifications_app_id.bind(userController))
 );
+router.post(
+    '/notifications/calendar',
+    ValidatorsUser.updateNotificationsCalendar,
+    awaitHandlerFactory(userController.update_user_notifications_calendar.bind(userController))
+);
 
 router.get('/', awaitHandlerFactory(userController.get_user_all.bind(userController)));
 

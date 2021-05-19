@@ -200,6 +200,20 @@ class UserController {
     }
 
     // Notifications
+    public async update_user_notifications_calendar(req: Request, res: Response, next: NextFunction) {
+        checkValidation(req);
+
+        try {
+            await UserService.update_notifications_calendar(
+                Number(req.params.id),
+                Boolean(req.body.until)
+            );
+        } catch (error) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+        }
+        res.send('OK');
+    }
+
     public async update_user_notifications_app_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'update_user_appNotifications_id');
         checkValidation(req);

@@ -39,11 +39,13 @@
                         <div class="item">
                             <span class="left material-icons">notifications_active</span>
                             <span class="text">App</span>
-                            <label class="switch right">
-                                <input class="var_appnotifications" type="checkbox" onchange="updateSettings()">
+                            <label class="switch right hidden onpermission">
+                                <input class="var_appnotifications" type="checkbox" onchange="update_settings_notifications_app()">
                                 <span class="slider round"></span>
                             </label>
+                            <span class="right notificationBtn" onclick="notifications_askPermission()">Erlauben</span>
                         </div>
+                        
 
                     </div>
                     
@@ -57,33 +59,118 @@
 
         <script>
 
-            async function loadSettings(id) {
-                let userList = await fetch_get('/api/v1/user/notifications/app/' + id, true);
-                console.log('user' , userList);
-                if(!userList) return;
+// https://itnext.io/an-introduction-to-web-push-notifications-a701783917ce
+const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
 
-                const user = userList[0];
-
-                const var_appnotifications = document.querySelector('.var_appnotifications');      
-                var_appnotifications.checked = user.var_appnotifications > 0 ;
-
+            // Hilfsfunktionen
+            function isPushNotificationSupported() {
+                return "serviceWorker" in navigator && "PushManager" in window && location.protocol === 'https:';
             }
 
-            async function updateSettings() {
-
-                const var_appnotifications = document.querySelector('.var_appnotifications').checked;
-                
-                if(var_appnotifications) {
-                    if (Notification.permission !== "granted") {
-                        if (Notification.permission !== "granted") {
-                    }
+            function notifications_checkPromise() {
+                try {
+                    Notification.requestPermission().then();
+                } catch(e) {
+                    return false;
                 }
 
-                // save value, subscription
-
+                return true;
             }
 
-            loadSettings(user_id);
+            function notifications_handlePermission(permission) {
+                const notificationBtn = document.querySelector('.notificationBtn');     
+                const onpermission    = document.querySelector('.onpermission'); 
+
+                // set the button to shown or hidden, depending on what the user answers
+                if(Notification.permission === 'denied' || Notification.permission === 'default') {
+                    notificationBtn.style.display = 'block';
+                    onpermission.classList.add('hidden');
+                } else {
+                    notificationBtn.style.display = 'none';
+                    onpermission.classList.remove('hidden');
+                }
+            }
+
+            function notifications_askPermission() {
+                const notificationBtn = document.querySelector('.notificationBtn');     
+
+                // Let's check if the browser supports notifications
+                if (!isPushNotificationSupported()) {
+                    console.log("This browser does not support notifications.");
+                    notificationBtn.innerHTML = '----';
+                } else {
+                    if(notifications_checkPromise()) {
+                        Notification.requestPermission()
+                        .then((permission) => {
+                            notifications_handlePermission(permission);
+                        })
+                    } else {
+                        Notification.requestPermission(function(permission) {
+                            notifications_handlePermission(permission);
+                        });
+                    }
+                }
+            }
+
+            function notifications_checkForPermission() {
+                Notification.permission
+                const notificationBtn = document.querySelector('.notificationBtn');     
+
+                // Let's check if the browser supports notifications
+                if (!isPushNotificationSupported()) {
+                    console.log("This browser does not support notifications.");
+                    notificationBtn.innerHTML = '<span class="material-icons">extension_off</span>';
+                } else {
+                    notifications_handlePermission(Notification.permission);
+                }
+            }
+
+            function notifications_createSubscription() {
+                //wait for service worker installation to be ready, and then
+                return navigator.serviceWorker.ready.then(function(serviceWorker) {
+                    // subscribe and return the subscription
+                    return serviceWorker.pushManager
+                        .subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: pushServerPublicKey
+                        })
+                        .then(function(subscription) {
+                            console.log("User is subscribed.", subscription);
+                            return subscription;
+                        });
+                });
+            }
+
+            // Laden
+            async function load_settings_all(id) {
+                try {
+                    const user = await fetch_get('/api/v1/user/' + id, true)[0];
+                    console.log('user' , user);
+
+                    const var_appnotifications = document.querySelector('.var_appnotifications');      
+                    var_appnotifications.checked = user.appNotifications > 0 ;
+                } catch (error) {
+                    console.error('load_settings_all', error);
+                }    
+            }
+
+            // Speichern
+            async function update_settings_notifications_app() {
+                loaderIn()
+                try {
+                    const var_appnotifications = document.querySelector('.var_appnotifications');
+                    const subscription = await notifications_createSubscription();
+                    
+                    const response = await fetch_post('/api/v1/user/notifications/app/' + id, {value: 5, subscription: JSON.stringify(subscription)});
+                } catch (error) {
+                    console.error('update_settings_notifications_app', error);
+                }
+                loaderOut();
+            }
+
+            // Funktionsaufrufe
+            load_settings_all(user_id);
+            notifications_checkForPermission();
 
         </script>
        

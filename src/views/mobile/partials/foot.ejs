@@ -105,6 +105,9 @@
         loaderIn('login', true);
     }
 
+    /**
+     * Leitet den Benutzer zum Anmeldebildschirm weiter, falls er nicht eingeloggt ist
+     */
     function redirect_if_logged_out() {
         const logout_status = getCookie('logout_status');
         console.log('logout_status', logout_status);
@@ -114,6 +117,7 @@
         }  
     }
 
+    // **** Events ****
     document.addEventListener('readystatechange', event => { 
         console.log('readyState --> ' + event.target.readyState);
 
@@ -142,6 +146,15 @@
         console.log('The page is unloading');
     };
 
+    window.addEventListener("click", (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }, false);
+
+    
+
+    // **** Hilfsfunktionen ****
     function tab_switch(pageName, elmnt) {
         // Hide all elements with class="tabcontent" by default */
         var i, tabcontent, tablinks;
@@ -175,6 +188,15 @@
         panel.style.display = "block";
         }
     }
+ 
+    function setSelectedIndex(s, v) {
+        for ( var i = 0; i < s.options.length; i++ ) {
+            if ( s.options[i].value == v ) {
+                s.options[i].selected = true;
+                return;
+            }
+        }
+    }
 
     var parseKalenderSummary = function(summary) {
         // Terminname in Text und Icon aufreilen
@@ -189,18 +211,9 @@
         }
         return {text: text, icon: icon};
     }
-    
-    function setSelectedIndex(s, v) {
-        for ( var i = 0; i < s.options.length; i++ ) {
-            if ( s.options[i].value == v ) {
-                s.options[i].selected = true;
-                return;
-            }
-        }
-    }
-
+   
+    // Input Prefixes
     // https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
-    // Util function
     function addFormatter (input, formatFn) {        
         let oldValue = input.value;
         
@@ -216,9 +229,6 @@
         handleInput();
         input.addEventListener("input", handleInput);
     }
-    
-    // Example implementation
-    // HOF returning regex prefix formatter
     function regexPrefix (regex, prefix) {
         return (newValue, oldValue) => regex.test(newValue) ? newValue : (newValue ? oldValue : prefix);
     }
@@ -276,12 +286,7 @@
     }
 
 
-    window.addEventListener("click", (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
-        }
-    }, false);
-
+  
 
 </script>
 
