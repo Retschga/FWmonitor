@@ -60,7 +60,7 @@
             // Laden
             async function load_settings_all() {
                 try {
-                    const user = await fetch_get('/api/v1/user/' + user_id, true)[0];
+                    const user = (await fetch_get('/api/v1/user/' + user_id, true))[0];
                     console.log('user' , user);
 
                     const var_notifications_calendar = document.querySelector('.var_notifications_calendar');      

@@ -30,57 +30,9 @@
                
                 
                 <div id="tab_active" class="tabcontent" style="display: block;">
-                    <div class="flex_row flex_wrap">
+                    <div class="flex_row flex_wrap diashow">
 
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
-                        <img src="wedding.jpg">
-                        <img src="rocks.jpg">
-                        <img src="falls2.jpg">
-                        <img src="paris.jpg">
-                        <img src="nature.jpg">
-                        <img src="mist.jpg">
-                        <img src="paris.jpg">
+                        <img src="/images/load.png" data-src="img" alt="img" class="">
                             
                     </div>
                 </div>                
@@ -93,6 +45,34 @@
         <%- include('partials/foot') -%>
 
        
+    <script>
+        // https://www.zachleat.com/web/facepile/
+        if( typeof IntersectionObserver !== "undefined" && "forEach" in NodeList.prototype ) {
+            var observer = new IntersectionObserver(function(changes) {
+                if ("connection" in navigator && navigator.connection.saveData === true) {
+                    return;
+                }
+
+                changes.forEach(function(change) {
+                    if(change.isIntersecting) {
+                        change.target.setAttribute("src", change.target.getAttribute("data-src"));
+                        observer.unobserve(change.target);
+                    }
+                });
+            });
+
+            document.querySelectorAll("img[data-src]").forEach(function(img) {
+                observer.observe(img);
+            });
+        }
+
+        // Laden 
+
+        // Speichern
+
+        // Funktionsaufrufe
+    </script>
+
     </body>
 	
 </html>

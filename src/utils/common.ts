@@ -1,4 +1,5 @@
 import logging from './logging';
+import fs from 'fs'
 
 /**
  * Erzeugt aus einem Key-Pair Objekt einen SQL Spalten (name = ?, ...) String
@@ -73,3 +74,5 @@ export const isJsonString = (str: string) => {
 export const timeout = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
+
+export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));

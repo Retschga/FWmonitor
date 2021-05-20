@@ -31,11 +31,20 @@ const APP = {
     password_length: 10
 };
 
+const FOLDER_DIASHOW = './filesHTTP/images/slideshow/';
+const FOLDER_THUMBNAIL_PREFIX = 'thumbnail-';
+
+const FOLDERS = {
+    diashow: FOLDER_DIASHOW,
+    thumbnailPrefix: FOLDER_THUMBNAIL_PREFIX
+};
+
 const config = {
     sqlite: SQLITE,
     server: SERVER,
     telegram: TELEGRAM,
-    app: APP
+    app: APP,
+    folders: FOLDERS
 };
 
 export default config;
