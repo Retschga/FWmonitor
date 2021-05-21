@@ -9,7 +9,7 @@ import { checkValidation } from './controller';
 
 const NAMESPACE = 'Alarm_Controller';
 
-class UserController {
+class AlarmController {
     // Alarm
 
     public async get_id(req: Request, res: Response, next: NextFunction) {
@@ -63,6 +63,36 @@ class UserController {
 
         res.send(list);
     }
+
+    public async update_alarmsettings_telegram(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'update_alarm_telegram', {
+            value: req.body.value
+        });
+        checkValidation(req);
+
+        AlarmService.set_alarmsettings_telegram(Boolean(req.query.value));
+
+        res.send('OK');
+    }
+
+    public async update_alarmsettings_app(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'update_alarm_app', {
+            value: req.body.value
+        });
+        checkValidation(req);
+
+        AlarmService.set_alarmsettings_app(Boolean(req.query.value));
+
+        res.send('OK');
+    }
+
+    public async get_alarmsettings(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_alarmsettings');
+
+        const response = AlarmService.get_alarmsettings();
+
+        res.send(response);
+    }
 }
 
-export default new UserController();
+export default new AlarmController();

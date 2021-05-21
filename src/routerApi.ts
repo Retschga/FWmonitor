@@ -12,6 +12,7 @@ import carRoutes from './routes/api/car';
 import userRoutes from './routes/api/user';
 import statisticRoutes from './routes/api/statistic';
 import groupRoutes from './routes/api/group';
+import diashowRoutes from './routes/api/diashow';
 
 const NAMESPACE = 'ROUTER_API';
 
@@ -72,6 +73,7 @@ class routerApi {
         this.router.use('/statistic', statisticRoutes);
         this.router.use('/alarm', alarmRoutes);
         this.router.use('/group', groupRoutes);
+        this.router.use('/diashow', diashowRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);

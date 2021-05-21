@@ -216,7 +216,7 @@
             // Laden
             async function load_user() { 
                 try {
-                    const user = await fetch_get(`/api/v1/user/` + id, true)[0];
+                    const user = (await fetch_get(`/api/v1/user/` + id, true))[0];
                     console.log('user', user);
 
                     const target = document.querySelector(".calendarGroup_list");
@@ -303,7 +303,7 @@
                     var_ZUGF.checked = user.stZUGF == 1;
 
                 } catch (error) {
-                    console.erro('load_user_id', error);
+                    console.error('load_user_id', error);
                 }   
             }
 

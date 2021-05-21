@@ -35,7 +35,7 @@ class CalendarService {
     }
 
     /**
-     * Entferne Gruppenpatterns aus Terminname
+     * Entferne Gruppenpatterns aus Terminnamen
      * @param {String} str Terminname
      */
     private removePattern(str: string) {
@@ -44,10 +44,16 @@ class CalendarService {
         return ret;
     }
 
+    /**
+     * Erstellt aus einer Datenbankreihe ein Kalenderelement
+     * @param dbElements
+     * @param calendarGroups
+     * @returns
+     */
     private createCalendarElementsFromRows(
         dbElements: CalendarModel.CalendarRow[],
         calendarGroups: CalendarGroupsModel.CalendarGroupRow[]
-    ) {
+    ): CalendarElement[] {
         let calendarElements: CalendarElement[] = [];
 
         for (let i = 0; i < dbElements.length; i++) {

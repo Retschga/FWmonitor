@@ -2,6 +2,7 @@
 
 import logging from '../utils/logging';
 import * as AlarmModel from '../models/alarm';
+import config from '../utils/config';
 
 const NAMESPACE = 'Statistic_Service';
 
@@ -12,11 +13,14 @@ class StatisticService {
     }
 
     /**
-     * Berechnet die Einsatzzeit eines Users
+     * Berechnet die Einsatzzeit eines Users (FWVV)
      * @param id
      * @returns minutes
      */
     public async einsatzzeit(id: number): Promise<number> {
+        if (!config.fwvv.enabled) {
+            throw new Error(NAMESPACE + ' fwvv is not enabled');
+        }
         return 21;
     }
 }

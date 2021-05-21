@@ -14,3 +14,19 @@ export const getList = [
         .isInt()
         .withMessage('offset must be a int')
 ];
+
+export const ipdateAlarmTelegram = [
+    body('value')
+        .exists()
+        .withMessage('value is required')
+        .isBoolean()
+        .withMessage('limit must be boolean')
+];
+
+export const ipdateAlarmApp = [
+    body('value')
+        .exists()
+        .withMessage('value is required')
+        .isBoolean()
+        .withMessage('limit must be boolean')
+];

@@ -4,6 +4,7 @@ import logging from '../utils/logging';
 import * as UserModel from '../models/user';
 import { isJsonString } from '../utils/common';
 import { UserStatus } from '../models/user';
+import user from '../controllers/user';
 
 const NAMESPACE = 'User_Service';
 
@@ -28,18 +29,18 @@ class UserService {
         if (approved) {
             (params as any).approved = true;
         }
-        let response = await UserModel.model.find(params);
+        const response = await UserModel.model.find(params);
         return response;
     }
 
     public async find_by_telegramid(telegramid: string): Promise<UserModel.UserRow[] | undefined> {
-        let response = await UserModel.model.find({ telegramid: telegramid });
+        const response = await UserModel.model.find({ telegramid: telegramid });
         if (response.length < 1) return;
         return response;
     }
 
     public async find_by_userid(id: Number): Promise<UserModel.UserRow[] | undefined> {
-        let response = await UserModel.model.find({ id: id });
+        const response = await UserModel.model.find({ id: id });
         if (response.length < 1) return;
         return response;
     }
@@ -103,6 +104,9 @@ class UserService {
 
     public async get_status_allUsers() {
         let response = await this.find_all_approved();
+        response = response.filter(function (user) {
+            return !user.statusHidden;
+        });
         return response.map((user) => {
             return {
                 id: user.id,

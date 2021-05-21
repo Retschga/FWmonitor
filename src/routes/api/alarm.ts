@@ -12,6 +12,23 @@ router.get(
     ValidatorAlarm.getList,
     awaitHandlerFactory(alarmController.get_list.bind(alarmController))
 );
+
+router.get(
+    '/alarmsettings',
+    awaitHandlerFactory(alarmController.get_alarmsettings.bind(alarmController))
+);
+router.post(
+    '/alarmsettings/telegram',
+    ValidatorAlarm.ipdateAlarmTelegram,
+    awaitHandlerFactory(alarmController.update_alarmsettings_telegram.bind(alarmController))
+);
+
+router.post(
+    '/alarmsettings/app',
+    ValidatorAlarm.ipdateAlarmApp,
+    awaitHandlerFactory(alarmController.update_alarmsettings_app.bind(alarmController))
+);
+
 router.get('/', awaitHandlerFactory(alarmController.get_last.bind(alarmController)));
 router.get('/:id', awaitHandlerFactory(alarmController.get_id.bind(alarmController)));
 

@@ -7,12 +7,13 @@ import logging from './utils/logging';
 import config from './utils/config';
 import routerApi from './routerApi';
 import routermobile from './routerMobile';
-import TelegramBot from './telegramBot';
 
-import UserService from './services/user';
 import telegramBot from './telegramBot';
+import diashowService from './services/diashow';
 
 const NAMESPACE = 'app';
+
+diashowService.createThumbnails();
 
 const app = express();
 

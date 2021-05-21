@@ -2,14 +2,20 @@
 
 import logging from '../utils/logging';
 import * as AlarmModel from '../models/alarm';
+import config from '../utils/config';
 
 const NAMESPACE = 'Alarm_Service';
 
 class AlarmService {
+    /**
+     * Gibt die Alarmfarbe zu einem Einsatzstichwort zurück
+     * @param einsatzstichwort
+     * @returns
+     */
     public getAlarmColor(einsatzstichwort: string) {
         if (!einsatzstichwort) return 0;
 
-        let stichwort = einsatzstichwort.toLowerCase();
+        const stichwort = einsatzstichwort.toLowerCase();
 
         // Info/Sonstiges - Green
         if (stichwort.includes('inf') || stichwort.includes('1nf') || stichwort.includes('son'))
@@ -34,23 +40,35 @@ class AlarmService {
         offset = -1,
         extra?: string
     ): Promise<AlarmModel.AlarmRow[]> {
-        let response = await AlarmModel.model.find(params, limit, offset, extra);
+        const response = await AlarmModel.model.find(params, limit, offset, extra);
         return response;
     }
 
     public async find_by_id(id: Number): Promise<AlarmModel.AlarmRow[] | undefined> {
-        let response = await AlarmModel.model.find({ id: id });
+        const response = await AlarmModel.model.find({ id: id });
         if (response.length < 1) return;
         return response;
     }
 
     public async create(alarm: AlarmModel.AlarmRow) {
         logging.debug(NAMESPACE, 'create', alarm);
-        let affectedRows = await AlarmModel.model.insert(alarm);
+        const affectedRows = await AlarmModel.model.insert(alarm);
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
+    }
+
+    public set_alarmsettings_telegram(value: boolean) {
+        config.alarm.telegram = value;
+    }
+
+    public set_alarmsettings_app(value: boolean) {
+        config.alarm.app = value;
+    }
+
+    public get_alarmsettings() {
+        return { telegram: config.alarm.telegram, app: config.alarm.app };
     }
 }
 
