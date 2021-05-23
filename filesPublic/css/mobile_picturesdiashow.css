@@ -38,40 +38,6 @@ img {
   min-height: 100px;
 }
 
-
-
-@media (max-aspect-ratio: 1/1) {
-  li {
-    height: 30vh;
-  }
-}
-
-
-
-@media (max-height: 480px) {
-  li {
-    height: 80vh;
-  }
-}
-
-
-
-@media (max-aspect-ratio: 1/1) and (max-width: 480px) {
-  ul {
-    flex-direction: row;
-  }
-
-  li {
-    height: auto;
-    width: 100%;
-  }
-  img {
-    width: 100%;
-    max-height: 75vh;
-    min-width: 0;
-  }
-}
-
 .button_container {
     position: absolute;
 }

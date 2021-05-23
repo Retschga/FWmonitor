@@ -3,6 +3,7 @@
 import logging from '../utils/logging';
 import * as AlarmModel from '../models/alarm';
 import config from '../utils/config';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'Alarm_Service';
 
@@ -56,6 +57,19 @@ class AlarmService {
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' create - No rows changed');
+        }
+
+        this.sendAlarmEvents(alarm);
+    }
+
+    private sendAlarmEvents(alarm: AlarmModel.AlarmRow) {
+        globalEvents.emit('alarm', alarm);
+
+        if (this.get_alarmsettings().telegram) {
+            globalEvents.emit('alarm-telegram', alarm);
+        }
+        if (this.get_alarmsettings().app) {
+            globalEvents.emit('alarm-app', alarm);
         }
     }
 

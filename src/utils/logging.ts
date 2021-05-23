@@ -26,14 +26,14 @@ const info = (namespace: string, message: string, object?: any) => {
 const warn = (namespace: string, message: string, object?: any) => {
     if (object) {
         console.log(
-            colors.orange(
+            colors.yellow(
                 `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`,
                 JSON.stringify(object)
             )
         );
     } else {
         console.log(
-            colors.orange(
+            colors.yellow(
                 `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
             )
         );

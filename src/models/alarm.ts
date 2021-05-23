@@ -8,7 +8,7 @@ const NAMESPACE = 'AlarmModel';
 const TABLENAME = 'alarms';
 
 interface AlarmRow {
-    id: number;
+    id: number | undefined;
     date: string;
     einsatzstichwort: string;
     schlagwort: string;

@@ -1,5 +1,6 @@
 import logging from './logging';
-import fs from 'fs'
+import { exec } from 'child_process';
+import fs from 'fs';
 
 /**
  * Erzeugt aus einem Key-Pair Objekt einen SQL Spalten (name = ?, ...) String
@@ -75,4 +76,26 @@ export const timeout = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-export const fileExists = async (path: string) => !!(await fs.promises.stat(path).catch(e => false));
+/**
+ * https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
+ * Executes a shell command and return it as a Promise.
+ * @param cmd {string}
+ * @return {Promise<string>}
+ */
+export const execShellCommand = (cmd: string) => {
+    return new Promise((resolve, reject) => {
+        const start = new Date();
+        console.log('EXECUTE: ' + cmd);
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                console.warn(error);
+            }
+            const ms = new Date().getTime() - start.getTime();
+            console.log('EXECUTION TIME: %sms', ms);
+            resolve(stdout ? stdout : stderr);
+        });
+    });
+};
+
+export const fileExists = async (path: string) =>
+    !!(await fs.promises.stat(path).catch((e) => false));
