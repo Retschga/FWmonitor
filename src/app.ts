@@ -7,11 +7,15 @@ import logging from './utils/logging';
 import config from './utils/config';
 import routerApi from './routerApi';
 import routermobile from './routerMobile';
+import AlarmInputFileService from './services/alarmInputFile';
 
 import telegramBot from './telegramBot';
 import diashowService from './services/diashow';
 
-const NAMESPACE = 'app';
+const NAMESPACE = 'APP';
+
+logging.info(NAMESPACE, 'Starte Software v' + config.version);
+logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
 
 diashowService.createThumbnails();
 
@@ -33,16 +37,17 @@ httpServer.listen(config.server.port, () =>
 
 // Starte HTTPS-Server für die WebApp
 
+// Starte Telegram-Bot
+const telbot = telegramBot;
+
 // Starte Fax/Email Auswertung
+AlarmInputFileService.init();
 
 // Starte Kalender-Terminüberwachung
 
 // Starte Verfügbarkeits-Planüberwachung
 
 // Starte Drucker-Papierüberwachung
-
-// Starte Telegram-Bot
-const telbot = telegramBot;
 
 process.on('SIGINT', () => {
     httpServer.close();

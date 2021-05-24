@@ -4,7 +4,8 @@ import axios from 'axios';
 //@ts-ignore
 import geobing from 'geobing';
 //@ts-ignore
-import nominatim from 'nominatim-geocoder';
+import Nominatim from 'nominatim-geocoder';
+const nominatim = new Nominatim();
 import csv from 'csv-parser';
 import fs from 'fs';
 import logging from '../utils/logging';
@@ -14,6 +15,10 @@ import diffmatch from '../utils/diff_match_patch.utils';
 const NAMESPACE = 'GeocodeService';
 
 class GeocodeService {
+    constructor() {
+        geobing.setKey(config.geocode.bing_apikey);
+    }
+
     private geocode_bing(searchString: string): Promise<{ lat: string; lng: string }> {
         return new Promise((resolve, reject) => {
             geobing.getCoordinates(searchString, function (err: any, coordinates: any) {
@@ -120,66 +125,78 @@ class GeocodeService {
         let isHighway = false;
 
         // Prüfe Bahnübergänge
-        if (OBJEKT.toLowerCase().indexOf('bahn') != -1) {
-            try {
-                const response_bahn: any = await this.geocode_bahn(OBJEKT);
+        if (config.geocode.bahn) {
+            if (OBJEKT.toLowerCase().indexOf('bahn') != -1) {
+                try {
+                    const response_bahn: any = await this.geocode_bahn(OBJEKT);
 
-                logging.debug(NAMESPACE, 'Response', response_bahn);
-                if (response_bahn) {
-                    ret.lat = response_bahn['GEOGR_BREITE'].replace(',', '.');
-                    ret.lng = response_bahn['GEOGR_LAENGE'].replace(',', '.');
+                    logging.debug(NAMESPACE, 'Response', response_bahn);
+                    if (response_bahn) {
+                        ret.lat = response_bahn['GEOGR_BREITE'].replace(',', '.');
+                        ret.lng = response_bahn['GEOGR_LAENGE'].replace(',', '.');
+                        ret.isAddress = true;
+                        logging.debug(NAMESPACE, 'Ergebnis: Bahnübergang ', ret);
+                    }
+                } catch (error) {
+                    logging.ecxeption(NAMESPACE, error);
+                }
+            }
+            if (ret.lat != '0') return ret;
+        }
+
+        // Bing Geocode
+        if (config.geocode.bing) {
+            try {
+                const response_bing = await this.geocode_bing(searchString);
+                logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
+                ret.lat = response_bing.lat;
+                ret.lng = response_bing.lng;
+            } catch (error) {
+                logging.ecxeption(NAMESPACE, error);
+            }
+        }
+
+        // OSM Nominatim
+        if (config.geocode.osm_nominatim) {
+            try {
+                const response_nominatim = await nominatim.search({ q: searchString });
+
+                logging.debug(NAMESPACE, '[Nominatim] ', response_nominatim);
+
+                if (response_nominatim.length > 0 && response_nominatim[0].class == 'place') {
+                    ret.lat = response_nominatim[0].lat;
+                    ret.lng = response_nominatim[0].lon;
                     ret.isAddress = true;
-                    logging.debug(NAMESPACE, 'Ergebnis: Bahnübergang ', ret);
+
+                    logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
+                }
+
+                if (
+                    response_nominatim.length > 0 &&
+                    response_nominatim[0].class == 'highway' &&
+                    !isAddress
+                ) {
+                    ret.lat = response_nominatim[0].lat;
+                    ret.lng = response_nominatim[0].lon;
+                    ret.isAddress = false;
+                    isHighway = true;
+
+                    logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
                 }
             } catch (error) {
                 logging.ecxeption(NAMESPACE, error);
             }
         }
-        if (ret.lat != '0') return ret;
-
-        // Bing Geocode
-        try {
-            const response_bing = await this.geocode_bing(searchString);
-            logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
-            ret.lat = response_bing.lat;
-            ret.lng = response_bing.lng;
-        } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
-        }
-
-        // OSM Nominatim
-        const response_nominatim = await nominatim.search({ q: searchString });
-
-        logging.debug(NAMESPACE, '[Nominatim] ', response_nominatim);
-
-        if (response_nominatim.length > 0 && response_nominatim[0].class == 'place') {
-            ret.lat = response_nominatim[0].lat;
-            ret.lng = response_nominatim[0].lon;
-            ret.isAddress = true;
-
-            logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
-        }
-
-        if (
-            response_nominatim.length > 0 &&
-            response_nominatim[0].class == 'highway' &&
-            !isAddress
-        ) {
-            ret.lat = response_nominatim[0].lat;
-            ret.lng = response_nominatim[0].lon;
-            ret.isAddress = false;
-            isHighway = true;
-
-            logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
-        }
 
         // OSM Objektsuche
-        if (!ret.isAddress && !isHighway) {
-            const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
+        if (config.geocode.osm_objects) {
+            if (!ret.isAddress && !isHighway) {
+                const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
 
-            if (response_overpass.isAddress) {
-                logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
-                ret = response_overpass;
+                if (response_overpass.isAddress) {
+                    logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
+                    ret = response_overpass;
+                }
             }
         }
 

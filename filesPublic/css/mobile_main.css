@@ -8,6 +8,8 @@
     --bg_list_item_selected: #ccc;
     --bg_list_subitem: #fdfdfd;
     --bg_veryLight: #f7f7f7;
+    --bg_body: #313133;
+    --bg_wrapper: #ffffff;
 }
 
 html {
@@ -20,7 +22,7 @@ html {
 body {
     min-width: 100%;
     min-height: 100%;
-    background-color: #313133;  
+    background-color: var(--bg_body);  
 }
 
 button {
@@ -50,7 +52,7 @@ button {
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
-    background-color: #ffffff ;
+    background-color: var(--bg_wrapper) ;
     overflow: hidden;
 }
 

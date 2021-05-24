@@ -49,7 +49,7 @@ class AlarmInputFileService {
             try {
                 logging.info(
                     NAMESPACE,
-                    'Seite ' + (i + 1) + ' von ' + config.printing.pagecountOriginal
+                    'Print -> Seite ' + (i + 1) + ' von ' + config.printing.pagecountOriginal
                 );
                 //print.print(path);
             } catch (error) {

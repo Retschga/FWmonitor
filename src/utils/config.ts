@@ -24,7 +24,7 @@ const TELEGRAM = {
     fw_name: TELEGRAM_FW_NAME
 };
 
-const APP_HTTPS_ENABLED = process.env.APP_DNS ? true : false;
+const APP_HTTPS_ENABLED = process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false;
 
 const APP = {
     https_enabled: APP_HTTPS_ENABLED,
@@ -49,7 +49,7 @@ const FOLDERS = {
     temp: FOLDER_TEMP
 };
 
-const FWVV_ENABLED = process.env.FWVV_DAT_FOLDER ? true : false;
+const FWVV_ENABLED = process.env.FWVV_DAT_FOLDER?.toLocaleLowerCase() == 'true' ? true : false;
 const FWVV_DAT_FOLDER = process.env.FWVV_DAT_FOLDER;
 
 const FWVV = {
@@ -57,8 +57,8 @@ const FWVV = {
     dat_folder: FWVV_DAT_FOLDER
 };
 
-const ALARM_TELEGRAM = process.env.BOT_SENDALARM ? true : false;
-const ALARM_APP = process.env.APP_SENDALARM ? true : false;
+const ALARM_TELEGRAM = process.env.BOT_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false;
+const ALARM_APP = process.env.APP_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false;
 
 const ALARM = {
     telegram: ALARM_TELEGRAM,
@@ -75,7 +75,7 @@ const PROGRAMS = {
 
 const PRINTING_PAGECOUNT_ORIGINAL = Number(process.env.FAX_DRUCK_SEITENZAHL || 0);
 const PRINTING_PAGECOUNT_ALARM = Number(process.env.ALARMDRUCKSEITENZAHL || 0);
-const PRINTING_PRINT_FILE = process.env.FAX_DRUCK ? true : false;
+const PRINTING_PRINT_FILE = process.env.FAX_DRUCK?.toLocaleLowerCase() == 'true' ? true : false;
 
 const PRINTING = {
     pagecountOriginal: PRINTING_PAGECOUNT_ORIGINAL,
@@ -87,6 +87,20 @@ const COMMON_FW_NAME = process.env.FW_NAME || 'Freiwillige Feuerwehr Test';
 
 const COMMON = {
     fwName: COMMON_FW_NAME
+};
+
+const GEOCODE_BING = process.env.GEOBING_KEY ? true : false;
+const GEOCODE_BING_APIKEY = process.env.GEOBING_KEY;
+const GEOCODE_OSM_NOMINATIM = true;
+const GEOCODE_BAHN = true;
+const GEOCODE_OSM_OBJECTS = true;
+
+const GEOCODE = {
+    bing_apikey: GEOCODE_BING_APIKEY,
+    bing: GEOCODE_BING,
+    osm_nominatim: GEOCODE_OSM_NOMINATIM,
+    osm_objects: GEOCODE_OSM_OBJECTS,
+    bahn: GEOCODE_BAHN
 };
 
 const ALARMFIELDS = {
@@ -122,9 +136,11 @@ const config = {
     alarm: ALARM,
     programs: PROGRAMS,
     printing: PRINTING,
-    raspiversion: process.env.RASPIVERSION ? true : false,
+    geocode: GEOCODE,
     common: COMMON,
-    alarmfields: ALARMFIELDS
+    alarmfields: ALARMFIELDS,
+    raspiversion: process.env.RASPIVERSION?.toLocaleLowerCase() == 'true' ? true : false,
+    version: '3.0.0'
 };
 
 export default config;

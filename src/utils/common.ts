@@ -2,6 +2,8 @@ import logging from './logging';
 import { exec } from 'child_process';
 import fs from 'fs';
 
+const NAMESPACE = 'COMMON_FUNC';
+
 /**
  * Erzeugt aus einem Key-Pair Objekt einen SQL Spalten (name = ?, ...) String
  * @param obj //{spalte: value}
@@ -85,13 +87,13 @@ export const timeout = (ms: number) => {
 export const execShellCommand = (cmd: string) => {
     return new Promise((resolve, reject) => {
         const start = new Date();
-        console.log('EXECUTE: ' + cmd);
+        logging.debug(NAMESPACE, 'EXECUTE: ' + cmd);
         exec(cmd, (error, stdout, stderr) => {
             if (error) {
                 console.warn(error);
             }
             const ms = new Date().getTime() - start.getTime();
-            console.log('EXECUTION TIME: %sms', ms);
+            logging.debug(NAMESPACE, 'EXECUTION TIME: %sms', ms);
             resolve(stdout ? stdout : stderr);
         });
     });

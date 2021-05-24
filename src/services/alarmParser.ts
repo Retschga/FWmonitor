@@ -1,6 +1,6 @@
 'use strict';
 
-import * as puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer';
 import moveFile from 'move-file';
 import fs from 'fs';
 import logging from '../utils/logging';
