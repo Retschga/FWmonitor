@@ -1,6 +1,9 @@
 'use strict';
 
 import express from 'express';
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+import memorystore from 'memorystore';
 import http from 'http';
 import path from 'path';
 import logging from './utils/logging';
@@ -34,6 +37,34 @@ app.use('/api/v1', routerApi);
 app.use('/app', routermobile);
 app.use('/print', routePrint);
 app.use(express.static('filesPublic/'));
+app.use(cookieParser());
+app.use(session());
+
+const _memorystore = memorystore(session);
+const sessionstore = new _memorystore({
+    checkPeriod: 86400000 // clear expired every 24h
+});
+app.use(
+    session({
+        secret: process.env.BOT_TOKEN || 'Super SECRET',
+        name: 'FWmonitor',
+        store: sessionstore,
+        saveUninitialized: false,
+        resave: false,
+        cookie: {
+            secure: true,
+            httpOnly: true,
+            path: '/'
+            //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
+            //	  maxAge: (1000 * 60 * 30),
+            //    signed?: boolean;
+            //    expires?: Date;
+            //    httpOnly?: boolean;
+            //    domain?: string;
+            //    encode?: (val: string) => string;
+        }
+    })
+);
 
 // Starte HTTP-Server fürs LAN
 const httpServer = http.createServer(app);

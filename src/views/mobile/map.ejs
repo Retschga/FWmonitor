@@ -39,6 +39,7 @@
         <%- include('partials/foot') -%>
 
         <script>
+            
             // Icons Karte
             var styleCache = {
                 pipe: new ol.style.Style({image: new ol.style.Icon({src: "/images/map_marker_hydrant_pipe.png"})}),
@@ -240,7 +241,7 @@
             }
 
 
-
+            // Laden
             async function hydrantenkarte_load() {
                 if (!navigator.geolocation){
                     alert("Geolokation wird von ihrem Browser nicht unterstützt");
@@ -325,6 +326,9 @@
                             zoom: map.getView().getZoom()
                         })
                     );
+
+                    let mapLoader = document.querySelector("#mapLoader");
+                    mapLoader.classList.add("hidden")
                    
                 };
 
@@ -337,14 +341,21 @@
                         default: str = "FEHLER"; break;
                     }
                     alert(`Es war nicht möglich Sie zu lokalisieren (${str})`);
+
+                    let mapLoader = document.querySelector("#mapLoader");
+                    mapLoader.classList.add("hidden")
+
                 };
 
                 navigator.geolocation.getCurrentPosition(success, error, opts);
+
+                
             }
 
+            // Funktionsaufrufe
             hydrantenkarte_load();
-            let mapLoader = document.querySelector("#mapLoader");
-            mapLoader.classList.add("hidden")
+            
+
         </script>
        
     </body>

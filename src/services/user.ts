@@ -86,7 +86,7 @@ class UserService {
     }
 
     // STATUS
-    public async get_status(id: Number) {
+    public async get_status(id: number) {
         let result = await this.find({ id: id });
         if (result.length < 1) return;
         let user = result[0];
@@ -171,14 +171,25 @@ class UserService {
     }
 
     // App Settings
-    public async get_login(id: Number) {
+    public async get_login_id(id: number) {
         let result = await this.find({ id: id });
         if (result.length < 1) return;
         let user = result[0];
         return {
             id: user.id,
-            benutzer: user.telegramid,
-            passwort: user.appPasswort
+            username: user.telegramid,
+            password: user.appPasswort
+        };
+    }
+
+    public async get_login_telegramid(telegramid: string) {
+        let result = await this.find({ telegramid: telegramid });
+        if (result.length < 1) return;
+        let user = result[0];
+        return {
+            id: user.id,
+            username: user.telegramid,
+            password: user.appPasswort
         };
     }
 
