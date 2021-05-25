@@ -64,13 +64,6 @@ class AlarmService {
 
     private sendAlarmEvents(alarm: AlarmModel.AlarmRow) {
         globalEvents.emit('alarm', alarm);
-
-        if (this.get_alarmsettings().telegram) {
-            globalEvents.emit('alarm-telegram', alarm);
-        }
-        if (this.get_alarmsettings().app) {
-            globalEvents.emit('alarm-app', alarm);
-        }
     }
 
     public set_alarmsettings_telegram(value: boolean) {

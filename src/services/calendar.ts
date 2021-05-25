@@ -3,6 +3,7 @@
 import logging from '../utils/logging';
 import * as CalendarModel from '../models/calendar';
 import * as CalendarGroupsModel from '../models/calendarGroup';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'CalendarService';
 
@@ -163,6 +164,30 @@ class CalendarService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update - No rows changed');
         }
+    }
+
+    public init() {
+        let lastTime = new Date();
+
+        let interval = setInterval(async () => {
+            let termine = await this.find_all_upcoming();
+            if (!termine) return;
+
+            let date_now = new Date();
+
+            for (let i = 0; i < termine.length; i++) {
+                const termin = termine[i];
+
+                if (termin.remind != undefined) {
+                    // Erinnerungs-Datum zwischen letzter Überprüfung und jetzt
+                    if (lastTime < termin.remind && termin.remind < date_now) {
+                        logging.debug(NAMESPACE, 'Terminerinnerung: ', termin);
+                        globalEvents.emit('calendar-remind', termin);
+                    }
+                }
+            }
+            lastTime = date_now;
+        }, 60000);
     }
 }
 

@@ -8,9 +8,11 @@ import config from './utils/config';
 import routerApi from './routerApi';
 import routermobile from './routerMobile';
 import AlarmInputFileService from './services/alarmInputFile';
+import startupCheck from './utils/startupCheck';
 
 import telegramBot from './telegramBot';
 import diashowService from './services/diashow';
+import { calendarService } from './services/calendar';
 
 const NAMESPACE = 'APP';
 
@@ -18,6 +20,8 @@ logging.info(NAMESPACE, 'Starte Software v' + config.version);
 logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
 
 diashowService.createThumbnails();
+
+startupCheck.check();
 
 const app = express();
 
@@ -44,6 +48,7 @@ const telbot = telegramBot;
 AlarmInputFileService.init();
 
 // Starte Kalender-Terminüberwachung
+calendarService.init();
 
 // Starte Verfügbarkeits-Planüberwachung
 

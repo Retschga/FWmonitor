@@ -84,7 +84,7 @@ export const timeout = (ms: number) => {
  * @param cmd {string}
  * @return {Promise<string>}
  */
-export const execShellCommand = (cmd: string) => {
+export const execShellCommand = (cmd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const start = new Date();
         logging.debug(NAMESPACE, 'EXECUTE: ' + cmd);
@@ -101,3 +101,13 @@ export const execShellCommand = (cmd: string) => {
 
 export const fileExists = async (path: string) =>
     !!(await fs.promises.stat(path).catch((e) => false));
+
+export const checkFolderOrFile = async (folderPath?: string): Promise<boolean> => {
+    if (!folderPath) return false;
+    try {
+        var stats = await fs.promises.stat(folderPath);
+        return true;
+    } catch (err) {
+        return false;
+    }
+};

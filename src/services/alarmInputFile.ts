@@ -4,8 +4,9 @@ import chokidar from 'chokidar';
 import moveFile from 'move-file';
 import logging from '../utils/logging';
 import config from '../utils/config';
-import { timeout, execShellCommand } from '../utils/common';
+import { timeout, execShellCommand, checkFolderOrFile } from '../utils/common';
 import AlarmParserService from './alarmParser';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'AlarmInputFileService';
 
@@ -155,6 +156,22 @@ class AlarmInputFileService {
             // Textdatei verarbeiten
             AlarmParserService.parseFile(path);
         });
+
+        let lastStatus = true;
+        let interval = setInterval(async () => {
+            let status = await checkFolderOrFile(config.folders.fileInput);
+
+            logging.debug(NAMESPACE, 'Check IN Folder: status=' + status + '; last=' + lastStatus);
+
+            if (status != lastStatus) {
+                globalEvents.emit(
+                    'softwareinfo',
+                    'Eingangsordner Status: ' + (status ? 'Verbunden' : 'Getrennt') + '!'
+                );
+            }
+
+            lastStatus = status;
+        }, 60000 * 5);
     }
 }
 
