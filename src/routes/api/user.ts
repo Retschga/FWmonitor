@@ -51,13 +51,7 @@ router.post(
     ValidatorsUser.updateUser,
     awaitHandlerFactory(userController.update_user_id.bind(userController))
 );
-router.get(
-    '/approve/:id',
-    awaitHandlerFactory(userController.approve.bind(userController))
-);
-router.get(
-    '/delete/:id',
-    awaitHandlerFactory(userController.delete.bind(userController))
-);
+router.get('/approve/:id', awaitHandlerFactory(userController.approve.bind(userController)));
+router.get('/delete/:id', awaitHandlerFactory(userController.delete.bind(userController)));
 
 export = router;

@@ -54,12 +54,9 @@ export const updateNotificationsApp = [
     body('value')
         .exists()
         .withMessage('value is required')
-        .isNumeric() 
+        .isNumeric()
         .withMessage('value is must be numeric'),
-    body('subscription')
-        .exists()
-        .withMessage('subscription is required')
-        
+    body('subscription').exists().withMessage('subscription is required')
 ];
 
 export const updateNotificationsCalendar = [

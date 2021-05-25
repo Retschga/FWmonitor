@@ -16,6 +16,8 @@ temp/**/*
 *.mobileprovision
 *.orig.*
 *.sqlite3
+*.database
+*.db
 *.pem
 
 package-lock.json

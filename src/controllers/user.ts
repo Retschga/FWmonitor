@@ -200,7 +200,11 @@ class UserController {
     }
 
     // Notifications
-    public async update_user_notifications_calendar(req: Request, res: Response, next: NextFunction) {
+    public async update_user_notifications_calendar(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) {
         checkValidation(req);
 
         try {
@@ -219,13 +223,16 @@ class UserController {
         checkValidation(req);
 
         try {
-            await UserService.update_notifications_app(Number(req.params.id), Number(req.body.value), 'dsfsdfsdfsdfsf');
+            await UserService.update_notifications_app(
+                Number(req.params.id),
+                Number(req.body.value),
+                'dsfsdfsdfsdfsf'
+            );
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
         res.send('OK');
     }
-
 }
 
 export default new UserController();

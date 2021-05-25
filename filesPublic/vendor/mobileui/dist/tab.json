@@ -1,8 +1,0 @@
-{
-  "name":"tab",
-  "author": "fabiorogeriosj",
-  "dependencies": [
-    "base",
-    "button"
-  ]
-}

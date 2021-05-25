@@ -4,9 +4,14 @@
   "description": "Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem Bildschirm darzustellen. \r Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort auf einer Karte visualisiert wird.",
   "main": "src/app.ts",
   "scripts": {
-    "build": "rm -rf build/ && prettier --write src/ && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "debug": "nodemon"
+    "debug": "nodemon",
+
+    "prebuild": "rimraf build/",
+    "build": "prettier --write src/ && tsc",
+    "postbuild": "copyfiles -u 1 -e src/**/*.ts -s src/**/*.*  build/",
+
+    "run": "node build/app.js"
   },
   "author": "",
   "license": "SEE LICENCE IN LICENCE.md",
@@ -18,8 +23,10 @@
     "@types/sharp": "^0.28.1",
     "@types/sqlite3": "^3.1.7",
     "@types/web-push": "^3.3.0",
+    "copyfiles": "^2.4.1",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
+    "rimraf": "^3.0.2",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
   },
