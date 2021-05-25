@@ -89,4 +89,8 @@ router.get('/device_list', (req: Request, res: Response, next: NextFunction) => 
     res.render('mobile/device_list');
 });
 
+router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/alarm');
+});
+
 export = router;

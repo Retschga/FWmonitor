@@ -33,7 +33,7 @@ class AlarmFields {
             s += start.length;
             var e = data.slice(s).search(end);
             var elem = data.slice(s, s + e);
-            return elem;
+            return elem.trim();
         }
         return null;
     }
@@ -133,7 +133,9 @@ class AlarmParserService {
         data = data.replace(/Kinsatz/g, 'Einsatz');
 
         data = data.replace(/BI/g, 'B1');
-        data = data.replace(/Bl/g, 'Bl');
+        data = data.replace(/Bl/g, 'B1');
+        data = data.replace(/B\?1/g, 'B1');
+        data = data.replace(/B\?2/g, 'B1');
         data = data.replace(/1NF/g, 'INF');
         data = data.replace(/TH1/g, 'THL');
 
@@ -222,8 +224,10 @@ class AlarmParserService {
 
         // Navigiere puppeteer zu Ausdruck Seite
         await page.goto(
-            'http://127.0.0.1:' +
-                process.env.HTTP_PORT +
+            'http://' +
+                config.server_http.hostname +
+                ':' +
+                config.server_http.port +
                 '/print?varEINSATZSTICHWORT=' +
                 alarmFields.EINSATZSTICHWORT +
                 '&varSCHLAGWORT=' +

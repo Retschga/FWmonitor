@@ -9,6 +9,7 @@ import routerApi from './routerApi';
 import routermobile from './routerMobile';
 import AlarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
+import routePrint from './routes/print';
 
 import telegramBot from './telegramBot';
 import diashowService from './services/diashow';
@@ -31,12 +32,16 @@ app.set('view engine', 'ejs');
 
 app.use('/api/v1', routerApi);
 app.use('/app', routermobile);
+app.use('/print', routePrint);
 app.use(express.static('filesPublic/'));
 
 // Starte HTTP-Server fürs LAN
 const httpServer = http.createServer(app);
-httpServer.listen(config.server.port, () =>
-    logging.info(NAMESPACE, `Server is running ${config.server.hostname}:${config.server.port}`)
+httpServer.listen(config.server_http.port, () =>
+    logging.info(
+        NAMESPACE,
+        `Server is running ${config.server_http.hostname}:${config.server_http.port}`
+    )
 );
 
 // Starte HTTPS-Server für die WebApp

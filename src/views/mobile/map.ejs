@@ -83,8 +83,7 @@
             };
 
             // Forst Rettungspunkte
-            let rettPkt = null;
-            async function loadForstRettPkt(map) {
+            async function add_forstRettPkt(map) {
                 let response = await fetchWithParam('rettPunkte.geojson', {});
 
                 for(let i = 0; i < response.features.length; i++) {
@@ -105,7 +104,57 @@
                 map.addLayer(layer);	
             }
 
-            function createMap(dest, hydrantenCache, center = false) {
+            // Hydranten
+            function add_hydranten(hydrantenCache, map) {
+                let vectorSource_hydrant = new ol.source.Vector({
+                    features: new ol.format.GeoJSON({
+                            featureProjection: 'EPSG:3857',
+                            dataProjection: 'EPSG:4326'}
+                        ).readFeatures({
+                        'type': 'FeatureCollection',
+                        'features': hydrantenCache
+                    }),
+                });
+                let vectorLayer_hydrant = new ol.layer.Vector ({
+                    source: vectorSource_hydrant,
+                    style: styleFunction,
+                });	
+
+                map.addLayer(vectorLayer_hydrant);	
+
+                const view = map.getView();
+                // Zoom event
+                view.on('change:resolution', function (e) {
+                    let zoom = this.getZoom();
+                    if(hydrantenCache != undefined) {
+                        if (zoom >=15) {
+                            vectorLayer_hydrant.setVisible(true);
+                        }
+                        else if (zoom < 15) {
+                            vectorLayer_hydrant.setVisible(false);
+                        }
+                    }
+                });
+            }
+
+            // Zielkreis
+            function add_circle(lat, lng, map) {
+                const layer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [
+                            new ol.Feature({
+                                geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
+                                'title': 'circleDest'
+                            })				
+                        ]
+                    }),
+                    style: styleFunction,
+                });
+                map.addLayer(layer);	
+            }
+
+            // Karte
+            function createMap(dest, center = false) {
                 // Karten Controls
                 let control_attribution = new ol.control.Attribution({
                     collapsible: false,
@@ -118,8 +167,8 @@
                         var options = opt_options || {};
                 
                         var button = document.createElement('button');
-                        button.innerHTML = '';
-                        button.className = 'icon ion-pinpoint';
+                        button.innerHTML = '<span class="material-icons">filter_center_focus</span>';
+                        button.className = '';
                 
                         var element = document.createElement('div');
                         element.className = 'ol-center ol-unselectable ol-control';
@@ -150,9 +199,8 @@
                     zoom: 15
                 });		
 
+                // Kartenlayer
                 let layers = [];
-
-                // Kartenlayer Hydranten
                 let tileLayer_OSM = new ol.layer.Tile({
                     source: new ol.source.OSM({
                         url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png'
@@ -163,25 +211,9 @@
                         url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
                         attributions: ['© wmflabs']
                     })
-                })
-
-
-                let vectorSource_hydrant = new ol.source.Vector({
-                    features: new ol.format.GeoJSON({
-                            featureProjection: 'EPSG:3857',
-                            dataProjection: 'EPSG:4326'}
-                        ).readFeatures({
-                        'type': 'FeatureCollection',
-                        'features': hydrantenCache
-                    }),
-                });
-                let vectorLayer_hydrant = new ol.layer.Vector ({
-                    source: vectorSource_hydrant,
-                    style: styleFunction,
-                });	
+                })                
                 layers.push(tileLayer_OSM);
                 layers.push(tileLayer_Hillshade);
-                layers.push(vectorLayer_hydrant);
 
 
                 // Karte erstellen
@@ -197,19 +229,6 @@
                 });
                 alarm_map = map;
 
-                // Zoom event
-                view.on('change:resolution', function (e) {
-                    zoom = this.getZoom();
-                    if(hydrantenCache != undefined) {
-                        if (zoom >=15) {
-                            vectorLayer_hydrant.setVisible(true);
-                        }
-                        else if (zoom < 15) {
-                            vectorLayer_hydrant.setVisible(false);
-                        }
-                    }
-                });
-
                 if(center) {
                     alarm_mapCenter = () => {
                         view.setZoom(15);
@@ -217,8 +236,10 @@
                     }
                 }
 
-                return {view, map};
+                return map;
             }
+
+
 
             async function hydrantenkarte_load() {
                 if (!navigator.geolocation){
@@ -237,12 +258,28 @@
                 async function success(position) {
                     let latitude  = position.coords.latitude;
                     let longitude = position.coords.longitude;
-                    let pos = {lat:latitude, lng:longitude};
+                    if(
+                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
+                        $_GET['lng'] != undefined && $_GET['lng'] != ''
+                    ) {
+                        latitude = Number($_GET['lat']);
+                        longitude = Number($_GET['lng']);
+                    }
+                    const pos = {lat:latitude, lng:longitude};
 
-                    let hydrantenCache = await fetchWithParam('/app/api/hydranten.geojson', pos);
+                    const map = createMap(pos, true);
 
-                    let ret = createMap(pos, hydrantenCache, true);
+                    //const hydrantenCache = await fetch_get(`/app/api/hydranten.geojson?lat=${latitude}&lng=${longitude}`, true);
+                    //add_hydranten(hydrantenCache, map);
+                    //add_forstRettPkt(ret.map);
 
+                    if(
+                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
+                        $_GET['lng'] != undefined && $_GET['lng'] != ''
+                    ) {
+                        console.log('target', $_GET['lat'], $_GET['lng']);
+                        add_circle($_GET['lat'], $_GET['lng'], map);
+                    }
 
 
                     Number.prototype.toRad = function() {
@@ -281,15 +318,14 @@
                     let boundingExtent  = new ol.extent.boundingExtent([[p1.lng, p1.lat], [p2.lng, p2.lat], [p3.lng, p3.lat], [p4.lng, p4.lat]]);
                     boundingExtent = ol.proj.transformExtent(boundingExtent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
 
-                    ret.map.setView(
+                    map.setView(
                         new ol.View({
                             center: ol.proj.fromLonLat([pos.lng, pos.lat]),
                             extent: boundingExtent ,   
-                            zoom: ret.map.getView().getZoom()
+                            zoom: map.getView().getZoom()
                         })
-                        );
-                    
-                    //loadForstRettPkt(ret.map);
+                    );
+                   
                 };
 
                 function error(error) {

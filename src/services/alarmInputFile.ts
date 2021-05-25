@@ -159,6 +159,8 @@ class AlarmInputFileService {
 
         let lastStatus = true;
         let interval = setInterval(async () => {
+            logging.debug(NAMESPACE, 'Folder-Input CHECK...');
+
             let status = await checkFolderOrFile(config.folders.fileInput);
 
             logging.debug(NAMESPACE, 'Check IN Folder: status=' + status + '; last=' + lastStatus);

@@ -2,125 +2,86 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const SQLITE_FILE = process.env.SQLITE_FILE || 'database.sqlite3';
-
 const SQLITE = {
-    file: SQLITE_FILE
+    file: process.env.SQLITE_FILE || 'database.sqlite3'
 };
 
-const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || 'localhost';
-const SERVER_PORT = process.env.SERVER_PORT || 1337;
-
-const SERVER = {
-    hostname: SERVER_HOSTNAME,
-    port: SERVER_PORT
+const SERVER_HTTP = {
+    hostname: process.env.SERVER_HOSTNAME || 'localhost',
+    port: process.env.SERVER_PORT || 1337
 };
-
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const TELEGRAM_FW_NAME = process.env.FW_NAME_SHORT || 'FF Test';
 
 const TELEGRAM = {
-    bot_token: TELEGRAM_BOT_TOKEN,
-    fw_name: TELEGRAM_FW_NAME
+    bot_token: process.env.TELEGRAM_BOT_TOKEN || '',
+    fw_name: process.env.FW_NAME_SHORT || 'FF Test'
 };
 
-const APP_HTTPS_ENABLED = process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false;
-
 const APP = {
-    https_enabled: APP_HTTPS_ENABLED,
+    https_enabled: process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false,
     password_length: 10
 };
 
-const FOLDER_DIASHOW = './filesDiashow/';
-const FOLDER_THUMBNAIL_PREFIX = 'thumbnail-';
-const FOLDER_ARCHIVE = process.env.FOLDER_ARCHIVE || './filesArchive/';
-const FOLDER_FILE_INPUT = process.env.FOLDER_IN;
-const FOLDER_FILE_INPUT_DELAY = Number(process.env.FAX_INPUT_DELAY || 0);
-const FOLDER_FILE_INPUT_FILTER = process.env.FAXFILTER;
-const FOLDER_TEMP = './temp/';
-
 const FOLDERS = {
-    diashow: FOLDER_DIASHOW,
-    thumbnailPrefix: FOLDER_THUMBNAIL_PREFIX,
-    archive: FOLDER_ARCHIVE,
-    fileInput: FOLDER_FILE_INPUT,
-    fileInput_delay: FOLDER_FILE_INPUT_DELAY,
-    fileInput_filter: FOLDER_FILE_INPUT_FILTER,
-    temp: FOLDER_TEMP
+    diashow: './filesDiashow/',
+    thumbnailPrefix: 'thumbnail-',
+    archive: process.env.FOLDER_ARCHIVE || './filesArchive/',
+    fileInput: process.env.FOLDER_IN,
+    fileInput_delay: Number(process.env.FAX_INPUT_DELAY || 0),
+    fileInput_filter: process.env.FAXFILTER,
+    temp: './temp/'
 };
-
-const FWVV_ENABLED = process.env.FWVV_DAT_FOLDER?.toLocaleLowerCase() == 'true' ? true : false;
-const FWVV_DAT_FOLDER = process.env.FWVV_DAT_FOLDER;
 
 const FWVV = {
-    enabled: FWVV_ENABLED,
-    dat_folder: FWVV_DAT_FOLDER
+    enabled: process.env.FWVV_DAT_FOLDER?.toLocaleLowerCase() == 'true' ? true : false,
+    dat_folder: process.env.FWVV_DAT_FOLDER
 };
-
-const ALARM_TELEGRAM = process.env.BOT_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false;
-const ALARM_APP = process.env.APP_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false;
 
 const ALARM = {
-    telegram: ALARM_TELEGRAM,
-    app: ALARM_APP
+    telegram: process.env.BOT_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false,
+    app: process.env.APP_SENDALARM?.toLocaleLowerCase() == 'true' ? true : false
 };
-
-const PROGRAM_GHOSTSCRIPT = process.env.GHOSTSCRIPT_PATH;
-const PROGRAM_TESSERACT = process.env.TESSERACT_PATH;
 
 const PROGRAMS = {
-    ghostscript: PROGRAM_GHOSTSCRIPT,
-    tesseract: PROGRAM_TESSERACT
+    ghostscript: process.env.GHOSTSCRIPT_PATH,
+    tesseract: process.env.TESSERACT_PATH
 };
-
-const PRINTING_PAGECOUNT_ORIGINAL = Number(process.env.FAX_DRUCK_SEITENZAHL || 0);
-const PRINTING_PAGECOUNT_ALARM = Number(process.env.ALARMDRUCKSEITENZAHL || 0);
-const PRINTING_PRINT_FILE = process.env.FAX_DRUCK?.toLocaleLowerCase() == 'true' ? true : false;
 
 const PRINTING = {
-    pagecountOriginal: PRINTING_PAGECOUNT_ORIGINAL,
-    pagecountAlarm: PRINTING_PAGECOUNT_ALARM,
-    printFile: PRINTING_PRINT_FILE
+    pagecountOriginal: Number(process.env.FAX_DRUCK_SEITENZAHL || 0),
+    pagecountAlarm: Number(process.env.ALARMDRUCKSEITENZAHL || 0),
+    printFile: process.env.FAX_DRUCK?.toLocaleLowerCase() == 'true' ? true : false
 };
-
-const COMMON_FW_NAME = process.env.FW_NAME || 'Freiwillige Feuerwehr Test';
 
 const COMMON = {
-    fwName: COMMON_FW_NAME
+    fwName: process.env.FW_NAME || 'Freiwillige Feuerwehr Test'
 };
 
-const GEOCODE_BING = process.env.GEOBING_KEY ? true : false;
-const GEOCODE_BING_APIKEY = process.env.GEOBING_KEY;
-const GEOCODE_OSM_NOMINATIM = true;
-const GEOCODE_BAHN = true;
-const GEOCODE_OSM_OBJECTS = true;
-
 const GEOCODE = {
-    bing_apikey: GEOCODE_BING_APIKEY,
-    bing: GEOCODE_BING,
-    osm_nominatim: GEOCODE_OSM_NOMINATIM,
-    osm_objects: GEOCODE_OSM_OBJECTS,
-    bahn: GEOCODE_BAHN
+    bing: process.env.GEOBING_KEY ? true : false,
+    bing_apikey: process.env.GEOBING_KEY,
+    osm_nominatim: true,
+    osm_objects: true,
+    bahn: true
 };
 
 const ALARMFIELDS = {
-    s_EINSATZSTICHWORT: 'Stichwort : ', // Filter Beginn
+    s_EINSATZSTICHWORT: 'Stichwort :', // Filter Beginn
     e_EINSATZSTICHWORT: '\n', // Filter Ende
-    s_SCHLAGWORT: 'Schlagw. : ', // Filter Beginn
+    s_SCHLAGWORT: 'Schlagw. :', // Filter Beginn
     e_SCHLAGWORT: '\n', // Filter Ende
-    s_OBJEKT: 'Objekt : ', // Filter Beginn
+    s_OBJEKT: 'Objekt :', // Filter Beginn
     e_OBJEKT: '\n', // Filter Ende
     s_BEMERKUNG: 'BEMERKUNG', // Filter Beginn
     e_BEMERKUNG: 'EINSATZHINWEIS', // Filter Ende
-    s_STRASSE: 'Straße : ', // Filter Beginn
+    s_STRASSE: 'Straße :', // Filter Beginn
     e_STRASSE: '\n', // Filter Ende
-    s_ORTSTEIL: 'Ortsteil : ', // Filter Beginn
+    s_ORTSTEIL: 'Ortsteil :', // Filter Beginn
     e_ORTSTEIL: '\n', // Filter Ende
-    s_ORT: 'Gemeinde : ', // Filter Beginn
+    s_ORT: 'Gemeinde :', // Filter Beginn
     e_ORT: '\n', // Filter Ende
     s_EINSATZMITTEL: 'EINSATZMITTEL', // Filter Beginn
     e_EINSATZMITTEL: 'BEMERKUNG', // Filter Ende
-    s_CAR: 'Name : ', // Filter Beginn
+    s_CAR: 'Name :', // Filter Beginn
     e_CAR: '\n', // Filter Ende
     CAR1: COMMON.fwName, // Filter um als eigenes Fahrzeug erkannt zu weden
     EMPTY: '-/-'
@@ -128,7 +89,7 @@ const ALARMFIELDS = {
 
 const config = {
     sqlite: SQLITE,
-    server: SERVER,
+    server_http: SERVER_HTTP,
     telegram: TELEGRAM,
     app: APP,
     folders: FOLDERS,

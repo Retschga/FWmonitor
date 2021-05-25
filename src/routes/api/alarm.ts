@@ -29,6 +29,8 @@ router.post(
     awaitHandlerFactory(alarmController.update_alarmsettings_app.bind(alarmController))
 );
 
+router.get('/isalarm', awaitHandlerFactory(alarmController.get_isAlarm.bind(alarmController)));
+
 router.get('/', awaitHandlerFactory(alarmController.get_last.bind(alarmController)));
 router.get('/:id', awaitHandlerFactory(alarmController.get_id.bind(alarmController)));
 

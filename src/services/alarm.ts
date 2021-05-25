@@ -77,6 +77,17 @@ class AlarmService {
     public get_alarmsettings() {
         return { telegram: config.alarm.telegram, app: config.alarm.app };
     }
+
+    public async isAlarm(): Promise<boolean> {
+        const response = await this.find(
+            undefined,
+            undefined,
+            undefined,
+            'WHERE strftime("%Y-%m-%d %H:%M",date) >= datetime("now", "-90 minutes")'
+        );
+
+        return response.length > 0;
+    }
 }
 
 export default new AlarmService();

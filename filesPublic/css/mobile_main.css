@@ -23,6 +23,14 @@ body {
     min-width: 100%;
     min-height: 100%;
     background-color: var(--bg_body);
+
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
 }
 
 button {
@@ -184,6 +192,15 @@ button {
 
 .rounded {
     border-radius: 5%;
+}
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome, Edge, Opera and Firefox */
 }
 
 /* -------- Page loader -------- */
@@ -751,4 +768,18 @@ button {
     .modal .deletebtn {
         width: 100%;
     }
+}
+
+
+/* ------- MAP -------- */
+.ol-center {
+    top: 4em;
+    right: 0.5em;
+}
+.ol-center2 {
+    top: 8em;
+    right: 0.5em;
+}
+.ol-control button {
+    font-size: 2em;
 }

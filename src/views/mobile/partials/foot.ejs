@@ -141,17 +141,16 @@
         console.log('The page has been shown');
         loaderOut();  
     });
-
-    window.onunload = function(){
-        console.log('The page is unloading');
-    };
-
+   
     window.addEventListener("click", (event) => {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = "none";
         }
     }, false);
 
+    window.onunload = function(){
+        console.log('The page is unloading');
+    };   
     
 
     // **** Hilfsfunktionen ****

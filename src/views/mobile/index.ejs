@@ -95,6 +95,40 @@
                     </div>
                 </template>
 
+                <!-- ALARM TEMPLATE -->  
+                <template id="template-alarm">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon red">
+                                <span class="material-icons">
+                                    notification_important
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content red">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Alarm: </span><span class="var_stichwort"></span><br>
+                                    <span class="var_text">
+                                        Stichwort
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>
+
                 <%- include('partials/footer_nav') -%>
 
             </div>
@@ -132,8 +166,12 @@
                     var_groups.innerHTML = badge;
                     var_emoji.innerHTML  = icon;
 
-                    const clone = document.importNode(template.content, true);
+                    const clone = document.importNode(template.content.firstElementChild, true);
                     target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('calendar');
+                    };
 
                 } catch (error) {
                     console.error('load_calendar', error);
@@ -174,8 +212,12 @@
                         index_container_content.classList.add('red');
                     }
 
-                    const clone = document.importNode(template.content, true);
+                    const clone = document.importNode(template.content.firstElementChild, true);
                     target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('status');
+                    };
 
                 } catch (error) {
                     console.error('load_status_id', error);
@@ -183,10 +225,51 @@
                 
             }
 
+            async function load_alarm() {
+                try {
+                    const isalarm = await fetch_get('/api/v1/alarm/isalarm', true);
+                    console.log('isalarm', isalarm);
+
+                    if(!isalarm.isAlarm) return;
+
+                    const alarm = (await fetch_get('/api/v1/alarm/', true))[0];
+                    console.log('alarm', alarm);
+
+
+                    const target = document.querySelector(".content");
+
+                    const date = new Date(alarm.date);   
+
+                    const template        = document.querySelector('#template-alarm');   
+                    const var_stichwort   = template.content.querySelector(".var_stichwort");             
+                    const var_text        = template.content.querySelector(".var_text");
+                    const var_date        = template.content.querySelector(".var_date");
+                    const var_time        = template.content.querySelector(".var_time");
+
+                    var_stichwort.innerHTML   = alarm.einsatzstichwort;
+                    var_text.innerHTML        = alarm.schlagwort;
+                    var_date.innerHTML        = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML        = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('alarm?id=' + alarm.id);
+                    };
+
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+            }
+
             // Funktionsaufrufe
             redirect_if_logged_out(); 
+            load_alarm();
             load_calendar();
             load_status_id(user_id);
+            
             
         </script>
 

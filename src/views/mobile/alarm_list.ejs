@@ -164,8 +164,12 @@
                         var_street.innerHTML = element.strasse;
                         var_city.innerHTML  = element.ort;
 
-                        const clone = document.importNode(template.content, true);
+                        const clone = document.importNode(template.content.firstElementChild, true);
                         target.insertBefore(clone, target_before);
+
+                        clone.onclick = () => {
+                            loaderIn('alarm?id=' + element.id);
+                        };
 
                     }
                 } catch (error) {

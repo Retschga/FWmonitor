@@ -170,6 +170,8 @@ class CalendarService {
         let lastTime = new Date();
 
         let interval = setInterval(async () => {
+            logging.debug(NAMESPACE, 'Terminerinnerung CHECK...');
+
             let termine = await this.find_all_upcoming();
             if (!termine) return;
 

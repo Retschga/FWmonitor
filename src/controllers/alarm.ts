@@ -31,7 +31,7 @@ class AlarmController {
     public async get_last(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_last');
 
-        let list = await AlarmService.find({}, 1);
+        let list = await AlarmService.find({}, 1, undefined, 'ORDER BY id DESC');
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Alarm found');
         }
@@ -92,6 +92,14 @@ class AlarmController {
         const response = AlarmService.get_alarmsettings();
 
         res.send(response);
+    }
+
+    public async get_isAlarm(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_isAlarm');
+
+        const response = await AlarmService.isAlarm();
+
+        res.send({ isAlarm: response });
     }
 }
 
