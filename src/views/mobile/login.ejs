@@ -98,12 +98,12 @@
 
                         <div class="input-container">
                             <span class="material-icons">person</span>                                
-                            <input class="input-field" type="text" placeholder="Telegram ID" name="username">
+                            <input id="var_telid" class="input-field" type="text" placeholder="Telegram ID" name="username">
                         </div>
 
                         <div class="input-container">
                             <span class="material-icons">password</span>                                
-                            <input class="input-field" type="password" placeholder="Passwort" name="password">
+                            <input id="var_passwort" class="input-field" type="password" placeholder="Passwort" name="password">
                         </div>
 
                         <button type="submit" class="btn">Anmelden</button>
@@ -123,11 +123,32 @@
 
                 let loginFormContainer = document.querySelector("#loginFormContainer");
                 loginFormContainer.classList.add("hidden")
-
+/*
                 setTimeout(function(){ 
                     setCookie('logout_status', 'false', 1);
                     loaderIn('redirect', true); 
                 }, 3000);
+*/
+
+                fetch('/api/v1/auth/login', {
+					method: 'POST',
+					headers: {'Content-Type': 'application/json'},
+					withCredentials: true,
+        			credentials: 'include',
+					cache: 'no-store',
+					mode: "cors",
+					body: JSON.stringify({
+						telegramid: document.getElementById("var_telid").value,
+						password: document.getElementById("var_passwort").value
+					})
+				})
+				.then(data => data.json())
+				.then(data =>  { 
+					console.log(data);
+				}) 
+				.catch((err) => {
+					console.error("Login Fehler: ", err);	
+				})
 
                 return false;
             }

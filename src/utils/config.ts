@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import os from 'os';
 
 dotenv.config();
 
@@ -18,7 +19,23 @@ const TELEGRAM = {
 
 const APP = {
     https_enabled: process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false,
-    password_length: 10
+    password_length: 10,
+    vapid_private: '',
+    vapid_public: '',
+    jwt_key:
+        'jwt' +
+        process.env.TELEGRAM_BOT_TOKEN +
+        process.env.FOLDER_IN +
+        process.env.FOLDER_ARCHIVE +
+        process.env.GEOBING_KEY +
+        process.env.DWD_WARCELLID +
+        process.env.FW_NAME_STANDBY +
+        process.env.VAPID_PRIVATE +
+        os.homedir() +
+        os.platform() +
+        os.hostname() +
+        os.networkInterfaces(),
+    jwt_expire: 60 * 60 * 24 * 31
 };
 
 const FOLDERS = {

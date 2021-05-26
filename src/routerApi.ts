@@ -13,6 +13,7 @@ import userRoutes from './routes/api/user';
 import statisticRoutes from './routes/api/statistic';
 import groupRoutes from './routes/api/group';
 import diashowRoutes from './routes/api/diashow';
+import authRoutes from './routes/api/auth';
 
 const NAMESPACE = 'ROUTER_API';
 
@@ -74,6 +75,7 @@ class routerApi {
         this.router.use('/alarm', alarmRoutes);
         this.router.use('/group', groupRoutes);
         this.router.use('/diashow', diashowRoutes);
+        this.router.use('/auth', authRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);

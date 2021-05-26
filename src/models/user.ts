@@ -15,6 +15,11 @@ enum UserStatus {
     VERFUEGBAR = 1,
     NICHT_VERFUEGBAR = 2
 }
+enum CalendarRight {
+    READ = 0,
+    MIN = 1,
+    FULL = 2
+}
 
 interface UserRow {
     id: number;
@@ -41,7 +46,7 @@ interface UserRow {
     drucker: boolean;
     softwareInfo: boolean;
     telefonliste: boolean;
-    kalender: boolean;
+    kalender: CalendarRight;
 }
 
 class UserModel extends Model {
@@ -61,4 +66,4 @@ class UserModel extends Model {
 
 const model = new UserModel();
 
-export { UserApproved, UserStatus, UserRow, model };
+export { UserApproved, UserStatus, UserRow, CalendarRight, model };

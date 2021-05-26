@@ -189,13 +189,13 @@ class UserService {
         return {
             id: user.id,
             username: user.telegramid,
-            password: user.appPasswort
+            passwordHash: user.appPasswort
         };
     }
 
     public async update_login(id: number, password: string) {
         let affectedRows = await UserModel.model.update(Number(id), {
-            passwort: password
+            appPasswort: password
         });
 
         if (affectedRows < 1) {

@@ -12,8 +12,9 @@ const errorMiddleware = (error: HttpException, req: Request, res: Response, next
     logging.info(NAMESPACE, 'ErrorMiddleware called');
     logging.ecxeption(NAMESPACE, error);
 
-    if (error.status === HttpStatusCodes.INTERNAL_SERVER_ERROR || error.message == undefined) {
-        error.message = 'Internal server error';
+    if (error.status === HttpStatusCodes.INTERNAL_SERVER_ERROR || message == undefined) {
+        logging.info(NAMESPACE, 'INTERNAL_SERVER_ERROR');
+        message = 'Internal server error!';
     }
 
     error = {

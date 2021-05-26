@@ -20,6 +20,8 @@ import { calendarService } from './services/calendar';
 
 const NAMESPACE = 'APP';
 
+process.env.NODE_ENV == 'development';
+
 logging.info(NAMESPACE, 'Starte Software v' + config.version);
 logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
 
@@ -32,13 +34,7 @@ const app = express();
 /** Setup Express */
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-app.use('/api/v1', routerApi);
-app.use('/app', routermobile);
-app.use('/print', routePrint);
-app.use(express.static('filesPublic/'));
 app.use(cookieParser());
-app.use(session());
 
 const _memorystore = memorystore(session);
 const sessionstore = new _memorystore({
@@ -65,6 +61,11 @@ app.use(
         }
     })
 );
+
+app.use('/api/v1', routerApi);
+app.use('/app', routermobile);
+app.use('/print', routePrint);
+app.use(express.static('filesPublic/'));
 
 // Starte HTTP-Server fürs LAN
 const httpServer = http.createServer(app);
