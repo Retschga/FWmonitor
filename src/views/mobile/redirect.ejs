@@ -25,18 +25,26 @@
                 <div class="flexcontainer" style="flex: 1; display: flex; align-items: center; justify-content: center;">
                     <div>
                         <div class="spinner_rotateplane"></div>
-                        <h2>Weiterleiten...</h2>
+                        <h2 class="var_text1">Weiterleiten...</h2>
+                        <h2 class="var_text2"></h2>
                     </div>
                 </div>
 
             </div>
 
-            <script>
-                // Redirect
-                setTimeout(function(){ loaderIn('index', true); }, 3000);
-            </script>
-
         <%- include('partials/foot') -%>
+
+        <script>
+
+            const target = $_GET['target'];
+
+            // Text
+            const text2 = document.querySelector(".var_text2");
+            text2.innerHTML = escapeHtml(target);
+
+            // Redirect
+            loaderIn(target, true);
+        </script>
 
        
     </body>

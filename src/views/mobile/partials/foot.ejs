@@ -100,9 +100,24 @@
     /**
      * Meldet den Benutzer ab
      */
-    function logout() {
-        setCookie('logout_status', 'true', 1);
-        loaderIn('login', true);
+    async function logout() {
+        loaderIn();
+        try {
+            const data = await fetch_post('/api/v1/auth/logout', {}, true, 10000);
+
+            if(data.message && data.message == 'OK') {                
+                setCookie('logout_status', 'true', 1);
+                loaderIn('login', true);
+                return false;
+            }
+            if(data.message) {
+                console.error("Login Fehler: ", data.message);	
+                alert(data.message);
+            }
+        } catch (error) {
+            console.log(error.message);
+        }
+        loaderOut();
     }
 
     /**
@@ -211,6 +226,12 @@
         return {text: text, icon: icon};
     }
    
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
     // Input Prefixes
     // https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
     function addFormatter (input, formatFn) {        

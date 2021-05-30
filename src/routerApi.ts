@@ -14,6 +14,7 @@ import statisticRoutes from './routes/api/statistic';
 import groupRoutes from './routes/api/group';
 import diashowRoutes from './routes/api/diashow';
 import authRoutes from './routes/api/auth';
+import { auth_api } from './middleware/auth';
 
 const NAMESPACE = 'ROUTER_API';
 
@@ -66,16 +67,17 @@ class routerApi {
         });
 
         /** Routes go here */
-        this.router.use('/', sampleRoutes);
-        this.router.use('/calendar', calendarRoutes);
-        this.router.use('/calendarGroups', calendarGroupRoutes);
-        this.router.use('/car', carRoutes);
-        this.router.use('/user', userRoutes);
-        this.router.use('/statistic', statisticRoutes);
-        this.router.use('/alarm', alarmRoutes);
-        this.router.use('/group', groupRoutes);
-        this.router.use('/diashow', diashowRoutes);
+
         this.router.use('/auth', authRoutes);
+        this.router.use('/calendar', auth_api(), calendarRoutes);
+        this.router.use('/calendarGroups', auth_api(), calendarGroupRoutes);
+        this.router.use('/car', auth_api(), carRoutes);
+        this.router.use('/user', auth_api(), userRoutes);
+        this.router.use('/statistic', auth_api(), statisticRoutes);
+        this.router.use('/alarm', auth_api(), alarmRoutes);
+        this.router.use('/group', auth_api(), groupRoutes);
+        this.router.use('/diashow', auth_api(), diashowRoutes);
+        this.router.use('/', auth_api(), sampleRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);

@@ -3,7 +3,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
-import memorystore from 'memorystore';
+import createMemoryStore from 'memorystore';
 import http from 'http';
 import path from 'path';
 import logging from './utils/logging';
@@ -20,7 +20,7 @@ import { calendarService } from './services/calendar';
 
 const NAMESPACE = 'APP';
 
-process.env.NODE_ENV == 'development';
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 logging.info(NAMESPACE, 'Starte Software v' + config.version);
 logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
@@ -36,8 +36,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(cookieParser());
 
-const _memorystore = memorystore(session);
-const sessionstore = new _memorystore({
+const MemoryStore = createMemoryStore(session);
+const sessionstore = new MemoryStore({
     checkPeriod: 86400000 // clear expired every 24h
 });
 app.use(
@@ -48,11 +48,11 @@ app.use(
         saveUninitialized: false,
         resave: false,
         cookie: {
-            secure: true,
+            secure: process.env.NODE_ENV != 'development',
             httpOnly: true,
-            path: '/'
+            path: '/',
             //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
-            //	  maxAge: (1000 * 60 * 30),
+            maxAge: 1000 * 60 * 30
             //    signed?: boolean;
             //    expires?: Date;
             //    httpOnly?: boolean;

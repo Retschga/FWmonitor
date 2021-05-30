@@ -119,24 +119,20 @@
             document.getElementById('loginForm').onsubmit = function () {
 
                 let loader = document.querySelector("#loginLoader");
-                loader.classList.remove("hidden")
+                loader.classList.remove("hidden");
 
                 let loginFormContainer = document.querySelector("#loginFormContainer");
-                loginFormContainer.classList.add("hidden")
-/*
-                setTimeout(function(){ 
-                    setCookie('logout_status', 'false', 1);
-                    loaderIn('redirect', true); 
-                }, 3000);
-*/
+                loginFormContainer.classList.add("hidden");
 
-                fetch('/api/v1/auth/login', {
-					method: 'POST',
-					headers: {'Content-Type': 'application/json'},
-					withCredentials: true,
-        			credentials: 'include',
-					cache: 'no-store',
-					mode: "cors",
+                fetch('/api/v1/auth/login', {                    
+                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                    mode: 'cors', // no-cors, *cors, same-origin
+                    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                    credentials: 'include', // include, *same-origin, omit
+                    withCredentials: true,
+                    redirect: 'follow', // manual, *follow, error
+                    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+					headers: {'Content-Type': 'application/json'},					
 					body: JSON.stringify({
 						telegramid: document.getElementById("var_telid").value,
 						password: document.getElementById("var_passwort").value
@@ -145,9 +141,22 @@
 				.then(data => data.json())
 				.then(data =>  { 
 					console.log(data);
+                    if(data.message && data.message == 'OK') {
+                        setCookie('logout_status', 'false', 1);
+                        loaderIn('index', true); 
+                        return false;
+                    }
+                    if(data.message) {
+                        console.error("Login Fehler: ", data.message);	
+                        alert(data.message);
+                        loader.classList.add("hidden");
+                        loginFormContainer.classList.remove("hidden");
+                    }
 				}) 
 				.catch((err) => {
 					console.error("Login Fehler: ", err);	
+                    loader.classList.add("hidden");
+                    loginFormContainer.classList.remove("hidden");
 				})
 
                 return false;

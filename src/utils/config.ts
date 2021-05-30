@@ -8,7 +8,7 @@ const SQLITE = {
 };
 
 const SERVER_HTTP = {
-    hostname: process.env.SERVER_HOSTNAME || 'localhost',
+    hostname: process.env.SERVER_HOSTNAME || '127.0.0.1',
     port: process.env.SERVER_PORT || 1337
 };
 

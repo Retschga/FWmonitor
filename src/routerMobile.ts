@@ -4,8 +4,10 @@ import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
 import sampleRoutes from './routes/sample';
+import { Request, Response, NextFunction } from 'express';
 
 import mobileRoutes from './routes/mobile/mobile';
+import { auth_page } from './middleware/auth';
 
 const NAMESPACE = 'ROUTER_MOBILE';
 
@@ -59,8 +61,15 @@ class routerMobile {
         });
 
         /** Routes go here */
+        this.router.get('/login', (req: Request, res: Response, next: NextFunction) => {
+            res.render('mobile/login');
+        });
+        this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
+            res.render('mobile/redirect');
+        });
+
         this.router.use('/', sampleRoutes);
-        this.router.use('/', mobileRoutes);
+        this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);

@@ -5,16 +5,8 @@ import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
 
-router.get('/login', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/login');
-});
-
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/index');
-});
-
-router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/redirect');
 });
 
 router.get('/calendar', (req: Request, res: Response, next: NextFunction) => {
