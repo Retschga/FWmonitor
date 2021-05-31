@@ -144,7 +144,7 @@ const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
             // Laden
             async function load_settings_all(id) {
                 try {
-                    const user = (await fetch_get('/api/v1/user/' + id, true))[0];
+                    const user = (await fetch_get(url_user.replace(':id', id), true))[0];
                     console.log('user' , user);
 
                     const var_appnotifications = document.querySelector('.var_appnotifications');      
@@ -161,7 +161,8 @@ const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
                     const var_appnotifications = document.querySelector('.var_appnotifications');
                     const subscription = await notifications_createSubscription();
                     
-                    const response = await fetch_post('/api/v1/user/notifications/app/' + id, {value: 5, subscription: JSON.stringify(subscription)});
+                    const response = await fetch_post(url_user_notifications_app_update.replace(':id', id), 
+                        {value: 5, subscription: JSON.stringify(subscription)});
                 } catch (error) {
                     console.error('update_settings_notifications_app', error);
                 }

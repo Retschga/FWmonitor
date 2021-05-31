@@ -68,7 +68,7 @@
             // Laden
             async function load_groups_all() {   
                 try {
-                    const groups = await fetch_get(`/api/v1/calendarGroups`, true);
+                    const groups = await fetch_get(url_calendar_groups, true);
                     console.log('groups', groups);
 
                     const target = document.querySelector(".groups_list");
@@ -112,7 +112,7 @@
                         const name    = group.querySelector('.var_name').value;
                         const pattern = group.querySelector('.var_pattern').value;
 
-                        const response = await fetch_post('/api/v1/calendarGroups/' + id, {name: name, pattern: pattern});
+                        const response = await fetch_post(url_calendar_groups_update.replace(':id', id), {name: name, pattern: pattern});
                         console.log('update_groups_all', response);   
 
                     }

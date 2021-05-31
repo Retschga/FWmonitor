@@ -70,7 +70,7 @@
             // Laden
             async function load_statistic_year(year) {       
                 try {
-                    const statisticList = await fetch_get('/api/v1/statistic/' + year, true);
+                    const statisticList = await fetch_get(url_statistic.replace(':year', year), true);
                     console.log('statistic ' + year, statisticList);
 
                     const target = document.querySelector(".list_statistic");
@@ -108,7 +108,7 @@
 
             async function load_time_id_year(id, year) {
                 try {
-                    const user_time = await fetch_get('/api/v1/statistic/time/' + id + '/' + year, true);
+                    const user_time = await fetch_get(url_statistic_time.replace(':id', id).replace(':year', year), true);
                     console.log('user time', user_time);
 
                     const var_usertime = document.querySelector('.var_usertime');    

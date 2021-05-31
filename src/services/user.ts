@@ -140,9 +140,12 @@ class UserService {
     }
 
     public async update_status_plan(id: number, value: string) {
-        if (isJsonString(value)) {
+        logging.debug(NAMESPACE, 'update_status_plan', { id, value });
+        if (!isJsonString(value)) {
+            logging.debug(NAMESPACE, ' update_status_plan - value must be valid json');
             throw new Error(NAMESPACE + ' update_status_plan - value must be valid json');
         }
+
         let affectedRows = await UserModel.model.update(Number(id), {
             statusPlans: value
         });

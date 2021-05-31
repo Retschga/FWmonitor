@@ -216,7 +216,7 @@
             // Laden
             async function load_user() { 
                 try {
-                    const user = (await fetch_get(`/api/v1/user/` + id, true))[0];
+                    const user = (await fetch_get(url_user.replace(':id', id), true))[0];
                     console.log('user', user);
 
                     const target = document.querySelector(".calendarGroup_list");
@@ -240,10 +240,10 @@
                         document.querySelector(".deletebutton").classList.add('hidden');
                     }
 
-                    const calendarGroups = await fetch_get(`/api/v1/calendarGroups`, true);
+                    const calendarGroups = await fetch_get(url_calendar_groups, true);
                     console.log('calendarGroups', calendarGroups);
 
-                    const alarmGroups = await fetch_get(`/api/v1/group`, true);
+                    const alarmGroups = await fetch_get(url_group_all, true);
                     console.log('alarmGroups', alarmGroups);     
 
                     const var_name       = document.querySelector(".var_name");
@@ -336,7 +336,7 @@
                     const var_GRF              = document.querySelector(".var_GRF").checked ? 1 : 0;  
                     const var_ZUGF             = document.querySelector(".var_ZUGF").checked ? 1 : 0; 
 
-                    const response = await fetch_post('/api/v1/user/' + id, {
+                    const response = await fetch_post(url_user_update.replace(':id', id), {
                         group: var_alarmgroup,
                         admin: var_admin,
                         kalender: var_calendar,
@@ -360,7 +360,7 @@
             async function delete_user() {
                 loaderIn();    
                 try {
-                    const response = await fetch_get('/api/v1/user/delete/' + id);
+                    const response = await fetch_get(url_user_delete.replace(':id', id));
                     console.log('delete_user', response);
                 } catch (error) {
                     console.error('delete_user', error);
@@ -371,7 +371,7 @@
             async function approve_user() {
                 loaderIn();  
                 try {
-                    const response = await fetch_get('/api/v1/user/approve/' + id);
+                    const response = await fetch_get(url_user_approve.replace(':id', id));
                     console.log('approve_user', response);
                 } catch (error) {
                     console.error('approve_user', error);

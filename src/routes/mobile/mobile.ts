@@ -23,6 +23,14 @@ router.get('/status', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/status', generateParams(req));
 });
 
+router.get('/status_plan', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/status_plan', generateParams(req));
+});
+
+router.get('/status_plan_list', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/status_plan_list', generateParams(req));
+});
+
 router.get('/map', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/map', generateParams(req));
 });

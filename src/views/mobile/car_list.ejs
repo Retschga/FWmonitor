@@ -98,7 +98,7 @@
             // Laden
             async function load_cars_all() {   
                 try {
-                    const cars = await fetch_get(`/api/v1/car`, true);
+                    const cars = await fetch_get(url_cars_all, true);
                     console.log('cars', cars);
 
                     const target = document.querySelector(".car_list");
@@ -153,10 +153,10 @@
                     carelement.querySelector('.var_header_name').innerHTML = name;
 
                     if(password != '****') {
-                        const response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user, appPasswort: password});
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPasswort: password});
                         console.log('updateCar', response);
                     } else {
-                        const response = await fetch_post('/api/v1/car/' + id, {name: name, appBenutzer: user});
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user});
                         console.log('updateCar', response);
                     }        
                 } catch (error) {
@@ -168,7 +168,7 @@
             async function delete_car_id(id) {
                 loaderIn();
                 try {
-                    const response = await fetch_get('/api/v1/car/delete/' + id);
+                    const response = await fetch_get(url_cars_delete.replace(':id', id));
                     console.log('delete_car_id', response);   
                 } catch (error) {
                     console.error('delete_car_id', error);
@@ -179,7 +179,7 @@
             async function create_car() {
                 loaderIn();
                 try {
-                    const response = await fetch_get('/api/v1/car/create');
+                    const response = await fetch_get(url_cars_create);
                     console.log('create_car', response); 
                 } catch (error) {
                     console.error('create_car', error);
@@ -190,7 +190,7 @@
             async function get_password_new_id(id) {
                 loaderIn();
                 try {
-                    const response = await fetch_get('/api/v1/car/password', true);
+                    const response = await fetch_get(url_cars_password_new, true);
                     console.log('get_password_new_id', response);      
                     
                     const carelement = document.querySelector('#car_' + id);   

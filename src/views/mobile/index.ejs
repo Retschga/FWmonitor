@@ -140,7 +140,7 @@
             // Laden
             async function load_calendar() {     
                 try {
-                    const calendarElement = await fetch_get('/api/v1/calendar/next', true);
+                    const calendarElement = await fetch_get(url_calendar_next, true);
                     console.log('calendarElement', calendarElement);
 
                     const target = document.querySelector(".content");
@@ -179,7 +179,7 @@
 
             async function load_status_id(id) {
                 try {
-                    const user_status = await fetch_get('/api/v1/user/status/' + id, true);
+                    const user_status = await fetch_get(url_user_status.replace(':id', id), true);
                     console.log('user status', user_status);
 
                     const target = document.querySelector(".content");
@@ -226,12 +226,12 @@
 
             async function load_alarm() {
                 try {
-                    const isalarm = await fetch_get('/api/v1/alarm/isalarm', true);
+                    const isalarm = await fetch_get(url_alarm_isalarm, true);
                     console.log('isalarm', isalarm);
 
                     if(!isalarm.isAlarm) return;
 
-                    const alarm = (await fetch_get('/api/v1/alarm/', true))[0];
+                    const alarm = (await fetch_get(url_alarm_last, true))[0];
                     console.log('alarm', alarm);
 
 

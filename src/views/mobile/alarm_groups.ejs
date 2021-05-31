@@ -168,7 +168,7 @@
             // Laden
             async function load_groups_all() {  
                 try {                   
-                    const groups = await fetch_get(`/api/v1/group`, true);
+                    const groups = await fetch_get(url_group_all, true);
                     console.log('groups', groups);
 
                     const target = document.querySelector(".alarmgroup_list");
@@ -272,7 +272,7 @@
                         pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
                     }
 
-                    const response = await fetch_post('/api/v1/group/' + id, {name: name, pattern: pattern});
+                    const response = await fetch_post(url_group_update.replace(':id', id), {name: name, pattern: pattern});
                     console.log('update_group_id', response);  
                 } catch (error) {
                     console.error('update_group_id', error);

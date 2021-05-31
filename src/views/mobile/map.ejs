@@ -85,7 +85,7 @@
 
             // Forst Rettungspunkte
             async function add_forstRettPkt(map) {
-                let response = await fetchWithParam('rettPunkte.geojson', {});
+                let response = await fetchWithParam(url_map_forstrettpkt, {});
 
                 for(let i = 0; i < response.features.length; i++) {
                     response.features[i].properties.title = 'rettPkt';
@@ -269,8 +269,7 @@
                     const pos = {lat:latitude, lng:longitude};
 
                     const map = createMap(pos, true);
-
-                    //const hydrantenCache = await fetch_get(`/app/api/hydranten.geojson?lat=${latitude}&lng=${longitude}`, true);
+                    //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
                     //add_hydranten(hydrantenCache, map);
                     //add_forstRettPkt(ret.map);
 

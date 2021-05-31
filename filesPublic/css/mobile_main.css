@@ -211,6 +211,10 @@ button {
                                     supported by Chrome, Edge, Opera and Firefox */
 }
 
+.nopointerevents {
+    pointer-events: none;
+}
+
 /* -------- Page loader -------- */
 
 .loader {

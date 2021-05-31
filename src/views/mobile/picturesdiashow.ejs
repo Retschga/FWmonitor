@@ -67,7 +67,7 @@
             // Laden 
             async function load_diashow_list() {     
                 try {
-                    const files = await fetch_get('/api/v1/diashow/list', true);
+                    const files = await fetch_get(url_diashow_list, true);
                     console.log('files', files);
                     const enabled = files.enabled;
                     const disabled = files.disabled;
@@ -131,7 +131,7 @@
             async function disable_pic(filename) {
                 loaderIn();
                 try {
-                    const response = await fetch_post('/api/v1/diashow/disable', {filename: filename});
+                    const response = await fetch_post(url_diashow_disable, {filename: filename});
                     console.log('disable_pic', response); 
                     
                     load_diashow_list();
@@ -144,7 +144,7 @@
             async function enable_pic(filename) {
                 loaderIn();
                 try {
-                    const response = await fetch_post('/api/v1/diashow/enable', {filename: filename});
+                    const response = await fetch_post(url_diashow_enable, {filename: filename});
                     console.log('enable_pic', response);      
                     load_diashow_list();
                 } catch (error) {
@@ -156,7 +156,7 @@
             async function delete_pic(filename) {
                 loaderIn();
                 try {
-                    const response = await fetch_post('/api/v1/diashow/delete', {filename: filename});
+                    const response = await fetch_post(url_diashow_delete, {filename: filename});
                     console.log('delete_pic', response);      
                     load_diashow_list();
                 } catch (error) {

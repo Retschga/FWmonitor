@@ -19,7 +19,6 @@ export const updateUserStatusPlans = [
         .withMessage('value is required')
         .isJSON()
         .withMessage('value is no valid json')
-        .escape()
         .trim()
 ];
 

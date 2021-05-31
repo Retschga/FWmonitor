@@ -97,13 +97,13 @@
             // Laden
             async function load_users_all() {  
                 try {
-                    const users = await fetch_get(`/api/v1/user`, true);
+                    const users = await fetch_get(url_user_all, true);
                     console.log('users', users);
 
-                    const calendarGroups = await fetch_get(`/api/v1/calendarGroups`, true);
+                    const calendarGroups = await fetch_get(url_calendar_groups, true);
                     console.log('calendarGroups', calendarGroups);
 
-                    const alarmGroups = await fetch_get(`/api/v1/group`, true);
+                    const alarmGroups = await fetch_get(url_group_all, true);
                     console.log('alarmGroups', alarmGroups);
 
                     // Vorhandene Elemente löschen

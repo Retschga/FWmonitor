@@ -134,8 +134,10 @@
                     return;
                 }
 
+                const id = $_GET['id'];
+
                 try {
-                    const alarm = (await fetch_get(`/api/v1/alarm/${$_GET['id']}`, true))[0];
+                    const alarm = (await fetch_get(url_alarm.replace(':id', id), true))[0];
                     console.log('alarm', alarm);
 
                     const target_eigen   = document.querySelector(".einsatzmittel_eigen_list");

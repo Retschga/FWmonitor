@@ -73,7 +73,7 @@
                         <template id="template-calendargroup">
                             <div class="item smallitem white">
                                 <span class="left material-icons">badge</span>
-                                <span class="text var_name">Telefonliste</span>
+                                <span class="text var_name">Gruppenname</span>
                                 <label class="right checkmark_container">
                                     <input class="var_value" type="checkbox">
                                     <span class="checkmark"></span>
@@ -129,10 +129,10 @@
             // Laden
             async function load_groups_all() {   
                 try {
-                    const groups = await fetch_get(`/api/v1/calendarGroups`, true);
+                    const groups = await fetch_get(url_calendar_groups, true);
                     console.log('groups', groups);
 
-                    const user = await fetch_get(`/api/v1/user/calendargroups/` + user_id, true);
+                    const user = await fetch_get(url_user_calendar_groups.replace(':id', user_id), true);
                     console.log('user', user);
 
                     const target = document.querySelector(".calendargroup_list");
@@ -174,7 +174,7 @@
 
             async function load_entry() {
                 try {
-                    const entry = await fetch_get(`/api/v1/calendar/` + id, true);
+                    const entry = await fetch_get(url_calendar.replace(':id', id), true);
                     console.log('entry', entry);
 
                     const date = new Date(entry.start).toISOString();   
@@ -224,7 +224,7 @@
                     }
                     groupString = groupString.substring(1);
 
-                    const response = await fetch_post('/api/v1/calendar/' + id, {
+                    const response = await fetch_post(url_calendar_update.replace(':id', id), {
                         summary: var_symbol.value + var_name.value,
                         start: new Date(var_date.value).toISOString(),
                         remind: new Date(var_remind.value).toISOString(),
@@ -243,7 +243,7 @@
             async function delete_entry() {
                 loaderIn();    
                 try {
-                    const response = await fetch_get('/api/v1/calendar/delete/' + id);
+                    const response = await fetch_get(url_calendar_delete.replace(':id', id));
                     console.log('delete_entry', response);
                     goBack();
                 } catch (error) {

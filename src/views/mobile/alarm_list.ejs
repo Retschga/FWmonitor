@@ -122,7 +122,7 @@
                 }
 
                 try {
-                    const alarmList = await fetch_get(`/api/v1/alarm/list?offset=${offset}&limit=${limit}`, true);
+                    const alarmList = await fetch_get(url_alarm_list.replace(':offset', offset).replace(':limit', limit), true);
                     console.log('alarmList', alarmList);
 
                     const target        = document.querySelector(".alarm_list");

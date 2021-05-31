@@ -124,7 +124,7 @@
                 let loginFormContainer = document.querySelector("#loginFormContainer");
                 loginFormContainer.classList.add("hidden");
 
-                fetch('/api/v1/auth/login', {                    
+                fetch(url_login, {                    
                     method: 'POST', // *GET, POST, PUT, DELETE, etc.
                     mode: 'cors', // no-cors, *cors, same-origin
                     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
