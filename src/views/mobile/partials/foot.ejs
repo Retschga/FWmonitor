@@ -17,7 +17,15 @@
         $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
     }
 
-    const user_id = 35;    
+    let user_id = -1;    
+    let user_telegramid = -1; 
+    let user_admin = false; 
+    let user_calendar_min = false; 
+    let user_calendar_full = false; 
+    let user_telefone = false;  
+
+    let loaderFunction = () => {};
+
 
 
     /**
@@ -26,7 +34,7 @@
      * @param  {String} 	cvalue  - Cookie Wert
      * @param  {Integer} 	exdays  - Lebesdauer in Tagen
      */
-        function setCookie(cname,cvalue,exdays) {
+    function setCookie(cname,cvalue,exdays) {
         var d = new Date();
         d.setTime(d.getTime() + (exdays*24*60*60*1000));
         var expires = "expires=" + d.toGMTString();
@@ -131,42 +139,6 @@
             loaderIn('login', true);
         }  
     }
-
-    // **** Events ****
-    document.addEventListener('readystatechange', event => { 
-        console.log('readyState --> ' + event.target.readyState);
-
-        // When HTML/DOM elements are ready:
-        if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
-            
-        }
-
-        // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
-        if (event.target.readyState === "complete") {            
-                       
-        }
-    });
-
-    window.addEventListener('load', (event) => {
-        console.log('The page has fully loaded');
-        loaderOut();  
-    });
-
-    window.addEventListener('onpageshow', (event) => {
-        console.log('The page has been shown');
-        loaderOut();  
-    });
-   
-    window.addEventListener("click", (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
-        }
-    }, false);
-
-    window.onunload = function(){
-        console.log('The page is unloading');
-    };   
-    
 
     // **** Hilfsfunktionen ****
     function tab_switch(pageName, elmnt) {
@@ -306,7 +278,64 @@
     }
 
 
+    async function initialLoad() {
+        const userrights = await fetch_get('/api/v1/user/rights', true);
+        console.log('userrights', userrights);
+
+        user_id = userrights.userid;    
+        user_telegramid = userrights.telegramid; 
+        user_admin = userrights.admin; 
+        user_calendar_min = userrights.calendar_min; 
+        user_calendar_full = userrights.calendar_full; 
+        user_telefone = userrights.telefone;          
+    }
+
+
+    // **** Events ****
+    document.addEventListener('readystatechange', event => { 
+        console.log('readyState --> ' + event.target.readyState);
+
+        // When HTML/DOM elements are ready:
+        if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
+            
+        }
+
+        // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+        if (event.target.readyState === "complete") {            
+                       
+        }
+    });
+
+    window.addEventListener('load', async (event) => {
+        console.log('The page has fully loaded');
+        try {
+            await initialLoad();  
+        } catch (error) {
+            console.error(error);            
+        }
+        await loaderFunction();
+            
+        loaderOut();    
+    });
+
+    window.addEventListener('onpageshow', (event) => {
+        console.log('The page has been shown');
+        loaderOut();  
+    });
+   
+    window.addEventListener("click", (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }, false);
+
+    window.onunload = function(){
+        console.log('The page is unloading');
+    };   
+    
   
+    
+
 
 </script>
 

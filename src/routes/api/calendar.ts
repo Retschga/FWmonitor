@@ -16,14 +16,16 @@ router.get(
 
 router.get('/all', awaitHandlerFactory(CalendarController.get_list_all.bind(CalendarController)));
 
-router.post(
-    '/update/:id',
-    ValidatorCalendar.update,
-    awaitHandlerFactory(CalendarController.update_id.bind(CalendarController))
-);
-
 router.get('/new', awaitHandlerFactory(CalendarController.create.bind(CalendarController)));
 
 router.get('/delete/:id', awaitHandlerFactory(CalendarController.delete.bind(CalendarController)));
+
+router.get('/:id', awaitHandlerFactory(CalendarController.get_id.bind(CalendarController)));
+
+router.post(
+    '/:id',
+    ValidatorCalendar.update,
+    awaitHandlerFactory(CalendarController.update_id.bind(CalendarController))
+);
 
 export = router;

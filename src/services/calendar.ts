@@ -67,8 +67,8 @@ class CalendarService {
 
             for (let i = 0; i < groupNumbers.length; i++) {
                 groupArray.push({
-                    id: Number(element.group),
-                    name: calendarGroups[Number(element.group) - 1].name
+                    id: calendarGroups[Number(groupNumbers[i]) - 1].id,
+                    name: calendarGroups[Number(groupNumbers[i]) - 1].name
                 });
             }
             if (groupArray.length < 1) {
@@ -79,7 +79,7 @@ class CalendarService {
             }
 
             const calendarElement: CalendarElement = {
-                id: i,
+                id: element.id,
                 summary: element.summary,
                 start: element.start != null ? element.start : undefined,
                 end: undefined,
@@ -89,12 +89,24 @@ class CalendarService {
             };
             calendarElements.push(calendarElement);
         }
+
+        calendarElements.sort(this.sortByDate);
+
+        return calendarElements;
+    }
+
+    public async find_id(id: number): Promise<CalendarElement[]> {
+        const calendarGroups = await CalendarGroupsModel.model.find();
+        const dbElements = await CalendarModel.model.find({ id: id });
+
+        const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
+
         return calendarElements;
     }
 
     public async find_all(): Promise<CalendarElement[]> {
         const calendarGroups = await CalendarGroupsModel.model.find();
-        const dbElements = await CalendarModel.model.find();
+        const dbElements = await CalendarModel.model.find({}, undefined, undefined);
 
         const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
 
@@ -123,14 +135,16 @@ class CalendarService {
         logging.debug(NAMESPACE, 'create', { summary, start, remind, group });
         let affectedRows = await CalendarModel.model.insert({
             summary: summary,
-            start: start,
-            remind: remind,
+            start: start ? start.toISOString() : undefined,
+            remind: remind ? remind.toISOString() : undefined,
             group: group
         });
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
+
+        globalEvents.emit('calendar-change');
     }
 
     public async delete(id: number) {
@@ -145,6 +159,8 @@ class CalendarService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' delete - No rows changed');
         }
+
+        globalEvents.emit('calendar-change');
     }
 
     public async update(id: number, summary: String, start: Date, remind: Date, group: String) {
@@ -156,14 +172,16 @@ class CalendarService {
 
         let affectedRows = await CalendarModel.model.update(id, {
             summary: summary,
-            start: start,
-            remind: remind,
+            start: start.toISOString(),
+            remind: remind.toISOString(),
             group: group
         });
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update - No rows changed');
         }
+
+        globalEvents.emit('calendar-change');
     }
 
     public init() {

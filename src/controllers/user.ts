@@ -96,6 +96,30 @@ class UserController {
         res.send('OK');
     }
 
+    public async get_user_calendargroups_id(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_user_calendargroups_id');
+
+        let calendargroups = await UserService.get_group_calendar(Number(req.params.id));
+        if (!calendargroups) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+        }
+
+        res.send(calendargroups);
+    }
+
+    public async get_user_rights(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_user_rights');
+
+        res.send({
+            userid: req.session.userid,
+            telegramid: req.session.telegramid,
+            admin: req.session.admin,
+            calendar_min: req.session.calendar_min,
+            calendar_full: req.session.calendar_full,
+            telefone: req.session.telefone
+        });
+    }
+
     // Status
 
     public async get_user_status_id(req: Request, res: Response, next: NextFunction) {
@@ -175,6 +199,7 @@ class UserController {
         res.send('OK');
     }
 
+    // Approve/Delete
     public async delete(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'delete');
         checkValidation(req);

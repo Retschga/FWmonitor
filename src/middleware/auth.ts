@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import UserService from '../services/user';
-import cookieParser from 'cookie-parser';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import jsonwebtoken from 'jsonwebtoken';
+
 import {
     checkPassword,
     createToken,
@@ -18,7 +17,8 @@ export enum UserRights {
     admin,
     calendar_min,
     calendar_full,
-    telefone
+    telefone,
+    ownid
 }
 
 export const login_app = async function (req: Request, res: Response, next: NextFunction) {
@@ -82,6 +82,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         }
 
         // Alles OK -> Session Setup
+        req.session.userid = user[0].id;
         req.session.telegramid = user[0].telegramid;
         req.session.admin = user[0].admin;
         req.session.calendar_min = user[0].kalender == CalendarRight.MIN;
@@ -105,7 +106,14 @@ export const login_app = async function (req: Request, res: Response, next: Next
 
         //next();
     } catch (e) {
+        req.session.telegramid = undefined;
+        req.session.admin = false;
+        req.session.calendar_min = false;
+        req.session.calendar_full = false;
+        req.session.telefone = false;
+
         // Login Cookies löschen
+        req.session.destroy(() => {});
         res.cookie('token', '', {
             secure: true,
             path: '/',
@@ -121,16 +129,14 @@ export const login_app = async function (req: Request, res: Response, next: Next
 };
 
 export const logout_app = async function (req: Request, res: Response, next: NextFunction) {
-    req.body.telegramid = undefined;
-
     req.session.telegramid = undefined;
     req.session.admin = false;
     req.session.calendar_min = false;
     req.session.calendar_full = false;
     req.session.telefone = false;
 
+    // Login Cookies löschen
     req.session.destroy(() => {});
-
     res.cookie('token', '', {
         secure: true,
         path: '/',
@@ -154,6 +160,16 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
             if (UserRights.calendar_full in roles && session.calendar_full != true) ok = false;
             if (UserRights.calendar_min in roles && session.calendar_min != true) ok = false;
             if (UserRights.telefone in roles && session.telefone != true) ok = false;
+
+            if (
+                session.telegramid &&
+                session.userid &&
+                UserRights.ownid in roles &&
+                req.params.id &&
+                Number(req.params.id) == session.userid
+            ) {
+                ok = true;
+            }
 
             if (ok) {
                 next();

@@ -5,6 +5,7 @@ import config from '../utils/config';
 import fs from 'fs';
 import { createThumbnail, getImageSize } from '../utils/thumbnail';
 import { fileExists } from '../utils/common';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'DiashowService';
 
@@ -94,6 +95,8 @@ class DiashowService {
                 filename.replace('.disabled', '')
         );
 
+        globalEvents.emit('diashow-change');
+
         return true;
     }
 
@@ -119,6 +122,8 @@ class DiashowService {
                 ext
         );
 
+        globalEvents.emit('diashow-change');
+
         return true;
     }
 
@@ -131,6 +136,8 @@ class DiashowService {
         const response2 = await fs.promises.unlink(
             config.folders.diashow + '/' + config.folders.thumbnailPrefix + filename
         );
+
+        globalEvents.emit('diashow-change');
 
         return true;
     }

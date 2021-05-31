@@ -169,8 +169,11 @@ const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
             }
 
             // Funktionsaufrufe
-            load_settings_all(user_id);
-            notifications_checkForPermission();
+            loaderFunction = () => {
+                load_settings_all(user_id);
+                notifications_checkForPermission();
+            };
+            
 
         </script>
        

@@ -21,7 +21,6 @@
                 <h1>FWmonitor</h1>      
 
             </div>
-
             <div class="content">
 
                 <!-- STATUS TEMPLATE -->  
@@ -265,10 +264,12 @@
             }
 
             // Funktionsaufrufe
-            redirect_if_logged_out(); 
-            load_alarm();
-            load_calendar();
-            load_status_id(user_id);
+            loaderFunction = () => {
+                redirect_if_logged_out(); 
+                load_alarm();
+                load_calendar();
+                load_status_id(user_id);
+            };            
             
             
         </script>

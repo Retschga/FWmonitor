@@ -6,7 +6,7 @@
         <%- include('partials/head') -%>	
         <title>FWmonitor - APP</title>	
 
-        <link rel="stylesheet" href="/css/mobile_calendar.css">
+        <link rel="stylesheet" href="/css/mobile_calendar.css">       
 
     </head>	
 
@@ -18,7 +18,15 @@
 
                 <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-                <h1>Kalender</h1>      
+                <h1>Kalender</h1>     
+
+                
+
+                <div class="flex_grow"></div>
+
+                <button class="material-icons btn_add hidden" onclick="create_entry();">add_circle_outline</button>
+
+   
 
             </div>
 
@@ -95,8 +103,14 @@
                         var_groups.innerHTML = badge;
                         var_emoji.innerHTML  = icon;
 
-                        const clone = document.importNode(template.content, true);
+                        const clone = document.importNode(template.content.firstElementChild, true);
                         target.appendChild(clone);
+
+                        if(user_calendar_min || user_calendar_full) {
+                            clone.addEventListener("click", () => {
+                                loaderIn('calendar_entry?id=' + element.id);
+                            });
+                        }
                     }
 
                 } catch (error) {
@@ -104,8 +118,29 @@
                 } 
             }
 
+
+            async function create_entry() {
+                loaderIn();
+                try {                 
+
+                    const response = await fetch_get('/api/v1/calendar/new');
+                    console.log('create_entry', response);   
+                    location.reload();
+                    
+                } catch (error) {
+                    console.error('create_entry', error);
+                }       
+                loaderOut();
+            }
+
             // Funktionsaufrufe
-            load_calendar();
+            loaderFunction = () => {
+                load_calendar();
+                if(user_calendar_min || user_calendar_full) {
+                    document.querySelector('.btn_add').classList.remove('hidden');
+                }
+            };
+            
 
         </script>
        

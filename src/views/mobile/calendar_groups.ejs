@@ -45,12 +45,12 @@
                                 <div class="item smallitem">
                                     <span class="left material-icons">badge</span>
                                     <span class="text">Name</span>
-                                    <input class="var_name" type="right" placeholder="Name...">
+                                    <input class="var_name" type="text" placeholder="Name...">
                                 </div>
                                 <div class="item smallitem">
                                     <span class="left material-icons">pin</span>
                                     <span class="text">ICAL Pattern</span>
-                                    <input class="var_pattern" type="right" placeholder="Pattern...">
+                                    <input class="var_pattern" type="text" placeholder="Pattern...">
                                 </div>                        
                             </div>
                         </div>
@@ -123,7 +123,10 @@
             }
 
             // Funktionsaufrufe
-            load_groups_all();
+            loaderFunction = () => {
+               load_groups_all(); 
+            };
+            
         </script>
        
     </body>

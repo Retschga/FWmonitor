@@ -10,6 +10,16 @@ import { checkValidation } from './controller';
 const NAMESPACE = 'CalerndarController';
 
 class CalendarController {
+    public async get_id(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_next');
+
+        let list = await calendarService.find_id(Number(req.params.id));
+        if (!list) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
+        }
+        res.send(list[0]);
+    }
+
     public async get_next(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_next');
 

@@ -4,7 +4,7 @@ import logging from '../utils/logging';
 import * as UserModel from '../models/user';
 import { isJsonString } from '../utils/common';
 import { UserStatus } from '../models/user';
-import user from '../controllers/user';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'User_Service';
 
@@ -135,6 +135,8 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_status - No rows changed');
         }
+
+        globalEvents.emit('userstatus-change');
     }
 
     public async update_status_plan(id: number, value: string) {
@@ -158,6 +160,8 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_status_hidden - No rows changed');
         }
+
+        globalEvents.emit('userstatus-change');
     }
 
     public async update_notifications_calendar(id: number, value: boolean) {
@@ -359,6 +363,16 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_roles_kalender - No rows changed');
         }
+    }
+
+    public async get_group_calendar(id: number) {
+        let result = await this.find({ id: id });
+        if (result.length < 1) return;
+        let user = result[0];
+        return {
+            id: user.id,
+            groups: user.kalenderGroups.split('|').map((x) => Number(x))
+        };
     }
 
     public async update_group_calendar(id: number, value: string) {

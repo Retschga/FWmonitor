@@ -34,7 +34,8 @@
                         </div>
 
                     </div>
-                    <div class="list">
+
+                    <div class="list only_admin hidden">
 
                         <div class="item" onclick="loaderIn('alarmsettings');">
                             <span class="left material-icons">edit_notifications</span>
@@ -69,9 +70,9 @@
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                    </div>      
-                    
-                    <div class="list">
+                    </div>     
+
+                    <div class="list only_admin hidden">
 
                         <div class="item" onclick="loaderIn('user_list');">
                             <span class="left material-icons">manage_accounts</span>
@@ -85,9 +86,9 @@
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                    </div> 
+                    </div>                     
 
-                    <div class="list">
+                    <div class="list only_admin hidden">
 
                         <div class="item" onclick="loaderIn('calendar_groups');">
                             <span class="left material-icons">perm_contact_calendar</span>
@@ -103,7 +104,7 @@
 
                     </div>   
                     
-                    <div class="list">
+                    <div class="list only_admin hidden">
 
                         <div class="item" onclick="loaderIn('device_list');">
                             <span class="left material-icons">devices</span>
@@ -112,7 +113,6 @@
                         </div>
 
                     </div> 
-
 
 
                     <div class="flex_grow"></div>
@@ -141,6 +141,25 @@
 
 
         <%- include('partials/foot') -%>
+
+        <script>     
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                if(user_admin) {
+
+                    const admin_options   = document.querySelectorAll('.only_admin');  
+
+                    for(let i = 0; i < admin_options.length; i++) {
+                        const element = admin_options[i];
+                        element.classList.remove('hidden');
+                    }
+
+                }
+            };            
+            
+            
+        </script>
 
        
     </body>

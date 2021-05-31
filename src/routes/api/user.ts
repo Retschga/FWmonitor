@@ -8,6 +8,13 @@ import * as ValidatorsUser from '../../middleware/userValidator';
 const router = express.Router();
 
 router.get(
+    '/calendargroups/:id',
+    awaitHandlerFactory(userController.get_user_calendargroups_id.bind(userController))
+);
+
+router.get('/rights', awaitHandlerFactory(userController.get_user_rights.bind(userController)));
+
+router.get(
     '/status/all',
     awaitHandlerFactory(userController.get_user_status_all.bind(userController))
 );

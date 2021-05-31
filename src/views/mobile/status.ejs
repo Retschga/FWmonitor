@@ -160,8 +160,11 @@
             }
 
             // Funktionsaufrufe
-            load_status_id(user_id);
-            load_statuslist();
+            loaderFunction = () => {
+                load_status_id(user_id);
+                load_statuslist();
+            };
+            
 
 
         </script>

@@ -26,9 +26,10 @@ class CalendarModel extends Model {
     public async find(
         params: object = {},
         limit: number = -1,
-        offset: number = -1
+        offset: number = -1,
+        extra?: string
     ): Promise<CalendarRow[]> {
-        return await super.findElement<CalendarRow>(params, limit, offset);
+        return await super.findElement<CalendarRow>(params, limit, offset, extra);
     }
 }
 

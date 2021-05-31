@@ -177,9 +177,11 @@
                 }
             }
 
-            // Funktionsaufrufe
-            load_alarms(offset, limit);
-            offset += limit;
+            // Funktionsaufrufe            
+            loaderFunction = () => {
+                load_alarms(offset, limit);
+                offset += limit;
+            };
 
 
 

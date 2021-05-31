@@ -162,6 +162,14 @@ button {
     margin-bottom: 1em !important;
 }
 
+.margin_right_1 {
+    margin-right: 1em !important;
+}
+
+.margin_left_1 {
+    margin-left: 1em !important;
+}
+
 .margin_top_2 {
     margin-top: 2em !important;
 }
@@ -355,6 +363,10 @@ button {
 }
 
 /* ------- COLORS -------- */
+.white {
+    background-color: white !important;
+}
+
 .blue {
     background-color: cornflowerblue !important;
 }

@@ -19,6 +19,8 @@ export const updateUserStatusPlans = [
         .withMessage('value is required')
         .isJSON()
         .withMessage('value is no valid json')
+        .escape()
+        .trim()
 ];
 
 export const updateUserStatusHidden = [
@@ -30,8 +32,16 @@ export const updateUserStatusHidden = [
 ];
 
 export const updateUser = [
-    body('group').exists().withMessage('group is required'),
-    body('admin').exists().withMessage('admin is required'),
+    body('group')
+        .exists()
+        .withMessage('group is required')
+        .isNumeric()
+        .withMessage('admin must be numeric'),
+    body('admin')
+        .exists()
+        .withMessage('admin is required')
+        .isBoolean()
+        .withMessage('admin must be boolean'),
     body('kalender')
         .exists()
         .withMessage('kalender is required')
@@ -39,15 +49,47 @@ export const updateUser = [
         .withMessage('kalender is not numeric')
         .isIn([0, 1, 2])
         .withMessage('kalender is not 0 or 1 or 2'),
-    body('telefonliste').exists().withMessage('telefonliste is required'),
-    body('drucker').exists().withMessage('drucker is required'),
-    body('softwareInfo').exists().withMessage('softwareInfo is required'),
-    body('kalenderGroups').exists().withMessage('kalenderGroups is required'),
-    body('statusHidden').exists().withMessage('statusHidden is required'),
-    body('stAGT').exists().withMessage('stAGT is required'),
-    body('stMA').exists().withMessage('stMA is required'),
-    body('stGRF').exists().withMessage('stGRF is required'),
-    body('stZUGF').exists().withMessage('stZUGF is required')
+    body('telefonliste')
+        .exists()
+        .withMessage('telefonliste is required')
+        .isBoolean()
+        .withMessage('telefonliste must be boolean'),
+    body('drucker')
+        .exists()
+        .withMessage('drucker is required')
+        .isBoolean()
+        .withMessage('drucker must be boolean'),
+    body('softwareInfo')
+        .exists()
+        .withMessage('softwareInfo is required')
+        .isBoolean()
+        .withMessage('softwareInfo must be boolean'),
+    body('kalenderGroups').exists().withMessage('kalenderGroups is required').escape().trim(),
+    body('statusHidden')
+        .exists()
+        .withMessage('statusHidden is required')
+        .isBoolean()
+        .withMessage('statusHidden must be boolean'),
+    body('stAGT')
+        .exists()
+        .withMessage('stAGT is required')
+        .isBoolean()
+        .withMessage('stAGT must be boolean'),
+    body('stMA')
+        .exists()
+        .withMessage('stMA is required')
+        .isBoolean()
+        .withMessage('stMA must be boolean'),
+    body('stGRF')
+        .exists()
+        .withMessage('stGRF is required')
+        .isBoolean()
+        .withMessage('stGRF must be boolean'),
+    body('stZUGF')
+        .exists()
+        .withMessage('stZUGF is required')
+        .isBoolean()
+        .withMessage('stZUGF must be boolean')
 ];
 
 export const updateNotificationsApp = [
