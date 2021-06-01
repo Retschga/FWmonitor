@@ -15,69 +15,27 @@
     for (var i = 0; i < parts.length; i++) {
         var temp = parts[i].split("=");
         $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-    }
-
-    let user_id = -1;    
-    let user_telegramid = -1; 
-    let user_admin = false; 
-    let user_calendar_min = false; 
-    let user_calendar_full = false; 
-    let user_telefone = false;  
+    }    
 
     let loaderFunction = () => {};
 
-    const url_user_status_plans_update = '/api/v1/user/status/plans/update/:id';
-    const url_user_status_hidden_update = '/api/v1/user/status/hidden/update/:id';
-    const url_user_status = '/api/v1/user/status/:id';
     const url_user_status_all = '/api/v1/user/status/all';
-    const url_user_status_update = '/api/v1/user/status/update/:id';
-    const url_user_calendar_groups = '/api/v1/user/calendargroups/:id';
-    const url_user = '/api/v1/user/:id';
-    const url_user_update = '/api/v1/user/:id';
-    const url_user_delete = '/api/v1/user/delete/:id';
-    const url_user_approve = '/api/v1/user/approve/:id';
-    const url_user_all = '/api/v1/user';
-    const url_user_notifications_app_update = '/api/v1/user/notifications/app/:id';
-    const url_user_notifications_calendar_update = '/api/v1/user/notifications/calendar/:id';
 
-    const url_group_update = '/api/v1/group/:id';
-    const url_group_all = `/api/v1/group`;
-
-    const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
     const url_alarm = '/api/v1/alarm/:id';
     const url_alarm_last = '/api/v1/alarm/';
     const url_alarm_isalarm = '/api/v1/alarm/isalarm';
 
     const url_calendar_groups = '/api/v1/calendarGroups';
-    const url_calendar_groups_update = '/api/v1/calendarGroups/:id';
     const url_calendar = '/api/v1/calendar/:id';
-    const url_calendar_next = '/api/v1/calendar/next';
-    const url_calendar_update = '/api/v1/calendar/:id';
-    const url_calendar_delete = '/api/v1/calendar/delete/:id';
-
-    const url_cars_all = '/api/v1/car';
-    const url_cars_update = '/api/v1/car/:id';
-    const url_cars_delete = '/api/v1/car/delete/:id';
-    const url_cars_create = '/api/v1/car/create';
-    const url_cars_password_new = '/api/v1/car/password';
-
-    const url_login = '/api/v1/auth/login';
 
     const url_map_forstrettpkt = 'rettPunkte.geojson';
     const url_map_hydranten = '/app/api/hydranten.geojson?lat=:lat&lng=:lng';
 
     const url_diashow_list = '/api/v1/diashow/list';
-    const url_diashow_disable = '/api/v1/diashow/disable';
-    const url_diashow_enable = '/api/v1/diashow/enable';
-    const url_diashow_delete = '/api/v1/diashow/delete';
+    const url_diashow_file = '/api/v1/diashow/files/full/:filename'
+
+    const url_dwd_warnings = 'https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=json&CQL_FILTER=WARNCELLID%20IN%20(%27:warncellid%27)';
     
-    const url_statistic = '/api/v1/statistic/:year';
-    const url_statistic_time = '/api/v1/statistic/time/:id/:year';
-
-    const url_device_all = '/api/v1/device/all';
-
-
-
     /**
      * Erstellt ein Cookie
      * @param  {String} 	cname   - Cookie Name
@@ -117,7 +75,7 @@
      * @param  {String} 	url         - Zielseite
      * @param  {Boolean} 	noHistroy   - Aktuelle Seite aus der History entfernen
      */
-    function loaderIn(url, noHistroy, text) {
+     function loaderIn(url, noHistroy, text) {
         let loader = document.querySelector("#pageloader");
         loader.classList.remove("loader_out")
         loader.classList.add("loader_in");
@@ -140,7 +98,7 @@
             }, 200);
         }       
     }
-
+    
     /**
      * Versteckt den Seitenloader
      */
@@ -163,40 +121,6 @@
         }, 200);
     }
 
-    /**
-     * Meldet den Benutzer ab
-     */
-    async function logout() {
-        loaderIn();
-        try {
-            const data = await fetch_post('/api/v1/auth/logout', {}, true, 10000);
-
-            if(data.message && data.message == 'OK') {                
-                setCookie('logout_status', 'true', 1);
-                loaderIn('login', true);
-                return false;
-            }
-            if(data.message) {
-                console.error("Login Fehler: ", data.message);	
-                alert(data.message);
-            }
-        } catch (error) {
-            console.log(error.message);
-        }
-        loaderOut();
-    }
-
-    /**
-     * Leitet den Benutzer zum Anmeldebildschirm weiter, falls er nicht eingeloggt ist
-     */
-    function redirect_if_logged_out() {
-        const logout_status = getCookie('logout_status');
-        console.log('logout_status', logout_status);
-
-        if(logout_status == 'true') {
-            loaderIn('login', true);
-        }  
-    }
 
     // **** Hilfsfunktionen ****
     function tab_switch(pageName, elmnt) {
@@ -262,27 +186,6 @@
         return div.innerHTML;
     }
 
-    // Input Prefixes
-    // https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
-    function addFormatter (input, formatFn) {        
-        let oldValue = input.value;
-        
-        const handleInput = event => {
-            const result = formatFn(input.value, oldValue, event);
-            if (typeof result === 'string') {
-                input.value = result;
-            }
-            
-            oldValue = input.value;
-        }
-    
-        handleInput();
-        input.addEventListener("input", handleInput);
-    }
-    function regexPrefix (regex, prefix) {
-        return (newValue, oldValue) => regex.test(newValue) ? newValue : (newValue ? oldValue : prefix);
-    }
-
     // FETCH Helper functions
     // https://jasonwatmore.com/post/2020/04/18/fetch-a-lightweight-fetch-wrapper-to-simplify-http-requests
     function fetch_get(url, json = false, timeout = 20000) {
@@ -337,15 +240,7 @@
 
 
     async function initialLoad() {
-        const userrights = await fetch_get('/api/v1/user/rights', true);
-        console.log('userrights', userrights);
-
-        user_id = userrights.userid;    
-        user_telegramid = userrights.telegramid; 
-        user_admin = userrights.admin; 
-        user_calendar_min = userrights.calendar_min; 
-        user_calendar_full = userrights.calendar_full; 
-        user_telefone = userrights.telefone;          
+        
     }
 
 

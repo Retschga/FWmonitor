@@ -12,6 +12,13 @@ const SERVER_HTTP = {
     port: process.env.SERVER_PORT || 1337
 };
 
+const SERVER_HTTPS = {
+    hostname: process.env.SERVER_HOSTNAME || '127.0.0.1',
+    port: process.env.SERVER_PORT || 443,
+    key: process.env.HTTPS_KEY || 'zertifikat-key.key',
+    cert: process.env.HTTPS_CERT || 'zertifikat-cert.crt'
+};
+
 const TELEGRAM = {
     bot_token: process.env.TELEGRAM_BOT_TOKEN || '',
     fw_name: process.env.FW_NAME_SHORT || 'FF Test'
@@ -70,7 +77,8 @@ const PRINTING = {
 };
 
 const COMMON = {
-    fwName: process.env.FW_NAME || 'Freiwillige Feuerwehr Test'
+    fwName: process.env.FW_NAME || 'Freiwillige Feuerwehr Test',
+    dwd_warncellid: process.env.DWD_WARCELLID || ''
 };
 
 const GEOCODE = {
@@ -107,6 +115,7 @@ const ALARMFIELDS = {
 const config = {
     sqlite: SQLITE,
     server_http: SERVER_HTTP,
+    server_https: SERVER_HTTPS,
     telegram: TELEGRAM,
     app: APP,
     folders: FOLDERS,

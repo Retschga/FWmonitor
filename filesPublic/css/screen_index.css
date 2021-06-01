@@ -1,0 +1,19 @@
+.calendar_element {
+    border: 1px solid var(--color_border);
+    border: 10px;
+    background-color: var(--bg_list_item);
+    padding: 0.5em;
+    min-width: 15em;
+    margin-top: 0.3em;;
+}
+
+.calendar_element .var_emoji {
+
+    padding-right: 0.5em;
+}
+
+.col_left, .col_center, .col_right {
+    padding-top: 1em;
+    padding-bottom: 1em;
+    overflow: hidden;
+}

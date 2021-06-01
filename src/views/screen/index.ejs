@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/screen_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">menu</button>
+
+                <h1>FWmonitor</h1>  
+                
+                <h1 class="var_name text_align_center flex_grow"><%= fwname %> </h1>  
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+            <div class="content flex_row" style=" background-repeat: no-repeat; background-attachment: fixed; background-position: center top; background-size: contain;">
+
+                <div class="col_left">                
+                </div>
+
+                <div class="col_center flex_grow">
+                </div>
+
+                <div class="col_right">
+                </div>
+
+                <template id="template-calendarelement">
+
+                    <div class="calendar_element flex_row deleteme_calendar">
+
+                        <div class="var_emoji">
+                            <span>?</span>
+                        </div>    
+
+                        <div class="flex_column flex_grow">                        
+
+                            <div class="flex_row">  
+                                                      
+                                <div class="flex_grow">
+                                    <span class="var_text">
+                                        Text
+                                    </span>
+                                </div>
+
+                                <div class="text_align_right">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>  
+
+                            </div>
+
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>   
+
+                        </div>   
+    
+                    </div>
+
+                </template>
+
+                <template id="template-dwdelement">
+
+                    <div class="calendar_element flex_row deleteme_dwd">
+
+                        <div class="var_emoji">
+                            <span>⚠️</span>
+                        </div>    
+
+                        <div class="flex_column flex_grow">         
+                            
+                            <div class="flex_grow">
+                                <span class="var_name">
+                                    Name
+                                </span>
+                            </div>
+                              
+                            <div class="flex_grow">
+                                <span class="var_text">
+                                    Text
+                                </span>
+                            </div>
+
+                            <div class="text_align_right">
+                                <span class="var_date">##.##.#### ##:## - ##.##.#### ##:##</span>
+                            </div>  
+
+                        </div>   
+    
+                    </div>
+
+                </template>
+
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            const col_left        = document.querySelector('.col_left');
+            const col_center      = document.querySelector('.col_center');
+            const col_right       = document.querySelector('.col_right');
+
+            let diashow_time      = parseInt(getCookie("diashow_time"))      || 15000;
+            let pos_dwd           = parseInt(getCookie("pos_dwd"))           || 0;
+            let pos_calendar      = parseInt(getCookie("pos_calendar"))      || 2;
+            let calendar_elements = parseInt(getCookie("calendar_elements")) || 8;            
+
+            const clientName          = $_GET['name'];	
+            const keepAlive_intervall = 10000;
+            const keepAlive_timeout   = 60000;
+
+			console.log("Client-Name: ", clientName);
+
+            let connected = true;
+            let socket_software;
+
+            // Laden
+            async function load_diashow() {
+                try {
+                    const files = await fetch_get(url_diashow_list, true);
+                    console.log('files', files);
+                    const images = files.enabled;
+
+                    const target = document.querySelector(".content");
+
+                    const count = images.length;
+                    let nextImage = Math.floor(Math.random() * count);
+                    let   img;
+                    function slideshow() {
+                        target.style.backgroundImage = `url("${url_diashow_file.replace(':filename', images[nextImage])}")`;
+                        setTimeout(slideshow, diashow_time);
+                        nextImage++;
+                        if(nextImage >= count){
+                            nextImage = 0;
+                        }
+                        // Nächstes Bild preload
+                        img = null;
+                        img = new Image();
+                        img.src = url_diashow_file.replace(':filename', images[nextImage]);
+                    }
+                    slideshow();
+
+                } catch (error) {
+                    console.error('load_diashow', error);
+                } 
+            }
+            
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }
+
+            async function load_calendar() {
+                let target;
+                switch (pos_calendar) {
+                    case 0:
+                        target = col_left;
+                        break;
+                    case 1:
+                        target = col_center;
+                        break;
+                    case 2:
+                        target = col_right;
+                        break;
+                }
+
+                try {
+                    const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
+                    console.log('calendarUpcoming', calendarElements);
+
+                    // Bereits vorhandene Elemente löschen
+                    let elements = target.getElementsByClassName("deleteme_calendar");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                    for(let i = 0; i < calendarElements.length && i < calendar_elements; i++) {
+                        const element = calendarElements[i];
+
+                        const date = new Date(element.start);   
+                        const {text, icon} = parseKalenderSummary(element.summary);
+                        let badge = "";
+                        for(let j = 0; j < element.group.length; j++) {
+                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                        }
+
+                        const template   = document.querySelector('#template-calendarelement');                
+                        const var_text   = template.content.querySelector(".var_text");
+                        const var_date   = template.content.querySelector(".var_date");
+                        const var_time   = template.content.querySelector(".var_time");
+                        const var_groups = template.content.querySelector(".var_groups");
+                        const var_emoji  = template.content.querySelector(".var_emoji");
+
+                        var_text.innerHTML   = text;
+                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                        var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                        var_groups.innerHTML = badge;
+                        var_emoji.innerHTML  = icon;
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.appendChild(clone);
+
+                    }
+
+                } catch (error) {
+                    console.error('load_calendar', error);
+                } 
+            }
+
+            async function load_dwd() {
+                if('<%= dwd_warncellid %>' == '') return;
+
+                let target;
+                switch (pos_dwd) {
+                    case 0:
+                        target = col_left;
+                        break;
+                    case 1:
+                        target = col_center;
+                        break;
+                    case 2:
+                        target = col_right;
+                        break;
+                }
+
+                try {
+                    const dwd_warnings = await fetch_get(url_dwd_warnings.replace(':warncellid', '<%= dwd_warncellid %>'), true);
+                    console.log('dwd_warnings', dwd_warnings);
+
+                    const features = dwd_warnings.features;
+
+                    // Bereits vorhandene Elemente löschen
+                    let elements = target.getElementsByClassName("deleteme_dwd");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                    for(let i = 0; i < features.length; i++) {
+                        const element = features[i];
+
+                        const prop_name        = element.properties.NAME;
+                        const prop_event       = element.properties.EVENT;
+                        const prop_headline    = element.properties.HEADLINE;
+                        const prop_begin       = element.properties.ONSET.replace(/[TZ]/g, ' ');
+                        const prop_end         = element.properties.EXPIRES.replace(/[TZ]/g, ' ');
+                        const prop_description = element.properties.DESCRIPTION;						
+
+                        const date = new Date(element.start);   
+                        const {text, icon} = parseKalenderSummary(element.summary);
+                        let badge = "";
+                        for(let j = 0; j < element.group.length; j++) {
+                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                        }
+
+                        const template   = document.querySelector('#template-calendarelement');  
+                        const var_name   = template.content.querySelector(".var_name");              
+                        const var_text   = template.content.querySelector(".var_text");
+                        const var_date   = template.content.querySelector(".var_date");
+
+                        var_name.innerHTML   = prop_name;
+                        var_text.innerHTML   = prop_headline;
+                        var_date.innerHTML   = prop_begin + ' - ' + prop_end;
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.appendChild(clone);
+                    }
+
+                } catch (error) {
+                    console.error('load_dwd', error);
+                } 
+            }
+
+            async function load_status() {
+
+            }
+
+            function connect_software() {			
+				let keepAliveInterval = null;
+                socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
+				
+				// Event: Socket geöffnet
+                socket_software.onopen = function() {
+                    console.log("Software-connection socket connected.");
+
+					this.send(`{
+                        "topic": "init",
+						"type":"WebClient",
+						"name":"Alarmdisplay - ${clientName}",
+						"info":"Index",
+						"actions":[
+                            {"id":"-2"},
+							{"id":"0"},
+							{"id":"1"},
+							{"id":"2"},
+							{"id":"3", "value": ${calendar_elements}},
+							{"id":"4"},
+                            {"id":"6"},
+                            {"id":"10", "value": ${pos_calendar}},
+                            {"id":"11", "value": ${pos_dwd}},
+                            {"id":"12", "value": ${diashow_time/1000}}
+						]}`);
+
+                        // siehe websockets.ts
+					
+					
+					lastKeepAlive = new Date();					
+					keepAliveInterval = setInterval(() => {
+						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+						}
+					}, keepAlive_intervall)
+
+                    connected = true;
+                };
+
+				// Event: Daten empfangen
+                socket_software.onmessage = function(e) {
+                    processMessage(e.data, socket_software);
+                };
+
+				// Event: Socket geschlossen
+                socket_software.onclose = function(e) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                    setTimeout(function() { connect_software(); }, 1000);
+                    connected = false;
+                };
+
+				// Event: Scoket Fehler
+                socket_software.onerror = function(err) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                    socket_software.close();
+                    connected = false;
+                };
+            }
+
+            // Hilfsfunktionen
+            function processMessage(data, socket) {
+				console.log('Software-connection socket message:', data);
+			
+				data           = JSON.parse(data);
+				const topic    = data.topic;
+				const message  = data.message;
+				
+				// Keep Alive
+				if(topic == 'ping') {
+					lastKeepAlive = new Date();	
+                    socket.send(JSON.stringify({topic: 'pong', message :message}));				
+					loaderOut();
+				}
+	
+				// Alarm
+				if(topic == 'alarm')					
+					goToAlarm(message);
+
+				if(topic == 'letzteralarm')
+					window.location.href = '/alarm?manuell=true&name=' + clientName;
+			
+				// Präsentation
+				if(topic == 'praes_load')
+					window.location.href = '/praes?name=' + message;
+
+				// Reload
+				if(topic == 'reload')
+					location.reload(); 
+
+				// Kalender
+				if(topic == 'kal_reload')
+					getCalendar(kalenderElemente);
+
+				if(topic == 'kal_elemnum') {
+                    setCookie("calendar_elements", message);
+					location.reload(); 
+				}	
+                if(topic == 'kal_pos') {
+                    setCookie("pos_calendar", message);
+					location.reload(); 
+				}	
+
+                // DWD
+                if(topic == 'dwd_pos') {
+                    setCookie("pos_dwd", message);
+					location.reload(); 
+				}	
+
+                // Diashow
+                if(topic == 'diashow_time') {
+                    setCookie("diashow_time", parseInt(message) * 1000);
+					location.reload(); 
+				}	                           
+
+			}
+            
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_diashow();
+                load_clock();
+                load_calendar();
+                load_dwd();
+                connect_software();
+
+                setInterval(function() {
+
+                    if(connected) {
+                        location.reload(true);                    
+                    }
+
+                }, 60000 * 30); // 30min
+            };      
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

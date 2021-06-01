@@ -12,12 +12,13 @@ temp/**/*
 *.jks
 *.p8
 *.p12
-*.key
 *.mobileprovision
 *.orig.*
 *.sqlite3
 *.database
 *.db
 *.pem
+*.key
+*.crt
 
 package-lock.json

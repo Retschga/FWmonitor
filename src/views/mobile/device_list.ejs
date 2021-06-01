@@ -22,62 +22,252 @@
 
             <div class="content">
 
-                <div class="flex_column list">
-
-                    <button class="accordion" onclick="accordion_switch(this)">Anzeigename</button>
-                    <div class="accordion_panel">
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">badge</span>
-                            <span class="text">Anzeigename</span>
-                            <input type="right" placeholder="Name...">
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">person</span>
-                            <span class="text">Benutzername</span>
-                            <input type="right" placeholder="Benutzer...">
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">password</span>
-                            <span class="text">Passwort</span>
-                            <input type="right" placeholder="Passwort...">
-                        </div>
-
-                        <div class="item smallitem padding_top_1">
-                            <div class="red left item rounded">
-                                <span class="left material-icons">delete</span>
-                                <span class="text">Löschen</span>                                
-                            </div>
-                            <div class="flex_grow"></div>
-                            <div class="green right item rounded">
-                                <span class="text text_align_right">Speichern</span>
-                                <span class="right material-icons">save</span>
-                            </div>                            
-                            
-                        </div>
-
+                <template id="template-element">
+                    <div class="flex_column list">
+                        <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
+                        <div class="accordion_panel element_list">
+                        </div>               
                     </div>
-                    
-                    <button class="accordion margin_top_1" onclick="accordion_switch(this)">Section 2</button>
-                    <div class="accordion_panel">
-                      <p>Lorem ipsum...</p>
-                    </div>
-                    
-                    <button class="accordion margin_top_1" onclick="accordion_switch(this)">Section 3</button>
-                    <div class="accordion_panel">
-                      <p>Lorem ipsum...</p>
-                    </div> 
+                </template>
 
-                    
-                    
-                </div>
+                <template id="template-element-text">
+                    <div class="item smallitem">
+                        <span class="left material-icons">format_size</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <span class="var_value">Anzeigename</span>
+                    </div>
+                </template>
+
+                <template id="template-element-textinput">
+                    <div class="item smallitem">
+                        <span class="left material-icons">format_size</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <input type="text" class="var_value" placeholder="Wert...">
+                    </div>
+                </template>
+
+                <template id="template-element-button">
+                    <div class="item smallitem padding_top_1">
+                        <span class="left material-icons">format_size</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <div class="green right item rounded" style="height: 1em; padding: 0.5em;">
+                            <span class="text text_align_right var_action" style="line-height: 1;">Aktion</span>
+                            <span class="right material-icons" style="line-height: 0.7;">send</span>
+                        </div> 
+                    </div>
+                </template>
+
+                <template id="template-element-dropdown">
+                    <div class="item smallitem">
+                        <span class="left material-icons">format_size</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <select class="var_value" style="min-width: 30%;">
+                            <option value="0">Links</option>
+                            <option value="2">Rechts</option>
+                        </select>
+                    </div>
+                </template>
 
             </div>
 
 
         <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_cars_all() {   
+                try {
+                    const devices = await fetch_get(url_device_all, true);
+                    console.log('devices', devices);
+
+                    const target = document.querySelector(".content");
+
+                    for(let i = 0; i < devices.length; i++) {
+                        const device = devices[i];
+
+                        const template            = document.querySelector('#template-element');  
+                        const var_header_name     = template.content.querySelector(".var_header_name");   
+                        const target_elements     = template.content.querySelector(".element_list");      
+
+                        const template_text       = document.querySelector('#template-element-text');    
+                        const text_var_name       = template_text.content.querySelector(".var_name");
+                        const text_var_value      = template_text.content.querySelector(".var_value"); 
+
+                        const template_textinput  = document.querySelector('#template-element-textinput');   
+                        const textinput_var_name  = template_textinput.content.querySelector(".var_name");
+                        const textinput_var_value = template_textinput.content.querySelector(".var_value");                       
+
+                        const template_button     = document.querySelector('#template-element-button');  
+                        const button_var_name     = template_button.content.querySelector(".var_name");
+                        const button_var_action   = template_button.content.querySelector(".var_action");  
+
+                        const template_dropdown   = document.querySelector('#template-element-dropdown'); 
+                        const dropdown_var_name   = template_dropdown.content.querySelector(".var_name");
+                        const dropdown_var_value  = template_dropdown.content.querySelector(".var_value");    
+
+                          
+                        
+                        var_header_name.innerHTML = device.name; 
+
+                        device.id;
+                        device.info;
+                        device.name;
+                        device.type;
+
+                        for(let i = 0; i < device.actions.length; i++) {
+                            const action = device.actions[i];
+                            let clone;
+                            
+                            switch (action.id) {
+                                case '0':
+                                    button_var_name.innerHTML = 'Reload';  
+                                    button_var_action.innerHTML = 'Ausführen'; 
+                                    clone = document.importNode(template_button.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '1':
+                                    button_var_name.innerHTML = 'Letzter Alarm';  
+                                    button_var_action.innerHTML = 'Ausführen'; 
+                                    clone = document.importNode(template_button.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '2':
+                                    text_var_name.innerHTML = 'Funktion';  
+                                    text_var_value.innerHTML = 'Diashow'; 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+
+                                case '4':
+                                    text_var_name.innerHTML = 'Funktion';  
+                                    text_var_value.innerHTML = 'Präsentation'; 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '5':
+                                    button_var_name.innerHTML = 'Zurück';  
+                                    button_var_action.innerHTML = 'Ausführen'; 
+                                    clone = document.importNode(template_button.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '6':
+                                    text_var_name.innerHTML = 'Funktion';  
+                                    text_var_value.innerHTML = 'Kalender'; 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '7':
+                                    button_var_name.innerHTML = 'Neustart';  
+                                    button_var_action.innerHTML = 'Ausführen'; 
+                                    clone = document.importNode(template_button.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '8':
+                                    text_var_name.innerHTML = 'Version';  
+                                    text_var_value.innerHTML = action.value; 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    button_var_name.innerHTML = 'Update';  
+                                    button_var_action.innerHTML = 'Ausführen'; 
+                                    clone = document.importNode(template_button.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+
+                                case '10':
+                                    dropdown_var_name.innerHTML = 'Kalender Position';  
+                                    //setSelectedIndex(dropdown_var_value, String(action.value));
+                                    clone = document.importNode(template_dropdown.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '11':
+                                    dropdown_var_name.innerHTML = 'DWD Position';                                     
+                                   //setSelectedIndex(dropdown_var_value, String(action.value));
+                                    clone = document.importNode(template_dropdown.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                                case '12':
+                                    textinput_var_name.innerHTML = 'Diashow Wechselzeit';  
+                                    textinput_var_value.value = action.value; 
+                                    clone = document.importNode(template_textinput.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                    break;
+                            }
+                        }
+
+                        // {"id":"alles<1", "value": ${text}}   Textanzeige
+                        // {"id":"0"}                           Button Reload
+                        // {"id":"1"}                           Button Letzter Alarm
+                        // {"id":"2"}                           Kann Diashow
+                        // {"id":"3", "value": ${count}}        Eingabefeld Kalender Elemente
+                        // {"id":"4"}                           Kann Präsentation
+                        // {"id":"5"}                           Button Zurück
+                        // {"id":"6"}                           Kann Kalender
+                        // {"id":"7"}                           Button Restart
+                        // {"id":"8", "value": ${version}}      Button Update
+                        // {"id":"9", "value": ${lnglat}}       GPS Position
+                        // {"id":"10", "value": ${pos}}         Eingabefeld Kalender Position
+                        // {"id":"11", "value": ${pos}}         Eingabefeld DWD Position
+                        // {"id":"12", "value": ${sec}}         Eingabefeld Diashow Wechselzeit
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                    }
+                } catch (error) {
+                    console.error('load_cars_all', error);
+                }   
+            }
+
+            // Speichern
+            async function update_cars_id(id) {
+                loaderIn();
+                try {
+                    const carelement = document.querySelector('#car_' + id);       
+
+                    const name     = carelement.querySelector('.var_name').value;
+                    const user     = carelement.querySelector('.var_user').value;
+                    const password = carelement.querySelector('.var_password').value;
+
+                    carelement.querySelector('.var_header_name').innerHTML = name;
+
+                    if(password != '****') {
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPasswort: password});
+                        console.log('updateCar', response);
+                    } else {
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user});
+                        console.log('updateCar', response);
+                    }        
+                } catch (error) {
+                    console.error('update_cars_id', error);
+                }       
+                loaderOut();
+            }
+
+            async function delete_car_id(id) {
+                loaderIn();
+                try {
+                    const response = await fetch_get(url_cars_delete.replace(':id', id));
+                    console.log('delete_car_id', response);   
+                } catch (error) {
+                    console.error('delete_car_id', error);
+                }                            
+                location.reload(); 
+            }
+
+            // Hilfsfunktionen
+            function openModal_delete_id(id) {                
+                const modal = document.querySelector('#modal_delete');
+                modal.style.display = 'block';
+                modal.querySelector('.button_delete').onclick = () => delete_car_id(id);
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_cars_all();
+            };
+            
+        </script>
        
     </body>
 	

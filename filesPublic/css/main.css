@@ -9,7 +9,8 @@
     --bg_list_subitem: #fdfdfd;
     --bg_veryLight: #f7f7f7;
     --bg_body: #313133;
-    --bg_wrapper: #ffffff;
+    --bg_wrapper_app: #ffffff;
+    --bg_wrapper_screen: #313133;
 }
 
 html {
@@ -48,7 +49,7 @@ button {
     overflow-x: auto;
 }
 
-.wrapper {
+.wrapper_app {
     max-width: 600px;
     width: 100%;
     height: 100vh;
@@ -57,9 +58,20 @@ button {
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
-    background-color: var(--bg_wrapper);
+    background-color: var(--bg_wrapper_app);
     overflow: hidden;
 }
+
+.wrapper_screen {
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg_wrapper_screen);
+    overflow: hidden;
+}
+
 
 /* -------- Navigation -------- */
 .navbar {
@@ -410,6 +422,15 @@ button {
 .mark_orange {
     border-left: 5px solid orange;
 }
+
+.text_white {
+    color: white !important;
+}
+
+.text_red {
+    color: #ffa9a8 !important;
+}
+
 
 /* -------- LIST --------*/
 

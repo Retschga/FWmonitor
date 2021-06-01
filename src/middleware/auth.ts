@@ -32,11 +32,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         if (token && !telegramid) {
             const decodedSession: DecodeResult = checkToken(token);
 
-            if (
-                decodedSession.type === 'integrity-error' ||
-                decodedSession.type === 'expired' ||
-                decodedSession.type === 'invalid-token'
-            ) {
+            if (decodedSession.type != 'valid') {
                 throw new HttpException(
                     HttpStatusCodes.UNAUTHORIZED,
                     'Token Anmeldung nicht möglich.'

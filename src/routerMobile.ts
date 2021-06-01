@@ -11,7 +11,7 @@ import { auth_page } from './middleware/auth';
 
 const NAMESPACE = 'ROUTER_MOBILE';
 
-class routerMobile {
+class RouterMobile {
     public router;
 
     constructor() {
@@ -83,4 +83,4 @@ class routerMobile {
     }
 }
 
-export default new routerMobile().router;
+export default new RouterMobile().router;

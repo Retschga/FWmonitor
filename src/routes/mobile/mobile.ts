@@ -3,11 +3,14 @@
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { Session } from 'express-session';
+import config from '../../utils/config';
 
 const router = express.Router();
 
 function generateParams(req: Request) {
-    return {};
+    return {
+        fwvv: config.fwvv.enabled
+    };
 }
 
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {

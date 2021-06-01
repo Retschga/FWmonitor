@@ -4,28 +4,18 @@ import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
 import sampleRoutes from './routes/sample';
+import { Request, Response, NextFunction } from 'express';
 
-import alarmRoutes from './routes/api/alarm';
-import calendarRoutes from './routes/api/calendar';
-import calendarGroupRoutes from './routes/api/calendarGroup';
-import carRoutes from './routes/api/car';
-import userRoutes from './routes/api/user';
-import statisticRoutes from './routes/api/statistic';
-import groupRoutes from './routes/api/group';
-import diashowRoutes from './routes/api/diashow';
-import authRoutes from './routes/api/auth';
-import deviceRoutes from './routes/api/device';
-import { auth_api } from './middleware/auth';
+import screenRoutes from './routes/screen/screen';
 
-const NAMESPACE = 'ROUTER_API';
+const NAMESPACE = 'ROUTER_SCREEN';
 
-class RouterApi {
+class RouterMobile {
     public router;
-    private secured;
 
-    constructor(secured: boolean) {
-        this.secured = secured;
+    constructor() {
         this.router = express.Router();
+
         this.mountRoutes();
     }
 
@@ -70,27 +60,8 @@ class RouterApi {
         });
 
         /** Routes go here */
-
-        if (this.secured) {
-            // HTTPS App
-            this.router.use('/auth', authRoutes);
-            this.router.use('/calendar', auth_api(), calendarRoutes);
-            this.router.use('/calendarGroups', auth_api(), calendarGroupRoutes);
-            this.router.use('/car', auth_api(), carRoutes);
-            this.router.use('/user', auth_api(), userRoutes);
-            this.router.use('/statistic', auth_api(), statisticRoutes);
-            this.router.use('/alarm', auth_api(), alarmRoutes);
-            this.router.use('/group', auth_api(), groupRoutes);
-            this.router.use('/diashow', auth_api(), diashowRoutes);
-            this.router.use('/device', auth_api(), deviceRoutes);
-            this.router.use('/', auth_api(), sampleRoutes);
-        } else {
-            // HTTP Bildschirm
-            this.router.use('/alarm', alarmRoutes);
-            this.router.use('/diashow', diashowRoutes);
-            this.router.use('/calendar', calendarRoutes);
-            this.router.use('/user', userRoutes);
-        }
+        this.router.use('/', sampleRoutes);
+        this.router.use('/', screenRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);
@@ -104,4 +75,4 @@ class RouterApi {
     }
 }
 
-export default RouterApi;
+export default new RouterMobile().router;

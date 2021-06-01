@@ -28,6 +28,12 @@ router.post(
     awaitHandlerFactory(DiashowController.delete_pic.bind(DiashowController))
 );
 
+router.get('/files/full/:file', async function (req, res) {
+    res.sendFile(req.params.file, {
+        root: config.folders.diashow
+    });
+});
+
 router.get('/files/:file', async function (req, res) {
     res.sendFile(config.folders.thumbnailPrefix + req.params.file, {
         root: config.folders.diashow
