@@ -1,6 +1,7 @@
 'use strict';
 
 import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import createMemoryStore from 'memorystore';
@@ -69,6 +70,9 @@ const routerApi_open = new RouterApi(false).router;
 appHttp.use('/api/v1', routerApi_open);
 appHttp.use('/screen', routerScreen);
 appHttp.use('/print', routePrint);
+appHttp.get('/', (req: Request, res: Response, next: NextFunction) => {
+    res.redirect('/screen/index');
+});
 appHttp.use(express.static('filesPublic/'));
 
 const httpServer = http.createServer(appHttp);

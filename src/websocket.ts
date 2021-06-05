@@ -133,6 +133,8 @@ class Websocket {
                     // {"id":"10", "value": ${pos}}         Eingabefeld Kalender Position
                     // {"id":"11", "value": ${pos}}         Eingabefeld DWD Position
                     // {"id":"12", "value": ${sec}}         Eingabefeld Diashow Wechselzeit
+                    // {"id":"13", "value": ${status}}      Eingabefeld Anzeige Verfügbar
+                    // {"id":"14", "value": ${status}}      Eingabefeld Anzeige Nicht Verfügbar
 
                     const data_json = JSON.parse(String(data));
                     const topic = data_json.topic;

@@ -11,7 +11,8 @@ function generateParams(req: Request) {
     return {
         fwvv: config.fwvv.enabled,
         fwname: config.common.fwName,
-        dwd_warncellid: config.common.dwd_warncellid
+        dwd_warncellid: config.common.dwd_warncellid,
+        version: config.version
     };
 }
 

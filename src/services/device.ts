@@ -25,6 +25,13 @@ class DeviceService {
 
         return devices;
     }
+
+    public send_action(id: string, action: number, value: string) {
+        for (let i = 0; i < this.sockets.length; i++) {
+            this.sockets[i].sendToID(id, 'action_' + action, value);
+        }
+        return false;
+    }
 }
 
 let instance: DeviceService | undefined = undefined;

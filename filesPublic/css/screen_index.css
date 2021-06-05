@@ -17,3 +17,9 @@
     padding-bottom: 1em;
     overflow: hidden;
 }
+
+.st_verf, .st_nverf {
+    float: left;
+    padding: 0.5em;
+    margin: 0.3em 0 0 0.5em;
+}

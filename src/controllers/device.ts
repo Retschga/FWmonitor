@@ -23,6 +23,23 @@ class AlarmController {
 
         res.send(reponse);
     }
+
+    public async send_action(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'send_action');
+        checkValidation(req);
+
+        if (!DeviceServiceInstance) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
+        }
+
+        const reponse = DeviceServiceInstance.send_action(
+            String(req.params.id),
+            Number(req.body.action),
+            String(req.body.value)
+        );
+
+        res.send(reponse);
+    }
 }
 
 export default new AlarmController();

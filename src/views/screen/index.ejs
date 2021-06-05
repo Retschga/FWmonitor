@@ -20,7 +20,7 @@
 
                 <h1>FWmonitor</h1>  
                 
-                <h1 class="var_name text_align_center flex_grow"><%= fwname %> </h1>  
+                <h1 class="var_name text_align_center flex_grow"><%= fwname %></h1>  
 
                 <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
 
@@ -31,6 +31,16 @@
                 </div>
 
                 <div class="col_center flex_grow">
+                    <div class="list_verfuegbar">
+                        <template id="template-verfuegbar">
+                            <p class="var_name deleteme_verf st_verf green">####r</p>
+                        </template>
+                    </div>
+                    <div class="list_nichtverfuegabr">
+                        <template id="template-nichtverfuegbar">
+                            <p class="var_name deleteme_nverf st_nverf red">####r</p>
+                        </template>
+                    </div>
                 </div>
 
                 <div class="col_right">
@@ -117,16 +127,24 @@
             const col_center      = document.querySelector('.col_center');
             const col_right       = document.querySelector('.col_right');
 
-            let diashow_time      = parseInt(getCookie("diashow_time"))      || 15000;
-            let pos_dwd           = parseInt(getCookie("pos_dwd"))           || 0;
-            let pos_calendar      = parseInt(getCookie("pos_calendar"))      || 2;
-            let calendar_elements = parseInt(getCookie("calendar_elements")) || 8;            
+            let diashow_time      = parseInt(localStorage.getItem("diashow_time")       || 15000);
+            let pos_dwd           = parseInt(localStorage.getItem("pos_dwd")            || 0);
+            let pos_calendar      = parseInt(localStorage.getItem("pos_calendar")       || 2);
+            let calendar_elements = parseInt(localStorage.getItem("calendar_elements")  || 8);     
+            let status_verf       = parseInt(localStorage.getItem("status_verf"))       || false; 
+            let status_nverf      = parseInt(localStorage.getItem("status_nverf"))      || true;        
 
             const clientName          = $_GET['name'];	
             const keepAlive_intervall = 10000;
             const keepAlive_timeout   = 60000;
 
 			console.log("Client-Name: ", clientName);
+            console.log("diashow_time: ", diashow_time);
+            console.log("pos_dwd: ", pos_dwd);
+            console.log("pos_calendar: ", pos_calendar);
+            console.log("calendar_elements: ", calendar_elements);
+            console.log("status_verf: ", status_verf);
+            console.log("status_nverf: ", status_nverf);
 
             let connected = true;
             let socket_software;
@@ -289,7 +307,43 @@
             }
 
             async function load_status() {
+                try {
+                    const userStatusList = await fetch_get(url_user_status_all, true);
+                    console.log('user status all', userStatusList);
 
+                    var target_verfuegbar = document.querySelector(".list_verfuegbar");
+                    var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
+
+                    // Bereits vorhandene Elemente löschen
+                    let elements = target_verfuegbar.getElementsByClassName("deleteme_verf");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                    // Bereits vorhandene Elemente löschen
+                    elements = target_nichtverfuegbar.getElementsByClassName("deleteme_nverf");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                    for(let i = 0; i < userStatusList.length; i++) {
+
+                        const userstatus = userStatusList[i];
+
+                        if(userstatus.status == 1 && status_verf) {
+                            const template = document.querySelector('#template-verfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_verfuegbar.appendChild(clone);
+                        } else if (status_nverf) {
+                            const template = document.querySelector('#template-nichtverfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_nichtverfuegbar.appendChild(clone);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('load_status', error);
+                }                
             }
 
             function connect_software() {			
@@ -306,16 +360,18 @@
 						"name":"Alarmdisplay - ${clientName}",
 						"info":"Index",
 						"actions":[
-                            {"id":"-2"},
 							{"id":"0"},
-							{"id":"1"},
-							{"id":"2"},
-							{"id":"3", "value": ${calendar_elements}},
-							{"id":"4"},
-                            {"id":"6"},
+							{"id":"1"},		
+                            {"id":"8", "value": "<%= version %>"},							
+							{"id":"3", "value": ${calendar_elements}},                            
                             {"id":"10", "value": ${pos_calendar}},
                             {"id":"11", "value": ${pos_dwd}},
-                            {"id":"12", "value": ${diashow_time/1000}}
+                            {"id":"12", "value": ${diashow_time/1000}},
+                            {"id":"13", "value": ${status_verf}},
+                            {"id":"14", "value": ${status_nverf}},
+                            {"id":"2"},
+							{"id":"4"},
+                            {"id":"6"}
 						]}`);
 
                         // siehe websockets.ts
@@ -371,45 +427,53 @@
 				}
 	
 				// Alarm
-				if(topic == 'alarm')					
+				if(topic == 'alarm') {					
 					goToAlarm(message);
+                }
 
-				if(topic == 'letzteralarm')
+
+				if(topic == 'action_0') {
+					location.reload(); 
+                }
+
+				if(topic == 'action_1') {
 					window.location.href = '/alarm?manuell=true&name=' + clientName;
-			
-				// Präsentation
-				if(topic == 'praes_load')
-					window.location.href = '/praes?name=' + message;
+                }
 
-				// Reload
-				if(topic == 'reload')
+                if(topic == 'action_3') {
+                    localStorage.setItem("calendar_elements", parseInt(message));
 					location.reload(); 
+                }
 
-				// Kalender
-				if(topic == 'kal_reload')
-					getCalendar(kalenderElemente);
-
-				if(topic == 'kal_elemnum') {
-                    setCookie("calendar_elements", message);
+                if(topic == 'action_8') {
 					location.reload(); 
-				}	
-                if(topic == 'kal_pos') {
-                    setCookie("pos_calendar", message);
+                }
+
+                if(topic == 'action_10') {
+                    localStorage.setItem("pos_calendar", parseInt(message));
 					location.reload(); 
 				}	
 
-                // DWD
-                if(topic == 'dwd_pos') {
-                    setCookie("pos_dwd", message);
+                if(topic == 'action_11') {
+                    localStorage.setItem("pos_dwd", parseInt(message));
 					location.reload(); 
 				}	
 
-                // Diashow
-                if(topic == 'diashow_time') {
-                    setCookie("diashow_time", parseInt(message) * 1000);
+                if(topic == 'action_12') {
+                    localStorage.setItem("diashow_time", parseInt(message) * 1000);
 					location.reload(); 
-				}	                           
+				}	
 
+                if(topic == 'action_13') {
+                    localStorage.setItem("status_verf", Boolean(message));
+					location.reload(); 
+				}	
+
+                if(topic == 'action_14') {
+                    localStorage.setItem("status_nverf", Boolean(message));
+					location.reload(); 
+				}	
+                
 			}
             
             // Funktionsaufrufe
@@ -418,6 +482,7 @@
                 load_clock();
                 load_calendar();
                 load_dwd();
+                load_status();
                 connect_software();
 
                 setInterval(function() {

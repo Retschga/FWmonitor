@@ -9,12 +9,12 @@ const SQLITE = {
 
 const SERVER_HTTP = {
     hostname: process.env.SERVER_HOSTNAME || '127.0.0.1',
-    port: process.env.SERVER_PORT || 1337
+    port: process.env.SERVER_PORT_LAN || 8080
 };
 
 const SERVER_HTTPS = {
     hostname: process.env.SERVER_HOSTNAME || '127.0.0.1',
-    port: process.env.SERVER_PORT || 443,
+    port: process.env.SERVER_PORT_SSL || 443,
     key: process.env.HTTPS_KEY || 'zertifikat-key.key',
     cert: process.env.HTTPS_CERT || 'zertifikat-cert.crt'
 };
