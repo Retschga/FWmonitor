@@ -2,6 +2,7 @@ import passwordGenerator from 'generate-password';
 import bcrypt from 'bcryptjs';
 import config from '../utils/config';
 import jsonwebtoken from 'jsonwebtoken';
+import { login } from 'telegraf/typings/button';
 
 // https://nozzlegear.com/blog/implementing-a-jwt-auth-system-with-typescript-and-node
 
@@ -85,8 +86,8 @@ export const createToken = (partialSession: PartialTokenSession) => {
 
     return {
         token: token,
-        issued: issued,
-        expires: expires
+        iat: issued,
+        exp: expires
     };
 };
 
@@ -148,11 +149,3 @@ export const checkToken = (token: string): DecodeResult => {
         session: result
     };
 };
-
-('jwt malformed');
-('jwt signature is required');
-('invalid signature');
-('jwt audience invalid. expected: [OPTIONS AUDIENCE]');
-('jwt issuer invalid. expected: [OPTIONS ISSUER]');
-('jwt id invalid. expected: [OPTIONS JWT ID]');
-('jwt subject invalid. expected: [OPTIONS SUBJECT]');

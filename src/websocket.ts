@@ -54,6 +54,8 @@ class Websocket {
             server.on(
                 'upgrade',
                 async (request: http.IncomingMessage, socket: Socket, head: Buffer) => {
+                    logging.debug(NAMESPACE, 'event upgrade');
+
                     if (!request.url) {
                         logging.error(NAMESPACE, 'wesocket upgrade no request.url');
                         socket.write('HTTP/1.1 500 internal server error\r\n\r\n');
@@ -62,7 +64,9 @@ class Websocket {
                     }
 
                     try {
-                        const decodedToken: DecodeResult = checkToken(request.url.split('=')[1]);
+                        const token = decodeURIComponent(request.url.split('=')[1]);
+                        logging.debug(NAMESPACE, 'token', token);
+                        const decodedToken: DecodeResult = checkToken(token);
                         if (decodedToken.type != 'valid') {
                             logging.debug(NAMESPACE, 'wesocket jwt unauthorized');
                             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -77,14 +81,16 @@ class Websocket {
                     }
 
                     logging.debug(NAMESPACE, 'wesocket jwt ok');
-                    this.socket.handleUpgrade(request, socket, head, function done(ws: WebSocket) {
-                        ws.emit('connection', ws, request);
+                    this.socket.handleUpgrade(request, socket, head, (ws: WebSocket) => {
+                        logging.debug(NAMESPACE, 'socket handle upgrade');
+                        this.socket.emit('connection', ws, request);
                     });
                 }
             );
         }
 
         this.socket.on('connection', (ws) => {
+            logging.debug(NAMESPACE, 'event connection');
             ws.allowed = true;
 
             // KeepAlive
@@ -119,7 +125,7 @@ class Websocket {
                         {"id":"12", "value": ${diashow_time/1000}}
                     ]}
                  */
-                    // {"id":"alles<1", "value": ${text}}   Textanzeige
+                    // {"id":"alles<1", "key":${key} "value": ${text}}   Textanzeige
                     // {"id":"0"}                           Button Reload
                     // {"id":"1"}                           Button Letzter Alarm
                     // {"id":"2"}                           Kann Diashow

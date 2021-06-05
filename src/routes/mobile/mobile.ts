@@ -11,7 +11,8 @@ function generateParams(req: Request) {
     return {
         fwvv: config.fwvv.enabled,
         fw_name: config.common.fwName,
-        fw_name_short: config.common.fwName_short
+        fw_name_short: config.common.fwName_short,
+        version: config.version
     };
 }
 
@@ -110,6 +111,10 @@ router.get('/device_list', (req: Request, res: Response, next: NextFunction) => 
 
 router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/alarm', generateParams(req));
+});
+
+router.get('/offline', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/offline', generateParams(req));
 });
 
 export = router;

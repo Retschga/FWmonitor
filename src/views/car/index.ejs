@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/car_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">local_fire_department</button>
+
+                <h1>FWmonitor</h1>   
+                
+                <div class="flex_grow"></div>
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+            <div class="content">
+
+                 <!-- LOADER KARTE -->
+                <div 
+                    id="mapLoader"
+                    class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
+                >
+                        <div class="spinner_rotateplane"></div>
+                        <h2 class="text_align_center">GPS einschalten!</h2>
+                </div>
+
+                <div id="mapidContainer" class="flex_grow flex_column">
+                    <div id="mapid" class="flex_grow"></div>   
+                </div>
+
+                <!-- ALARM TEMPLATE -->  
+                <template id="template-alarm">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon red">
+                                <span class="material-icons">
+                                    notification_important
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content red">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Alarm: </span><span class="var_stichwort"></span><br>
+                                    <span class="var_text">
+                                        Stichwort
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>
+
+                <%- include('partials/footer_nav') -%>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+        <%- include('partials/foot_loggedin') -%>
+
+        <script>
+
+            // Laden
+            async function load_alarm() {
+                try {
+                    const isalarm = await fetch_get(url_alarm_isalarm, true);
+                    console.log('isalarm', isalarm);
+
+                    if(!isalarm.isAlarm) return;
+
+                    const alarm = (await fetch_get(url_alarm_last, true))[0];
+                    console.log('alarm', alarm);
+
+
+                    const target = document.querySelector(".content");
+
+                    const date = new Date(alarm.date);   
+
+                    const template        = document.querySelector('#template-alarm');   
+                    const var_stichwort   = template.content.querySelector(".var_stichwort");             
+                    const var_text        = template.content.querySelector(".var_text");
+                    const var_date        = template.content.querySelector(".var_date");
+                    const var_time        = template.content.querySelector(".var_time");
+
+                    var_stichwort.innerHTML   = alarm.einsatzstichwort;
+                    var_text.innerHTML        = alarm.schlagwort;
+                    var_date.innerHTML        = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML        = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('alarm?id=' + alarm.id);
+                    };
+
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+            }
+
+            async function hydrantenkarte_load() {
+                if (!navigator.geolocation){
+                    alert("Geolokation wird von ihrem Browser nicht unterstützt");
+                    goBack();
+                    return;
+                }
+
+                var opts = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 4000
+                };	
+
+
+                async function success(position) {
+                    let latitude  = position.coords.latitude;
+                    let longitude = position.coords.longitude;
+                    if(
+                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
+                        $_GET['lng'] != undefined && $_GET['lng'] != ''
+                    ) {
+                        latitude = Number($_GET['lat']);
+                        longitude = Number($_GET['lng']);
+                    }
+                    const pos = {lat:latitude, lng:longitude};
+
+                    const map = createMap(pos, true);
+                    //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
+                    //add_hydranten(hydrantenCache, map);
+                    //add_forstRettPkt(ret.map);
+
+                    if(
+                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
+                        $_GET['lng'] != undefined && $_GET['lng'] != ''
+                    ) {
+                        console.log('target', $_GET['lat'], $_GET['lng']);
+                        add_circle($_GET['lat'], $_GET['lng'], map);
+                    }
+
+
+                    Number.prototype.toRad = function() {
+                        return this * Math.PI / 180;
+                    }
+                    
+                    Number.prototype.toDeg = function() {
+                        return this * 180 / Math.PI;
+                    }
+
+                    function moveCoord(coord, brng, dist) {
+                        dist = dist / 6371;  
+                        brng = brng.toRad();  
+                    
+                        var lat1 = coord.lat.toRad(), lon1 = coord.lng.toRad();
+                    
+                        var lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) + 
+                                            Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
+                    
+                        var lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
+                                                    Math.cos(lat1), 
+                                                    Math.cos(dist) - Math.sin(lat1) *
+                                                    Math.sin(lat2));
+                    
+                        if (isNaN(lat2) || isNaN(lon2)) return null;
+
+                        return {lat:lat2.toDeg(), lng:lon2.toDeg()};		
+                    }
+
+                    let radius = 3.1;
+                    let p1 = moveCoord(pos, 0, radius);
+                    let p2 = moveCoord(pos, 90, radius);
+                    let p3 = moveCoord(pos, 180, radius);
+                    let p4 = moveCoord(pos, 270, radius);
+
+                    let boundingExtent  = new ol.extent.boundingExtent([[p1.lng, p1.lat], [p2.lng, p2.lat], [p3.lng, p3.lat], [p4.lng, p4.lat]]);
+                    boundingExtent = ol.proj.transformExtent(boundingExtent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
+
+                    map.setView(
+                        new ol.View({
+                            center: ol.proj.fromLonLat([pos.lng, pos.lat]),
+                            extent: boundingExtent ,   
+                            zoom: map.getView().getZoom()
+                        })
+                    );
+
+                    let mapLoader = document.querySelector("#mapLoader");
+                    mapLoader.classList.add("hidden")
+                   
+                };
+
+                function error(error) {
+                    let str = "?;"
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED: str = "Keine Freigabe! -> Siehe System Einstellungen"; break;
+                        case error.POSITION_UNAVAILABLE: str = "Pos. nicht gefunden!"; break;
+                        case error.TIMEOUT: str = "Timeout"; break;
+                        default: str = "FEHLER"; break;
+                    }
+                    alert(`Es war nicht möglich Sie zu lokalisieren (${str})`);
+
+                    let mapLoader = document.querySelector("#mapLoader");
+                    mapLoader.classList.add("hidden")
+
+                };
+
+                navigator.geolocation.getCurrentPosition(success, error, opts);
+
+                
+            }
+
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }
+
+            			
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                redirect_if_logged_out(); 
+                load_alarm();   
+                hydrantenkarte_load();
+                load_clock();
+
+                connectFWmonitor();
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

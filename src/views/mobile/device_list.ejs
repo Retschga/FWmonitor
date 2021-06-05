@@ -258,7 +258,7 @@
                             }
 
                             if (parseInt(action.id) < 0) {
-                                text_var_name.innerHTML = '';  
+                                text_var_name.innerHTML = escapeHtml(action.key);  
                                 text_var_value.innerHTML = escapeHtml(action.value); 
                                 clone = document.importNode(template_text.content.firstElementChild, true);
                                 target_elements.append(clone);

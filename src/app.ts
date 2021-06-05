@@ -15,6 +15,7 @@ import config from './utils/config';
 import RouterApi from './routerApi';
 import routerScreen from './routerScreen';
 import routermobile from './routerMobile';
+import routerCar from './routerCar';
 import alarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
 import routePrint from './routes/print';
@@ -115,6 +116,7 @@ appHttps.use(
 const routerApi_secure = new RouterApi(true).router;
 appHttps.use('/api/v1', routerApi_secure);
 appHttps.use('/app', routermobile);
+appHttps.use('/car', routerCar);
 appHttps.use(express.static('filesPublic/'));
 
 var secureContext: tls.SecureContext;
@@ -147,9 +149,10 @@ httpsServer.listen(config.server_https.port, () =>
 );
 
 // Starte Websocket-Server für die WebApp
+const httpsSocket = new Websocket(httpsServer, true);
 
 // Initialisiere DeviceService
-initDeviceService([httpSocket]);
+initDeviceService([httpSocket, httpsSocket]);
 
 // Starte Telegram-Bot
 const telbot = telegramBot;

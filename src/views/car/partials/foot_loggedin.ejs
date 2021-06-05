@@ -1,0 +1,142 @@
+<!-- SCRIPT LOADER -->
+<script>    
+
+    let car_name;
+
+    // Websockets
+    var ws_software = null;
+
+    const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
+    const url_alarm = '/api/v1/alarm/:id';
+    const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+
+	
+
+    // Websocket Server Verbindung
+    function connectFWmonitor() {	
+        ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
+        let wsStatusInterval = null;
+        var keepAliveInterval = null;
+        let log = "";
+
+        // Sende Status Datensatz
+        let sendStatus = () => {ws_software.send(
+            `{
+                "topic": "init",
+                "type":"WebClient",
+                "name":"Auto",
+                "info":"${car_name}",
+                "actions":[
+                    {"id":"0"},
+                    {"id":"7"},
+                    {"id":"8", "key": "Version", "value": "<%= version %>"},
+                    {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+                    {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+                    {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
+                    {"id":"-4", "key": "LOG", "value": "${log}"}
+            ]}`
+        );}   
+        let sendStatusUpdate = () => {ws_software.send(
+            `{
+                "topic": "update",
+                "actions":[
+                    {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+                    {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+                    {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
+                    {"id":"-4", "key": "LOG", "value": "${log}"}
+            ]}`
+        );}      
+
+        ws_software.onopen = function() {
+            console.log("Software-connection socketconnected:");
+
+            // Sende Status Datensatz
+            sendStatus();
+
+            // Setze Verbindungsstatus auf OK
+            //index_status_VERBINDUNG(true);
+
+            // Sende alle 30 sek einen Statusdatensatz
+            wsStatusInterval = setInterval( () => {
+                sendStatus();
+            }, 30000);
+
+            // Sende KeepAlive Intervall
+            lastKeepAlive = new Date();
+            keepAliveInterval = setInterval(() => {
+                if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {		
+                    //index_status_VERBINDUNG(false);				
+                    location.reload(); 
+                }
+            }, 10000)
+        };
+
+        ws_software.onmessage = function(e) {
+            let socket = ws_software;
+            let data = e.data;
+            console.log('Software-connection socket message:', data);
+			
+            data           = JSON.parse(data);
+            const topic    = data.topic;
+            const message  = data.message;
+            
+            // Keep Alive
+            if(topic == 'ping') {
+                lastKeepAlive = new Date();	
+                socket.send(JSON.stringify({topic: 'pong', message :message}));				
+                loaderOut();
+            }
+
+            // Alarm
+            if(topic == 'alarm') {					
+                window.location.href = 'alarm?name=' + clientName + '&id=' + message;
+
+                // GPS Statistik für Einsatz zurücksetzen
+                localStorage.setItem('gps.distSum', GPS_dist_sum);
+                localStorage.setItem('gps.altMax', GPS_alt_max);
+                localStorage.setItem('gps.altMin', GPS_alt_min);
+            }
+
+            if(topic == 'action_0') {
+                location.reload(); 
+            }
+            
+            if(topic == 'rebootScreen') {
+                alert("Neustart...");
+                wsSteuer.send('restart');
+            }
+
+            if(topic == 'updateScript') {
+                alert("Update...");
+                wsSteuer.send('update');
+            }
+        };
+
+        ws_software.onclose = function(e) {
+            console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
+            index_status_VERBINDUNG(false);	
+            clearInterval(wsStatusInterval);
+            clearInterval(keepAliveInterval);
+            setTimeout(function() {
+                connectFWmonitor();
+            }, 15000);
+        };
+
+        ws_software.onerror = function(err) {
+            console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+            index_status_VERBINDUNG(false);
+            clearInterval(wsStatusInterval);
+            clearInterval(keepAliveInterval);
+            ws_software.close();
+        };
+    }
+
+
+
+    
+
+
+</script>
+

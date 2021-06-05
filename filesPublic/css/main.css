@@ -11,6 +11,7 @@
     --bg_body: #313133;
     --bg_wrapper_app: #ffffff;
     --bg_wrapper_screen: #313133;
+    --bg_wrapper_car: #ffffff;
 }
 
 html {
@@ -69,6 +70,16 @@ button {
     display: flex;
     flex-direction: column;
     background-color: var(--bg_wrapper_screen);
+    overflow: hidden;
+}
+
+.wrapper_car {
+    width: 100%;
+    height: 100vh;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg_wrapper_car);
     overflow: hidden;
 }
 

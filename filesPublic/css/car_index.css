@@ -1,0 +1,15 @@
+#mapid {
+    height: 100%;
+    min-height: 0; /* Let the content overflow */
+    flex: 1; /* Fill the available space */
+}
+
+#mapidContainer {
+    height: 100%; /* Fill the window */
+    display: flex; /* Magic begins */
+    flex-direction: column;
+    background-image: url('/images/noMap.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}

@@ -11,111 +11,6 @@ function wait(ms) {
     });
 }
 
-// -------- Service Worker PUSH --------
-self.addEventListener('push', ev => {
-
-	// Notification Daten
-	const data = ev.data.json();  
-	console.log('Got push', data);
-
-	if(Date.parse(data.zeigeBis) <  new Date()) {
-		console.log('Keine Notification: Zeit Überschritten');
-		return;
-	}
-  
-	function notify(data) {
-		return self.registration.showNotification(
-			data.titel, {
-				body: data.text,
-				icon: '/images/alarm.png',
-//				image: '/images/alarm.png',
-				badge: '/images/alarm_badge.png',
-				vibrate: [1000],
-				sound: '/audio/message.mp3',
-				tag: data.tag,
-				renotify: true,
-				silent: (data.silent == true ? true : false),
-				timestamp: Date.parse(data.timestamp),
-				requireInteraction: true,
-				actions: data.actions
-			}
-	)};
-
-	var notQueue = new Array();
-
-	for(let i = 0; i < data.notificationAnzahl ; i++) {
-		let not = wait(i *2000).then(() => notify(data));
-		notQueue.push(not);
-	}	
-	
-	const promiseChain = Promise.all(notQueue);
-	  
-	ev.waitUntil(promiseChain);
-  
-});
-
-
-self.addEventListener('notificationclick', function(event) {
-
-	const clickedNotification = event.notification;
-	clickedNotification.close();
-	
-	//if (!event.action) {
-		// Was a normal notification click
-		console.log('Notification Click.');
-		
-		
-		const urlToOpen = new URL('/app/index', 'https://' + self.location.host).href;
-
-		const promiseChain = clients.matchAll({
-			type: 'window',
-			includeUncontrolled: true
-		}).then((windowClients) => {
-			let matchingClient = null;
-
-			for (let i = 0; i < windowClients.length; i++) {
-				const windowClient = windowClients[i];
-					if (windowClient.url === urlToOpen) {
-					matchingClient = windowClient;
-					break;
-				}
-			}
-
-			if (matchingClient) {
-			console.log(1);
-				return matchingClient.focus();
-			} else {
-			console.log(2);
-				return clients.openWindow(urlToOpen);
-			}
-		});
-
-		event.waitUntil(promiseChain);
-		
-	//	return;
-	//}
-
-	// Knopf gerückt
-	var url = new URL('app/api/notificationResponse', self.location.origin),
-	
-    params = {telegramID: -1,value: event.action}
-	Object.keys(params).forEach(key => url.searchParams.append(key, params[key]))
-
-	fetch(url, {
-		credentials: 'same-origin',
-		headers: { "Content-Type": "application/json; charset=utf-8" }
-	})
-	.then(res => res.json()) // parse response as JSON (can be res.text() for plain response)
-    .then(response => {
-		console.log(response);
-    })
-    .catch(err => {
-		console.log(err);
-    });
-
-});
-
-
 // -------- Service Worker FETCH --------
 this.addEventListener('fetch', function(event) {
     //	console.log('Fetch event for ', event.request.url);
@@ -150,18 +45,6 @@ this.addEventListener('fetch', function(event) {
          );
 });
     
-    
-/*
-this.addEventListener('install', event => {
-    console.log('Attempting to install service worker and cache static assets');
-    event.waitUntil(
-          caches.open(staticCacheName)
-          .then(cache => {
-            return cache.addAll(filesToCache);
-          })
-    );
-});*/
-
 self.addEventListener('install', (event) => {
   // prevents the waiting, meaning the service worker activates
   // as soon as it's finished installing
@@ -211,8 +94,6 @@ self.addEventListener('install', (event) => {
   })());
 });
     
-    
-      
 
 self.addEventListener('activate', event => {
     console.log('Activating new service worker...');

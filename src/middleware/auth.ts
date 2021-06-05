@@ -87,9 +87,9 @@ export const login_app = async function (req: Request, res: Response, next: Next
 
         // JWT erzeugen und als Cookie senden
         const tokenSession: PartialTokenSession = { id: userid };
-        const new_token = createToken(tokenSession);
+        const new_token_session = createToken(tokenSession);
         res.header('Access-Control-Allow-Credentials', 'true');
-        res.cookie('token', new_token, {
+        res.cookie('token', new_token_session.token, {
             secure: true,
             path: '/',
             maxAge: config.app.jwt_expire
