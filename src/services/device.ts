@@ -30,7 +30,15 @@ class DeviceService {
         for (let i = 0; i < this.sockets.length; i++) {
             this.sockets[i].sendToID(id, 'action_' + action, value);
         }
-        return false;
+    }
+
+    public broadcast_userstatus(userid: number, alarmid: number, value: boolean) {
+        for (let i = 0; i < this.sockets.length; i++) {
+            this.sockets[i].broadcast(
+                'userstatus_' + (value ? '1' : 0),
+                JSON.stringify({ alarmid, userid })
+            );
+        }
     }
 }
 

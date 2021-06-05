@@ -128,6 +128,25 @@
                     </div>
                 </template>
 
+                <div class="pwa_install_container flex_column flex_center_horizontal flex_center_vertical hidden">
+                    <span class="material-icons btn_close" onclick="close_installpromt()">close</span>
+                    <h1>App Installation:</h1>
+
+                    <button class="btn pwa_android" onclick="install_pwa()">Installieren</button>
+          
+                    <h2 class="pwa_ios text_align_center hidden">
+                        Unten in auf ganz rechts Symbol in Safari öffnen klicken. (Wenn nicht verfügbar: URL kopieren und in Safari direkt öffnen.)
+                    </h2>
+
+                    <h2 class="pwa_safari text_align_center hidden">
+                        Unten in der Mitte auf ⬆️ drücken. <br> Dann ➕ "Zum Home-Bildschirm drücken. (Wenn nicht verfügbar:  
+                        Unten in auf ganz rechts Symbol in Safari öffnen klicken. ODER: URL kopieren und in Safari direkt öffnen.)
+                    </h2>
+                
+                
+                    
+                </div>
+
                 <%- include('partials/footer_nav') -%>
 
             </div>
@@ -136,6 +155,8 @@
         <%- include('partials/foot') -%>
 
         <script>
+
+            var deferredPrompt;
             
             // Laden
             async function load_calendar() {     
@@ -263,12 +284,70 @@
                 }
             }
 
+            // Hilfsfunktionen
+            function close_installpromt() {
+                const target = document.querySelector(".pwa_install_container");
+                target.classList.add('hidden');
+            }
+
+            function install_pwa() {
+                // Show the prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                    } else {
+                    console.log('User dismissed the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+
+            			
+
             // Funktionsaufrufe
             loaderFunction = () => {
                 redirect_if_logged_out(); 
                 load_alarm();
                 load_calendar();
                 load_status_id(user_id);
+
+                
+                const target = document.querySelector(".pwa_install_container");
+                const ios = target.querySelector(".pwa_ios");
+                const safari = target.querySelector(".pwa_safari");
+                const android = target.querySelector(".pwa_android");
+
+                if (isIos() && !isInStandaloneMode()) {
+
+                    if ( safari ) {
+                        safari.classList.remove('hidden');
+                        android.classList.add('hidden');
+                        ios.classList.add('hidden');
+                    } else {
+                        safari.classList.add('hidden');
+                        android.classList.add('hidden');
+                        ios.classList.remove('hidden');
+                    }
+
+                    target.classList.remove('hidden');
+
+                } else {
+                    
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        //askPermission();
+
+                        // Prevent Chrome 67 and earlier from automatically showing the prompt
+                        e.preventDefault();
+                        // Stash the event so it can be triggered later.
+                        deferredPrompt = e;
+
+                        target.classList.remove('hidden');
+                    });	
+
+                }
+
             };            
             
             

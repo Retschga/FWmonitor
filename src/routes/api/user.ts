@@ -15,6 +15,11 @@ router.get(
 router.get('/rights', awaitHandlerFactory(userController.get_user_rights.bind(userController)));
 
 router.get(
+    '/roles/all',
+    awaitHandlerFactory(userController.get_user_roles_all.bind(userController))
+);
+
+router.get(
     '/status/all',
     awaitHandlerFactory(userController.get_user_status_all.bind(userController))
 );

@@ -4,7 +4,7 @@
     <head>	
 
         <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
+        <title>FWmonitor - Screen</title>	
 
         <link rel="stylesheet" href="/css/screen_index.css">
 
@@ -127,12 +127,13 @@
             const col_center      = document.querySelector('.col_center');
             const col_right       = document.querySelector('.col_right');
 
-            let diashow_time      = parseInt(localStorage.getItem("diashow_time")       || 15000);
-            let pos_dwd           = parseInt(localStorage.getItem("pos_dwd")            || 0);
-            let pos_calendar      = parseInt(localStorage.getItem("pos_calendar")       || 2);
-            let calendar_elements = parseInt(localStorage.getItem("calendar_elements")  || 8);     
-            let status_verf       = parseInt(localStorage.getItem("status_verf"))       || false; 
-            let status_nverf      = parseInt(localStorage.getItem("status_nverf"))      || true;        
+            let diashow_time       = parseInt(localStorage.getItem("diashow_time")       || <%= time_diashow %>);
+            let pos_dwd            = parseInt(localStorage.getItem("pos_dwd")            || 0);
+            let pos_calendar       = parseInt(localStorage.getItem("pos_calendar")       || 2);
+            let calendar_elements  = parseInt(localStorage.getItem("calendar_elements")  || 8);     
+            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || false; 
+            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || true;      
+            let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);  
 
             const clientName          = $_GET['name'];	
             const keepAlive_intervall = 10000;
@@ -369,6 +370,7 @@
                             {"id":"12", "value": ${diashow_time/1000}},
                             {"id":"13", "value": ${status_verf}},
                             {"id":"14", "value": ${status_nverf}},
+                            {"id":"15", "value": "${alarm_visible_time}"},
                             {"id":"2"},
 							{"id":"4"},
                             {"id":"6"}
@@ -428,7 +430,7 @@
 	
 				// Alarm
 				if(topic == 'alarm') {					
-					goToAlarm(message);
+					window.location.href = 'alarm?name=' + clientName + '&id=' + message;
                 }
 
 
@@ -437,7 +439,7 @@
                 }
 
 				if(topic == 'action_1') {
-					window.location.href = '/alarm?manuell=true&name=' + clientName;
+					window.location.href = 'alarm?manuell=true&name=' + clientName;
                 }
 
                 if(topic == 'action_3') {
@@ -465,12 +467,17 @@
 				}	
 
                 if(topic == 'action_13') {
-                    localStorage.setItem("status_verf", Boolean(message));
+                    localStorage.setItem("status_verf", !status_verf);
 					location.reload(); 
 				}	
 
                 if(topic == 'action_14') {
-                    localStorage.setItem("status_nverf", Boolean(message));
+                    localStorage.setItem("status_nverf", !status_nverf);
+					location.reload(); 
+				}	
+
+                if(topic == 'action_15') {
+                    localStorage.setItem("alarm_visible_time", parseInt(message));
 					location.reload(); 
 				}	
                 

@@ -86,7 +86,7 @@
         <script>
 
             // Laden
-            async function load_cars_all() {   
+            async function load_devices() {   
                 try {
                     const devices = await fetch_get(url_device_all, true);
                     console.log('devices', devices);
@@ -127,20 +127,7 @@
                         clone = document.importNode(template_text.content.firstElementChild, true);
                         target_elements.append(clone);
 
-                        // {"id":"alles<1", "value": ${text}}   Textanzeige
-                        // {"id":"0"}                           Button Reload
-                        // {"id":"1"}                           Button Letzter Alarm
-                        // {"id":"2"}                           Kann Diashow
-                        // {"id":"3", "value": ${count}}        Eingabefeld Kalender Elemente
-                        // {"id":"4"}                           Kann Präsentation
-                        // {"id":"5"}                           Button Zurück
-                        // {"id":"6"}                           Kann Kalender
-                        // {"id":"7"}                           Button Restart
-                        // {"id":"8", "value": ${version}}      Button Update
-                        // {"id":"9", "value": ${lnglat}}       GPS Position
-                        // {"id":"10", "value": ${pos}}         Eingabefeld Kalender Position
-                        // {"id":"11", "value": ${pos}}         Eingabefeld DWD Position
-                        // {"id":"12", "value": ${sec}}         Eingabefeld Diashow Wechselzeit
+                        // siehe websocket.ts
 
                         for(let i = 0; i < device.actions.length; i++) {
                             const action = device.actions[i];                            
@@ -260,6 +247,14 @@
                                     clone = document.importNode(template_button.content.firstElementChild, true);                                      
                                     target_elements.append(clone);
                                     break;
+                                case '15':
+                                    textinput_var_name.innerHTML = 'Alarm Anzeigezeit';  
+                                    textinput_var_value.value = action.value;               
+                                    textinput_var_btn.dataset.deviceid = device.id
+                                    textinput_var_btn.dataset.action = action.id;                        
+                                    clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
+                                    target_elements.append(clone);
+                                    break;
                             }
 
                             if (parseInt(action.id) < 0) {
@@ -293,12 +288,6 @@
             }
 
             // Hilfsfunktionen
-            function openModal_delete_id(id) {                
-                const modal = document.querySelector('#modal_delete');
-                modal.style.display = 'block';
-                modal.querySelector('.button_delete').onclick = () => delete_car_id(id);
-            }
-
             async function action(id, action, value) {
                 loaderIn();
                 try {
@@ -317,7 +306,7 @@
 
             // Funktionsaufrufe
             loaderFunction = () => {
-                load_cars_all();
+                load_devices();
             };
             
         </script>

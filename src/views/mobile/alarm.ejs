@@ -26,7 +26,7 @@
 
             </div>
 
-            <div class="content">
+            <div class="content" style="margin-bottom: 4em;">
 
                 <div class="flex_column">
 
@@ -119,6 +119,27 @@
 
                
                 
+            </div>
+
+            <div
+            style="
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 4em;
+                background-color: var(--bg_navbar);
+                display: flex;
+                flex-direction: row;"
+            >
+
+                <button class="btn red status_0" onclick="sendStatus(0);">
+                    <span class="material-icons">thumb_down</span>
+                </button>
+                <button class="btn green status_1" onclick="sendStatus(1);">
+                    <span class="material-icons">thumb_up</span>
+                </button>
+
             </div>
 
         <%- include('partials/foot') -%>
@@ -232,6 +253,29 @@
             function openMap() {
                 loaderIn(`map?lat=${coordiantes.lat}&lng=${coordiantes.lng}`)
             }
+
+            async function sendStatus(status) {
+                loaderIn();
+
+                const button0   = document.querySelector(".status_0");
+                const button1   = document.querySelector(".status_1");
+
+                button0.classList.remove('text_black');
+                button1.classList.remove('text_black');
+
+                const button   = document.querySelector(".status_" + status);
+                button.classList.add('text_black');
+                
+                const id = $_GET['id'];
+                
+                try {
+                    const response = await fetch_post(url_alarm_userstatus.replace(':id', user_id), {alarmid: parseInt(id), value: status});  
+                } catch (error) {
+                    console.error('sendStatus', error);
+                }                            
+                loaderOut();
+            }
+
 
             // Funktionsaufrufe
             loaderFunction = () => {

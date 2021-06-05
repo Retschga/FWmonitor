@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - Screen</title>	
+
+        <link rel="stylesheet" href="/css/screen_alarm.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">menu</button>
+
+                <h1>FWmonitor</h1>  
+                
+                <h1 class="var_timeStart text_align_center flex_grow">Alarmzeit: ##:##</h1>  
+
+                <h1 class="var_timeElapsed text_align_center flex_grow">##:##</h1>  
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+            <div class="content flex_column">
+
+                <div class="var_color text_align_center" style="padding: 0.5em;">
+                    <div style="font-size: 2em;">
+                        <span class="text right var_stichwort">Stichwort</span> -   
+                        <span class="text right var_schlagwort">Schlagwort</span> 
+                    </div>
+                    <div style="font-size: 1.5em;">
+                        <span class="text right var_strasse">Strasse</span>;
+                        <span class="text right var_ortsteil">Ortsteil</span>;
+                        <span class="text right var_ort">Ort</span>;
+                        <span class="text right var_objekt">Objekt</span>
+                    </div>                    
+                    <div style="font-size: 1.5em;">
+                        <span class="text var_bemerkung">Text</span>
+                    </div>                    
+                </div>
+
+                <div class="flex_row flex_grow">
+                    <div class="col_left">      
+                        
+                        <div class="list einsatzmittel_eigen_list margin_none">
+
+                            <div class="item smallitem green">
+                                <span class="left material-icons">local_fire_department</span>
+                                <span class="text">Einsatzmittel eigene:</span>
+                            </div>
+                            
+                            <template id="template-einsatzmittel_eigen">
+                                <div class="item smallitem green">
+                                    <span class="text var_text">Einsatzmittel</span>
+                                </div>
+                            </template>
+
+                        </div>
+
+                        <div class="list einsatzmittel_andere_list">
+
+                            <div class="item smallitem orange">
+                                <span class="left material-icons">info</span>
+                                <span class="text">Einsatzmittel andere:</span>
+                            </div>
+                            
+                            <template id="template-einsatzmittel_andere">
+                                <div class="item smallitem orange">
+                                    <span class="text var_text">Einsatzmittel</span>
+                                </div>
+                            </template>
+
+                        </div>
+                    </div>
+    
+                    <div class="col_center flex_grow">
+    
+                        <!-- LOADER KARTE -->
+                        <div 
+                        id="mapLoader"
+                        class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
+                        >
+                                <div class="spinner_rotateplane"></div>
+                                <h2 class="text_align_center text_white">Lade Karte...</h2>
+                        </div>
+    
+                        <div id="mapidContainer" class="flex_grow flex_column">
+                            <div id="mapid" class="flex_grow hide_on_no_map"></div>   
+                        </div>	
+    
+                    </div>
+    
+                    <div class="col_right" style="min-width: 15em;">
+                        <div class="flex_row" style="font-size: 2em;">
+                            <div class="flex_grow text_align_center green var_value1">0</div>
+                            <div class="flex_grow text_align_center red var_value0">0</div>
+                        </div>
+                        <div class="list_verfuegbar">
+                            <template id="template-verfuegbar">
+                                <div class="st_verf deleteme_verf flex_row">
+                                    <p class="var_name flex_grow">####r</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+    
+                </div>
+                
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            const col_left        = document.querySelector('.col_left');
+            const col_center      = document.querySelector('.col_center');
+            const col_right       = document.querySelector('.col_right');     
+
+            const clientName          = $_GET['name'];	
+            let alarmNr               = $_GET['id'] || '';	
+            const keepAlive_intervall = 10000;
+            const keepAlive_timeout   = 60000;
+            let alarm_visible_time    = parseInt(localStorage.getItem("alarm_visible_time")       || <%= time_alarm %>);
+
+			console.log("Client-Name: ", clientName);
+            console.log("alarmNr: ", alarmNr);
+
+            let connected = true;
+            let socket_software;
+            let coordiantes = {lat: 0, lng: 0}
+            let userRolesList;
+            let userStatusList;
+
+            // Laden
+            async function load_alarm() {   
+                if(alarmNr == undefined) {
+                    console.log('alarmNr required');
+                    return;
+                }
+
+                try {
+                    const alarm = (await fetch_get(url_alarm.replace(':id', alarmNr), true))[0];
+                    console.log('alarm', alarm);
+                    alarmNr = alarm.id;
+
+                    const target_eigen   = document.querySelector(".einsatzmittel_eigen_list");
+                    const target_andere  = document.querySelector(".einsatzmittel_andere_list");
+
+                    const date = new Date(alarm.date);   
+
+                    let color = 'green';
+                    switch (alarm.color) {
+                        case 3:
+                            color = 'green';
+                            break;
+                        case 2:
+                            color = 'blue';
+                            break;
+                        case 1:
+                            color = 'orange';
+                            break;
+                        case 0:
+                            color = 'red';
+                            break;
+                        default:
+                            break;
+                    }
+
+                    const var_color   = document.querySelectorAll(".var_color");
+                    for (let i = 0; i < var_color.length; i++){
+                        var_color[i].classList.add(color);
+                    }
+
+                    const var_stichwort   = document.querySelector(".var_stichwort");
+                    const var_schlagwort  = document.querySelector(".var_schlagwort");
+                    const var_strasse     = document.querySelector(".var_strasse");
+                    const var_ortsteil    = document.querySelector(".var_ortsteil");
+                    const var_ort         = document.querySelector(".var_ort");
+                    const var_objekt      = document.querySelector(".var_objekt");
+                    const var_bemerkung   = document.querySelector(".var_bemerkung");      
+                    const var_timeStart   = document.querySelector(".var_timeStart");
+                    const var_timeElapsed = document.querySelector(".var_timeElapsed");
+
+                    var_stichwort.innerHTML  = alarm.einsatzstichwort;
+                    var_schlagwort.innerHTML = alarm.schlagwort;
+                    var_strasse.innerHTML    = alarm.strasse;
+                    var_ortsteil.innerHTML   = alarm.ortsteil;
+                    var_ort.innerHTML        = alarm.ort;
+                    var_objekt.innerHTML     = alarm.objekt;
+                    var_bemerkung.innerHTML  = alarm.bemerkung;
+
+                    var lvalue=var_bemerkung.innerHTML.length;
+                    if(lvalue>200)
+                        var_bemerkung.style.fontSize = "1em";
+                    if(lvalue>400)
+                        var_bemerkung.style.fontSize = "0.8em";
+
+                    const d_start = new Date(alarm.date);
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d_start.toLocaleTimeString();
+
+                    var_timeStart.innerHTML  = 'Alarmzeit: ' + time;
+                    setInterval(() => {
+                        const d_now = new Date();
+                        var diff = d_now.getTime() - d_start.getTime();
+
+                        if($_GET['manuell'] != "true") {
+                            var elapsedMinutes = Math.floor(diff / (1000*60));
+                            if(elapsedMinutes > alarm_visible_time)
+                                goToIndex();
+                        }
+                        
+                        var tag = Math.floor(diff / (1000*60*60*24));
+                        diff = diff % (1000*60*60*24);
+                        var std = Math.floor(diff / (1000*60*60));
+                        diff = diff % (1000*60*60);
+                        var MinutenZahl = Math.floor(diff / (1000*60));
+                        diff = diff % (1000*60);
+                        var SekundenZahl = Math.floor(diff / 1000);
+
+                        stunden = "";
+                        if (std > 0) {stunden = std+"h ";}
+                        if (MinutenZahl < 10) {minuten = "0" + MinutenZahl + "m ";}
+                            else {minuten = MinutenZahl + "m ";}
+                        if (SekundenZahl < 10) {sekunden = "0" + SekundenZahl + "s ";}
+                            else {sekunden = SekundenZahl + "s ";}
+                        zeit = stunden + minuten;
+
+                        var_timeElapsed.innerHTML = zeit;
+                    }, 1000)
+
+                    const einsatzmittel_eigen  = alarm.cars1.split('|');
+                    const einsatzmittel_andere = alarm.cars2.split('|');
+
+                    for (let i = 0; i < einsatzmittel_eigen.length; i++) {
+
+                        const template   = document.querySelector('#template-einsatzmittel_eigen');                
+                        const var_text   = template.content.querySelector(".var_text");
+
+                        var_text.innerHTML   = einsatzmittel_eigen[i];
+
+                        const clone = document.importNode(template.content, true);
+                        target_eigen.append(clone);
+                        
+                    }
+
+                    for (let i = 0; i < einsatzmittel_andere.length; i++) {
+
+                        const template   = document.querySelector('#template-einsatzmittel_andere');                
+                        const var_text   = template.content.querySelector(".var_text");
+
+                        var_text.innerHTML   = einsatzmittel_andere[i];
+
+                        const clone = document.importNode(template.content, true);
+                        target_andere.append(clone);
+
+                    }
+
+                    if(alarm.lat == '' || alarm.lng == '') {
+                        const var_color   = document.querySelectorAll(".hide_on_no_map");
+                        for (let i = 0; i < var_color.length; i++){
+                            var_color[i].classList.add('hidden');
+                        }
+                    } else {
+                        coordiantes.lat = alarm.lat;
+                        coordiantes.lng = alarm.lng;
+                    }
+                
+
+
+                } catch (error) {
+                    console.error('load_alarms', error);
+                }
+            }
+
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }            
+
+            async function load_status() {
+                try {
+                    userStatusList = await fetch_get(url_user_status_all, true);
+                    console.log('user status all', userStatusList);
+
+                    userRolesList = await fetch_get(url_user_roles_all, true);
+                    console.log('user roles all', userRolesList);                    
+
+                    for(let i = 0; i < userStatusList.length; i++) {
+
+                        const userstatus = userStatusList[i];
+
+                        if(userstatus.status != 1) {
+           
+                            addUsertatus(userstatus.id, -1);
+                           
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('load_status', error);
+                }                
+            }
+
+            async function hydrantenkarte_load() {
+
+                let latitude  = coordiantes.lat;
+                let longitude = coordiantes.lng;
+                const pos = {lat:latitude, lng:longitude};
+
+                const map = createMap(pos, true);
+                //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
+                //add_hydranten(hydrantenCache, map);
+                //add_forstRettPkt(ret.map);
+
+                add_circle(latitude, longitude, map);  
+
+                map.setView(
+                    new ol.View({
+                        center: ol.proj.fromLonLat([pos.lng, pos.lat]), 
+                        zoom: map.getView().getZoom()
+                    })
+                );
+
+                let mapLoader = document.querySelector("#mapLoader");
+                mapLoader.classList.add("hidden")
+            
+                
+            }
+
+
+            function connect_software() {			
+				let keepAliveInterval = null;
+                socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
+				
+				// Event: Socket geöffnet
+                socket_software.onopen = function() {
+                    console.log("Software-connection socket connected.");
+
+					this.send(`{
+                        "topic": "init",
+						"type":"WebClient",
+						"name":"Alarmdisplay - ${clientName}",
+						"info":"Alarm",
+						"actions":[
+							{"id":"0"},		
+                            {"id":"5"},
+                            {"id":"15", "value": "${alarm_visible_time}"},
+                            {"id":"4"}
+						]}`);
+
+                        // siehe websockets.ts
+					
+					
+					lastKeepAlive = new Date();					
+					keepAliveInterval = setInterval(() => {
+						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+						}
+					}, keepAlive_intervall)
+
+                    connected = true;
+                };
+
+				// Event: Daten empfangen
+                socket_software.onmessage = function(e) {
+                    processMessage(e.data, socket_software);
+                };
+
+				// Event: Socket geschlossen
+                socket_software.onclose = function(e) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                    setTimeout(function() { connect_software(); }, 1000);
+                    connected = false;
+                };
+
+				// Event: Scoket Fehler
+                socket_software.onerror = function(err) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                    socket_software.close();
+                    connected = false;
+                };
+            }
+
+            // Hilfsfunktionen
+            function processMessage(data, socket) {
+				console.log('Software-connection socket message:', data);
+			
+				data           = JSON.parse(data);
+				const topic    = data.topic;
+				const message  = data.message;
+				
+				// Keep Alive
+				if(topic == 'ping') {
+					lastKeepAlive = new Date();	
+                    socket.send(JSON.stringify({topic: 'pong', message :message}));				
+					loaderOut();
+				}
+	
+				// Alarm
+				if(topic == 'alarm') {					
+					goToAlarm(message);
+                }
+
+
+				if(topic == 'action_0') {
+					location.reload(); 
+                }	
+                
+                if(topic == 'action_5') {					
+                    goToIndex();
+                }
+
+                if(topic == 'action_15') {
+                    localStorage.setItem("alarm_visible_time", parseInt(message));
+					location.reload(); 
+				}	
+                
+                if(topic == 'userstatus_0') {	
+                    let msg = JSON.parse(message);	
+                    if(alarmNr == msg.alarmid)				
+                        addUsertatus(msg.userid, 0);
+                }
+
+                if(topic == 'userstatus_1') {	
+                    let msg = JSON.parse(message);		
+                    if(alarmNr == msg.alarmid)		
+                        addUsertatus(msg.userid, 1);
+                }
+                
+                
+			}
+            
+            function goToIndex() {
+                window.location.href = 'index?name=' + clientName;
+            }
+
+            function addUsertatus(id, status) {
+
+                var target_verfuegbar = document.querySelector(".list_verfuegbar");
+
+                let elements = target_verfuegbar.getElementsByClassName("userstatus_" + id);
+                while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                const user_status = userStatusList.find(element => element.id == id);
+
+                const template = document.querySelector('#template-verfuegbar');                
+                const var_text   = template.content.querySelector(".var_name");
+                var_text.innerHTML = user_status.name + ' ' + user_status.vorname;                        
+                var clone = document.importNode(template.content.firstElementChild, true);
+
+                const user_roles = userRolesList.find(element => element.id == id);
+                
+                if(user_roles.stAGT) {
+                    elImg = document.createElement('img');	
+                    elImg.src = "/images/AGT.png"; 
+                    clone.appendChild(elImg);
+                } else {
+                    elImg = document.createElement('div');	
+                    elImg.classList.add('imgspacer');
+                    clone.appendChild(elImg);
+                }
+
+                if(user_roles.stMA) {
+                    elImg = document.createElement('img');	
+                    elImg.src = "/images/MA.png"; 
+                    clone.appendChild(elImg);
+                } else {
+                    elImg = document.createElement('div');	
+                    elImg.classList.add('imgspacer');
+                    clone.appendChild(elImg);
+                }
+
+                if(user_roles.stGRF) {
+                    elImg = document.createElement('img');	
+                    elImg.src = "/images/GRF.png"; 
+                    clone.appendChild(elImg);
+                } else {
+                    elImg = document.createElement('div');	
+                    elImg.classList.add('imgspacer');
+                    clone.appendChild(elImg);
+                }
+
+                if(user_roles.stZUGF) {
+                    elImg = document.createElement('img');	
+                    elImg.src = "/images/ZUGF.png"; 
+                    clone.appendChild(elImg);
+                } else {
+                    elImg = document.createElement('div');	
+                    elImg.classList.add('imgspacer');
+                    clone.appendChild(elImg);
+                }
+
+                clone.classList.add('userstatus_' + id);                
+
+                if(status == -1) {
+                    clone.classList.add('redstripes');
+                    target_verfuegbar.appendChild(clone);
+                    clone.classList.add('userstatusvalue_0');
+                } else if(status == 0) {
+                    clone.classList.add('red');
+                    target_verfuegbar.appendChild(clone);
+                    clone.classList.add('userstatusvalue_0');
+                } else if(status == 1) {
+                    clone.classList.add('green');
+                    target_verfuegbar.prepend(clone);
+                    clone.classList.add('userstatusvalue_1');
+                }              
+                
+                document.querySelector(".var_value0").innerHTML = document.querySelectorAll(".userstatusvalue_0").length;
+                document.querySelector(".var_value1").innerHTML = document.querySelectorAll(".userstatusvalue_1").length;
+                
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = async () => {   
+                await load_alarm();   
+                hydrantenkarte_load();     
+                load_clock();              
+                load_status();                
+                connect_software();  
+            };      
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

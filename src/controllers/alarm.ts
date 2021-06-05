@@ -6,6 +6,7 @@ import HttpStatusCodes from '../utils/httpStatusCodes';
 import AlarmService from '../services/alarm';
 import logging from '../utils/logging';
 import { checkValidation } from './controller';
+import { instance as DeviceServiceInstance, init, DeviceService } from '../services/device';
 
 const NAMESPACE = 'Alarm_Controller';
 
@@ -100,6 +101,27 @@ class AlarmController {
         const response = await AlarmService.isAlarm();
 
         res.send({ isAlarm: response });
+    }
+
+    public async update_userstatus(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'update_userstatus', {
+            userid: req.params.id,
+            alarmid: req.body.alarmid,
+            value: req.body.value
+        });
+        checkValidation(req);
+
+        if (!DeviceServiceInstance) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
+        }
+
+        const reponse = DeviceServiceInstance.broadcast_userstatus(
+            Number(req.params.id),
+            Number(req.body.alarmid),
+            Boolean(req.body.value)
+        );
+
+        res.send('OK');
     }
 }
 

@@ -19,14 +19,20 @@ router.get(
 );
 router.post(
     '/alarmsettings/telegram',
-    ValidatorAlarm.ipdateAlarmTelegram,
+    ValidatorAlarm.updateAlarmTelegram,
     awaitHandlerFactory(alarmController.update_alarmsettings_telegram.bind(alarmController))
 );
 
 router.post(
     '/alarmsettings/app',
-    ValidatorAlarm.ipdateAlarmApp,
+    ValidatorAlarm.updateAlarmApp,
     awaitHandlerFactory(alarmController.update_alarmsettings_app.bind(alarmController))
+);
+
+router.post(
+    '/userstatus/:id',
+    ValidatorAlarm.updateUserstatus,
+    awaitHandlerFactory(alarmController.update_userstatus.bind(alarmController))
 );
 
 router.get('/isalarm', awaitHandlerFactory(alarmController.get_isAlarm.bind(alarmController)));

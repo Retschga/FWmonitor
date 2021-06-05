@@ -78,7 +78,10 @@ const PRINTING = {
 
 const COMMON = {
     fwName: process.env.FW_NAME || 'Freiwillige Feuerwehr Test',
-    dwd_warncellid: process.env.DWD_WARCELLID || ''
+    fwName_short: process.env.FW_NAME_SHORT || 'FF Test',
+    dwd_warncellid: process.env.DWD_WARCELLID || '',
+    time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
+    time_alarm: Number(process.env.ALARM_VISIBLE) || 60
 };
 
 const GEOCODE = {

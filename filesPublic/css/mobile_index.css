@@ -24,3 +24,21 @@
     display: inline-block;
     flex-grow: 1;
 }
+
+.pwa_install_container {
+    background-color: var(--bg_loader);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;   
+    z-index: 100; 
+    color: #fff;
+}
+
+.pwa_install_container .btn_close {
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    font-size: 2em;
+}

@@ -120,6 +120,17 @@ class UserController {
         });
     }
 
+    public async get_user_roles_all(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_user_roles_all');
+
+        let users = await UserService.get_roles_all();
+        if (!users) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No user found');
+        }
+
+        res.send(users);
+    }
+
     // Status
 
     public async get_user_status_id(req: Request, res: Response, next: NextFunction) {

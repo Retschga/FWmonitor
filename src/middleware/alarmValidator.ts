@@ -15,7 +15,7 @@ export const getList = [
         .withMessage('offset must be a int')
 ];
 
-export const ipdateAlarmTelegram = [
+export const updateAlarmTelegram = [
     body('value')
         .exists()
         .withMessage('value is required')
@@ -23,10 +23,23 @@ export const ipdateAlarmTelegram = [
         .withMessage('limit must be boolean')
 ];
 
-export const ipdateAlarmApp = [
+export const updateAlarmApp = [
     body('value')
         .exists()
         .withMessage('value is required')
         .isBoolean()
-        .withMessage('limit must be boolean')
+        .withMessage('value must be boolean')
+];
+
+export const updateUserstatus = [
+    body('alarmid')
+        .exists()
+        .withMessage('alarmid is required')
+        .isNumeric()
+        .withMessage('alarmid must be numeric'),
+    body('value')
+        .exists()
+        .withMessage('value is required')
+        .isBoolean()
+        .withMessage('value must be boolean')
 ];

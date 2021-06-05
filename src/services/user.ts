@@ -251,6 +251,32 @@ class UserService {
         };
     }
 
+    public async get_roles_all() {
+        const result = await this.find();
+        if (result.length < 1) return;
+
+        let response: any = [];
+
+        for (let i = 0; i < result.length; i++) {
+            const user = result[i];
+
+            response.push({
+                id: user.id,
+                admin: user.admin,
+                stAGT: user.stAGT,
+                stGRF: user.stGRF,
+                stMA: user.stMA,
+                stZUGF: user.stZUGF,
+                drucker: user.drucker,
+                softwareInfo: user.softwareInfo,
+                telefonliste: user.telefonliste,
+                kalender: user.kalender
+            });
+        }
+
+        return response;
+    }
+
     public async update_roles_admin(id: number, value: boolean) {
         let affectedRows = await UserModel.model.update(Number(id), {
             admin: value

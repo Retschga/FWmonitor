@@ -9,9 +9,15 @@ const router = express.Router();
 
 function generateParams(req: Request) {
     return {
-        fwvv: config.fwvv.enabled
+        fwvv: config.fwvv.enabled,
+        fw_name: config.common.fwName,
+        fw_name_short: config.common.fwName_short
     };
 }
+
+router.get('/manifest.json', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/manifest', generateParams(req));
+});
 
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {
     console.log(generateParams(req));

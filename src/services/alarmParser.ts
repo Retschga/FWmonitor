@@ -152,6 +152,8 @@ class AlarmParserService {
         data = data.replace(/SonstigeS/g, 'Sonstiges');
         data = data.replace(/BEinsatzplan/g, 'Einsatzplan');
 
+        data = data.replace(/1.5.3 MB/g, 'Dienststellenalarm');
+
         return data;
     };
 

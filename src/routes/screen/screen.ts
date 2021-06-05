@@ -12,18 +12,22 @@ function generateParams(req: Request) {
         fwvv: config.fwvv.enabled,
         fwname: config.common.fwName,
         dwd_warncellid: config.common.dwd_warncellid,
-        version: config.version
+        version: config.version,
+        time_diashow: config.common.time_diashow,
+        time_alarm: config.common.time_alarm
     };
 }
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
-    console.log(generateParams(req));
     res.render('screen/index', generateParams(req));
 });
 
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {
-    console.log(generateParams(req));
     res.render('screen/index', generateParams(req));
+});
+
+router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
+    res.render('screen/alarm', generateParams(req));
 });
 
 export = router;

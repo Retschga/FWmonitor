@@ -14,15 +14,15 @@
 }
 
 html {
-    min-width: 100%;
-    min-height: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
     font-size: 18px;
     font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 body {
-    min-width: 100%;
-    min-height: 100%;
+    min-width: 100vw;
+    min-height: 100vh;
     background-color: var(--bg_body);
 
     -webkit-touch-callout: none; /* iOS Safari */
@@ -242,10 +242,10 @@ button {
 .loader_in {
     visibility: visible;
 
-    -webkit-animation: loader_moveIn 1s;
-    -moz-animation: loader_moveIn 1s;
-    -o-animation: loader_moveIn 1s;
-    animation: loader_moveIn 1s;
+    -webkit-animation: loader_moveIn 0.5s;
+    -moz-animation: loader_moveIn 0.5s;
+    -o-animation: loader_moveIn 0.5s;
+    animation: loader_moveIn 0.5s;
 }
 
 .loader_out {
@@ -391,6 +391,16 @@ button {
     background-color: #ffa9a8 !important;
 }
 
+.redstripes {
+    background: repeating-linear-gradient(
+        45deg,
+        #ffa9a8,
+        #ffa9a8 10px,
+        #fddfdf 10px,
+        #fddfdf 20px
+      );
+}
+
 .grey {
     background-color: #e0e0e0 !important;
 }
@@ -429,6 +439,10 @@ button {
 
 .text_red {
     color: #ffa9a8 !important;
+}
+
+.text_black {
+    color: #000 !important;
 }
 
 
