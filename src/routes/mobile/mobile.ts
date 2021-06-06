@@ -21,7 +21,9 @@ router.get('/manifest.json', (req: Request, res: Response, next: NextFunction) =
 });
 
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {
-    console.log(generateParams(req));
+    res.render('mobile/index', generateParams(req));
+});
+router.get('/index.html', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/index', generateParams(req));
 });
 

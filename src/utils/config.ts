@@ -81,7 +81,8 @@ const COMMON = {
     fwName_short: process.env.FW_NAME_SHORT || 'FF Test',
     dwd_warncellid: process.env.DWD_WARCELLID || '',
     time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
-    time_alarm: Number(process.env.ALARM_VISIBLE) || 60
+    time_alarm: Number(process.env.ALARM_VISIBLE) || 60,
+    fw_position: process.env.FW_KOORD || ''
 };
 
 const GEOCODE = {

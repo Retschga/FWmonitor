@@ -2,6 +2,8 @@
 
 import logging from '../utils/logging';
 import { Websocket as _Websocket, SocketInfo } from '../websocket';
+import * as AlarmModel from '../models/alarm';
+import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'DeviceService';
 
@@ -10,6 +12,31 @@ class DeviceService {
 
     constructor(sockets: _Websocket[]) {
         this.sockets = sockets;
+
+        globalEvents.on('alarm', (alarm: AlarmModel.AlarmRow) => {
+            console.log('alarm##################', alarm);
+            for (let i = 0; i < this.sockets.length; i++) {
+                this.sockets[i].broadcast('alarm', String(alarm.id));
+            }
+        });
+
+        globalEvents.on('calendar-change', () => {
+            for (let i = 0; i < this.sockets.length; i++) {
+                this.sockets[i].broadcast('calendar-change', '');
+            }
+        });
+
+        globalEvents.on('userstatus-change', () => {
+            for (let i = 0; i < this.sockets.length; i++) {
+                this.sockets[i].broadcast('userstatus-change', '');
+            }
+        });
+
+        globalEvents.on('diashow-change', () => {
+            for (let i = 0; i < this.sockets.length; i++) {
+                this.sockets[i].broadcast('diashow-change', '');
+            }
+        });
     }
 
     public get_all(params: object = {}) {

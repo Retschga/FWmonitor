@@ -131,12 +131,9 @@
 
             // Laden
             async function load_alarm() {   
-                if($_GET['id'] == undefined || $_GET['id'] == '') {
-                    console.log('$_GET["id"] required');
-                    return;
-                }
+                let id = $_GET['id'];
 
-                const id = $_GET['id'];
+                if(!id) id = '';                
 
                 try {
                     const alarm = (await fetch_get(url_alarm.replace(':id', id), true))[0];

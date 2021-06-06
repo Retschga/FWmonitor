@@ -144,15 +144,16 @@ class GeocodeService {
             if (ret.lat != '0') return ret;
         }
 
-        // Bing Geocode
-        if (config.geocode.bing) {
-            try {
-                const response_bing = await this.geocode_bing(searchString);
-                logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
-                ret.lat = response_bing.lat;
-                ret.lng = response_bing.lng;
-            } catch (error) {
-                logging.ecxeption(NAMESPACE, error);
+        // OSM Objektsuche
+        if (config.geocode.osm_objects) {
+            if (!ret.isAddress && !isHighway) {
+                const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
+
+                if (response_overpass.isAddress) {
+                    logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
+                    ret = response_overpass;
+                    if (ret.lat != '0') return ret;
+                }
             }
         }
 
@@ -182,21 +183,23 @@ class GeocodeService {
                     isHighway = true;
 
                     logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
+                    if (ret.lat != '0') return ret;
                 }
             } catch (error) {
                 logging.ecxeption(NAMESPACE, error);
             }
         }
 
-        // OSM Objektsuche
-        if (config.geocode.osm_objects) {
-            if (!ret.isAddress && !isHighway) {
-                const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
-
-                if (response_overpass.isAddress) {
-                    logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
-                    ret = response_overpass;
-                }
+        // Bing Geocode
+        if (config.geocode.bing) {
+            try {
+                const response_bing = await this.geocode_bing(searchString);
+                logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
+                ret.lat = response_bing.lat;
+                ret.lng = response_bing.lng;
+                if (ret.lat != '0') return ret;
+            } catch (error) {
+                logging.ecxeption(NAMESPACE, error);
             }
         }
 

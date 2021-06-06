@@ -109,62 +109,73 @@
                         <button type="submit" class="btn">Anmelden</button>
 
                     </form>
+
+                    <button class="btn" id="btn_token" style="margin-top: 1em; width: 90%;" onclick="login(true)">Token Login</button>
+
                 </div>
 
             </div>
 
 
-        <script>
+            <%- include('partials/foot') -%>
 
-            document.getElementById('loginForm').onsubmit = function () {
-
-                let loader = document.querySelector("#loginLoader");
-                loader.classList.remove("hidden");
-
-                let loginFormContainer = document.querySelector("#loginFormContainer");
-                loginFormContainer.classList.add("hidden");
-
-                fetch(url_login, {                    
-                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
-                    mode: 'cors', // no-cors, *cors, same-origin
-                    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-                    credentials: 'include', // include, *same-origin, omit
-                    withCredentials: true,
-                    redirect: 'follow', // manual, *follow, error
-                    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-					headers: {'Content-Type': 'application/json'},					
-					body: JSON.stringify({
-						telegramid: document.getElementById("var_telid").value,
-						password: document.getElementById("var_passwort").value
-					})
-				})
-				.then(data => data.json())
-				.then(data =>  { 
-					console.log(data);
-                    if(data.message && data.message == 'OK') {
-                        setCookie('logout_status', 'false', 1);
-                        loaderIn('index', true); 
-                        return false;
-                    }
-                    if(data.message) {
-                        console.error("Login Fehler: ", data.message);	
-                        alert(data.message);
+            <script>
+    
+                function login(useToken = false) {
+                    let loader = document.querySelector("#loginLoader");
+                    loader.classList.remove("hidden");
+    
+                    let loginFormContainer = document.querySelector("#loginFormContainer");
+                    loginFormContainer.classList.add("hidden");
+    
+                    fetch(url_login, {                    
+                        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                        mode: 'cors', // no-cors, *cors, same-origin
+                        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                        credentials: 'include', // include, *same-origin, omit
+                        withCredentials: true,
+                        redirect: 'follow', // manual, *follow, error
+                        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                        headers: {'Content-Type': 'application/json'},					
+                        body: JSON.stringify(useToken == true ? {} : {
+                            telegramid: document.getElementById("var_telid").value,
+                            password: document.getElementById("var_passwort").value
+                        })
+                    })
+                    .then(data => data.json())
+                    .then(data =>  { 
+                        console.log(data);
+                        if(data.message && data.message == 'OK') {
+                            setCookie('logout_status', 'false', 1);
+                            loaderIn('index', true); 
+                            return false;
+                        }
+                        if(data.message) {
+                            console.error("Login Fehler: ", data.message);	
+                            alert(data.message);
+                            loader.classList.add("hidden");
+                            loginFormContainer.classList.remove("hidden");
+                        }
+                    }) 
+                    .catch((err) => {
+                        console.error("Login Fehler: ", err);	
                         loader.classList.add("hidden");
                         loginFormContainer.classList.remove("hidden");
-                    }
-				}) 
-				.catch((err) => {
-					console.error("Login Fehler: ", err);	
-                    loader.classList.add("hidden");
-                    loginFormContainer.classList.remove("hidden");
-				})
-
-                return false;
-            }
-            
-        </script>
-
-        <%- include('partials/foot') -%>
+                    })
+                }
+    
+                if($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != "") login();
+    
+                if(!getCookie('token') || getCookie('token') == "") document.getElementById('btn_token').classList.add('hidden');
+    
+                document.getElementById('loginForm').onsubmit = function () {
+    
+                    login();
+    
+                    return false;
+                }
+               
+            </script>
 
     </body>
 	

@@ -18,13 +18,23 @@
 
                 <button class="material-icons">local_fire_department</button>
 
-                <h1>FWmonitor</h1>   
+                <h1>FWmonitor</h1>  
+                
+                <div class="spacer" style="width: 1em;"></div>
+
+                <button class="material-icons var_gps_fixed hidden">gps_fixed</button>
+                <button class="material-icons var_gps_not_fixed hidden">gps_not_fixed</button>
+                <button class="material-icons var_gps_error">gps_off</button>
+
+                <button class="material-icons var_server_ok hidden">leak_add</button>
+                <button class="material-icons var_server_error">leak_remove</button>
                 
                 <div class="flex_grow"></div>
 
                 <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
 
             </div>
+
             <div class="content">
 
                  <!-- LOADER KARTE -->
@@ -33,7 +43,7 @@
                     class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
                 >
                         <div class="spinner_rotateplane"></div>
-                        <h2 class="text_align_center">GPS einschalten!</h2>
+                        <h2 class="text_align_center">Lade Karte...</h2>
                 </div>
 
                 <div id="mapidContainer" class="flex_grow flex_column">
@@ -78,11 +88,17 @@
 
             </div>
 
+            <span class="material-icons alert_alarm hidden" onclick="loaderIn('alarm')">notifications_active</span>
+     
+
 
         <%- include('partials/foot') -%>
         <%- include('partials/foot_loggedin') -%>
 
         <script>
+
+            const preloadMap = false;
+            const fwHausPos = '<%= fw_position %>';
 
             // Laden
             async function load_alarm() {
@@ -92,31 +108,8 @@
 
                     if(!isalarm.isAlarm) return;
 
-                    const alarm = (await fetch_get(url_alarm_last, true))[0];
-                    console.log('alarm', alarm);
-
-
-                    const target = document.querySelector(".content");
-
-                    const date = new Date(alarm.date);   
-
-                    const template        = document.querySelector('#template-alarm');   
-                    const var_stichwort   = template.content.querySelector(".var_stichwort");             
-                    const var_text        = template.content.querySelector(".var_text");
-                    const var_date        = template.content.querySelector(".var_date");
-                    const var_time        = template.content.querySelector(".var_time");
-
-                    var_stichwort.innerHTML   = alarm.einsatzstichwort;
-                    var_text.innerHTML        = alarm.schlagwort;
-                    var_date.innerHTML        = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
-                    var_time.innerHTML        = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-
-                    const clone = document.importNode(template.content.firstElementChild, true);
-                    target.appendChild(clone);
-
-                    clone.onclick = () => {
-                        loaderIn('alarm?id=' + alarm.id);
-                    };
+                    const alert_alarm = document.querySelector('.alert_alarm'); 
+                    alert_alarm.classList.remove('hidden');  
 
 
                 } catch (error) {
@@ -125,110 +118,52 @@
             }
 
             async function hydrantenkarte_load() {
-                if (!navigator.geolocation){
-                    alert("Geolokation wird von ihrem Browser nicht unterstützt");
-                    goBack();
-                    return;
+
+                // Prüfe ob GPS Position vorhanden
+                if (GPS_now.lng == 0 && fwHausPos == "") {
+                    console.log("GPS Position nicht gefunden!");
+                }	
+
+                let pos = {lat:GPS_now.lat, lng:GPS_now.lng};
+                if (GPS_now.lng == 0 && fwHausPos != "") {
+                    let p = fwHausPos.split(',');
+                    pos = {lat:p[1], lng:p[0]};
+                    console.log("Keine GPS Position > verwende FW Haus", pos)
                 }
+                map_position = [pos.lng, pos.lat];
 
-                var opts = {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 4000
-                };	
+                // Karte erstellen
+                const map = createMap(pos, true, preloadMap);
+                try {
+                    const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', pos.lat).replace(':lng', pos.lng), true);
+                    add_hydranten(hydrantenCache, map);
+                } catch (error) {
+                    console.error('ERROR: could not load hydranten', error);
+                }              
+                try {
+                    add_forstRettPkt(map);
+                } catch (error) {
+                    console.error('ERROR: could not load forst rettungspunkte', error);
+                }                  
 
+                // Positionsmarker zur Karte hinzufügen
+                let posMarker = add_posmarker(pos.lat, pos.lng, map);
+                
+                // Callback bei Positionsänderung
+                GPS_hasChanged = () => {	
+                    console.log(GPS_now);	
+                    let pos = {lat:GPS_now.lat, lng:GPS_now.lng};				
+                    map_position = [pos.lng, pos.lat];
 
-                async function success(position) {
-                    let latitude  = position.coords.latitude;
-                    let longitude = position.coords.longitude;
-                    if(
-                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
-                        $_GET['lng'] != undefined && $_GET['lng'] != ''
-                    ) {
-                        latitude = Number($_GET['lat']);
-                        longitude = Number($_GET['lng']);
-                    }
-                    const pos = {lat:latitude, lng:longitude};
-
-                    const map = createMap(pos, true);
-                    //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
-                    //add_hydranten(hydrantenCache, map);
-                    //add_forstRettPkt(ret.map);
-
-                    if(
-                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
-                        $_GET['lng'] != undefined && $_GET['lng'] != ''
-                    ) {
-                        console.log('target', $_GET['lat'], $_GET['lng']);
-                        add_circle($_GET['lat'], $_GET['lng'], map);
-                    }
-
-
-                    Number.prototype.toRad = function() {
-                        return this * Math.PI / 180;
-                    }
-                    
-                    Number.prototype.toDeg = function() {
-                        return this * 180 / Math.PI;
-                    }
-
-                    function moveCoord(coord, brng, dist) {
-                        dist = dist / 6371;  
-                        brng = brng.toRad();  
-                    
-                        var lat1 = coord.lat.toRad(), lon1 = coord.lng.toRad();
-                    
-                        var lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) + 
-                                            Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
-                    
-                        var lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
-                                                    Math.cos(lat1), 
-                                                    Math.cos(dist) - Math.sin(lat1) *
-                                                    Math.sin(lat2));
-                    
-                        if (isNaN(lat2) || isNaN(lon2)) return null;
-
-                        return {lat:lat2.toDeg(), lng:lon2.toDeg()};		
-                    }
-
-                    let radius = 3.1;
-                    let p1 = moveCoord(pos, 0, radius);
-                    let p2 = moveCoord(pos, 90, radius);
-                    let p3 = moveCoord(pos, 180, radius);
-                    let p4 = moveCoord(pos, 270, radius);
-
-                    let boundingExtent  = new ol.extent.boundingExtent([[p1.lng, p1.lat], [p2.lng, p2.lat], [p3.lng, p3.lat], [p4.lng, p4.lat]]);
-                    boundingExtent = ol.proj.transformExtent(boundingExtent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
-
-                    map.setView(
-                        new ol.View({
-                            center: ol.proj.fromLonLat([pos.lng, pos.lat]),
-                            extent: boundingExtent ,   
-                            zoom: map.getView().getZoom()
-                        })
-                    );
-
-                    let mapLoader = document.querySelector("#mapLoader");
-                    mapLoader.classList.add("hidden")
-                   
+                    console.log('Map neupositionieren', map_position, map_moved);				
+                    posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(map_position)) : null);
+                    if(map_moved) return;
+                    map_center();
                 };
 
-                function error(error) {
-                    let str = "?;"
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED: str = "Keine Freigabe! -> Siehe System Einstellungen"; break;
-                        case error.POSITION_UNAVAILABLE: str = "Pos. nicht gefunden!"; break;
-                        case error.TIMEOUT: str = "Timeout"; break;
-                        default: str = "FEHLER"; break;
-                    }
-                    alert(`Es war nicht möglich Sie zu lokalisieren (${str})`);
 
-                    let mapLoader = document.querySelector("#mapLoader");
-                    mapLoader.classList.add("hidden")
-
-                };
-
-                navigator.geolocation.getCurrentPosition(success, error, opts);
+                let mapLoader = document.querySelector("#mapLoader");
+                mapLoader.classList.add("hidden");   
 
                 
             }
@@ -242,8 +177,7 @@
                     document.querySelector('.var_time').innerHTML = time + " - " + date;
                 }, 1000)
             }
-
-            			
+           			
 
             // Funktionsaufrufe
             loaderFunction = () => {
@@ -252,7 +186,7 @@
                 hydrantenkarte_load();
                 load_clock();
 
-                connectFWmonitor();
+                ws_server_connect();
             };            
             
             

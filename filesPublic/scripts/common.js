@@ -105,7 +105,7 @@ async function logout() {
 
         if(data.message && data.message == 'OK') {                
             setCookie('logout_status', 'true', 1);
-            loaderIn('login', true);
+            loaderIn('login?manuell=true', true);
             return false;
         }
         if(data.message) {
@@ -400,7 +400,7 @@ var styleFunction = function(feature) {
 
 // Forst Rettungspunkte
 async function add_forstRettPkt(map) {
-    let response = await fetchWithParam(url_map_forstrettpkt, {});
+    let response = await fetch_get(url_map_forstrettpkt, true);
 
     for(let i = 0; i < response.features.length; i++) {
         response.features[i].properties.title = 'rettPkt';
@@ -469,8 +469,29 @@ function add_circle(lat, lng, map) {
     map.addLayer(layer);	
 }
 
+// Pasitionsmarker
+function add_posmarker(lat, lng, map) {
+    var posMarker = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
+        'title': 'posMarker'
+    });
+    let layer = new ol.layer.Vector({
+        source: new ol.source.Vector({
+            features: [posMarker],
+        }),
+        style: styleFunction,
+    });
+    map.addLayer(layer);
+    return posMarker;
+}
+
 // Karte
-function createMap(dest, center = false) {
+let map_instance = null;
+let map_moved = false;
+let map_center = () => {};
+let map_position = null;
+
+function createMap(dest, center = false, preload = false) {
     // Karten Controls
     let control_attribution = new ol.control.Attribution({
         collapsible: false,
@@ -503,11 +524,45 @@ function createMap(dest, center = false) {
         btnCenter.prototype.constructor = btnCenter;
     
         btnCenter.prototype.handleCenter = function handleRotateNorth () {
-            alarm_mapCenter();
+            map_moved = false;
+			map_center();
+			setTimeout(function(){ 
+				map_moved = false;
+			}, 50);	
         };
     
         return btnCenter;
     }(ol.control.Control));
+    let btnSwitchMap = /*@__PURE__*/(function (Control) {
+		function btnSwitchMap(opt_options) {
+			var options = opt_options || {};
+	
+			var button = document.createElement('button');
+			button.innerHTML = '<span class="material-icons">layers</span>';
+            button.className = '';
+	
+			var element = document.createElement('div');
+			element.className = 'ol-center2 ol-unselectable ol-control';
+			element.appendChild(button);
+	
+			Control.call(this, {
+				element: element,
+				target: options.target,
+			});
+	
+			button.addEventListener('click', this.handleCenter.bind(this), false);
+		}
+	
+		if ( Control ) btnSwitchMap.__proto__ = Control;
+		btnSwitchMap.prototype = Object.create( Control && Control.prototype );
+		btnSwitchMap.prototype.constructor = btnSwitchMap;
+	
+		btnSwitchMap.prototype.handleCenter = function handleRotateNorth () {
+			tileLayer_OpenTopoMap.setVisible(!tileLayer_OpenTopoMap.getVisible());
+		};
+	
+		return btnSwitchMap;
+	}(ol.control.Control));
 
     // Karte View
     let view = new ol.View({
@@ -519,17 +574,28 @@ function createMap(dest, center = false) {
     let layers = [];
     let tileLayer_OSM = new ol.layer.Tile({
         source: new ol.source.OSM({
-            url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png'
+            url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png',
+            preload: (preload ? 18 : 0)
         })
     })
     let tileLayer_Hillshade = new ol.layer.Tile({
         source: new ol.source.XYZ({
             url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
-            attributions: ['© wmflabs']
+            attributions: ['© wmflabs'],
+            preload: (preload ? 16 : 0),
+		    maxZoom: 16,
         })
-    })                
+    })             
+    tileLayer_OpenTopoMap = new ol.layer.Tile({
+		source: new ol.source.XYZ({
+			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			attributions: ['© OpenTopoMap']
+		}),
+		preload: (preload ? 17 : 0)
+	})   
     layers.push(tileLayer_OSM);
     layers.push(tileLayer_Hillshade);
+    layers.push(tileLayer_OpenTopoMap);
 
 
     // Karte erstellen
@@ -539,18 +605,36 @@ function createMap(dest, center = false) {
         controls: ol.control.defaults({attribution: false}).extend([
             control_attribution,
             control_fullscreen,
-            new btnCenter()
+            new btnCenter(),
+            new btnSwitchMap()
         ]),
         view: view
     });
-    alarm_map = map;
+    map_instance = map; 
+    
+    // Move Event
+	map.on("moveend", function(e){
+		map_moved = true;
+	});
 
     if(center) {
-        alarm_mapCenter = () => {
-            view.setZoom(15);
-            view.setCenter(ol.proj.transform([dest.lng, dest.lat], 'EPSG:4326', 'EPSG:3857'));
-        }
+        map_position = [dest.lng, dest.lat];
+		map_center = () => {	
+			//view.setZoom(15);
+			view.setCenter(ol.proj.transform(map_position, 'EPSG:4326', 'EPSG:3857'));
+			map_moved = false;
+			setTimeout(function(){ 
+				map_moved = false;
+			}, 50);
+			console.log("MAP CENTER (Standard)", map_position, map_moved);
+		}
+		map_center(); 
     }
+
+    setTimeout(function(){ 
+        map_moved = false;
+		tileLayer_OpenTopoMap.setVisible(false);
+	}, 1500);
 
     return map;
 }

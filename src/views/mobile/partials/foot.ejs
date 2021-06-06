@@ -56,8 +56,8 @@
 
     const url_login = '/api/v1/auth/login';
 
-    const url_map_forstrettpkt = 'rettPunkte.geojson';
-    const url_map_hydranten = '/app/api/hydranten.geojson?lat=:lat&lng=:lng';
+    const url_map_forstrettpkt = '/rettPunkte.geojson';
+    const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
 
     const url_diashow_list = '/api/v1/diashow/list';
     const url_diashow_disable = '/api/v1/diashow/disable';
@@ -75,7 +75,7 @@
     // -------- Update a Service Worker--------
     function invokeServiceWorkerUpdateFlow(registration) {
         // TODO implement your own UI notification element
-        alert("Update... Bitte warten ...");
+        loaderIn();
         notification.show("New version of the app is available. Refresh now?");
         notification.addEventListener('click', () => {
             if (registration.waiting) {
@@ -107,7 +107,8 @@
                                 // It's the perfect time to display a "New content is available; please refresh."
                                 // message in the page's interface.
                                 console.log('New or updated content is available.');
-                                if(!alert("update....")) window.location.reload();
+                                loaderIn();
+                                window.location.reload();
                             } else {
                                 // At this point, everything has been precached.
                                 // It's the perfect time to display a "Content is cached for offline use." message.

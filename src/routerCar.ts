@@ -67,6 +67,9 @@ class RouterCar {
         this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
             res.render('car/redirect');
         });
+        this.router.get('/settings', (req: Request, res: Response, next: NextFunction) => {
+            res.render('car/settings');
+        });
 
         this.router.use('/', sampleRoutes);
         this.router.use('/', auth_page('/car/redirect?target=login'), carRoutes);

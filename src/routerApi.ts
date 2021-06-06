@@ -14,6 +14,7 @@ import statisticRoutes from './routes/api/statistic';
 import groupRoutes from './routes/api/group';
 import diashowRoutes from './routes/api/diashow';
 import authRoutes from './routes/api/auth';
+import hydrantRoutes from './routes/api/hydrant';
 import deviceRoutes from './routes/api/device';
 import { auth_api } from './middleware/auth';
 
@@ -83,6 +84,7 @@ class RouterApi {
             this.router.use('/group', auth_api(), groupRoutes);
             this.router.use('/diashow', auth_api(), diashowRoutes);
             this.router.use('/device', auth_api(), deviceRoutes);
+            this.router.use('/hydrant', auth_api(), hydrantRoutes);
             this.router.use('/', auth_api(), sampleRoutes);
         } else {
             // HTTP Bildschirm

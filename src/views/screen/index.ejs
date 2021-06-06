@@ -429,8 +429,8 @@
 				}
 	
 				// Alarm
-				if(topic == 'alarm') {					
-					window.location.href = 'alarm?name=' + clientName + '&id=' + message;
+				if(topic == 'alarm') {			
+                    loaderIn('alarm?name=' + clientName + '&id=' + message);		
                 }
 
 
@@ -480,6 +480,18 @@
                     localStorage.setItem("alarm_visible_time", parseInt(message));
 					location.reload(); 
 				}	
+
+                if(topic == 'calendar-change') {
+                    load_calendar();
+				}
+                
+                if(topic == 'userstatus-change') {
+                    load_status();
+				}	
+
+                if(topic == 'diashow-change') {
+                    load_diashow();
+				}
                 
 			}
             

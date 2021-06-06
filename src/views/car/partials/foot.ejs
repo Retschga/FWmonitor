@@ -14,7 +14,7 @@
 
     // GPS
     var GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
-    var GPS_now = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
+    var GPS_now = JSON.parse(localStorage.getItem('gps.now') || JSON.stringify(GPS_last));
     var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
     var GPS_meanNum = 0;
     var GPS_hasChanged = () => {};
@@ -27,10 +27,10 @@
     var status_memFree = 0;
     var status_memTotal = 0;
     var status_cpuTemp = 0;
-    var status_wpaSupp = "";
+    var status_wpaSupp = localStorage.getItem('status.wpasupp') || "";
     var status_connWlan = "";
     var status_cpuIdle = 0;
-    var status_hostname = "";
+    var status_hostname = localStorage.getItem('status.hostname') || "";
     var status_usbtether = false;
 
     let loaderFunction = () => {};
@@ -42,7 +42,7 @@
     // -------- Update a Service Worker--------
     function invokeServiceWorkerUpdateFlow(registration) {
         // TODO implement your own UI notification element
-        alert("Update... Bitte warten ...");
+        loaderIn();
         notification.show("New version of the app is available. Refresh now?");
         notification.addEventListener('click', () => {
             if (registration.waiting) {
@@ -58,38 +58,36 @@
         // Registriere Service Worker
         console.log('Registering service worker');	
         serviceWorker_registration = await navigator.serviceWorker.
-            register('/serviceworker_car.js', { scope: "/car/" });
-            
+            register('/serviceworker_car.js', { scope: "/car/" });            
 
-            // updatefound is fired if service-worker.js changes.
-            serviceWorker_registration.onupdatefound = function() {
-                var installingWorker = serviceWorker_registration.installing;
+        // updatefound is fired if service-worker.js changes.
+        serviceWorker_registration.onupdatefound = function() {
+            var installingWorker = serviceWorker_registration.installing;
 
-                installingWorker.onstatechange = function() {
-                    switch (installingWorker.state) {
-                        case 'installed':
-                            if (navigator.serviceWorker.controller) {
-                                // At this point, the old content will have been purged and the fresh content will
-                                // have been added to the cache.
-                                // It's the perfect time to display a "New content is available; please refresh."
-                                // message in the page's interface.
-                                console.log('New or updated content is available.');
-                                if(!alert("update....")) window.location.reload();
-                            } else {
-                                // At this point, everything has been precached.
-                                // It's the perfect time to display a "Content is cached for offline use." message.
-                                console.log('Content is now available offline!');
-                            }
-                            break;
+            installingWorker.onstatechange = function() {
+                switch (installingWorker.state) {
+                    case 'installed':
+                        if (navigator.serviceWorker.controller) {
+                            // At this point, the old content will have been purged and the fresh content will
+                            // have been added to the cache.
+                            // It's the perfect time to display a "New content is available; please refresh."
+                            // message in the page's interface.
+                            console.log('New or updated content is available.');
+                            loaderIn();
+                                window.location.reload();
+                        } else {
+                            // At this point, everything has been precached.
+                            // It's the perfect time to display a "Content is cached for offline use." message.
+                            console.log('Content is now available offline!');
+                        }
+                        break;
 
-                        case 'redundant':
-                            console.error('The installing service worker became redundant.');
-                            break;
-                    }
-                };
+                    case 'redundant':
+                        console.error('The installing service worker became redundant.');
+                        break;
+                }
             };
-            
-
+        };     
 
         console.log('Registered service worker');
 
@@ -105,6 +103,7 @@
 
         console.log('Registered service worker is now ready');
     }
+
 
 
     /**
@@ -167,15 +166,46 @@
         GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);				
     }			
 
+    function update_gps_status(val) {
+        if(val == 2) { // 2D Fix
+            document.querySelector('.var_gps_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = true;
+        } else if(val == 3) { // 3D Fix
+            document.querySelector('.var_gps_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = true;
+        } else if(val == 1) { // No Fix
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = false;
+        } else if(val == -1) { // Geräte Error
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.remove('hidden');
+            GPS_hasFIX = false;
+        } else { // GPS Error
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.remove('hidden');
+            GPS_hasFIX = false;
+        }
+    }
+
     // Websocket für GPS, Displaysteuerung
-    function connectSteuer() {			
+    function ws_hardware_connect() {			
         ws_hardware = new WebSocket('ws://localhost:8765');
         let wsGPSInterval = null;				
         
         ws_hardware.onopen = function() {
             console.log("Hardware-connection socket connected:");
+
             // Setze GPS Status auf kein FIX
-            index_status_GPS(1);
+            update_gps_status(1);
+
             // Interval GPS Positionsabfrage
             wsGPSInterval = setInterval( () => { 
                 ws_hardware.send('getGPS'); 
@@ -192,9 +222,10 @@
 
         ws_hardware.onmessage = function(e) {
             console.log("Hardware-connection socket data received: " + e.data);
+
             // Kein FIX
             if(e.data == "-1") {
-                index_status_GPS(1);
+                update_gps_status(1);
 
             } else if (e.data.indexOf('memFree') != -1) {
                 status_memFree = e.data.split(':')[1];
@@ -204,6 +235,7 @@
 
             } else if (e.data.indexOf('wpaSupp') != -1) {
                 status_wpaSupp = e.data.split(':')[1];
+                localStorage.setItem('status.wpasupp', status_wpaSupp);
 
             } else if (e.data.indexOf('cpuTemp') != -1) {
                 status_cpuTemp = e.data.split(':')[1];
@@ -216,9 +248,10 @@
 
             } else if (e.data.indexOf('hostname') != -1) {
                 status_hostname = e.data.split(':')[1];
+                localStorage.setItem('status.hostname', status_hostname);
 
             } else if (e.data.indexOf('setWpaSupp') != -1) {
-                closeLoading();
+                loaderOut();
                 alert('Daten gespeichert!');
 
             } else if (e.data.indexOf('usbtether') != -1) {
@@ -231,7 +264,7 @@
                 let dat = JSON.parse(e.data);
 
                 // Status anzeigen
-                index_status_GPS(dat.mode);
+                update_gps_status(dat.mode);
 
                 // Daten Aufsummieren -> Mittelwert
                 GPS_meanSum.lat += dat.lat;
@@ -256,7 +289,7 @@
                     // Abweichung von letzter Position berechnen
                     if(GPS_now) {
                         let d = _getCoordsDistance({lng: GPS_meanSum.lng, lat: GPS_meanSum.lat}, {lng: GPS_now.lng, lat: GPS_now.lat});
-//								console.log("Distanz", d);
+								console.log("Distanz", d);
                         if(d >= 2) {
                             if(GPS_last.lat != 0 && GPS_last.speed > 5) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
                             console.log("GPS Change", GPS_meanSum);
@@ -280,6 +313,7 @@
                     GPS_now.climb = Math.round(GPS_meanSum.climb);
                     GPS_now.precision = dat.precision;
                     GPS_now.sats = dat.sats;
+                    localStorage.setItem('gps.now', JSON.stringify(GPS_now));
 
                     // Höhe Min/Max
                     if(GPS_alt_max < GPS_now.alt) GPS_alt_max = GPS_now.alt;
@@ -303,20 +337,20 @@
         ws_hardware.onclose = function(e) {
             console.log('Hardware-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
             // Setze GPS Status auf Fehler
-            index_status_GPS(-1);	
+            update_gps_status(-1);	
             // Lösche GPS Abfrageintervall
             clearInterval(wsGPSInterval);
 
             // Nach 1s neu verbinden
             setTimeout(function() {
-                connectSteuer();
+                ws_hardware_connect();
             }, 1000);					
         };
 
         ws_hardware.onerror = function(err) {
             console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
             // Setze GPS Status auf Fehler
-            index_status_GPS(-1);
+            update_gps_status(-1);
             // Lösche GPS Abfrageintervall
             clearInterval(wsGPSInterval);
             // Verbindung schließen
@@ -327,7 +361,7 @@
     
     async function initialLoad() {
 
-        //connectSteuer();          
+        ws_hardware_connect();          
         
         console.log('Initiate Service Worker');
         await serviceWorker_run().catch(error => console.error(error));

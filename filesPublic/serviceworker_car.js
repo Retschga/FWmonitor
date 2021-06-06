@@ -1,119 +1,139 @@
 const staticCacheName = 'cache-vers-2021-05-02-005';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
-const filesToCache = [
-//	'/app/offline.html',
-];
+const filesToCache = ['/app/offline'];
 
 function wait(ms) {
-    return new Promise(resolve => {
-      setTimeout(resolve, ms);
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
     });
 }
 
+const url_map_forstrettpkt = '/rettPunkte.geojson';
+const url_map_hydranten = '/api/v1/hydrant/';
+const url_alarm = '/api/v1/alarm/';
+const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+const url_alarm_list = '/api/v1/alarm/list';
+
 // -------- Service Worker FETCH --------
-this.addEventListener('fetch', function(event) {
+this.addEventListener('fetch', function (event) {
     //	console.log('Fetch event for ', event.request.url);
-          event.respondWith(
-            caches.match(event.request)
-            .then(response => {
-                  if (response) {
-                       console.log('Found ', event.request.url, ' in cache');
+    event.respondWith(
+        caches
+            .match(event.request)
+            .then((response) => {
+                if (response) {
+                    console.log('Found ', event.request.url, ' in cache');
                     return response;
-                 }
-                  console.log('Network request for ', event.request.url);
-                  
-                  return fetch(event.request)
-                .then(response => {
-    /*				if (response.status === 404) {
+                }
+                console.log('Network request for ', event.request.url);
+
+                return fetch(event.request).then( async (response) => {
+                    /*				if (response.status === 404) {
                         return caches.match('/app/404.html');
                     }
     */
-                    if(event.request.url.indexOf('/api/v1//alarm/') == -1) {
-                        return response;
-                    }
-                    return caches.open(staticCacheName).then(cache => {
+                    // cachen
+                    if (
+                        event.request.url.indexOf(url_alarm_list) == -1 &&
+                        event.request.url.indexOf(url_alarm_isalarm) == -1 && (
+                        event.request.url.indexOf(url_alarm) != -1 ||
+                        event.request.url.indexOf(url_map_hydranten) != -1 ||
+                        event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
+                        event.request.url.indexOf('tile') != -1)
+                    ) {
+                        console.log('cached:', event.request.url);
+                        const cache = await caches.open(staticCacheName);
                         cache.put(event.request.url, response.clone());
-                        return response;
-                    });
-                });			  
-    
-            }).catch(error => {
+                    }
+                    
+                    return response;
+                    
+                });
+            })
+            .catch((error) => {
+                console.error(error);
                 console.log('---- OFFLINE ----');
                 return caches.match('/app/offline');
             })
-         );
+    );
 });
-    
+
 self.addEventListener('install', (event) => {
-  // prevents the waiting, meaning the service worker activates
-  // as soon as it's finished installing
-  // NOTE: don't use this if you don't want your sw to control pages
-  // that were loaded with an older version
-  self.skipWaiting();
+    // prevents the waiting, meaning the service worker activates
+    // as soon as it's finished installing
+    // NOTE: don't use this if you don't want your sw to control pages
+    // that were loaded with an older version
+    self.skipWaiting();
 
-  event.waitUntil((async () => {
-    try {
-      const cache = await caches.open(staticCacheName);
-      const total = filesToCache.length;
-      let installed = 0;
-
-      await Promise.all(filesToCache.map(async (url) => {
-        let controller;
-
-        try {
-          controller = new AbortController();
-          const { signal } = controller;
-          // the cache option set to reload will force the browser to
-          // request any of these resources via the network,
-          // which avoids caching older files again
-          const req = new Request(url, { cache: 'reload' });
-          const res = await fetch(req, { signal });
-
-          if (res && res.status === 200) {
-            await cache.put(req, res.clone());
-            installed += 1;
-          } else {
-            console.info(`unable to fetch ${url} (${res.status})`);
-          }
-        } catch (e) {
-          console.info(`unable to fetch ${url}, ${e.message}`);
-          // abort request in any case
-          controller.abort();
-        }
-      }));
-
-      if (installed === total) {
-        console.info(`application successfully installed (${installed}/${total} files added in cache)`);
-      } else {
-        console.info(`application partially installed (${installed}/${total} files added in cache)`);
-      }
-    } catch (e) {
-      console.error(`unable to install application, ${e.message}`);
-    }
-  })());
-});
-    
-
-self.addEventListener('activate', event => {
-    console.log('Activating new service worker...');
-  
-    const cacheAllowlist = [staticCacheName];
-  
     event.waitUntil(
-          caches.keys().then(cacheNames => {
+        (async () => {
+            try {
+                const cache = await caches.open(staticCacheName);
+                const total = filesToCache.length;
+                let installed = 0;
+
+                await Promise.all(
+                    filesToCache.map(async (url) => {
+                        let controller;
+
+                        try {
+                            controller = new AbortController();
+                            const { signal } = controller;
+                            // the cache option set to reload will force the browser to
+                            // request any of these resources via the network,
+                            // which avoids caching older files again
+                            const req = new Request(url, { cache: 'reload' });
+                            const res = await fetch(req, { signal });
+
+                            if (res && res.status === 200) {
+                                await cache.put(req, res.clone());
+                                installed += 1;
+                            } else {
+                                console.info(`unable to fetch ${url} (${res.status})`);
+                            }
+                        } catch (e) {
+                            console.info(`unable to fetch ${url}, ${e.message}`);
+                            // abort request in any case
+                            controller.abort();
+                        }
+                    })
+                );
+
+                if (installed === total) {
+                    console.info(
+                        `application successfully installed (${installed}/${total} files added in cache)`
+                    );
+                } else {
+                    console.info(
+                        `application partially installed (${installed}/${total} files added in cache)`
+                    );
+                }
+            } catch (e) {
+                console.error(`unable to install application, ${e.message}`);
+            }
+        })()
+    );
+});
+
+self.addEventListener('activate', (event) => {
+    console.log('Activating new service worker...');
+
+    const cacheAllowlist = [staticCacheName];
+
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames.map(cacheName => {
+                cacheNames.map((cacheName) => {
                     if (cacheAllowlist.indexOf(cacheName) === -1) {
                         return caches.delete(cacheName);
                     }
                 })
             );
-          })
+        })
     );
     console.log('Activating new service worker... DONE');
 });
-  
 
 self.addEventListener('updatefound', () => {
     if (registration.installing) {
@@ -122,12 +142,12 @@ self.addEventListener('updatefound', () => {
             if (registration.waiting) {
                 // if there's an existing controller (previous Service Worker), show the prompt
                 if (navigator.serviceWorker.controller) {
-                    invokeServiceWorkerUpdateFlow(registration)
+                    invokeServiceWorkerUpdateFlow(registration);
                 } else {
                     // otherwise it's the first install, nothing to do
-                    console.log('Service Worker initialized for the first time')
+                    console.log('Service Worker initialized for the first time');
                 }
             }
-        })
+        });
     }
-})
+});

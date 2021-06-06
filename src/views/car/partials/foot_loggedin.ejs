@@ -9,11 +9,24 @@
     const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
     const url_alarm = '/api/v1/alarm/:id';
     const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+    const url_alarm_last = '/api/v1/alarm/';
 
-	
+    const url_map_forstrettpkt = '/rettPunkte.geojson';
+    const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
+
+	// Server Verbindungsstatus
+    function update_server_status(val) {
+        if(val) {
+            document.querySelector('.var_server_ok')?.classList.remove('hidden');
+            document.querySelector('.var_server_error')?.classList.add('hidden');
+        } else {
+            document.querySelector('.var_server_ok')?.classList.add('hidden');
+            document.querySelector('.var_server_error')?.classList.remove('hidden');
+        }
+    }
 
     // Websocket Server Verbindung
-    function connectFWmonitor() {	
+    function ws_server_connect() {	
         ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
         let wsStatusInterval = null;
         var keepAliveInterval = null;
@@ -23,7 +36,7 @@
         let sendStatus = () => {ws_software.send(
             `{
                 "topic": "init",
-                "type":"WebClient",
+                "type":"AutoClient",
                 "name":"Auto",
                 "info":"${car_name}",
                 "actions":[
@@ -56,18 +69,18 @@
             sendStatus();
 
             // Setze Verbindungsstatus auf OK
-            //index_status_VERBINDUNG(true);
+            update_server_status(true);
 
             // Sende alle 30 sek einen Statusdatensatz
             wsStatusInterval = setInterval( () => {
-                sendStatus();
+                sendStatusUpdate();
             }, 30000);
 
             // Sende KeepAlive Intervall
             lastKeepAlive = new Date();
             keepAliveInterval = setInterval(() => {
                 if((new Date().getTime() - lastKeepAlive.getTime()) / 1000 > 60) {		
-                    //index_status_VERBINDUNG(false);				
+                    update_server_status(false);				
                     location.reload(); 
                 }
             }, 10000)
@@ -90,8 +103,9 @@
             }
 
             // Alarm
-            if(topic == 'alarm') {					
-                window.location.href = 'alarm?name=' + clientName + '&id=' + message;
+            if(topic == 'alarm') {			
+                if(message == 'undefined') message = '';
+                loaderIn('alarm?id=' + message);
 
                 // GPS Statistik für Einsatz zurücksetzen
                 localStorage.setItem('gps.distSum', GPS_dist_sum);
@@ -116,17 +130,17 @@
 
         ws_software.onclose = function(e) {
             console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
-            index_status_VERBINDUNG(false);	
+            update_server_status(false);	
             clearInterval(wsStatusInterval);
             clearInterval(keepAliveInterval);
             setTimeout(function() {
-                connectFWmonitor();
+                ws_server_connect();
             }, 15000);
         };
 
         ws_software.onerror = function(err) {
             console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
-            index_status_VERBINDUNG(false);
+            update_server_status(false);
             clearInterval(wsStatusInterval);
             clearInterval(keepAliveInterval);
             ws_software.close();

@@ -133,12 +133,13 @@ export const logout_app = async function (req: Request, res: Response, next: Nex
 
     // Login Cookies löschen
     req.session.destroy(() => {});
+    /*
     res.cookie('token', '', {
         secure: true,
         path: '/',
         maxAge: config.app.jwt_expire * 1000
     });
-
+*/
     // Antwort senden
     return res.status(200).send({
         message: 'OK'
