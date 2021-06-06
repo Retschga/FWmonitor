@@ -24,11 +24,15 @@ class StatisticController {
     public async get_einsatzzeit(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_einsatzzeit');
 
-        let time = await StatisticServise.einsatzzeit(Number(req.params.id));
-        if (!time) {
+        let response;
+        response = await StatisticServise.einsatzzeit(
+            Number(req.params.id),
+            Number(req.params.year)
+        );
+        if (!response) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No time not found');
         }
-        res.send({ time: time });
+        res.send(response);
     }
 }
 

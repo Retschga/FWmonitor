@@ -1,7 +1,14 @@
-const staticCacheName = 'cache-vers-2021-05-02-005';
+const staticCacheName = 'cache-vers-2021-05-02-006';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
+
+const url_map_forstrettpkt = '/rettPunkte.geojson';
+const url_map_hydranten = '/api/v1/hydrant/';
+const url_alarm = '/api/v1/alarm/';
+const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+const url_alarm_list = '/api/v1/alarm/list';
+const url_alarm_last = '/api/v1/alarm/last';
 
 function wait(ms) {
     return new Promise((resolve) => {
@@ -120,18 +127,27 @@ this.addEventListener('fetch', function (event) {
                 }
                 console.log('Network request for ', event.request.url);
 
-                return fetch(event.request).then((response) => {
+                return fetch(event.request).then( async (response) => {
                     /*				if (response.status === 404) {
                         return caches.match('/app/404.html');
                     }
     */
-                    if (event.request.url.indexOf('/api/v1//alarm/') == -1) {
-                        return response;
-                    }
-                    return caches.open(staticCacheName).then((cache) => {
-                        cache.put(event.request.url, response.clone());
-                        return response;
-                    });
+                   // cachen
+                   if (
+                    event.request.url.indexOf(url_alarm_list) == -1 &&
+                    event.request.url.indexOf(url_alarm_last) == -1 &&
+                    event.request.url.indexOf(url_alarm_isalarm) == -1 && (
+                    event.request.url.indexOf(url_alarm) != -1 ||
+                    event.request.url.indexOf(url_map_hydranten) != -1 ||
+                    event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
+                    event.request.url.indexOf('tile') != -1)
+                ) {
+                    console.log('cached:', event.request.url);
+                    const cache = await caches.open(staticCacheName);
+                    cache.put(event.request.url, response.clone());
+                }
+                
+                return response;
                 });
             })
             .catch((error) => {

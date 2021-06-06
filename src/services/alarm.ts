@@ -4,6 +4,9 @@ import logging from '../utils/logging';
 import * as AlarmModel from '../models/alarm';
 import config from '../utils/config';
 import globalEvents from '../utils/globalEvents';
+import axios from 'axios';
+// @ts-ignore
+import openrouteservice from 'openrouteservice-js';
 
 const NAMESPACE = 'Alarm_Service';
 
@@ -89,6 +92,76 @@ class AlarmService {
         );
 
         return response.length > 0;
+    }
+
+    public async get_streetCache(id: number) {
+        let response = await this.find_by_id(id);
+
+        if (!response || response.length < 1 || response[0].lat == '') return;
+
+        let overpassStrassenUrl = `http://overpass-api.de/api/interpreter?data=
+            [out:json][timeout:25];
+            (
+            way[%22name%22~%22${response[0].strasse.replace(/ss|ß/g, '(ss|%C3%9F)')}%22]
+            (around:1000,${response[0].lat}, ${response[0].lng});
+            );
+            out geom;
+            %3E;
+            out%20skel%20qt;`;
+
+        let streetResponse: any = await axios.get(overpassStrassenUrl).catch(function (error) {
+            logging.ecxeption(NAMESPACE, error);
+        });
+
+        let responseJSON = streetResponse.data;
+        let dataIn = responseJSON['elements'];
+        let polylinePoints = [];
+
+        if (dataIn.length < 1) return;
+
+        for (let i = 0; i < dataIn.length; i++) {
+            var dataElement = dataIn[i];
+
+            if (dataElement.type == 'way') {
+                let polyarr = [];
+                for (let j = 0; j < dataElement.geometry.length; j++) {
+                    polyarr.push([dataElement.geometry[j].lat, dataElement.geometry[j].lon]);
+                }
+
+                polylinePoints.push(polyarr);
+            }
+        }
+
+        return polylinePoints;
+    }
+
+    public async get_route(id: number) {
+        if (config.common.fw_position == '' || !config.geocode.ors_key) return;
+
+        let response = await this.find_by_id(id);
+
+        if (!response || response.length < 1 || response[0].lat == '') return;
+
+        var Directions = new openrouteservice.Directions({
+            api_key: process.env.ORS_KEY
+        });
+
+        try {
+            let direct = await Directions.calculate({
+                coordinates: [
+                    config.common.fw_position.split(','),
+                    [response[0].lng, response[0].lat]
+                ],
+                profile: 'driving-car',
+                extra_info: ['waytype'],
+                radiuses: [1000, 5000],
+                format: 'json'
+            });
+            return JSON.stringify(direct);
+        } catch (error) {
+            logging.ecxeption(NAMESPACE, error);
+        }
+        return;
     }
 }
 

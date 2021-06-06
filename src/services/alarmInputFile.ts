@@ -28,7 +28,7 @@ class AlarmInputFileService {
 
     private async convertPdfToTiff(file: string, targetPath: string) {
         await execShellCommand(
-            `"${config.programs.ghostscript}" -dBATCH -sDEVICE=tiffg4 -dNOPAUSE -r300x300 -sOutputFile="${targetPath}" "${file}"`
+            `"${config.programs.ghostscript}" -dBATCH -sDEVICE=tiffg4 -dNOPAUSE -r500x500 -sOutputFile="${targetPath}" "${file}"`
         );
         logging.info(NAMESPACE, 'PDF -> TIFF    FERTIG\n');
     }

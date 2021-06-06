@@ -40,7 +40,7 @@
                             <span class="left material-icons">notifications_active</span>
                             <span class="text">App</span>
                             <label class="switch right hidden onpermission">
-                                <input class="var_appnotifications" type="checkbox" onchange="update_settings_notifications_app()">
+                                <input class="var_appnotifications" type="checkbox" onchange="update_settings_notifications_app(this.checked)">
                                 <span class="slider round"></span>
                             </label>
                             <span class="right notificationBtn" onclick="notifications_askPermission()">Erlauben</span>
@@ -59,8 +59,8 @@
 
         <script>
 
-// https://itnext.io/an-introduction-to-web-push-notifications-a701783917ce
-const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
+            // https://itnext.io/an-introduction-to-web-push-notifications-a701783917ce
+            const pushServerPublicKey = "<%= vapid_public %>";
 
             // Hilfsfunktionen
             function isPushNotificationSupported() {
@@ -155,14 +155,14 @@ const pushServerPublicKey = "<A PUSH SERVER PUBLIC KEY GOES HERE>";
             }
 
             // Speichern
-            async function update_settings_notifications_app() {
+            async function update_settings_notifications_app(status) {
                 loaderIn()
                 try {
                     const var_appnotifications = document.querySelector('.var_appnotifications');
                     const subscription = await notifications_createSubscription();
                     
-                    const response = await fetch_post(url_user_notifications_app_update.replace(':id', id), 
-                        {value: 5, subscription: JSON.stringify(subscription)});
+                    const response = await fetch_post(url_user_notifications_app_update.replace(':id', user_id), 
+                        {value: status ? 5 : 0, subscription: JSON.stringify(subscription)});
                 } catch (error) {
                     console.error('update_settings_notifications_app', error);
                 }

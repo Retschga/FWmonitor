@@ -111,17 +111,19 @@
             }
 
             async function load_time_id_year(id, year) {
+                loaderIn();
                 try {
                     const user_time = await fetch_get(url_statistic_time.replace(':id', id).replace(':year', year), true);
                     console.log('user time', user_time);
 
                     const var_usertime = document.querySelector('.var_usertime');    
 
-                    var_usertime.innerHTML = `${Math.round(user_time.time / 60)} h ${user_time.time % 60} m`;
+                    var_usertime.innerHTML = `${Math.round(user_time.time / 60)}h ${user_time.time % 60}m (${user_time.count} Einsätze)`;
 
                 } catch (error) {
                     console.error('load_time_year', error);
-                }                
+                }   
+                loaderOut();             
             }
 
             // Hilfsfunktionen

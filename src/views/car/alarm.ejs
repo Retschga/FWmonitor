@@ -21,8 +21,8 @@
 
                 <div class="flex_grow"></div>
 
-                <button class="material-icons hide_on_no_map" onclick="openMap()">map</button>
-                <h1 style="margin-right: 1em;" class="hide_on_no_map" onclick="openMap()">Karte</h1>    
+                <button class="material-icons hide_on_no_map" onclick="goBack()">map</button>
+                <h1 style="margin-right: 1em;" class="hide_on_no_map" onclick="goBack()">Karte</h1>    
 
             </div>
 
@@ -225,33 +225,6 @@
                 } catch (error) {
                     console.error('load_alarms', error);
                 }
-            }
-
-            // Hilfsfunktionen
-            function openMap() {
-                loaderIn(`map?lat=${coordiantes.lat}&lng=${coordiantes.lng}`)
-            }
-
-            async function sendStatus(status) {
-                loaderIn();
-
-                const button0   = document.querySelector(".status_0");
-                const button1   = document.querySelector(".status_1");
-
-                button0.classList.remove('text_black');
-                button1.classList.remove('text_black');
-
-                const button   = document.querySelector(".status_" + status);
-                button.classList.add('text_black');
-                
-                const id = $_GET['id'];
-                
-                try {
-                    const response = await fetch_post(url_alarm_userstatus.replace(':id', user_id), {alarmid: parseInt(id), value: status});  
-                } catch (error) {
-                    console.error('sendStatus', error);
-                }                            
-                loaderOut();
             }
 
 

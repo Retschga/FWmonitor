@@ -262,7 +262,7 @@ class UserController {
             await UserService.update_notifications_app(
                 Number(req.params.id),
                 Number(req.body.value),
-                'dsfsdfsdfsdfsf'
+                String(req.body.subscription)
             );
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');

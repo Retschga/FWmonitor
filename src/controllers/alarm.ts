@@ -26,13 +26,15 @@ class AlarmController {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
+        // TODO remoce not allowed elements
+
         res.send(list);
     }
 
     public async get_last(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_last');
 
-        let list = await AlarmService.find({}, 1, undefined, 'ORDER BY id DESC');
+        let list = await AlarmService.find({}, 1, 0, 'ORDER BY id DESC');
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Alarm found');
         }
@@ -40,6 +42,8 @@ class AlarmController {
         for (let i = 0; i < list.length; i++) {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
+
+        // TODO remoce not allowed elements
 
         res.send(list);
     }
@@ -122,6 +126,22 @@ class AlarmController {
         );
 
         res.send('OK');
+    }
+
+    public async get_streetCache(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_streetCache');
+
+        const response = await AlarmService.get_streetCache(Number(req.params.id));
+
+        res.send(response);
+    }
+
+    public async get_route(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_route');
+
+        const response = await AlarmService.get_route(Number(req.params.id));
+
+        res.send(response);
     }
 }
 

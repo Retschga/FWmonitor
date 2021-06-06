@@ -34,6 +34,7 @@
     "typescript": "^4.3.2"
   },
   "dependencies": {
+    "@episage/dbf-parser": "^1.1.4",
     "apicache": "^1.6.2",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
@@ -54,6 +55,7 @@
     "move-file": "^2.0.0",
     "node-ical": "^0.13.0",
     "nominatim-geocoder": "^0.1.4",
+    "openrouteservice-js": "^0.1.19",
     "puppeteer": "^9.1.1",
     "sharp": "^0.28.3",
     "sqlite": "^4.0.23",

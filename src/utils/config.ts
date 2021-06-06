@@ -27,8 +27,9 @@ const TELEGRAM = {
 const APP = {
     https_enabled: process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false,
     password_length: 10,
-    vapid_private: '',
-    vapid_public: '',
+    vapid_private: process.env.VAPID_PRIVATE,
+    vapid_public: process.env.VAPID_PUBLIC,
+    vapid_mail: process.env.VAPID_EMAIL,
     jwt_key:
         'jwt' +
         process.env.TELEGRAM_BOT_TOKEN +
@@ -56,7 +57,7 @@ const FOLDERS = {
 };
 
 const FWVV = {
-    enabled: process.env.FWVV_DAT_FOLDER?.toLocaleLowerCase() == 'true' ? true : false,
+    enabled: process.env.FWVV_DAT_FOLDER ? true : false,
     dat_folder: process.env.FWVV_DAT_FOLDER
 };
 
@@ -90,7 +91,8 @@ const GEOCODE = {
     bing_apikey: process.env.GEOBING_KEY,
     osm_nominatim: true,
     osm_objects: true,
-    bahn: true
+    bahn: true,
+    ors_key: process.env.ORS_KEY
 };
 
 const ALARMFIELDS = {

@@ -9,7 +9,9 @@
     const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
     const url_alarm = '/api/v1/alarm/:id';
     const url_alarm_isalarm = '/api/v1/alarm/isalarm';
-    const url_alarm_last = '/api/v1/alarm/';
+    const url_alarm_last = '/api/v1/alarm/last';
+    const url_alarm_route = '/api/v1/alarm/route/:id';
+    const url_alarm_streetCache = '/api/v1/alarm/streetcache/:id';
 
     const url_map_forstrettpkt = '/rettPunkte.geojson';
     const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
@@ -103,14 +105,13 @@
             }
 
             // Alarm
-            if(topic == 'alarm') {			
-                if(message == 'undefined') message = '';
-                loaderIn('alarm?id=' + message);
-
+            if(topic == 'alarm') {
                 // GPS Statistik für Einsatz zurücksetzen
                 localStorage.setItem('gps.distSum', GPS_dist_sum);
                 localStorage.setItem('gps.altMax', GPS_alt_max);
                 localStorage.setItem('gps.altMin', GPS_alt_min);
+
+                location.reload(); 
             }
 
             if(topic == 'action_0') {

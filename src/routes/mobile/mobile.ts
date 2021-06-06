@@ -12,7 +12,8 @@ function generateParams(req: Request) {
         fwvv: config.fwvv.enabled,
         fw_name: config.common.fwName,
         fw_name_short: config.common.fwName_short,
-        version: config.version
+        version: config.version,
+        vapid_public: config.app.vapid_public
     };
 }
 

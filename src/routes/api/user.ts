@@ -44,12 +44,12 @@ router.post(
     awaitHandlerFactory(userController.update_user_statusHidden_id.bind(userController))
 );
 router.post(
-    '/notifications/app',
+    '/notifications/app/:id',
     ValidatorsUser.updateNotificationsApp,
     awaitHandlerFactory(userController.update_user_notifications_app_id.bind(userController))
 );
 router.post(
-    '/notifications/calendar',
+    '/notifications/calendar/:id',
     ValidatorsUser.updateNotificationsCalendar,
     awaitHandlerFactory(userController.update_user_notifications_calendar.bind(userController))
 );

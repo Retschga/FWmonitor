@@ -249,7 +249,8 @@ function regexPrefix (regex, prefix) {
 function fetch_get(url, json = false, timeout = 20000) {
     const controller = new AbortController();
     const requestOptions = {
-        method: 'GET',            
+        method: 'GET',   
+        cache: "no-cache",         
         signal: controller.signal
     };
     const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -264,7 +265,8 @@ function fetch_post(url, body, json = false,timeout = 20000) {
         method: 'POST',            
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        cache: "no-cache"
     };
     const timeoutId = setTimeout(() => controller.abort(), timeout);
     if(json)
@@ -387,6 +389,38 @@ var styleCache = {
             color: [245, 66, 87, 0.8]
         })
     }),
+    route: new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			width: 6,
+			color: [47, 55, 82, 0.8]
+		})
+	}),
+	helpline: new ol.style.Style({
+		stroke: new ol.style.Stroke({
+			width: 6,
+			color: [35, 150, 232, 0.8]
+		})
+	}),
+	circleOnRoute: new ol.style.Style({image: new ol.style.Circle({
+			radius: 10,
+			stroke: new ol.style.Stroke({
+				color: 'red',
+			}), 
+			fill: new ol.style.Fill({
+				color: [0, 204, 0, 0.8]
+			}),
+		}),
+	}),
+	circleNextInstr: new ol.style.Style({image: new ol.style.Circle({
+			radius: 20,
+			stroke: new ol.style.Stroke({
+				color: 'red',
+			}), 
+			fill: new ol.style.Fill({
+				color: [0, 204, 0, 0.6]
+			}),
+		}),
+	}),
 };
 
 var styleFunction = function(feature) {

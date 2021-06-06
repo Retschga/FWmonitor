@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-05-02-005';
+const staticCacheName = 'cache-vers-2021-05-02-006';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -14,6 +14,7 @@ const url_map_hydranten = '/api/v1/hydrant/';
 const url_alarm = '/api/v1/alarm/';
 const url_alarm_isalarm = '/api/v1/alarm/isalarm';
 const url_alarm_list = '/api/v1/alarm/list';
+const url_alarm_last = '/api/v1/alarm/last';
 
 // -------- Service Worker FETCH --------
 this.addEventListener('fetch', function (event) {
@@ -36,6 +37,7 @@ this.addEventListener('fetch', function (event) {
                     // cachen
                     if (
                         event.request.url.indexOf(url_alarm_list) == -1 &&
+                        event.request.url.indexOf(url_alarm_last) == -1 &&
                         event.request.url.indexOf(url_alarm_isalarm) == -1 && (
                         event.request.url.indexOf(url_alarm) != -1 ||
                         event.request.url.indexOf(url_map_hydranten) != -1 ||
