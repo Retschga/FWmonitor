@@ -29,7 +29,7 @@
             </div>
             <div class="content flex_column">
 
-                <div class="var_color text_align_center" style="padding: 0.5em;">
+                <div class="var_color text_align_center border_bottom" style="padding: 0.5em;">
                     <div style="font-size: 2em;">
                         <span class="text right var_stichwort">Stichwort</span> -   
                         <span class="text right var_schlagwort">Schlagwort</span> 
@@ -415,7 +415,7 @@
 	
 				// Alarm
 				if(topic == 'alarm') {					
-					goToAlarm(message);
+                    loaderIn('alarm?name=' + clientName + '&id=' + message);		
                 }
 
 
@@ -448,7 +448,7 @@
 			}
             
             function goToIndex() {
-                window.location.href = 'index?name=' + clientName;
+                loaderIn('index?name=' + clientName);		
             }
 
             function addUsertatus(id, status) {

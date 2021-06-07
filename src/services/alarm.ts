@@ -62,7 +62,12 @@ class AlarmService {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
 
-        this.sendAlarmEvents(alarm);
+        let list = await this.find({}, 1, 0, 'ORDER BY id DESC');
+        if (!list || list.length < 1) {
+            throw new Error(NAMESPACE + ' error on creating alarm');
+        }
+
+        this.sendAlarmEvents(list[0]);
     }
 
     private sendAlarmEvents(alarm: AlarmModel.AlarmRow) {

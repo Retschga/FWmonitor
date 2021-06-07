@@ -167,7 +167,16 @@
             console.log('Notification Permission:', Notification.permission);
             if (Notification.permission === "granted") {
                 getNotificationPermission();
-            }
+
+                // Close all open Notifications
+                navigator.serviceWorker.getRegistration().then(function(registration){
+                    registration.getNotifications().then(function(notifications){
+                        notifications.forEach(function(notification){
+                            notification.close()
+                        })
+                    })
+                })
+            }            
 
         }
 

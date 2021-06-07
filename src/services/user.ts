@@ -222,9 +222,24 @@ class UserService {
     }
 
     public async update_notifications_app(id: number, value: number, subscription: string) {
+        const response = await this.get_notifications_app(id);
+
+        if (!response) throw new Error(NAMESPACE + ' update_notifications_app - No rows changed');
+
+        const subscription_new = JSON.parse(subscription);
+        let subscription_old = JSON.parse(response.appNotificationsSubscription);
+
+        if (
+            subscription_old.findIndex(
+                (element: any) => JSON.parse(element).endpoint == subscription_new.endpoint
+            ) == -1
+        ) {
+            subscription_old.push(subscription);
+        }
+
         let affectedRows = await UserModel.model.update(Number(id), {
             appNotifications: value,
-            appNotificationsSubscription: subscription
+            appNotificationsSubscription: JSON.stringify(subscription_old)
         });
 
         if (affectedRows < 1) {

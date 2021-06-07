@@ -290,7 +290,7 @@ function fetch_handleResponse_text(response) {
     return response.text().then(text => {
 
         if (!response.ok) {
-            const error = (data && data.message) || response.statusText;
+            const error = response.statusText;
             return Promise.reject(error);
         }
 

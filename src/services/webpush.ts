@@ -106,8 +106,24 @@ class WebpushService {
                         timestamp: new Date().toISOString(),
                         notAfter: notAfter.toISOString(),
                         actions: [
-                            { action: 'kommeJa', title: '👍 KOMME' },
-                            { action: 'kommeNein', title: '👎 KOMME NICHT' }
+                            {
+                                action:
+                                    '{"url":"notificationaction/userstatus/' +
+                                    user.id +
+                                    '", "parameter": {"alarmid":"' +
+                                    alarm.id +
+                                    '", "value":"1"}}',
+                                title: '👍 KOMME'
+                            },
+                            {
+                                action:
+                                    '{"url":"notificationaction/userstatus/' +
+                                    user.id +
+                                    '", "parameter": {"alarmid":"' +
+                                    alarm.id +
+                                    '", "value":"0"}}',
+                                title: '👎 KOMME NICHT'
+                            }
                         ]
                     };
 
@@ -162,23 +178,24 @@ class WebpushService {
             : false;
     }
 
-    public notify(
-        userid: number,
-        subscription: webpush.PushSubscription,
-        dataToSend: NotificationMessage
-    ) {
+    public notify(userid: number, subscription: string[], dataToSend: NotificationMessage) {
         if (!this.enabled) throw new Error(NAMESPACE + ' Not Enabled');
 
         logging.debug(NAMESPACE, 'Notify', { userid, dataToSend, subscription });
+        logging.debug(NAMESPACE, 'Subscriptions:', subscription.length);
 
-        return webpush.sendNotification(subscription, JSON.stringify(dataToSend)).catch((err) => {
-            if (err.statusCode === 404 || err.statusCode === 410) {
-                userService.update_notifications_app(userid, 0, '');
-                return false;
-            } else {
-                throw err;
-            }
-        });
+        for (let i = 0; i < subscription.length; i++) {
+            webpush
+                .sendNotification(JSON.parse(subscription[i]), JSON.stringify(dataToSend))
+                .catch((err) => {
+                    if (err.statusCode === 404 || err.statusCode === 410) {
+                        userService.update_notifications_app(userid, 0, '');
+                        return false;
+                    } else {
+                        throw err;
+                    }
+                });
+        }
     }
 }
 

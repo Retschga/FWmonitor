@@ -16,6 +16,7 @@ import diashowRoutes from './routes/api/diashow';
 import authRoutes from './routes/api/auth';
 import hydrantRoutes from './routes/api/hydrant';
 import deviceRoutes from './routes/api/device';
+import notificationactionRoutes from './routes/api/notificationaction';
 import { auth_api } from './middleware/auth';
 
 const NAMESPACE = 'ROUTER_API';
@@ -75,6 +76,7 @@ class RouterApi {
         if (this.secured) {
             // HTTPS App
             this.router.use('/auth', authRoutes);
+            this.router.use('/notificationaction', notificationactionRoutes);
             this.router.use('/calendar', auth_api(), calendarRoutes);
             this.router.use('/calendarGroups', auth_api(), calendarGroupRoutes);
             this.router.use('/car', auth_api(), carRoutes);
