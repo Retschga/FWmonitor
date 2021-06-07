@@ -93,7 +93,8 @@ const COMMON = {
     dwd_warncellid: process.env.DWD_WARCELLID || '',
     time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
     time_alarm: Number(process.env.ALARM_VISIBLE) || 60,
-    fw_position: process.env.FW_KOORD || ''
+    fw_position: process.env.FW_KOORD || '',
+    ical_url: process.env.ICAL_LINK
 };
 
 const GEOCODE = {

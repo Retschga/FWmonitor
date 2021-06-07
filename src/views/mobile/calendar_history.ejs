@@ -20,14 +20,6 @@
 
                 <h1>Kalender</h1>  
 
-                <div class="flex_grow"></div>
-
-                <button class="material-icons" onclick="loaderIn('calendar_history', true);">history</button>   
-
-                <div class="spacer" style="width: 1em;"></div>
-
-                <button class="material-icons btn_add hidden" onclick="create_entry();">add_circle_outline</button>   
-
             </div>
 
             <div class="content">
@@ -61,6 +53,14 @@
 
                     </template>
 
+                    <template id="template-container">
+                        <div>
+                            <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
+                            <div class="accordion_panel var_container">
+                            </div>
+                        </div>                        
+                    </template>
+
 
                 </div>
 
@@ -75,10 +75,14 @@
             // Laden
             async function load_calendar() {     
                 try {
-                    const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
-                    console.log('calendarUpcoming', calendarElements);
+                    const calendarElements = await fetch_get('/api/v1/calendar/all', true);
+                    console.log('calendar all', calendarElements);
 
                     const target = document.querySelector(".calendar_list");
+
+                    let containertarget = undefined;
+
+                    let year = '-1';
 
                     for(let i = 0; i < calendarElements.length; i++) {
                         const element = calendarElements[i];
@@ -104,7 +108,24 @@
                         var_emoji.innerHTML  = icon;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
-                        target.appendChild(clone);
+
+
+                        if(date.getFullYear() != year) {
+                            year = date.getFullYear();
+
+                            const template   = document.querySelector('#template-container');
+                            const var_text   = template.content.querySelector(".var_header_name");  
+
+                            var_text.innerHTML = year;
+
+                            const clone = document.importNode(template.content.firstElementChild, true);
+                            target.appendChild(clone);
+
+                            containertarget = clone.querySelector('.var_container');
+                        }
+
+
+                        containertarget.appendChild(clone);
 
                         if(user_calendar_min || user_calendar_full) {
                             clone.addEventListener("click", () => {
@@ -136,9 +157,6 @@
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_calendar();
-                if(user_calendar_min || user_calendar_full) {
-                    document.querySelector('.btn_add').classList.remove('hidden');
-                }
             };
             
 

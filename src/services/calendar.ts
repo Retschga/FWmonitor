@@ -4,6 +4,8 @@ import logging from '../utils/logging';
 import * as CalendarModel from '../models/calendar';
 import * as CalendarGroupsModel from '../models/calendarGroup';
 import globalEvents from '../utils/globalEvents';
+import ical from 'node-ical';
+import config from '../utils/config';
 
 const NAMESPACE = 'CalendarService';
 
@@ -95,6 +97,61 @@ class CalendarService {
         return calendarElements;
     }
 
+    private async get_ical(
+        onlyFuture: boolean = true,
+        calendarGroups: CalendarGroupsModel.CalendarGroupRow[]
+    ) {
+        if (!config.common.ical_url) return;
+
+        try {
+            let calendarElements: CalendarElement[] = [];
+            const data = await ical.async.fromURL(config.common.ical_url);
+
+            Object.keys(data).forEach((key) => {
+                const entry = data[key];
+
+                if (!entry.summary) return;
+
+                if (onlyFuture && new Date(String(entry.start)).getTime() < Date.now()) return;
+
+                // Gruppen auslesen
+                let group = [];
+                for (let i = 0; i < calendarGroups.length; i++) {
+                    if (String(entry.summary).indexOf(calendarGroups[i].pattern) != -1) {
+                        group.push({
+                            id: calendarGroups[i].id,
+                            name: calendarGroups[i].name
+                        });
+                    }
+                }
+                // Keine Gruppe angegeben -> alle
+                if (group.length < 1) {
+                    group.push({
+                        id: calendarGroups[0].id,
+                        name: calendarGroups[0].name
+                    });
+                }
+
+                // Termin speichern
+                const calendarElement: CalendarElement = {
+                    id: -1,
+                    summary: this.removePattern(String(entry.summary)),
+                    start: new Date(String(entry.start)),
+                    end: new Date(String(entry.end)),
+                    location: String(entry.location),
+                    remind: undefined,
+                    group: group
+                };
+
+                calendarElements.push(calendarElement);
+            });
+
+            return calendarElements;
+        } catch (error) {
+            logging.ecxeption(NAMESPACE, error);
+        }
+    }
+
     public async find_id(id: number): Promise<CalendarElement[]> {
         const calendarGroups = await CalendarGroupsModel.model.find();
         const dbElements = await CalendarModel.model.find({ id: id });
@@ -110,7 +167,13 @@ class CalendarService {
 
         const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
 
-        // TODO read from ICAL
+        const calendarElements2 = await this.get_ical(false, calendarGroups);
+        if (calendarElements2) {
+            for (let i = 0; i < calendarElements2.length; i++)
+                calendarElements.push(calendarElements2[i]);
+            calendarElements.sort(this.sortByDate);
+        }
+
         return calendarElements;
     }
 
@@ -120,9 +183,15 @@ class CalendarService {
         let dbElements = await CalendarModel.model.find({ 'start>=': now.toISOString() });
         if (dbElements.length < 1) return;
 
-        const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
+        let calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
 
-        // TODO read from ICAL
+        const calendarElements2 = await this.get_ical(true, calendarGroups);
+        if (calendarElements2) {
+            for (let i = 0; i < calendarElements2.length; i++)
+                calendarElements.push(calendarElements2[i]);
+            calendarElements.sort(this.sortByDate);
+        }
+
         return calendarElements;
     }
 

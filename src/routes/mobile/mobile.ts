@@ -104,6 +104,10 @@ router.get('/calendar_entry', (req: Request, res: Response, next: NextFunction) 
     res.render('mobile/calendar_entry', generateParams(req));
 });
 
+router.get('/calendar_history', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/calendar_history', generateParams(req));
+});
+
 router.get('/alarm_groups', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/alarm_groups', generateParams(req));
 });
