@@ -1,3 +1,5 @@
+'use strict';
+
 import { EventEmitter } from 'events';
 import logging from '../utils/logging';
 
@@ -12,7 +14,9 @@ const NAMESPACE = 'GlobalEvents';
 
 // globalEvents.on('diashow-change', () => { });
 
-// globalEvents.on('userstatus-change', () => { });
+// globalEvents.on('userstatus-change', (userid: number) => { });
+
+// globalEvents.on('paperstatus-change', (status: boolean) => { });
 
 class GlobalEvents extends EventEmitter {
     public emit(event: string | symbol, ...args: any[]) {

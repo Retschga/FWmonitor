@@ -1,17 +1,30 @@
-var colors = require('colors/safe');
+'use strict';
 
-const PAD_NAMESPACE = 20;
+import config from './config';
+import colors from 'colors/safe';
+
+const PAD_NAMESPACE = config.logging.pad_namespace;
+
+enum LOGLEVEL {
+    INFO = 1,
+    WARNING = 2,
+    ERROR = 4,
+    DEBUG = 8
+}
 
 const getTimestamp = (): string => {
     return new Date().toISOString();
 };
 
 const info = (namespace: string, message: string, object?: any) => {
+    if (!(config.logging.loglevel & LOGLEVEL.INFO)) return;
+
     if (object) {
         console.log(
             colors.white(
-                `[${getTimestamp()}] [INFO]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`,
-                JSON.stringify(object)
+                `[${getTimestamp()}] [INFO]  [${namespace.padEnd(
+                    PAD_NAMESPACE
+                )}]  ${message} ${JSON.stringify(object)}`
             )
         );
     } else {
@@ -24,11 +37,14 @@ const info = (namespace: string, message: string, object?: any) => {
 };
 
 const warn = (namespace: string, message: string, object?: any) => {
+    if (!(config.logging.loglevel & LOGLEVEL.WARNING)) return;
+
     if (object) {
         console.log(
             colors.yellow(
-                `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`,
-                JSON.stringify(object)
+                `[${getTimestamp()}] [WARN]  [${namespace.padEnd(
+                    PAD_NAMESPACE
+                )}]  ${message} ${JSON.stringify(object)}`
             )
         );
     } else {
@@ -41,11 +57,14 @@ const warn = (namespace: string, message: string, object?: any) => {
 };
 
 const error = (namespace: string, message: string, object?: any) => {
+    if (!(config.logging.loglevel & LOGLEVEL.ERROR)) return;
+
     if (object) {
         console.log(
             colors.red(
-                `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`,
-                JSON.stringify(object)
+                `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
+                    PAD_NAMESPACE
+                )}]  ${message} ${JSON.stringify(object)}`
             )
         );
     } else {
@@ -60,19 +79,23 @@ const error = (namespace: string, message: string, object?: any) => {
 const ecxeption = (namespace: string, err: Error) => {
     console.log(
         colors.red(
-            `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}] `,
-            JSON.stringify(err),
-            err.stack
-        )
+            `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${JSON.stringify(
+                err
+            )}`
+        ),
+        err.stack
     );
 };
 
 const debug = (namespace: string, message: string, object?: any) => {
+    if (!(config.logging.loglevel & LOGLEVEL.DEBUG)) return;
+
     if (object) {
         console.log(
             colors.green(
-                `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`,
-                JSON.stringify(object)
+                `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(
+                    PAD_NAMESPACE
+                )}]  ${message} ${JSON.stringify(object)}`
             )
         );
     } else {
@@ -89,5 +112,6 @@ export default {
     warn,
     error,
     debug,
-    ecxeption
+    ecxeption,
+    LOGLEVEL
 };

@@ -1,5 +1,11 @@
 import sharp from 'sharp';
 
+/**
+ * Erstellt ein Thumbnail zum angegebenen Bild
+ * @param path
+ * @param file
+ * @returns
+ */
 export const createThumbnail = async (path: string, file: string) => {
     return new Promise(async (resolve, reject) => {
         sharp(path + '/' + file)
@@ -14,6 +20,12 @@ export const createThumbnail = async (path: string, file: string) => {
     });
 };
 
+/**
+ * Gibt die Größe des Bildes zurück
+ * @param path
+ * @param file
+ * @returns
+ */
 export const getImageSize = async (path: string, file: string) => {
     return new Promise(async (resolve, reject) => {
         sharp(path + '/' + file)

@@ -1,6 +1,7 @@
 'use strict';
 
 import Model from './model';
+import webpush from 'web-push';
 
 const NAMESPACE = 'UserModel';
 const TABLENAME = 'users';
@@ -34,7 +35,7 @@ interface UserRow {
     kalenderGroups: string;
     sendRemembers: boolean;
     appPasswort: string;
-    appNotifications: boolean;
+    appNotifications: number;
     appNotificationsSubscription: string;
     group: number;
 

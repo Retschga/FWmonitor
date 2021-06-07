@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-05-02-006';
+const staticCacheName = 'cache-vers-2021-06-07-001';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -16,19 +16,22 @@ function wait(ms) {
     });
 }
 
-// -------- Service Worker PUSH --------
+// -------- Service Worker PUSH NOTIFICATION --------
 self.addEventListener('push', (ev) => {
     // Notification Daten
     const data = ev.data.json();
     console.log('Got push', data);
 
-    if (Date.parse(data.zeigeBis) < new Date()) {
+    // Not After
+    if (Date.parse(data.notAfter) < new Date()) {
         console.log('Keine Notification: Zeit Überschritten');
         return;
     }
 
+    // Zeige Notification
     function notify(data) {
-        return self.registration.showNotification(data.titel, {
+        console.log('Show Notification');
+        return self.registration.showNotification(data.title, {
             body: data.text,
             icon: '/images/alarm.png',
             //				image: '/images/alarm.png',
@@ -44,14 +47,15 @@ self.addEventListener('push', (ev) => {
         });
     }
 
-    var notQueue = new Array();
+    var notificationQueue = new Array();
 
-    for (let i = 0; i < data.notificationAnzahl; i++) {
-        let not = wait(i * 2000).then(() => notify(data));
-        notQueue.push(not);
+    for (let i = 0; i < data.alerts; i++) {
+        console.log('Queue notification ' + (i+1) + '/' + data.alerts)
+        let notification = wait(i * 2000).then(() => notify(data));
+        notificationQueue.push(notification);
     }
 
-    const promiseChain = Promise.all(notQueue);
+    const promiseChain = Promise.all(notificationQueue);
 
     ev.waitUntil(promiseChain);
 });
@@ -157,17 +161,7 @@ this.addEventListener('fetch', function (event) {
     );
 });
 
-/*
-this.addEventListener('install', event => {
-    console.log('Attempting to install service worker and cache static assets');
-    event.waitUntil(
-          caches.open(staticCacheName)
-          .then(cache => {
-            return cache.addAll(filesToCache);
-          })
-    );
-});*/
-
+// -------- Service Worker INSTALLATION --------
 self.addEventListener('install', (event) => {
     // prevents the waiting, meaning the service worker activates
     // as soon as it's finished installing

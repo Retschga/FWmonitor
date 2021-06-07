@@ -164,6 +164,7 @@
 
         // -------- Feature Detection --------
         if ('serviceWorker' in navigator) {
+            console.log('Notification Permission:', Notification.permission);
             if (Notification.permission === "granted") {
                 getNotificationPermission();
             }

@@ -25,6 +25,7 @@ import diashowService from './services/diashow';
 import { calendarService } from './services/calendar';
 import { Websocket, SocketInfo } from './websocket';
 import { init as initDeviceService, DeviceService } from './services/device';
+import webpushService from './services/webpush';
 
 const NAMESPACE = 'APP';
 const MemoryStore = createMemoryStore(session);
@@ -166,6 +167,9 @@ calendarService.init();
 // Starte Verfügbarkeits-Planüberwachung
 
 // Starte Drucker-Papierüberwachung
+
+// Starte webpush service
+const webpush = webpushService;
 
 process.on('SIGINT', () => {
     httpServer.close();

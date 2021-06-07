@@ -136,7 +136,7 @@ class UserService {
             throw new Error(NAMESPACE + ' update_status - No rows changed');
         }
 
-        globalEvents.emit('userstatus-change');
+        globalEvents.emit('userstatus-change', id);
     }
 
     public async update_status_plan(id: number, value: string) {
@@ -164,7 +164,7 @@ class UserService {
             throw new Error(NAMESPACE + ' update_status_hidden - No rows changed');
         }
 
-        globalEvents.emit('userstatus-change');
+        globalEvents.emit('userstatus-change', id);
     }
 
     public async update_notifications_calendar(id: number, value: boolean) {

@@ -1,3 +1,5 @@
+'use strict';
+
 import logging from './logging';
 import { exec } from 'child_process';
 import fs from 'fs';
@@ -65,16 +67,25 @@ export const multibleKeySet = (obj: object) => {
     };
 };
 
-export const isJsonString = (str: string) => {
+/**
+ * Prüft ob ein String ein valider JSON String ist
+ * @param str
+ * @returns {boolean}
+ */
+export const isJsonString = (str: string): boolean => {
     try {
         JSON.parse(str);
-    } catch (e) {
-        console.log(e);
+        return true;
+    } catch (error) {
         return false;
     }
-    return true;
 };
 
+/**
+ * Awaitable timeout Fuktion
+ * @param ms
+ * @returns Promise
+ */
 export const timeout = (ms: number) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -83,7 +94,7 @@ export const timeout = (ms: number) => {
  * https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
  * Executes a shell command and return it as a Promise.
  * @param cmd {string}
- * @return {Promise<string>}
+ * @return {Promise<string>} Stdout
  */
 export const execShellCommand = (cmd: string): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -100,9 +111,19 @@ export const execShellCommand = (cmd: string): Promise<string> => {
     });
 };
 
+/**
+ * Prüft ob eine Datei existiert
+ * @param path
+ * @returns
+ */
 export const fileExists = async (path: string) =>
     !!(await fs.promises.stat(path).catch((e) => false));
 
+/**
+ * Prüft ob eine Datei oder ein Ordner existiert
+ * @param folderPath
+ * @returns
+ */
 export const checkFolderOrFile = async (folderPath?: string): Promise<boolean> => {
     if (!folderPath) return false;
     try {
@@ -113,6 +134,10 @@ export const checkFolderOrFile = async (folderPath?: string): Promise<boolean> =
     }
 };
 
+/**
+ * Generiert eine Unique ID
+ * @returns {string} Unique ID
+ */
 export const getUniqueID = (): string => {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)

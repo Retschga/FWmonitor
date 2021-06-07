@@ -1,3 +1,5 @@
+'use strict';
+
 enum HttpStatusCodes {
     ER_TRUNCATED_WRONG_VALUE_FOR_FIELD = 422,
     ER_DUP_ENTRY = 409,

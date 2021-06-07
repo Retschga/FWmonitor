@@ -1,5 +1,14 @@
+'use strict';
+
 import dotenv from 'dotenv';
 import os from 'os';
+
+enum LOGLEVEL {
+    INFO = 1,
+    WARNING = 2,
+    ERROR = 4,
+    DEBUG = 8
+}
 
 dotenv.config();
 
@@ -68,7 +77,8 @@ const ALARM = {
 
 const PROGRAMS = {
     ghostscript: process.env.GHOSTSCRIPT_PATH,
-    tesseract: process.env.TESSERACT_PATH
+    tesseract: process.env.TESSERACT_PATH,
+    ghostscript_res: process.env.GHOSTSCRIPT_RESOLUTION || '500x500'
 };
 
 const PRINTING = {
@@ -118,6 +128,11 @@ const ALARMFIELDS = {
     EMPTY: '-/-'
 };
 
+const LOG = {
+    pad_namespace: 20,
+    loglevel: LOGLEVEL.ERROR | LOGLEVEL.INFO | LOGLEVEL.WARNING | LOGLEVEL.DEBUG
+};
+
 const config = {
     sqlite: SQLITE,
     server_http: SERVER_HTTP,
@@ -133,7 +148,8 @@ const config = {
     common: COMMON,
     alarmfields: ALARMFIELDS,
     raspiversion: process.env.RASPIVERSION?.toLocaleLowerCase() == 'true' ? true : false,
-    version: '3.0.0'
+    version: '3.0.0',
+    logging: LOG
 };
 
 export default config;
