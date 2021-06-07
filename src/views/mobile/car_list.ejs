@@ -134,6 +134,8 @@
                             get_password_new_id(car.id);
                         });
 
+                        addFormatter(clone.querySelector(".var_user"), regexPrefix(/^AUTO/, 'AUTO'));
+
                     }
                 } catch (error) {
                     console.error('load_cars_all', error);
@@ -153,7 +155,7 @@
                     carelement.querySelector('.var_header_name').innerHTML = name;
 
                     if(password != '****') {
-                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPasswort: password});
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPassword: password});
                         console.log('updateCar', response);
                     } else {
                         const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user});

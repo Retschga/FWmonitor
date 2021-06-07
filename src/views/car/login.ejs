@@ -125,7 +125,9 @@
 
         <%- include('partials/foot') -%>
 
-        <script>
+        <script>            
+
+            addFormatter(document.getElementById("var_telid"), regexPrefix(/^AUTO/, 'AUTO'));
 
             function login(useToken = false) {
                 let loader = document.querySelector("#loginLoader");

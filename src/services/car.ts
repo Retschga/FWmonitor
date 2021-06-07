@@ -17,6 +17,17 @@ class CarService {
         return response;
     }
 
+    public async get_login_carid(carid: string) {
+        let result = await this.find({ appBenutzer: carid });
+        if (result.length < 1) return;
+        let car = result[0];
+        return {
+            id: car.id,
+            username: car.appBenutzer,
+            passwordHash: car.appPasswort
+        };
+    }
+
     public async create(name: String, appBenutzer: String, appPasswort: String) {
         logging.debug(NAMESPACE, 'create', { name, appBenutzer, appPasswort });
         let affectedRows = await CarModel.model.insert({

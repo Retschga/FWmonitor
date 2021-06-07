@@ -6,10 +6,10 @@ const NAMESPACE = 'CarModel';
 const TABLENAME = 'autos';
 
 interface CarRow {
-    id: Number;
-    name: String;
-    appBenutzer: String;
-    appPasswort: String;
+    id: number;
+    name: string;
+    appBenutzer: string;
+    appPasswort: string;
 }
 
 class CarModel extends Model {

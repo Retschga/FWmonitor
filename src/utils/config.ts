@@ -88,7 +88,7 @@ const PRINTING = {
 };
 
 const COMMON = {
-    fwName: process.env.FW_NAME || 'Freiwillige Feuerwehr Test',
+    fwName: process.env.FW_NAME_STANDBY || 'Freiwillige Feuerwehr Test',
     fwName_short: process.env.FW_NAME_SHORT || 'FF Test',
     dwd_warncellid: process.env.DWD_WARCELLID || '',
     time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
@@ -124,7 +124,7 @@ const ALARMFIELDS = {
     e_EINSATZMITTEL: 'BEMERKUNG', // Filter Ende
     s_CAR: 'Name :', // Filter Beginn
     e_CAR: '\n', // Filter Ende
-    CAR1: COMMON.fwName, // Filter um als eigenes Fahrzeug erkannt zu weden
+    CAR1: process.env.FW_NAME || '123456789123456789', // Filter um als eigenes Fahrzeug erkannt zu weden
     EMPTY: '-/-'
 };
 
