@@ -118,13 +118,13 @@
                 location.reload(); 
             }
             
-            if(topic == 'rebootScreen') {
-                alert("Neustart...");
+            if(topic == 'action_7') {
+                loaderIn(undefined, undefined, 'Neustart');
                 wsSteuer.send('restart');
             }
 
-            if(topic == 'updateScript') {
-                alert("Update...");
+            if(topic == 'action_8') {
+                loaderIn(undefined, undefined, 'Update');
                 wsSteuer.send('update');
             }
         };

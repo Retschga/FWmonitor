@@ -3,6 +3,7 @@
 import express from 'express';
 import statisticController from '../../controllers/statistic';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
+import { auth_api, UserRights } from '../../middleware/auth';
 
 const router = express.Router();
 

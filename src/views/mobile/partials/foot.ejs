@@ -44,7 +44,7 @@
     const url_calendar_groups = '/api/v1/calendarGroups';
     const url_calendar_groups_update = '/api/v1/calendarGroups/:id';
     const url_calendar = '/api/v1/calendar/:id';
-    const url_calendar_next = '/api/v1/calendar/next';
+    const url_calendar_next = '/api/v1/calendar/next/:id';
     const url_calendar_update = '/api/v1/calendar/:id';
     const url_calendar_delete = '/api/v1/calendar/delete/:id';
 
@@ -107,8 +107,10 @@
                                 // It's the perfect time to display a "New content is available; please refresh."
                                 // message in the page's interface.
                                 console.log('New or updated content is available.');
-                                loaderIn();
-                                window.location.reload();
+                                loaderIn(undefined, undefined, 'Update');
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);                                
                             } else {
                                 // At this point, everything has been precached.
                                 // It's the perfect time to display a "Content is cached for offline use." message.
@@ -156,7 +158,7 @@
         // detect controller change and refresh the page
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
-                //if(!alert("update...."))
+                //loaderIn(undefined, undefined, 'Neustart');
                 //window.location.reload()
                 refreshing = true
             }

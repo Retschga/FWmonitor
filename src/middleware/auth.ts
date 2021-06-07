@@ -14,13 +14,14 @@ import {
 import config from '../utils/config';
 import { CalendarRight } from '../models/user';
 
-export enum UserRights {
-    admin,
-    calendar_min,
-    calendar_full,
-    telefone,
-    car,
-    ownid
+export const enum UserRights {
+    admin = 1,
+    calendar_min = 2,
+    calendar_full = 3,
+    telefone = 4,
+    car = 5,
+    ownid = 6,
+    http = 7
 }
 
 export const login_app = async function (req: Request, res: Response, next: NextFunction) {
@@ -197,15 +198,17 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
             if (roles.length == 0) ok = true;
 
             // Rolle angegeben -> nur freigegebene Rollen
-            if (UserRights.admin in roles && session.admin == true) ok = true;
-            if (UserRights.calendar_full in roles && session.calendar_full == true) ok = true;
-            if (UserRights.calendar_min in roles && session.calendar_min == true) ok = true;
-            if (UserRights.telefone in roles && session.telefone == true) ok = true;
-            if (UserRights.car in roles && session.car == true) ok = true;
+            if (roles.indexOf(UserRights.admin) != -1 && session.admin == true) ok = true;
+            if (roles.indexOf(UserRights.calendar_full) != -1 && session.calendar_full == true)
+                ok = true;
+            if (roles.indexOf(UserRights.calendar_min) != -1 && session.calendar_min == true)
+                ok = true;
+            if (roles.indexOf(UserRights.telefone) != -1 && session.telefone == true) ok = true;
+            if (roles.indexOf(UserRights.car) != -1 && session.car == true) ok = true;
             if (
                 session.telegramid &&
                 session.userid &&
-                UserRights.ownid in roles &&
+                roles.indexOf(UserRights.ownid) != -1 &&
                 req.params.id &&
                 Number(req.params.id) == session.userid
             ) {
@@ -214,6 +217,9 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
 
             // Keine Session vorhanden -> Access denied
             if (!session.telegramid) ok = false;
+
+            // HTTP / LAN
+            if (roles.indexOf(UserRights.http) != -1 && !req.secure) ok = true;
 
             if (ok == true) {
                 next();

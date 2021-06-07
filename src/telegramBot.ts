@@ -186,6 +186,14 @@ class TelegramBot {
                 return;
             }
 
+            // Status zurücksetzen
+            if (
+                user[0].status == UserStatus.TELEGR_BOT_BLOCKED ||
+                user[0].status == UserStatus.TELEGR_USER_DISABLED
+            ) {
+                userService.update_status(user[0].id, UserStatus.VERFUEGBAR);
+            }
+
             // Alles OK -> Nächste Route
             await next();
         } catch (error) {

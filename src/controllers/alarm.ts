@@ -7,11 +7,55 @@ import AlarmService from '../services/alarm';
 import logging from '../utils/logging';
 import { checkValidation } from './controller';
 import { instance as DeviceServiceInstance, init, DeviceService } from '../services/device';
+import userService from '../services/user';
+import groupService from '../services/group';
+import { AlarmRow } from '../models/alarm';
 
 const NAMESPACE = 'Alarm_Controller';
 
 class AlarmController {
     // Alarm
+
+    private async removeElements(list: AlarmRow[], userid: number) {
+        const user = await userService.find_by_userid(userid);
+        if (!user || user.length < 1) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+        }
+
+        const group = await groupService.find_by_id(user[0].group);
+        if (!group || group.length < 1) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Group not found');
+        }
+
+        const pattern = group[0].pattern;
+
+        for (let i = 0; i < list.length; i++) {
+            list[i].einsatzstichwort =
+                pattern.indexOf('{{EINSATZSTICHWORT}}') !== -1 ? list[i].einsatzstichwort : '';
+
+            list[i].schlagwort = pattern.indexOf('{{SCHLAGWORT}}') !== -1 ? list[i].schlagwort : '';
+
+            list[i].objekt = pattern.indexOf('{{OBJEKT}}') !== -1 ? list[i].objekt : '';
+
+            list[i].strasse = pattern.indexOf('{{STRASSE}}') !== -1 ? list[i].strasse : '';
+
+            list[i].ortsteil = pattern.indexOf('{{ORTSTEIL}}') !== -1 ? list[i].ortsteil : '';
+
+            list[i].ort = pattern.indexOf('{{ORT}}') !== -1 ? list[i].ort : '';
+
+            list[i].bemerkung = pattern.indexOf('{{BEMERKUNG}}') !== -1 ? list[i].bemerkung : '';
+
+            list[i].cars1 = pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') !== -1 ? list[i].cars1 : '';
+
+            list[i].cars2 = pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') !== -1 ? list[i].cars2 : '';
+
+            list[i].lat = pattern.indexOf('{{KARTE}}') !== -1 ? list[i].lat : '';
+
+            list[i].lng = pattern.indexOf('{{KARTE}}') !== -1 ? list[i].lng : '';
+        }
+
+        return list;
+    }
 
     public async get_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_alarm_id', { id: req.params.id });
@@ -26,9 +70,12 @@ class AlarmController {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
-        // TODO remoce not allowed elements
+        if (!req.session.userid || req.session.car == true) {
+            res.send(list);
+            return;
+        }
 
-        res.send(list);
+        res.send(await this.removeElements(list, req.session.userid));
     }
 
     public async get_last(req: Request, res: Response, next: NextFunction) {
@@ -43,9 +90,12 @@ class AlarmController {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
-        // TODO remoce not allowed elements
+        if (!req.session.userid || req.session.car == true) {
+            res.send(list);
+            return;
+        }
 
-        res.send(list);
+        res.send(await this.removeElements(list, req.session.userid));
     }
 
     public async get_list(req: Request, res: Response, next: NextFunction) {
@@ -66,7 +116,12 @@ class AlarmController {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
-        res.send(list);
+        if (!req.session.userid || req.session.car == true) {
+            res.send(list);
+            return;
+        }
+
+        res.send(await this.removeElements(list, req.session.userid));
     }
 
     public async update_alarmsettings_telegram(req: Request, res: Response, next: NextFunction) {

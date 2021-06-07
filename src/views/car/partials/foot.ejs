@@ -74,8 +74,10 @@
                             // It's the perfect time to display a "New content is available; please refresh."
                             // message in the page's interface.
                             console.log('New or updated content is available.');
-                            loaderIn();
+                            loaderIn(undefined, undefined, 'Update');
+                            setTimeout(() => {
                                 window.location.reload();
+                            }, 2000);  
                         } else {
                             // At this point, everything has been precached.
                             // It's the perfect time to display a "Content is cached for offline use." message.
@@ -371,7 +373,7 @@
         // detect controller change and refresh the page
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
-                //if(!alert("update...."))
+                //loaderIn(undefined, undefined, 'Neustart');
                 //window.location.reload()
                 refreshing = true
             }

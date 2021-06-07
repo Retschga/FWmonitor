@@ -8,6 +8,8 @@ const NAMESPACE = 'HydrantService';
 
 class HydrantService {
     public async find_latlng(lat: string, lng: string) {
+        logging.debug(NAMESPACE, 'find_latlng', { lat, lng });
+
         // URL Overpass-API für Hydranten    siehe Ovepass turbo
         let overpassHydrantenUrl = `https://overpass-api.de/api/interpreter?data=
             [out:json][timeout:25];(

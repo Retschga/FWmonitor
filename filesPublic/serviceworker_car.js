@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-05-02-006';
+const staticCacheName = 'cache-vers-2021-05-07-001';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -38,11 +38,16 @@ this.addEventListener('fetch', function (event) {
                     if (
                         event.request.url.indexOf(url_alarm_list) == -1 &&
                         event.request.url.indexOf(url_alarm_last) == -1 &&
-                        event.request.url.indexOf(url_alarm_isalarm) == -1 && (
+                        event.request.url.indexOf(url_alarm_isalarm) == -1 && 
+                        (
+                        event.request.url.indexOf('/car/') != -1 ||
+                        event.request.url.indexOf('.css') != -1 ||
+                        event.request.url.indexOf('.js') != -1 ||
                         event.request.url.indexOf(url_alarm) != -1 ||
                         event.request.url.indexOf(url_map_hydranten) != -1 ||
                         event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
-                        event.request.url.indexOf('tile') != -1)
+                        event.request.url.indexOf('tile') != -1
+                        )
                     ) {
                         console.log('cached:', event.request.url);
                         const cache = await caches.open(staticCacheName);

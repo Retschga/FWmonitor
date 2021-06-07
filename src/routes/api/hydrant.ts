@@ -4,13 +4,14 @@ import express from 'express';
 import hydrantController from '../../controllers/hydrant';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
 import apicache from 'apicache';
+import { auth_api, UserRights } from '../../middleware/auth';
 
 const router = express.Router();
 let cache = apicache.middleware;
 
 router.get(
     '/:lat/:lng',
-    cache('60 minutes'),
+    //cache('60 minutes'),
     awaitHandlerFactory(hydrantController.get_latlng.bind(hydrantController))
 );
 

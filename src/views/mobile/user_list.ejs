@@ -147,7 +147,7 @@
                     // Benutzerliste
                     for(let i = 0; i < users.approved.length; i++) {
                         const element            = users.approved[i];
-                        const calendarGroups_arr = element.kalenderGroups.split('|');
+                        const calendarGroups_arr = element.kalenderGroups == '' ? [] : element.kalenderGroups.split('|');
 
                         const template           = document.querySelector('#template-userelement');       
                         const var_name           = template.content.querySelector(".var_name");      

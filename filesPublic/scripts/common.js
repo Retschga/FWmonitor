@@ -174,18 +174,25 @@ function setSelectedIndex(s, v) {
     }
 }
 
-var parseKalenderSummary = function(summary) {
-    // Terminname in Text und Icon aufreilen
-    let text = summary.substring(2);
-    let icon = summary.substring(0,4);
-    if(icon.match(/[A-Z0-9äöüÄÖÜß]/i) != null) {
-        icon = summary.substring(0,2);
+function parseKalenderSummary(summary) {
+
+    if(!summary) return {text: '', icon: ''};
+    try {
+        // Terminname in Text und Icon aufreilen
+        let text = summary.substring(2);
+        let icon = summary.substring(0,4);
         if(icon.match(/[A-Z0-9äöüÄÖÜß]/i) != null) {
-            text = icon + text;
-            kalenderBearbeiten_hasIcon = false;
+            icon = summary.substring(0,2);
+            if(icon.match(/[A-Z0-9äöüÄÖÜß]/i) != null) {
+                text = icon + text;
+                kalenderBearbeiten_hasIcon = false;
+            }
         }
+        return {text: text, icon: icon};
+    } catch (error) {
+        return {text: summary, icon: ''};
     }
-    return {text: text, icon: icon};
+   
 }
 
 function escapeHtml(str) {

@@ -189,7 +189,12 @@ class WebpushService {
                 .sendNotification(JSON.parse(subscription[i]), JSON.stringify(dataToSend))
                 .catch((err) => {
                     if (err.statusCode === 404 || err.statusCode === 410) {
-                        userService.update_notifications_app(userid, 0, '');
+                        subscription.splice(i, 1);
+                        userService.update_notifications_app(
+                            userid,
+                            0,
+                            JSON.stringify(subscription)
+                        );
                         return false;
                     } else {
                         throw err;

@@ -19,6 +19,7 @@ import routerCar from './routerCar';
 import alarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
 import routePrint from './routes/print';
+import globalEvents from './utils/globalEvents';
 
 import telegramBot from './telegramBot';
 import diashowService from './services/diashow';
@@ -148,6 +149,9 @@ httpsServer.listen(config.server_https.port, () =>
         `Server is running ${config.server_http.hostname}:${config.server_http.port}`
     )
 );
+globalEvents.on('alarm', async () => {
+    sessionstore.clear();
+});
 
 // Starte Websocket-Server für die WebApp
 const httpsSocket = new Websocket(httpsServer, true);

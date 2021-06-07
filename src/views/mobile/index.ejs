@@ -161,7 +161,7 @@
             // Laden
             async function load_calendar() {     
                 try {
-                    const calendarElement = await fetch_get(url_calendar_next, true);
+                    const calendarElement = await fetch_get(url_calendar_next.replace(':id', user_id), true);
                     console.log('calendarElement', calendarElement);
 
                     const target = document.querySelector(".content");
