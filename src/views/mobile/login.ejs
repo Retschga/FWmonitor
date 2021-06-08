@@ -163,6 +163,8 @@
                         loginFormContainer.classList.remove("hidden");
                     })
                 }
+
+                if($_GET['token'] != undefined) setCookie('token', $_GET['token'])
     
                 if($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != "") login();
     

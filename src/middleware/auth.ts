@@ -13,6 +13,9 @@ import {
 } from '../utils/security';
 import config from '../utils/config';
 import { CalendarRight } from '../models/user';
+import logging from '../utils/logging';
+
+const NAMESPACE = 'AUTH_MIDDLEWARE';
 
 export const enum UserRights {
     admin = 1,
@@ -34,6 +37,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
 
         // Anmeldung über den JWT
         if (token && !telegramid) {
+            logging.debug(NAMESPACE, 'Token Login', token);
             const decodedSession: DecodeResult = checkToken(token);
 
             if (decodedSession.type != 'valid') {
@@ -44,10 +48,12 @@ export const login_app = async function (req: Request, res: Response, next: Next
             }
 
             userid = decodedSession.session.id;
+            if (Number(userid) < 10) car = decodedSession.session.car;
         }
 
         // Anmeldung mit Login/Passwort
         if (telegramid && password && userid == -1) {
+            logging.debug(NAMESPACE, 'Passwort Login', telegramid);
             let login;
             if (telegramid.length > 4 && telegramid.substring(0, 4) == 'AUTO') {
                 login = await CarService.get_login_carid(telegramid);
@@ -116,7 +122,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         }
 
         // JWT erzeugen und als Cookie senden
-        const tokenSession: PartialTokenSession = { id: userid };
+        const tokenSession: PartialTokenSession = { id: userid, car: car };
         const new_token_session = createToken(tokenSession);
         res.header('Access-Control-Allow-Credentials', 'true');
         res.cookie('token', new_token_session.token, {

@@ -158,7 +158,7 @@ class AlarmParserService {
         return data;
     };
 
-    public async parseFile(path: string) {
+    public async parseFile(path: string, alarmdate: Date) {
         let fileData = await fs.promises.readFile(path, 'utf8');
 
         logging.info(NAMESPACE, 'File OK -> Begin processing...');
@@ -212,7 +212,7 @@ class AlarmParserService {
             cars1: alarmFields.cars1.join('|'),
             cars2: alarmFields.cars2.join('|'),
             isAddress: geoData.isAddress,
-            date: new Date().toISOString(),
+            date: alarmdate.toISOString(),
             id: undefined
         };
 

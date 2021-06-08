@@ -9,6 +9,7 @@ import jsonwebtoken from 'jsonwebtoken';
 
 export interface TokenSession {
     id: number;
+    car: boolean;
     // ... Eigenschaften
     /**
      * Timestamp indicating when the session was created, in Unix milliseconds.
@@ -88,13 +89,16 @@ export const checkPassword = (password: string, hash: string) => {
  * @param partialSession
  * @returns
  */
-export const createToken = (partialSession: PartialTokenSession) => {
+export const createToken = (partialSession: PartialTokenSession, customExpireSeconds?: number) => {
     // Always use HS512 to sign the token
     const algorithm: jsonwebtoken.Algorithm = 'HS512';
     // Determine when the token should expire
     const issued = Date.now();
     const jwt_expire_MS = config.app.jwt_expire * 1000;
-    const expires = issued + jwt_expire_MS;
+    let expires = issued + jwt_expire_MS;
+    if (customExpireSeconds) {
+        expires = issued + customExpireSeconds * 1000;
+    }
     const session: TokenSession = {
         ...partialSession,
         iat: issued,

@@ -3,9 +3,10 @@
 import logging from '../utils/logging';
 import config from '../utils/config';
 import fs from 'fs';
-import { createThumbnail, getImageSize } from '../utils/thumbnail';
+import { createThumbnail, createHd, getImageSize } from '../utils/thumbnail';
 import { fileExists } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
+import moveFile from 'move-file';
 
 const NAMESPACE = 'DiashowService';
 
@@ -140,6 +141,13 @@ class DiashowService {
         globalEvents.emit('diashow-change');
 
         return true;
+    }
+
+    public async process_new(path: string, filename: string) {
+        await moveFile(path + '/' + filename, config.folders.diashow + '/' + filename);
+        await createThumbnail(config.folders.diashow, filename);
+        await createHd(config.folders.diashow, filename);
+        this.disable_pic(filename);
     }
 }
 

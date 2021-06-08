@@ -333,7 +333,7 @@
                             var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
                             var clone = document.importNode(template.content, true);
                             target_verfuegbar.appendChild(clone);
-                        } else if (status_nverf) {
+                        } else if (userstatus.status == 2 && status_nverf) {
                             const template = document.querySelector('#template-nichtverfuegbar');                
                             const var_text   = template.content.querySelector(".var_name");
                             var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        

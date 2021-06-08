@@ -146,3 +146,22 @@ export const getUniqueID = (): string => {
     }
     return s4() + s4() + '-' + s4();
 };
+
+export const addLeadingZero = (i: number) => {
+    return Number(i) < 10 ? '0' + i : i;
+};
+
+export const getFormattedAlarmTime = (date?: Date) => {
+    var today = new Date();
+    if (date) today = new Date(date);
+
+    var y = today.getFullYear();
+
+    var m = ('0' + (today.getMonth() + 1)).slice(-2);
+    var d = ('0' + today.getDate()).slice(-2);
+    var h = ('0' + today.getHours()).slice(-2);
+    var mi = ('0' + today.getMinutes()).slice(-2);
+    var s = ('0' + today.getSeconds()).slice(-2);
+
+    return y + '-' + m + '-' + d + ' ' + h + '-' + mi + '-' + s;
+};

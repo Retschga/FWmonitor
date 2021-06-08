@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import moveFile from 'move-file';
 
 /**
  * Erstellt ein Thumbnail zum angegebenen Bild
@@ -10,7 +11,7 @@ export const createThumbnail = async (path: string, file: string) => {
     return new Promise(async (resolve, reject) => {
         sharp(path + '/' + file)
             .resize(200)
-            .toFile(path + 'thumbnail-' + file, (err, resizeImage) => {
+            .toFile(path + '/thumbnail-' + file, (err, resizeImage) => {
                 if (err) {
                     reject('Thumbnail generation ERROR: ' + err);
                 } else {
@@ -37,5 +38,20 @@ export const getImageSize = async (path: string, file: string) => {
                 resolve(dims);
             })
             .catch((error) => reject(error));
+    });
+};
+
+export const createHd = async (path: string, file: string) => {
+    return new Promise(async (resolve, reject) => {
+        await moveFile(path + '/' + file, path + '/' + file + '.org');
+        sharp(path + '/' + file + '.org')
+            .resize(1920)
+            .toFile(path + '/' + file, (err, resizeImage) => {
+                if (err) {
+                    reject('HD generation ERROR: ' + err);
+                } else {
+                    resolve(resizeImage);
+                }
+            });
     });
 };

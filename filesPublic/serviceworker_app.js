@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-06-07-004';
+const staticCacheName = 'cache-vers-2021-06-07-034';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -171,18 +171,31 @@ this.addEventListener('fetch', function (event) {
         caches
             .match(event.request)
             .then((response) => {
+
+                // Cache hit - return response
                 if (response) {
                     console.log('Found ', event.request.url, ' in cache');
                     return response;
                 }
-                console.log('Network request for ', event.request.url);
 
+
+                // Netzwerk Request
+                console.log('Network request for ', event.request.url);
                 return fetch(event.request).then( async (response) => {
-                    /*				if (response.status === 404) {
+                    /*
+                    if (response.status === 404) {
                         return caches.match('/app/404.html');
                     }
-    */
-                    // cachen
+                    */
+                    // Check if we received a valid response
+                    if(!response || response.status !== 200 || response.type !== 'basic') {
+                        return response;
+                    }
+                    if (response.type === "error" || response.type === "opaque") {
+                        return Promise.resolve(); // do not put in cache network errors
+                      }
+  
+      
                     if (
                         event.request.url.indexOf(url_alarm_list) == -1 &&
                         event.request.url.indexOf(url_alarm_last) == -1 &&
@@ -205,8 +218,13 @@ this.addEventListener('fetch', function (event) {
                 });
             })
             .catch((error) => {
-                console.log('---- OFFLINE ----');
-                return caches.match('/app/offline');
+                console.log('---- SW ERROR ----', error);
+                if (event.request.mode === 'navigate') {
+                    return caches.match('offline.html');
+                }
+                
+                var init = { "status" : 444 , "statusText" : "offline" };
+                return new Response(null, init);
             })
     );
 });

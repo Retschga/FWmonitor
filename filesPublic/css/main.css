@@ -221,6 +221,11 @@ button {
     padding-bottom: 1em !important;
 }
 
+.padding_1 {
+    padding: 1em !important;
+}
+
+
 .rounded {
     border-radius: 5%;
 }

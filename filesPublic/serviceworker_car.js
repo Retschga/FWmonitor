@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-05-07-001';
+const staticCacheName = 'cache-vers-2021-05-07-003';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -59,9 +59,13 @@ this.addEventListener('fetch', function (event) {
                 });
             })
             .catch((error) => {
-                console.error(error);
-                console.log('---- OFFLINE ----');
-                return caches.match('/app/offline');
+                console.log('---- SW ERROR ----', error);
+                if (event.request.mode === 'navigate') {
+                    return caches.match('offline.html');
+                }
+                
+                var init = { "status" : 444 , "statusText" : "offline" };
+                return new Response(null, init);
             })
     );
 });

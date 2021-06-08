@@ -253,40 +253,67 @@ function regexPrefix (regex, prefix) {
 
 // FETCH Helper functions
 // https://jasonwatmore.com/post/2020/04/18/fetch-a-lightweight-fetch-wrapper-to-simplify-http-requests
-function fetch_get(url, json = false, timeout = 20000) {
+function fetch_get(url, xxxx, timeout = 20000) {
     const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
     const requestOptions = {
         method: 'GET',   
         cache: "no-cache",         
         signal: controller.signal
     };
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    if(json)
-        return fetch(url, requestOptions).then(fetch_handleResponse_json);
-    else 
-        return fetch(url, requestOptions).then(fetch_handleResponse_text);
+
+    
+    return fetch(url, requestOptions)
+        .then(fetch_handleResonse)
+        .catch(fetch_handleError);
 }
-function fetch_post(url, body, json = false,timeout = 20000) {
+function fetch_post(url, body, xxxx, timeout = 20000) {
     const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
     const requestOptions = {
-        method: 'POST',            
+        method: 'POST',        
+        cache: "no-cache",    
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        cache: "no-cache"
+        body: JSON.stringify(body)        
     };
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    if(json)
-        return fetch(url, requestOptions).then(fetch_handleResponse_json);
-    else 
-        return fetch(url, requestOptions).then(fetch_handleResponse_text);
+
+    return fetch(url, requestOptions)
+        .then(fetch_handleResonse)
+        .catch(fetch_handleError);
+
 }
+
+function fetch_handleResonse(response) {
+
+    const contentType = response.headers.get('content-type');
+
+    if(!contentType) return Promise.reject({statusText: response.statusText, status: response.status})
+ 
+    if (contentType.includes('application/json')) {
+        return fetch_handleResponse_json(response)
+
+    } else if (contentType.includes('text/html')) {
+        return fetch_handleResponse_text(response)
+
+    } else if (contentType.includes('application/geo+json')) {
+        return fetch_handleResponse_json(response)
+
+    } else {
+        // Other response types as necessary. I haven't found a need for them yet though.
+        throw new Error(`Sorry, content-type ${contentType} not supported`)
+    }
+}
+
 function fetch_handleResponse_json(response) {
     return response.text().then(text => {
         const data = text && JSON.parse(text);
         
         if (!response.ok) {
-            const error = (data && data.message) || response.statusText;
+            const error = (data && {statusText: data.message, status: response.status}) || 
+                            {statusText: response.statusText, status: response.status};
             return Promise.reject(error);
         }
 
@@ -297,13 +324,46 @@ function fetch_handleResponse_text(response) {
     return response.text().then(text => {
 
         if (!response.ok) {
-            const error = response.statusText;
+            const error = {statusText: response.statusText, status: response.status};
             return Promise.reject(error);
         }
 
         return text;
     });
 }
+
+function fetch_handleError(error) {
+    if(error.status == 401 && window.location.href.indexOf('login') == -1) {
+        // UNAUTHORIZED
+        loaderIn('login', true, error.statusText);        
+    } else if(error.status == 444 && window.location.href.indexOf('offline') == -1) {
+        // OFFLINE
+        loaderIn('offline', true, error.statusText);      
+    } else if(error.status == 400) {
+        // BAD_REQUEST
+        alert(error.statusText);     
+    } else if(error.status == 403) {
+        // FORBIDDEN
+        alert(error.statusText);     
+    } else if(error.status == 404) {
+        // NOT_FOUND
+        alert(error.statusText);     
+    } else if(error.status == 500) {
+        // INTERNAL_SERVER_ERROR
+        alert(error.statusText);     
+    }
+    return Promise.reject(error);
+}
+
+
+
+
+
+
+
+
+
+
 
 // -------- Base64 Decoding --------
 // https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey

@@ -72,6 +72,14 @@ class WebpushService {
 
             // Alarm Notification
             globalEvents.on('alarm', async (alarm: AlarmRow) => {
+                if (!config.alarm.app) {
+                    logging.warn(
+                        NAMESPACE,
+                        'Telegrammalarmierung deaktiviert! --> Keine Benachrichtigung'
+                    );
+                    return;
+                }
+
                 logging.debug(NAMESPACE, 'Sende Alarm');
 
                 const users = await userService.find_all_approved();

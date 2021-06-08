@@ -21,4 +21,8 @@ temp/**/*
 *.key
 *.crt
 
-package-lock.json
+.vscode/*
+*.code-workspace
+
+.history
+.ionide

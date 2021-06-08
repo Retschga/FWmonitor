@@ -10,7 +10,7 @@ const NAMESPACE = 'GlobalEvents';
 // globalEvents.on('softwareinfo', (text: string) => { });
 
 // globalEvents.on('calendar-change', () => { });
-// globalEvents.on('calendar-remind', () => { });
+// globalEvents.on('calendar-remind', (termin: CalendarElement) => { });
 
 // globalEvents.on('diashow-change', () => { });
 

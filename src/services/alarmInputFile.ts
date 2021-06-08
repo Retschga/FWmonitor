@@ -4,28 +4,18 @@ import chokidar from 'chokidar';
 import moveFile from 'move-file';
 import logging from '../utils/logging';
 import config from '../utils/config';
-import { timeout, execShellCommand, checkFolderOrFile } from '../utils/common';
+import {
+    timeout,
+    execShellCommand,
+    checkFolderOrFile,
+    getFormattedAlarmTime
+} from '../utils/common';
 import AlarmParserService from './alarmParser';
 import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'AlarmInputFileService';
 
 class AlarmInputFileService {
-    private getFormattedTime(date?: Date) {
-        var today = new Date();
-        if (date) today = new Date(date);
-
-        var y = today.getFullYear();
-
-        var m = ('0' + (today.getMonth() + 1)).slice(-2);
-        var d = ('0' + today.getDate()).slice(-2);
-        var h = ('0' + today.getHours()).slice(-2);
-        var mi = ('0' + today.getMinutes()).slice(-2);
-        var s = ('0' + today.getSeconds()).slice(-2);
-
-        return y + '-' + m + '-' + d + ' ' + h + '-' + mi + '-' + s;
-    }
-
     private async convertPdfToTiff(file: string, targetPath: string) {
         await execShellCommand(
             `"${config.programs.ghostscript}" -dBATCH -sDEVICE=tiffg4 -dNOPAUSE -r${config.programs.ghostscript_res} -sOutputFile="${targetPath}" "${file}"`
@@ -84,11 +74,13 @@ class AlarmInputFileService {
         });
 
         watcher.on('add', async (path) => {
+            const alarmdate = new Date();
+
             logging.info(NAMESPACE, `File ${path} has been added`);
             await timeout(config.folders.fileInput_delay * 1000);
 
             let filetype = (path.split('.').pop() || '').toLowerCase();
-            let file = this.getFormattedTime(); //path.split(/[/\\]/g).pop().split('.')[0];
+            let file = getFormattedAlarmTime(alarmdate); //path.split(/[/\\]/g).pop().split('.')[0];
 
             logging.info(NAMESPACE, `Filetype: ${filetype}`);
 
@@ -104,8 +96,8 @@ class AlarmInputFileService {
             }
 
             // Datei ins Archiv verschieben
-            await moveFile(path, process.env.FOLDER_ARCHIVE + '/' + file + '.' + filetype);
-            path = process.env.FOLDER_ARCHIVE + '/' + file + '.' + filetype;
+            await moveFile(path, config.folders.archive + '/' + file + '.' + filetype);
+            path = config.folders.archive + '/' + file + '.' + filetype;
 
             await timeout(1000);
 
@@ -118,15 +110,15 @@ class AlarmInputFileService {
                 // Move -> Archiv
                 moveFile(
                     config.folders.temp + file + '.tiff',
-                    process.env.FOLDER_ARCHIVE + '/' + file + '.tiff'
+                    config.folders.archive + '/' + file + '.tiff'
                 );
-                path = process.env.FOLDER_ARCHIVE + '/' + file + '.tiff';
+                path = config.folders.archive + '/' + file + '.tiff';
 
                 // TIFF -> Tesseract
                 await this.tiffToTxt(path, config.folders.temp + file);
 
                 // Textdatei verarbeiten
-                AlarmParserService.parseFile(config.folders.temp + file + '.txt');
+                AlarmParserService.parseFile(config.folders.temp + file + '.txt', alarmdate);
 
                 return;
             }
@@ -140,21 +132,21 @@ class AlarmInputFileService {
                 // Move -> Archiv
                 await moveFile(
                     config.folders.temp + file + '.pdf',
-                    process.env.FOLDER_ARCHIVE + '/' + file + '.pdf'
+                    config.folders.archive + '/' + file + '.pdf'
                 );
 
                 /// Drucken
                 if (config.printing.printFile)
-                    this.printPdf(process.env.FOLDER_ARCHIVE + '/' + file + '.pdf');
+                    this.printPdf(config.folders.archive + '/' + file + '.pdf');
 
                 // Textdatei verarbeiten
-                AlarmParserService.parseFile(config.folders.temp + file + '.txt');
+                AlarmParserService.parseFile(config.folders.temp + file + '.txt', alarmdate);
 
                 return;
             }
 
             // Textdatei verarbeiten
-            AlarmParserService.parseFile(path);
+            AlarmParserService.parseFile(path, alarmdate);
         });
 
         let lastStatus = true;

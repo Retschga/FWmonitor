@@ -6,8 +6,20 @@ import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
 import * as ValidatorDiashow from '../../middleware/diashowValidator';
 import config from '../../utils/config';
 import { auth_api, UserRights } from '../../middleware/auth';
+import multer from 'multer';
+import diashowService from '../../services/diashow';
 
 const router = express.Router();
+const upload = multer({
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, config.folders.temp);
+        },
+        filename: function (req, file, cb) {
+            cb(null, new Date().valueOf() + '_' + file.originalname);
+        }
+    })
+});
 
 router.get(
     '/list',
@@ -50,6 +62,11 @@ router.get('/files/:file', auth_api(UserRights.admin, UserRights.http), async fu
     res.sendFile(config.folders.thumbnailPrefix + req.params.file, {
         root: config.folders.diashow
     });
+});
+
+router.post('/upload', upload.single('image'), function (req, res, next) {
+    diashowService.process_new(config.folders.temp, req.file.filename);
+    res.send('OK');
 });
 
 export = router;

@@ -2,13 +2,59 @@
 
 import logging from '../utils/logging';
 import * as UserModel from '../models/user';
-import { isJsonString } from '../utils/common';
+import { isJsonString, addLeadingZero } from '../utils/common';
 import { UserStatus } from '../models/user';
 import globalEvents from '../utils/globalEvents';
 
 const NAMESPACE = 'User_Service';
 
 class UserService {
+    constructor() {
+        // Verfügbarkeitsintervall
+        var interval = setInterval(this.checkUserStatus, 35000);
+    }
+
+    private async checkUserStatus() {
+        logging.debug(NAMESPACE, 'Intervall Verfügbarkeit');
+        try {
+            let users = await this.find_all_approved();
+
+            if (!users) {
+                throw new Error('No Users found');
+            }
+
+            let dateNow = new Date();
+            let dateNow_h = addLeadingZero(dateNow.getHours());
+            let dateNow_m = addLeadingZero(dateNow.getMinutes());
+            let dateNow_d = dateNow.getDay();
+
+            users.forEach(async (user) => {
+                if (user.statusUntil != '') {
+                    let dateUntil = new Date(user.statusUntil);
+                    if (dateUntil < dateNow) {
+                        this.update_status(user.id, UserStatus.VERFUEGBAR);
+                    }
+                } else if (user.statusPlans != '' && user.statusPlans != null && user.status != 2) {
+                    let el = JSON.parse(user.statusPlans);
+                    el.plans.forEach(async (plan: any) => {
+                        if (
+                            plan.weekdays[dateNow_d] == true &&
+                            plan.active == true &&
+                            plan.from == dateNow_h + ':' + dateNow_m
+                        ) {
+                            let until = new Date();
+                            until.setHours(plan.to.split(':')[0]);
+                            until.setMinutes(plan.to.split(':')[1]);
+                            this.update_status(user.id, UserStatus.NICHT_VERFUEGBAR, until);
+                        }
+                    });
+                }
+            });
+        } catch (error) {
+            console.error('[TelegramBot] Interval Verfügbarkeit Fehler', error);
+        }
+    }
+
     private statusToText(status: UserModel.UserStatus) {
         switch (status) {
             case UserModel.UserStatus.NICHT_VERFUEGBAR:

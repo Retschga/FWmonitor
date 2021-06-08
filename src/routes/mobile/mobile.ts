@@ -123,5 +123,8 @@ router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
 router.get('/offline', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/offline', generateParams(req));
 });
+router.get('/picture_upload', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/picture_upload', generateParams(req));
+});
 
 export = router;

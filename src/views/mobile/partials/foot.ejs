@@ -140,15 +140,18 @@
 
     
     async function initialLoad() {
-        const userrights = await fetch_get('/api/v1/user/rights', true);
-        console.log('userrights', userrights);
 
-        user_id = userrights.userid;    
-        user_telegramid = userrights.telegramid; 
-        user_admin = userrights.admin; 
-        user_calendar_min = userrights.calendar_min; 
-        user_calendar_full = userrights.calendar_full; 
-        user_telefone = userrights.telefone;    
+        if(window.location.href.indexOf('offline') == -1) {
+            const userrights = await fetch_get('/api/v1/user/rights', true);
+            console.log('userrights', userrights);
+
+            user_id = userrights.userid;    
+            user_telegramid = userrights.telegramid; 
+            user_admin = userrights.admin; 
+            user_calendar_min = userrights.calendar_min; 
+            user_calendar_full = userrights.calendar_full; 
+            user_telefone = userrights.telefone;    
+        }
 
         
         console.log('Initiate Service Worker');

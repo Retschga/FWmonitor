@@ -34,7 +34,8 @@ const TELEGRAM = {
 };
 
 const APP = {
-    https_enabled: process.env.APP_DNS?.toLocaleLowerCase() == 'true' ? true : false,
+    https_enabled: process.env.APP_DNS ? true : false,
+    url: process.env.APP_DNS ? 'https://' + process.env.APP_DNS + '/' : undefined,
     password_length: 10,
     vapid_private: process.env.VAPID_PRIVATE,
     vapid_public: process.env.VAPID_PUBLIC,
