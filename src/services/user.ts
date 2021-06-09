@@ -11,7 +11,8 @@ const NAMESPACE = 'User_Service';
 class UserService {
     constructor() {
         // Verfügbarkeitsintervall
-        var interval = setInterval(this.checkUserStatus, 35000);
+        var interval = setInterval(this.checkUserStatus.bind(this), 35000);
+        this.checkUserStatus();
     }
 
     private async checkUserStatus() {
@@ -29,7 +30,7 @@ class UserService {
             let dateNow_d = dateNow.getDay();
 
             users.forEach(async (user) => {
-                if (user.statusUntil != '') {
+                if (user.statusUntil != '' && user.statusUntil != null) {
                     let dateUntil = new Date(user.statusUntil);
                     if (dateUntil < dateNow) {
                         this.update_status(user.id, UserStatus.VERFUEGBAR);
@@ -110,6 +111,8 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
+
+        globalEvents.emit('user-created', { name: name, vorname: vorname });
     }
 
     public async delete(id: number) {

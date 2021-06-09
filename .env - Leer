@@ -1,40 +1,76 @@
-﻿DEBUG=app,alarmManager,print,geocodeManager,calendar,fwvv,telegram,wss,database,httpsServer,appAPI,update,alarmWatcher
-
+﻿# FWmonitor Einstellungen
 # Um Änderungen zu übernehmen muss das Programm neu gestartet werden
+# Wenn Einstellungen verwendet werden, muss die # am Anfang der Zeile entfernt werden
 
 #  Raspberry Pi Version = true / false = Windows Modus
 RASPIVERSION=false
 
+# FW Haus Koordinaten (LNG = 11.xxxxx, LAT = 47.xxxxxx)
+# Optional
+#FW_KOORD_LAT=
+#FW_KOORD_LNG=
 
-# FW Haus Koordinaten (11.xxxxx, 47.xxxxxx) (lng, lat)
-FW_KOORD=
 
 ######## API Key´s ########
 
 # Telegram Bot API Key (https://core.telegram.org/bots#3-how-do-i-create-a-bot)
-BOT_TOKEN=
+TELEGRAM_BOT_TOKEN=
 
 # Geobing API Key (https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)
+# Optional
 GEOBING_KEY=
 
 # OpenRouteService (https://openrouteservice.org/)
+# Optional
 ORS_KEY=
+
+
+######## Programmpfade ########
+
+# Pfad zu Tesseract (Raspberry: siehe 'which tesseract')
+TESSERACT_PATH=C:/Program Files/Tesseract-OCR/tesseract.exe
+
+# Pfad zu Ghostscript (Raspberry: siehe 'which ghostscript')
+GHOSTSCRIPT_PATH=C:/Program Files/gs/gs9.53.3/bin/gswin64c.exe
 
 
 ######## Alarmeinstellungen ########
 
 # Sende Alarme (true/false)
-BOT_SENDALARM=false
-APP_SENDALARM=false
-
-# Für filter von Fax bei Einsatzmittel
-FW_NAME=Feuerwehr Name 
+# Kann zu Testzwechen auf false gesetzt werden
+SENDALARM_TELEGRAM=true
+SENDALARM_APP=true
 
 # Alarm Anzeigezeit (Minuten)
 ALARM_VISIBLE=250
 
+# Suchparameter im Alarmtext
+# S ist Starttext, E ist Endtext  (\n = Zeilenende)
+# Beispiel "Straße : Beispielstrasse" -> Suche nach "Straße : " und nehme Text bis "\n" (Zeilenende)
+#ALARMFIELDS_EINSATZSICHWORT_S=Stichwort :
+#ALARMFIELDS_EINSATZSICHWORT_E=\n
+#ALARMFIELDS_SCHLAGWORT_S=Schlagw. :
+#ALARMFIELDS_SCHLAGWORT_E=\n
+#ALARMFIELDS_OBJEKT_S=Objekt :
+#ALARMFIELDS_OBJEKT_E=\n
+#ALARMFIELDS_BEMERKUNG_S=BEMERKUNG
+#ALARMFIELDS_BEMERKUNG_E=EINSATZHINWEIS
+#ALARMFIELDS_STRASSE_S=Straße :
+#ALARMFIELDS_STRASSE_E=\n
+#ALARMFIELDS_ORTSTEIL_S=Ortsteil :
+#ALARMFIELDS_ORTSTEIL_E=\n
+#ALARMFIELDS_ORT_S=Gemeinde :
+#ALARMFIELDS_ORT_E=\n
+#ALARMFIELDS_EINSATZMITTEL_S=EINSATZMITTEL
+#ALARMFIELDS_EINSATZMITTEL_E=BEMERKUNG
+#ALARMFIELDS_EINSATZMITTEL_ZEILE_S=Name :
+#ALARMFIELDS_EINSATZMITTEL_ZEILE_E=\n
 
-######## EMAIL ALARM ########
+# Filter für die Erkennung eigener Einsatzmittel
+ALARMFIELDS_FW_NAME=Feuerwehr Name 
+
+
+######## EMAIL ALARMEINGANG ########
 
 # Alarmeingang  (true/false)
 ALARM_IN_EMAIL=false
@@ -62,69 +98,58 @@ ALARM_IN_EMAIL_PORT=993
 ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
 
 
+######## FAX/Datei ALARM ########
 
-######## FAX ALARM ########
+# Datei Eingang Verzögerung bis zur Verarbeitung (sek) (evtl bei Hylafax nötig ca. 30 ??)
+# Optional
+#ALARM_FILE_DELAY_IN=0
 
-# Alarmeingang  (true/false)
-ALARM_IN_FAX=true
+# Regex Textfilter (Groß/Kleinschreibung egal) https://regexr.com/
+# Optional
+#ALARM_FILE_TEXTFILTER=
 
-# Fax Eingang Verzögerung (sek) (evtl bei Hylafax nötig ca. 30 ??)
-FAX_INPUT_DELAY=0
-
-# Regex Faxfilter (leer = kein Filter) (Groß/Kleinschreibung egal) https://regexr.com/
-FAXFILTER=
-
-# Faxeingangs Ordner (Unter Windows: Ausgangsordner von EM-OCR; Raspberry: Faxordner Hylafax)
-# lokaler Pfad C:/ordner/ordner/
-# bei Netzwerk \\netzwerkpc\ordner\
-FOLDER_IN=C:\Eingang
-
-# Pfad zu Tesseract (Raspberry: siehe 'which tesseract')
-TESSERACT_PATH=C:/Program Files/Tesseract-OCR/tesseract.exe
-
-# Pfad zu Ghostscript (Raspberry: siehe 'which ghostscript')
-GHOSTSCRIPT_PATH=C:/Program Files/gs/gs9.53.3/bin/gswin64c.exe
+# Datei-Eingangsordner (Unter Windows: z.B. Fritzbox Fax-Netzwerklaufwerk; Raspberry: z.B. Faxordner Hylafax)
+# lokaler Pfad z.B. C:/ordner/ordner/
+# bei Netzwerk z.B. \\netzwerkpc\ordner\
+# Raspberry z.B. /var/spool/hylafax/recvq/
+# Optional
+#ALARM_FILE_FOLDER_IN=C:\Eingang
 
 
 ######## ORDNER ########
 
 # Archiv Ordner
-# lokaler Pfad C:/ordner/ordner/
-# bei Netzwerk \\netzwerkpc\ordner\
-FOLDER_ARCHIVE=C:\Archiv
-
-# Telegram Bilder automatisch in Diashow ohne man. Freigabe (true/false)
-BOT_IMG_AUTOFREIGABE=true
+# lokaler Pfad z.B. C:/ordner/ordner/
+# bei Netzwerk z.B. \\netzwerkpc\ordner\
+# Raspberry z.B. /home/pi/FWmonitor/filesArchive/
+# Optional (Standard ist ./filesArchive)
+#FOLDER_ARCHIVE=C:\Archiv
 
 
 ######## STANDBY Bildschirm ########
 
 # DWD Warncellid (https://www.dwd.de/DE/leistungen/opendata/help/warnungen/cap_warncellids_csv.csv)
+# Optional
 DWD_WARCELLID=
 
-# DWD Warnungen anzeigen(true/false)
-DWD_SHOWWARNINGS=true
+# DWD Warnungen Standardposition - Posiion (0=links, 2=rechts)
+SCREEN_DWD_POS=0
 
-# DWD Warnungen anzeigen - Posiion (1=links, 2=rechts)
-DWD_WARNINGSPOSITION=1
+# Kalender Standardposition - Posiion (0=links, 2=rechts)
+SCREEN_CALENDAR_POS=2
 
 # Für Anzeige bei Standby
-FW_NAME_STANDBY=Freiwillige Feuerwehr Name
+FW_NAME_LONG=Freiwillige Feuerwehr Name
 
-# Für Anzeige bei Bot / APP
-FW_NAME_BOT=FF Name
+# Für Anzeige bei Bot / APP -> Korzer Name
+FW_NAME_SHORT=FF Name
 
-#Diashow Wechselzeit (Millisekunden)
+# Diashow Wechselzeit (Millisekunden)
 DIASHOW_DELAY=15000
 
-#Diashow Animation (true/false)
-DIASHOW_ANIMATION=true
-
-#Diashow Zufällig (true/false)
-DIASHOW_RANDOM=false
-
-#Verstecke Verfügbare im Standby (zeige nur nicht verfügbare) (true/false)
-ST_VERV_HIDDEN=false
+# Zeige Verfügbarkeit im Standby
+SCREEN_VERF=false
+SCREEN_NVERF=true
 
 
 ######## STANDBY Bildschirm / Google Kalender ########
@@ -134,48 +159,41 @@ ST_VERV_HIDDEN=false
 # Terminnamen Format: "🚒 Hauptübung {{alle}}" (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...)
 # eingetragene Terminerinnerungen werden durch den Bot/App versendet
 # leer = kein ICAL Kalender -> nur APP Kalender
-ICAL_LINK=
+#ICAL_LINK=
 
 
 ######## FWVV Anbindung ########
 
-# FWVV Anbindung (true/false)
-FWVV=false
-
 # FWVV FWVVDAT Ordner
 # lokaler Pfad C:/ordner/ordner/
 # bei Netzwerk \\netzwerkpc\ordner\
-FWVV_DAT_FOLDER=
+# Optional
+#FWVV_DAT_FOLDER=
 
 
 ######## DRUCKEN ########
 
-# Orginalfax drucken (true/false)
-FAX_DRUCK=false
+# Orginal-Fax drucken (true/false)
+PRINT_FAX_ORIGINAL=false
 
-# Seitenzahl Orginal Fax
-FAX_DRUCK_SEITENZAHL=1
+# Orginal-Email drucken (true/false)
+PRINT_EMAIL_ORIGINAL=false
 
-# Alarmdruck Fax/Email (true/false)
-ALARMDRUCK=true
+# Seitenzahl Orginal
+PRINT_FAX_ORIGINAL_PAGES=1
 
-# Kopien
-ALARMDRUCKSEITENZAHL=1
+# Ausdruck Alarm mit Karte (0 = AUS)
+PRINT_ALARM_PAGES=0
 
-## Version A ## (funktioniert nicht mit jedem Drucker)
+# Version A:  Alarmdrucker URL (siehe verfügbare Drucker bei Programmstart) (funktioniert nicht mit jedem Drucker)
+#PRINT_IPP_URL=
 
-#Alarmdrucker URL (siehe verfügbare Drucker bei Programmstart)
-DRUCKERURL=
-
-## Version B ##
-
-#Alarmdrucker Name (Nur relevant bei Raspi Version, sonst ist es immer der Standarddrucker)
-DRUCKERNAME=
-
+# Version B:
+# Alarmdrucker Name (Nur Raspberry; Bei Windows wird auf dem Standard-Drucker gedruckt)
+#PRINT_PRINTERNAME=
 # Pfad zu Foxit Reader (Nur relevant unter Windows)
 # lokaler Pfad C:/ordner/ordner/
-#AREADER=C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe
-AREADER=
+#READER_PATH=C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe
 
 
 ######## PAPIERÜBERWACHUNG ########
@@ -186,34 +204,31 @@ AREADER=
 
 # Internetseite des Druckers, auf der der Papierlevel angezeigt wird
 # (Bsp: http://192.168.2.33/start/papier.html)
-PRINTER_PATH=
-# Regex Filter für Papier wenn nicht leer (Bsp: CassLevel[1] = "Nicht Leer";) https://regexr.com/
+#PAPER_PRINTER_PATH=
+
+# Regex Filter für Papier wenn nicht leer https://regexr.com/
 # Herauszufinden über: Seite im Browser aufrufen -> Quelltext anzeigen -> Stelle mit Papierlevel finden
 # Filter erstellen, welcher alle "nicht leeren" Texte enthält
-PRINTER_REGEX=
+# Beispiel: CassLevel[1] = "Nicht Leer";
+#PAPER_PRINTER_REGEX=
 
 
 ######## APP ########
-# Wenn APP-Funktion nicht benötigt/gewollt, einfach nichts eintragen
 
-# VAPID Keys (Konsolenkommando: "./node_modules/.bin/web-push generate-vapid-keys")
-VAPID_PUBLIC=
-VAPID_PRIVATE=
+# VAPID Keys für App Benachrichtigungen (Konsolenkommando: "./node_modules/.bin/web-push generate-vapid-keys")
+# Optional
+#VAPID_PUBLIC=
+#VAPID_PRIVATE=
 # Admin Email
-VAPID_EMAIL=
+#VAPID_EMAIL=
 
 # DynDns Adresse / MyFritz Adresse (Bsp. www.app.feuerwehr.de, einsatzpc.erbivuervhie.myfritz.net, ...)
-APP_DNS=
+# Optional
+#APP_DNS=
 
-# HTTPS Zertifikat (https://certbot.eff.org/lets-encrypt/windows-other)
+## SSL Zertifikat
 # lokaler Pfad C:/ordner/ordner/datei.pem
-HTTPS_KEY=
-HTTPS_CERT=
-
-
-######## PORTS ########
-# Braucht normalerweise nicht zu verändert werden
-
-# Ports
-HTTP_PORT=8080
-HTTPS_PORT=443
+# Wenn APP Funktion über das Web verwendet wird siehe Readme.md
+# Wenn APP Funktion nur im LAN für Einstellungen verwendet wird, kann ein selbst signiertes Zertifikat verwendet werden (siehe https://www.selfsignedcertificate.com/)
+#SSL_KEY=zertifikat-key.key
+#SSL_CERT=zertifikat-cert.crt

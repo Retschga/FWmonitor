@@ -9,11 +9,21 @@ const router = express.Router();
 
 function generateParams(req: Request) {
     return {
+        version: config.version,
+
         fwvv: config.fwvv.enabled,
         fwname: config.common.fwName,
+
+        time_diashow: config.screen.screen_time_diashow,
+
         dwd_warncellid: config.common.dwd_warncellid,
-        version: config.version,
-        time_diashow: config.common.time_diashow,
+        dwd_position: config.screen.screen_pos_dwd,
+
+        calendar_position: config.screen.screen_pos_calendar,
+
+        show_verf: config.screen.screen_verf,
+        show_nferf: config.screen.screen_nverf,
+
         time_alarm: config.common.time_alarm
     };
 }

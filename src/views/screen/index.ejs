@@ -128,11 +128,11 @@
             const col_right       = document.querySelector('.col_right');
 
             let diashow_time       = parseInt(localStorage.getItem("diashow_time")       || <%= time_diashow %>);
-            let pos_dwd            = parseInt(localStorage.getItem("pos_dwd")            || 0);
-            let pos_calendar       = parseInt(localStorage.getItem("pos_calendar")       || 2);
+            let pos_dwd            = parseInt(localStorage.getItem("pos_dwd")            || <%= dwd_position %>));
+            let pos_calendar       = parseInt(localStorage.getItem("pos_calendar")       || <%= calendar_position %>));
             let calendar_elements  = parseInt(localStorage.getItem("calendar_elements")  || 8);     
-            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || false; 
-            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || true;      
+            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || <%= show_verf %>); 
+            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || <%= show_nverf %>);      
             let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);  
 
             const clientName          = $_GET['name'];	

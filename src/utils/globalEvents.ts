@@ -15,6 +15,7 @@ const NAMESPACE = 'GlobalEvents';
 // globalEvents.on('diashow-change', () => { });
 
 // globalEvents.on('userstatus-change', (userid: number) => { });
+// globalEvents.on('user-created', (name: string, vorname: string) => { });
 
 // globalEvents.on('paperstatus-change', (status: boolean) => { });
 

@@ -141,7 +141,7 @@ class AlarmService {
     }
 
     public async get_route(id: number) {
-        if (config.common.fw_position == '' || !config.geocode.ors_key) return;
+        if (!config.common.fw_position || !config.geocode.ors_key) return;
 
         let response = await this.find_by_id(id);
 
@@ -154,7 +154,7 @@ class AlarmService {
         try {
             let direct = await Directions.calculate({
                 coordinates: [
-                    config.common.fw_position.split(','),
+                    [config.common.fw_position.lng, config.common.fw_position.lat],
                     [response[0].lng, response[0].lat]
                 ],
                 profile: 'driving-car',

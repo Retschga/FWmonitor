@@ -1,6 +1,6 @@
 'use strict';
 
-import express from 'express';
+import express, { application } from 'express';
 import { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -20,7 +20,6 @@ import alarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
 import routePrint from './routes/print';
 import globalEvents from './utils/globalEvents';
-
 import telegramBot from './telegramBot';
 import diashowService from './services/diashow';
 import { calendarService } from './services/calendar';
@@ -30,14 +29,18 @@ import webpushService from './services/webpush';
 
 const NAMESPACE = 'APP';
 const MemoryStore = createMemoryStore(session);
-
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
+// Programmstart
 logging.info(NAMESPACE, 'Starte Software v' + config.version);
 logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
-
-diashowService.createThumbnails();
 startupCheck.check();
+
+if (!config.server_https.key || !config.server_https.cert) {
+    logging.error(NAMESPACE, 'Es wurde kei SSL Zertifikat angegeben! -> Programmende');
+    process.exit(1);
+}
+diashowService.createThumbnails();
 
 const sessionstore = new MemoryStore({
     checkPeriod: 86400000 // clear expired every 24h
@@ -82,14 +85,14 @@ const httpServer = http.createServer(appHttp);
 httpServer.listen(config.server_http.port, () =>
     logging.info(
         NAMESPACE,
-        `Server is running ${config.server_http.hostname}:${config.server_http.port}`
+        `HTTP  Server is running ${config.server_http.hostname}:${config.server_http.port}`
     )
 );
 
 // -------- Starte Websocket-Server fürs LAN --------
 const httpSocket = new Websocket(httpServer, false);
 
-// Starte HTTPS-Server für die WebApp
+// -------- Starte HTTPS-Server für die WebApp --------
 const appHttps = express();
 appHttps.set('views', path.join(__dirname, 'views'));
 appHttps.set('view engine', 'ejs');
@@ -122,14 +125,14 @@ appHttps.use('/car', routerCar);
 appHttps.use(express.static('filesPublic/'));
 
 var secureContext: tls.SecureContext;
-function reloadCert() {
+function reloadCert(path_key: string, path_cert: string) {
     secureContext = tls.createSecureContext({
-        key: fs.readFileSync(config.server_https.key, 'utf8'),
-        cert: fs.readFileSync(config.server_https.cert, 'utf8')
+        key: fs.readFileSync(path_key, 'utf8'),
+        cert: fs.readFileSync(path_cert, 'utf8')
     });
 }
-reloadCert();
 setInterval(reloadCert, 1000 * 60 * 60 * 24);
+reloadCert(config.server_https.key, config.server_https.cert);
 var httpsOptions: https.ServerOptions = {
     SNICallback: function (domain, cb) {
         if (secureContext) {
@@ -146,14 +149,14 @@ const httpsServer = https.createServer(httpsOptions, appHttps);
 httpsServer.listen(config.server_https.port, () =>
     logging.info(
         NAMESPACE,
-        `Server is running ${config.server_http.hostname}:${config.server_http.port}`
+        `HTTPS Server is running ${config.server_http.hostname}:${config.server_http.port}`
     )
 );
 globalEvents.on('alarm', async () => {
     sessionstore.clear();
 });
 
-// Starte Websocket-Server für die WebApp
+// -------- Starte Websocket-Server für die WebApp --------
 const httpsSocket = new Websocket(httpsServer, true);
 
 // Initialisiere DeviceService

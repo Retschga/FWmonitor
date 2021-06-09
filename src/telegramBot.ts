@@ -115,9 +115,9 @@ class TelegramBot {
         process.once('SIGINT', () => this.bot.stop('SIGINT'));
         process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
 
-        globalEvents.on('alarm', this.sendAlarm);
+        globalEvents.on('alarm', this.sendAlarm.bind(this));
         globalEvents.on('calendar-remind', (termin: CalendarElement) => {});
-        globalEvents.on('userstatus-change', this.send_verf_status);
+        globalEvents.on('userstatus-change', this.send_verf_status.bind(this));
         globalEvents.on('paperstatus-change', (status: boolean) => {});
         globalEvents.on('softwareinfo', (text: string) => {});
 
@@ -195,7 +195,7 @@ class TelegramBot {
                 // User existiert noch nicht
 
                 // Antwort senden
-                ctx.reply(`Telegram Bot der ${config.telegram.fw_name} (Intern)`);
+                ctx.reply(`Telegram Bot der ${config.common.fwName} (Intern)`);
 
                 // Prüfe ob in Telegram Vor- und Nachname eingetragen ist
                 if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
@@ -280,7 +280,7 @@ class TelegramBot {
 
             let keyboard = [];
             keyboard.push(Markup.button.callback('🔑 APP Zugang', 'einstell_appLogin'));
-            if (config.app.https_enabled) {
+            if (config.app.enabled) {
                 keyboard.push(Markup.button.url('📱 APP - Link', config.app.url + 'app'));
             }
 
@@ -317,7 +317,7 @@ class TelegramBot {
             await timeout(500);
 
             let keyboard = [];
-            if (config.app.https_enabled) {
+            if (config.app.enabled) {
                 keyboard.push(
                     Markup.button.url(
                         '📱 Auto - Login',
@@ -487,10 +487,9 @@ ${list[0].ort}_`,
             ];
 
             if (config.common.fw_position) {
-                const pos = config.common.fw_position.split(',');
                 Markup.button.url(
                     '🗺️ Karte',
-                    `http://www.openfiremap.org/?zoom=13&lat=${pos[0]}&lon=${pos[1]}&layers=B0000T`
+                    `http://www.openfiremap.org/?zoom=13&lat=${config.common.fw_position.lat}&lon=${config.common.fw_position.lng}&layers=B0000T`
                 );
             }
 
@@ -698,6 +697,19 @@ ${list[0].ort}_`,
         if (user[0].status == UserStatus.VERFUEGBAR) {
             this.sendMessage(user[0].telegramid, '🚒 Status -> 🟩  Verfügbar');
         }
+
+        let bis = 'unbegrenzt';
+        if (user[0].statusUntil != '') {
+            const result = new Date(user[0].statusUntil);
+            const time = result.toLocaleTimeString();
+            const date = result.toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+            let bis = date + ' ' + time;
+        }
+
         if (user[0].status == UserStatus.NICHT_VERFUEGBAR) {
             this.sendMessage(
                 user[0].telegramid,

@@ -103,7 +103,7 @@ class AlarmInputFileService {
 
             if (filetype == 'pdf') {
                 // Drucken
-                if (config.printing.printFile) this.printPdf(path);
+                if (config.printing.printFile_fax) this.printPdf(path);
 
                 // PDF -> TIFF
                 await this.convertPdfToTiff(path, config.folders.temp + file + '.tiff');
@@ -136,7 +136,7 @@ class AlarmInputFileService {
                 );
 
                 /// Drucken
-                if (config.printing.printFile)
+                if (config.printing.printFile_fax)
                     this.printPdf(config.folders.archive + '/' + file + '.pdf');
 
                 // Textdatei verarbeiten
