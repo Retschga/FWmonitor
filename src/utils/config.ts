@@ -65,7 +65,9 @@ const FOLDERS = {
 
     archive: process.env.FOLDER_ARCHIVE || './filesArchive/',
 
-    temp: './temp/'
+    temp: './temp/',
+
+    praesentation: process.env.FOLDER_PRAESENTATION || './filesPraesentation/'
 };
 
 const FWVV = {
@@ -165,6 +167,17 @@ const ALARMFIELDS = {
     EMPTY: '-/-'
 };
 
+const RATE_LIMITS = {
+    api_count: Number(process.env.RATELIMIT_API_COUNT || 100),
+    api_time: Number(process.env.RATELIMIT_API_TIME || 10), //min
+    api_login_count: Number(process.env.RATELIMIT_API_LOGIN_COUNT || 15),
+    api_login_time: Number(process.env.RATELIMIT_API_LOGIN_TIME || 10), //min
+    app_count: Number(process.env.RATELIMIT_APP_COUNT || 200),
+    app_time: Number(process.env.RATELIMIT_APP_TIME || 15), //min
+    car_count: Number(process.env.RATELIMIT_CAR_COUNT || 200),
+    car_time: Number(process.env.RATELIMIT_CAR_TIME || 15) //min
+};
+
 const LOG = {
     pad_namespace: 20,
     loglevel: LOGLEVEL.ERROR | LOGLEVEL.INFO | LOGLEVEL.WARNING | LOGLEVEL.DEBUG
@@ -188,7 +201,8 @@ const config = {
     alarmfields: ALARMFIELDS,
     logging: LOG,
     screen: SCREEN,
-    paper: PAPER
+    paper: PAPER,
+    rateLimit: RATE_LIMITS
 };
 
 export default config;

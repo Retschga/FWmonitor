@@ -24,7 +24,8 @@ export const enum UserRights {
     telefone = 4,
     car = 5,
     ownid = 6,
-    http = 7
+    http = 7,
+    praesentation = 8
 }
 
 export const login_app = async function (req: Request, res: Response, next: NextFunction) {
@@ -103,6 +104,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
             req.session.calendar_full = user[0].kalender == CalendarRight.FULL;
             req.session.telefone = user[0].telefonliste;
             req.session.car = false;
+            req.session.praesentation = user[0].praes;
         } else {
             // Starte neue Session
             const car = await CarService.find_by_id(userid);
@@ -119,6 +121,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
             req.session.calendar_full = false;
             req.session.telefone = true;
             req.session.car = true;
+            req.session.praesentation = false;
         }
 
         // JWT erzeugen und als Cookie senden
@@ -128,13 +131,14 @@ export const login_app = async function (req: Request, res: Response, next: Next
         res.cookie('token', new_token_session.token, {
             secure: true,
             path: '/',
-            maxAge: config.app.jwt_expire
+            maxAge: config.app.jwt_expire * 1000
+            //httpOnly: true
         });
 
         res.cookie('car', car, {
             secure: true,
             path: '/',
-            maxAge: config.app.jwt_expire
+            maxAge: config.app.jwt_expire * 1000
         });
 
         // Antwort senden
@@ -150,6 +154,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         req.session.calendar_full = false;
         req.session.telefone = false;
         req.session.car = false;
+        req.session.praesentation = false;
 
         // Login Cookies löschen
         req.session.destroy(() => {});
@@ -157,6 +162,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
             secure: true,
             path: '/',
             maxAge: config.app.jwt_expire * 1000
+            //httpOnly: true
         });
         res.cookie('car', '', {
             secure: true,
@@ -211,6 +217,8 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
                 ok = true;
             if (roles.indexOf(UserRights.telefone) != -1 && session.telefone == true) ok = true;
             if (roles.indexOf(UserRights.car) != -1 && session.car == true) ok = true;
+            if (roles.indexOf(UserRights.praesentation) != -1 && session.praesentation == true)
+                ok = true;
             if (
                 session.telegramid &&
                 session.userid &&

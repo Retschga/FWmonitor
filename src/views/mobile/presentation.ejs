@@ -18,51 +18,72 @@
 
                 <h1>Präsentation</h1>      
 
+                <div class="flex_grow"></div>
+
+                <button class="material-icons" onclick="openModal_device(undefined);">devices</button> 
+
+                <div class="spacer" style="width: 0.5em;"></div>
+
             </div>
 
             <div class="content">
 
                 <div class="flex_column">
 
-                    
-                    <div class="list">
+                    <div class="list controls_start">
 
-                        <div class="item">
-                            <span class="left material-icons">chevron_left</span>
-                            <span class="text text_align_center">Foliensteuerung</span>
+                        <div class="item" onclick="openModal_device(undefined);">
+                            <span class="right material-icons">devices</span>
+                            <span class="text text_align_center">Steuerung starten</span>
                             <span class="right material-icons">chevron_right</span>
-                        </div>
-
-                        <div class="item">
-                            <span class="left material-icons">pause</span>
-                            <span class="text text_align_center">Folien verstecken</span>
-                            <span class="right material-icons">play_arrow</span>
-                        </div>
-
-                        <div class="item">
-                            <span class="text text_align_center">Präsentation beenden</span>
                         </div>
 
                     </div>
 
-                    <div class="list">
+                    <div class="list controls hidden">
 
-                        <div class="item smallitem">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Foliensatz 1</span>
-                            <span class="right material-icons">tv</span>
-                        </div>
-                        <div class="item smallitem">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Foliensatz 2</span>
-                            <span class="right material-icons">tv</span>
-                        </div>
-                        <div class="item smallitem">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Foliensatz 3</span>
-                            <span class="right material-icons">tv</span>
+                        <div class="item">
+                            <span class="text text_align_center var_connected_device">GERÄTENAME</span>
                         </div>
 
+                    </div>
+                    
+                    <div class="list controls hidden">
+
+                        <div class="item">
+                            <span class="left material-icons" onclick="send_action('page-');">chevron_left</span>
+                            <span class="text text_align_center">Foliensteuerung</span>
+                            <span class="right material-icons" onclick="send_action('page+');">chevron_right</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="left material-icons" onclick="send_action('pause');">pause</span>
+                            <span class="text text_align_center">Folien verstecken</span>
+                            <span class="right material-icons" onclick="send_action('play');">play_arrow</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="text text_align_center" onclick="send_action('stop');">Präsentation beenden</span>
+                        </div>
+
+                    </div>
+
+                    <div class="list file_list">
+
+                        <div class="item">
+                            <span class="text text_align_center">Datei auswählen</span>
+                        </div>
+
+                        <template id="template-file">
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">description</span>
+                                <span class="text var_name">Dateiname</span>
+                                <span class="right material-icons">tv</span>
+                            </div>
+
+                        </template>
+              
                     </div>
                     
                     
@@ -70,8 +91,151 @@
 
             </div>
 
+            <div id="modal_device" class="modal">
+                <span onclick="document.getElementById('modal_device').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container device_list">
+                        <h1>Gerät auswählen</h1>
+
+                        <template id="template-device">
+                            <button type="button" class="deleteme var_name">GERÄTENAME</button>
+                        </template>
+
+                    </div>
+                </form>
+            </div>
+
 
         <%- include('partials/foot') -%>
+
+        <script>
+
+            let targetdevice_id;
+            let targetfile;
+
+            // Laden
+            async function load_praes_list() {  
+                const target = document.querySelector(".file_list");
+                try {
+                    const files = await fetch_get(url_praesentation_list, true);
+                    console.log('files', files);
+
+                    for(let i = 0; i < files.length; i++) {
+
+                        const template     = document.querySelector('#template-file');       
+                        const var_name     = template.content.querySelector(".var_name");     
+
+                        var_name.innerHTML = files[i]; 
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.addEventListener("click", () => {
+                            openModal_device(files[i]);
+                        });                    
+
+                    }                        
+
+               
+                } catch (error) {
+                    console.error('load_praes_list', error);
+                } 
+            }
+
+            async function load_device_list() {     
+                const target = document.querySelector(".device_list");             
+                try {
+                    loaderIn();
+                    const devices = await fetch_get(url_praesentation_devicelist, true);
+                    console.log('devices', devices);
+
+                    for(let i = 0; i < devices.length; i++) {
+
+                        const template     = document.querySelector('#template-device');       
+                        const var_name     = template.content.querySelector(".var_name");     
+
+                        var_name.innerHTML = devices[i].name; 
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.addEventListener("click", () => {
+                            start_praesentation(devices[i]);
+                        });  
+                        
+                    }
+               
+                } catch (error) {
+                    console.error('load_device_list', error);
+                } 
+                loaderOut();
+            }
+
+            // Hilfsfunktionen
+            function openModal_device(filename) {                
+                const modal = document.querySelector('#modal_device');
+                modal.style.display = 'block';
+                targetfile = filename;
+            }
+
+            async function start_praesentation(device) {
+                loaderIn();
+                document.getElementById('modal_device').style.display='none';
+                try {
+
+                    if(targetfile) {
+                        console.log('targetfile', targetfile)
+                        const response = await fetch_post(url_praesentation_start.replace(':id', device.id), {file: targetfile});
+                        console.log('response', response);
+
+                        document.querySelector('.controls_start').classList.remove('hidden');
+                    } else {
+
+                        targetdevice_id = device.id;  
+
+                        const secure_options   = document.querySelectorAll('.controls');  
+                        for(let i = 0; i < secure_options.length; i++) {
+                            const element = secure_options[i];
+                            element.classList.remove('hidden');
+                        }                    
+
+                        document.querySelector('.var_connected_device').innerHTML = device.name;
+                        document.querySelector('.file_list').classList.add('hidden');
+                        document.querySelector('.controls_start').classList.add('hidden');
+                    }
+                    
+               
+                } catch (error) {
+                    console.error('start_praesentation', error);
+                }                 
+                loaderOut();              
+
+            }
+
+            async function send_action(action) {
+                loaderIn();
+                try {                  
+                    console.log('targetfile', targetfile)
+                    const response = await fetch_post(url_praesentation_action.replace(':id', targetdevice_id), {action: action});
+                    console.log('response', response);   
+                    
+                    if(action == 'stop') location.reload();
+
+                } catch (error) {
+                    console.error('start_praesentation', error);
+                }                 
+                loaderOut();              
+
+            }
+
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_praes_list();
+                load_device_list();
+            };
+            
+        </script>
        
     </body>
 	

@@ -90,6 +90,10 @@ class UserController {
                 Number(req.params.id),
                 Number(req.body.stZUGF) == 1
             );
+            await UserService.update_roles_praes(
+                Number(req.params.id),
+                Number(req.body.praes) == 1
+            );
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
@@ -116,7 +120,8 @@ class UserController {
             admin: req.session.admin,
             calendar_min: req.session.calendar_min,
             calendar_full: req.session.calendar_full,
-            telefone: req.session.telefone
+            telefone: req.session.telefone,
+            praes: req.session.praesentation
         });
     }
 

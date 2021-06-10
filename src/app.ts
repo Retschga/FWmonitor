@@ -3,7 +3,7 @@
 import express, { application } from 'express';
 import { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
+import session, { SessionOptions } from 'express-session';
 import createMemoryStore from 'memorystore';
 import http from 'http';
 import https from 'https';
@@ -26,6 +26,8 @@ import { calendarService } from './services/calendar';
 import { Websocket, SocketInfo } from './websocket';
 import { init as initDeviceService, DeviceService } from './services/device';
 import webpushService from './services/webpush';
+import compression from 'compression';
+import helmet from 'helmet';
 
 const NAMESPACE = 'APP';
 const MemoryStore = createMemoryStore(session);
@@ -45,33 +47,31 @@ diashowService.createThumbnails();
 const sessionstore = new MemoryStore({
     checkPeriod: 86400000 // clear expired every 24h
 });
+const sessionOptions: SessionOptions = {
+    secret: process.env.BOT_TOKEN || 'Super SECRET',
+    name: 'FWmonitor',
+    store: sessionstore,
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+        secure: process.env.NODE_ENV != 'development',
+        httpOnly: true,
+        path: '/',
+        //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
+        maxAge: 1000 * 60 * 30
+        //    signed?: boolean;
+        //    expires?: Date;
+        //domain: config.app.enabled ? config.app.url : undefined
+        //    encode?: (val: string) => string;
+    }
+};
 
 // -------- Starte HTTP-Server fürs LAN --------
 const appHttp = express();
 appHttp.set('views', path.join(__dirname, 'views'));
 appHttp.set('view engine', 'ejs');
 appHttp.use(cookieParser());
-appHttp.use(
-    session({
-        secret: process.env.BOT_TOKEN || 'Super SECRET',
-        name: 'FWmonitor',
-        store: sessionstore,
-        saveUninitialized: false,
-        resave: false,
-        cookie: {
-            secure: process.env.NODE_ENV != 'development',
-            httpOnly: true,
-            path: '/',
-            //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
-            maxAge: 1000 * 60 * 30
-            //    signed?: boolean;
-            //    expires?: Date;
-            //    httpOnly?: boolean;
-            //    domain?: string;
-            //    encode?: (val: string) => string;
-        }
-    })
-);
+appHttp.use(session(sessionOptions));
 const routerApi_open = new RouterApi(false).router;
 appHttp.use('/api/v1', routerApi_open);
 appHttp.use('/screen', routerScreen);
@@ -97,27 +97,13 @@ const appHttps = express();
 appHttps.set('views', path.join(__dirname, 'views'));
 appHttps.set('view engine', 'ejs');
 appHttps.use(cookieParser());
+appHttps.use(compression());
 appHttps.use(
-    session({
-        secret: process.env.BOT_TOKEN || 'Super SECRET',
-        name: 'FWmonitor',
-        store: sessionstore,
-        saveUninitialized: false,
-        resave: false,
-        cookie: {
-            secure: process.env.NODE_ENV != 'development',
-            httpOnly: true,
-            path: '/',
-            //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
-            maxAge: 1000 * 60 * 30
-            //    signed?: boolean;
-            //    expires?: Date;
-            //    httpOnly?: boolean;
-            //    domain?: string;
-            //    encode?: (val: string) => string;
-        }
+    helmet({
+        contentSecurityPolicy: false
     })
 );
+appHttps.use(session(sessionOptions));
 const routerApi_secure = new RouterApi(true).router;
 appHttps.use('/api/v1', routerApi_secure);
 appHttps.use('/app', routermobile);

@@ -10,5 +10,6 @@ declare module 'express-session' {
         calendar_min: boolean;
         calendar_full: boolean;
         telefone: boolean;
+        praesentation: boolean;
     }
 }

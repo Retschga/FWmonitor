@@ -120,6 +120,7 @@ class TelegramBot {
         globalEvents.on('userstatus-change', this.send_verf_status.bind(this));
         globalEvents.on('paperstatus-change', (status: boolean) => {});
         globalEvents.on('softwareinfo', (text: string) => {});
+        globalEvents.on('user-created', (name: string, vorname: string) => {});
 
         logging.debug(NAMESPACE, 'Initializing Telegram Bot... DONE');
     }

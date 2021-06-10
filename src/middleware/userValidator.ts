@@ -88,7 +88,12 @@ export const updateUser = [
         .exists()
         .withMessage('stZUGF is required')
         .isBoolean()
-        .withMessage('stZUGF must be boolean')
+        .withMessage('stZUGF must be boolean'),
+    body('praes')
+        .exists()
+        .withMessage('praes is required')
+        .isBoolean()
+        .withMessage('praes must be boolean')
 ];
 
 export const updateNotificationsApp = [

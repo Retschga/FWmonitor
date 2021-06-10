@@ -213,7 +213,7 @@ class UserService {
             throw new Error(NAMESPACE + ' update_status_hidden - No rows changed');
         }
 
-        globalEvents.emit('userstatus-change', id);
+        globalEvents.emit('userstatus-change', -1);
     }
 
     public async update_notifications_calendar(id: number, value: boolean) {
@@ -311,7 +311,8 @@ class UserService {
             drucker: user.drucker,
             softwareInfo: user.softwareInfo,
             telefonliste: user.telefonliste,
-            kalender: user.kalender
+            kalender: user.kalender,
+            praes: user.praes
         };
     }
 
@@ -434,6 +435,16 @@ class UserService {
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_roles_kalender - No rows changed');
+        }
+    }
+
+    public async update_roles_praes(id: number, value: boolean) {
+        let affectedRows = await UserModel.model.update(Number(id), {
+            praes: value
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update_roles_praesentation - No rows changed');
         }
     }
 

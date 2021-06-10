@@ -39,7 +39,7 @@ class DeviceService {
         });
     }
 
-    public get_all(params: object = {}) {
+    public get_all() {
         let devices: SocketInfo[] = [];
 
         for (let i = 0; i < this.sockets.length; i++) {
@@ -53,10 +53,27 @@ class DeviceService {
         return devices;
     }
 
+    public get_praesentation() {
+        let devices: SocketInfo[] = [];
+
+        for (let i = 0; i < this.sockets.length; i++) {
+            const response: SocketInfo[] = this.sockets[i].getOpenSockets();
+
+            for (let j = 0; j < response.length; j++) {
+                if (response[j].actions && response[j].actions.find((action) => action.id == 4))
+                    devices.push(response[j]);
+            }
+        }
+
+        return devices;
+    }
+
     public send_action(id: string, action: number, value: string) {
         for (let i = 0; i < this.sockets.length; i++) {
             this.sockets[i].sendToID(id, 'action_' + action, value);
         }
+
+        return true;
     }
 
     public broadcast_userstatus(userid: number, alarmid: number, value: boolean) {

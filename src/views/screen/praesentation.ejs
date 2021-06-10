@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - Screen</title>	
+
+        <link rel="stylesheet" href="/css/screen_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="loaderIn('alarm?name=' + clientName + '&id=last&manuell=true');">menu</button>
+
+                <h1>FWmonitor</h1>  
+                
+                <h1 class="var_name text_align_center flex_grow"><%= fwname %></h1>  
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+            <div class="content flex_row" style=" background-repeat: no-repeat; background-attachment: fixed; background-position: center top; background-size: contain;">
+
+                <div class="col_left">                
+                </div>
+
+                <div class="col_center flex_grow">
+                    <div class="list_verfuegbar">
+                        <template id="template-verfuegbar">
+                            <p class="var_name deleteme_verf st_verf green">####r</p>
+                        </template>
+                    </div>
+                    <div class="list_nichtverfuegabr">
+                        <template id="template-nichtverfuegbar">
+                            <p class="var_name deleteme_nverf st_nverf red">####r</p>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="col_right">
+                </div>
+
+                <template id="template-calendarelement">
+
+                    <div class="calendar_element flex_row deleteme_calendar">
+
+                        <div class="var_emoji">
+                            <span>?</span>
+                        </div>    
+
+                        <div class="flex_column flex_grow">                        
+
+                            <div class="flex_row">  
+                                                      
+                                <div class="flex_grow">
+                                    <span class="var_text">
+                                        Text
+                                    </span>
+                                </div>
+
+                                <div class="text_align_right">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>  
+
+                            </div>
+
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>   
+
+                        </div>   
+    
+                    </div>
+
+                </template>
+
+                <template id="template-dwdelement">
+
+                    <div class="calendar_element flex_row deleteme_dwd">
+
+                        <div class="var_emoji">
+                            <span>⚠️</span>
+                        </div>    
+
+                        <div class="flex_column flex_grow">         
+                            
+                            <div class="flex_grow">
+                                <span class="var_name">
+                                    Name
+                                </span>
+                            </div>
+                              
+                            <div class="flex_grow">
+                                <span class="var_text">
+                                    Text
+                                </span>
+                            </div>
+
+                            <div class="text_align_right">
+                                <span class="var_date">##.##.#### ##:## - ##.##.#### ##:##</span>
+                            </div>  
+
+                        </div>   
+    
+                    </div>
+
+                </template>
+
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            const clientName          = $_GET['name'];	
+            const filename            = $_GET['file'];	
+            const keepAlive_intervall = 10000;
+            const keepAlive_timeout   = 60000;
+
+			console.log("Client-Name: ", clientName);
+            console.log("Datei-Name:  ", filename);
+
+            let connected = true;
+            let socket_software;
+
+            // Laden            
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }
+
+
+            function connect_software() {			
+				let keepAliveInterval = null;
+                socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
+				
+				// Event: Socket geöffnet
+                socket_software.onopen = function() {
+                    console.log("Software-connection socket connected.");
+
+					this.send(`{
+                        "topic": "init",
+						"type":"WebClient",
+						"name":"Alarmdisplay - ${clientName}",
+						"info":"Praesentation",
+						"actions":[
+							{"id":"0"},	
+							{"id":"4"}
+						]}`);
+
+                        // siehe websockets.ts
+					
+					
+					lastKeepAlive = new Date();					
+					keepAliveInterval = setInterval(() => {
+						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+						}
+					}, keepAlive_intervall)
+
+                    connected = true;
+                };
+
+				// Event: Daten empfangen
+                socket_software.onmessage = function(e) {
+                    processMessage(e.data, socket_software);
+                };
+
+				// Event: Socket geschlossen
+                socket_software.onclose = function(e) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+                    setTimeout(function() { connect_software(); }, 1000);
+                    connected = false;
+                };
+
+				// Event: Scoket Fehler
+                socket_software.onerror = function(err) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                    socket_software.close();
+                    connected = false;
+                };
+            }
+
+            // Hilfsfunktionen
+            function processMessage(data, socket) {
+				console.log('Software-connection socket message:', data);
+			
+				data           = JSON.parse(data);
+				const topic    = data.topic;
+				const message  = data.message;
+				
+				// Keep Alive
+				if(topic == 'ping') {
+					lastKeepAlive = new Date();	
+                    socket.send(JSON.stringify({topic: 'pong', message :message}));				
+					loaderOut();
+				}
+	
+				// Alarm
+				if(topic == 'alarm') {			
+                    loaderIn('alarm?name=' + clientName + '&id=' + message);		
+                }
+
+
+				if(topic == 'action_0') {
+					location.reload(); 
+                }
+
+                if(topic == 'action_4') {
+                    let msg = JSON.parse(message);
+					switch (msg.action) {
+                        case 'play':
+                            
+                            break;
+                        case 'pause':
+                            
+                            break;
+                        case 'stop':
+                            loaderIn('index?name=' + clientName);
+                            break;
+                         case 'page-':
+                            
+                            break;
+                        case 'page+':
+                            
+                            break;
+                    
+                    }
+                }
+                
+			}
+            
+            // Funktionsaufrufe
+            loaderFunction = () => {
+
+                connect_software();
+
+            };      
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

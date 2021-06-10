@@ -22,7 +22,7 @@ function generateParams(req: Request) {
         calendar_position: config.screen.screen_pos_calendar,
 
         show_verf: config.screen.screen_verf,
-        show_nferf: config.screen.screen_nverf,
+        show_nverf: config.screen.screen_nverf,
 
         time_alarm: config.common.time_alarm
     };
@@ -38,6 +38,10 @@ router.get('/index', (req: Request, res: Response, next: NextFunction) => {
 
 router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
     res.render('screen/alarm', generateParams(req));
+});
+
+router.get('/praesentation', (req: Request, res: Response, next: NextFunction) => {
+    res.render('screen/praesentation', generateParams(req));
 });
 
 export = router;

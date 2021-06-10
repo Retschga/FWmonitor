@@ -15,6 +15,7 @@
     let user_calendar_min = false; 
     let user_calendar_full = false; 
     let user_telefone = false;  
+    let user_praes = false;  
 
     let loaderFunction = () => {};
 
@@ -69,6 +70,11 @@
 
     const url_device_all = '/api/v1/device/all';
     const url_device_action = '/api/v1/device/:id/action';
+
+    const url_praesentation_list = '/api/v1/praesentation/list';
+    const url_praesentation_devicelist = '/api/v1/device/list/praesentation';   
+    const url_praesentation_start = '/api/v1/device/:id/praesentation/start';
+    const url_praesentation_action = '/api/v1/device/:id/praesentation/action';
 
     var serviceWorker_registration = null;
 
@@ -150,7 +156,8 @@
             user_admin = userrights.admin; 
             user_calendar_min = userrights.calendar_min; 
             user_calendar_full = userrights.calendar_full; 
-            user_telefone = userrights.telefone;    
+            user_telefone = userrights.telefone;   
+            user_praes = userrights.praes;    
         }
 
         

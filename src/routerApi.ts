@@ -16,8 +16,23 @@ import diashowRoutes from './routes/api/diashow';
 import authRoutes from './routes/api/auth';
 import hydrantRoutes from './routes/api/hydrant';
 import deviceRoutes from './routes/api/device';
+import praesentationRoutes from './routes/api/praesentation';
 import notificationactionRoutes from './routes/api/notificationaction';
 import { auth_api } from './middleware/auth';
+import rateLimit from 'express-rate-limit';
+import config from './utils/config';
+
+const loginAccountLimiter = rateLimit({
+    windowMs: config.rateLimit.api_login_time * 60 * 1000,
+    max: config.rateLimit.api_login_count, // start blocking after 5 requests
+    message: JSON.stringify({
+        message: 'Too many accounts created from this IP, please try again after an 10minutes'
+    })
+});
+const apiLimiter = rateLimit({
+    windowMs: config.rateLimit.api_time * 60 * 1000, // 15 minutes
+    max: config.rateLimit.api_count
+});
 
 const NAMESPACE = 'ROUTER_API';
 
@@ -52,6 +67,7 @@ class RouterApi {
         });
 
         /** Parse the body of the request */
+        this.router.use(apiLimiter);
         this.router.use(express.urlencoded({ extended: false }));
         this.router.use(express.json());
 
@@ -75,7 +91,7 @@ class RouterApi {
 
         if (this.secured) {
             // HTTPS App
-            this.router.use('/auth', authRoutes);
+            this.router.use('/auth', loginAccountLimiter, authRoutes);
             this.router.use('/notificationaction', notificationactionRoutes);
             this.router.use('/calendar', auth_api(), calendarRoutes);
             this.router.use('/calendarGroups', auth_api(), calendarGroupRoutes);
@@ -87,6 +103,7 @@ class RouterApi {
             this.router.use('/diashow', auth_api(), diashowRoutes);
             this.router.use('/device', auth_api(), deviceRoutes);
             this.router.use('/hydrant', auth_api(), hydrantRoutes);
+            this.router.use('/praesentation', auth_api(), praesentationRoutes);
             this.router.use('/', auth_api(), sampleRoutes);
         } else {
             // HTTP Bildschirm

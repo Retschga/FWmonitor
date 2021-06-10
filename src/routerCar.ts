@@ -5,11 +5,17 @@ import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
 import sampleRoutes from './routes/sample';
 import { Request, Response, NextFunction } from 'express';
-
 import carRoutes from './routes/car/car';
 import { auth_page } from './middleware/auth';
+import rateLimit from 'express-rate-limit';
+import config from './utils/config';
 
 const NAMESPACE = 'ROUTER_CAR';
+
+const rateLimiter = rateLimit({
+    windowMs: config.rateLimit.car_time * 60 * 1000, // 15 minutes
+    max: config.rateLimit.car_count
+});
 
 class RouterCar {
     public router;
@@ -41,6 +47,7 @@ class RouterCar {
         });
 
         /** Parse the body of the request */
+        this.router.use(rateLimiter);
         this.router.use(express.urlencoded({ extended: false }));
         this.router.use(express.json());
 

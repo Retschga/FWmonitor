@@ -130,7 +130,7 @@ class Websocket {
                     // {"id":"1"}                           Button Letzter Alarm
                     // {"id":"2"}                           Kann Diashow
                     // {"id":"3", "value": ${count}}        Eingabefeld Kalender Elemente
-                    // {"id":"4"}                           Kann Präsentation
+                    // {"id":"4"}                           Kann Präsentation  -> zurück mit "value": "{action:(start/stop/pause/page+/page-) file:(filename)}"
                     // {"id":"5"}                           Button Zurück
                     // {"id":"6"}                           Kann Kalender
                     // {"id":"7"}                           Button Restart

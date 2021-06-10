@@ -48,7 +48,7 @@
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                        <div class="item" onclick="loaderIn('presentation');">
+                        <div class="item only_praes hidden" onclick="loaderIn('presentation');">
                             <span class="left material-icons">present_to_all</span>
                             <span class="text">Präsentation</span>
                             <span class="right material-icons">chevron_right</span>
@@ -152,14 +152,30 @@
             // Funktionsaufrufe
             loaderFunction = () => {
                 if(user_admin) {
+                    const secure_options   = document.querySelectorAll('.only_admin');  
 
-                    const admin_options   = document.querySelectorAll('.only_admin');  
-
-                    for(let i = 0; i < admin_options.length; i++) {
-                        const element = admin_options[i];
+                    for(let i = 0; i < secure_options.length; i++) {
+                        const element = secure_options[i];
                         element.classList.remove('hidden');
                     }
+                }
 
+                if(user_telefone && <%= fwvv %>) {
+                    const secure_options   = document.querySelectorAll('.only_telefone');  
+
+                    for(let i = 0; i < secure_options.length; i++) {
+                        const element = secure_options[i];
+                        element.classList.remove('hidden');
+                    }
+                }
+
+                if(user_praes) {
+                    const secure_options   = document.querySelectorAll('.only_praes');  
+
+                    for(let i = 0; i < secure_options.length; i++) {
+                        const element = secure_options[i];
+                        element.classList.remove('hidden');
+                    }
                 }
             };            
             

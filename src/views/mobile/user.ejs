@@ -63,6 +63,15 @@
                         </div>
 
                         <div class="item smallitem">
+                            <span class="left material-icons">present_to_all</span>
+                            <span class="text">Präsentation</span>
+                            <label class="right checkmark_container">
+                                <input class="var_praes" type="checkbox">
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+
+                        <div class="item smallitem">
                             <span class="left material-icons">print</span>
                             <span class="text">Drucker Papierinfo</span>
                             <label class="right checkmark_container">
@@ -262,12 +271,14 @@
                     const var_telefone         = document.querySelector(".var_telefone"); 
                     const var_printer          = document.querySelector(".var_printer"); 
                     const var_software         = document.querySelector(".var_software"); 
+                    const var_praes            = document.querySelector(".var_praes"); 
 
                     var_admin.checked          = user.admin == 1;
                     setSelectedIndex(var_calendar, user.kalender);
                     var_telefone.checked       = user.telefonliste == 1;
                     var_printer.checked        = user.drucker == 1;
                     var_software.checked       = user.softwareInfo == 1;
+                    var_praes.checked          = user.praes == 1;
 
                     const calendarGroup_list  = document.querySelector(".calendarGroup_list"); 
                     const kalGruppenArray     = user.kalenderGroups.split('|');
@@ -318,6 +329,7 @@
                     const var_telefone         = document.querySelector(".var_telefone").checked ? 1 : 0; 
                     const var_printer          = document.querySelector(".var_printer").checked ? 1 : 0; 
                     const var_software         = document.querySelector(".var_software").checked ? 1 : 0; 
+                    const var_praes            = document.querySelector(".var_praes").checked ? 1 : 0; 
 
                     const var_calendarGroups   = document.querySelectorAll(".var_value");
                     var calendarGroup = '';
@@ -348,7 +360,8 @@
                         stAGT: var_AGT,
                         stMA: var_MMA,
                         stGRF: var_GRF,
-                        stZUGF: var_ZUGF
+                        stZUGF: var_ZUGF,
+                        praes: var_praes
                     });
 
                 } catch (error) {
