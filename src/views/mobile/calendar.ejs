@@ -78,16 +78,21 @@
                     const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
                     console.log('calendarUpcoming', calendarElements);
 
+                    const user = await fetch_get(url_user_calendar_groups.replace(':id', user_id), true);
+                    console.log('user', user);
+
                     const target = document.querySelector(".calendar_list");
 
                     for(let i = 0; i < calendarElements.length; i++) {
                         const element = calendarElements[i];
-
+                
                         const date = new Date(element.start);   
                         const {text, icon} = parseKalenderSummary(element.summary);
                         let badge = "";
+                        let includesUsergroup = false;
                         for(let j = 0; j < element.group.length; j++) {
                             badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                            if(user.groups.includes(element.group[j].id)) includesUsergroup = true;
                         }
 
                         const template   = document.querySelector('#template-calendarelement');                
@@ -102,8 +107,14 @@
                         var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
                         var_groups.innerHTML = badge;
                         var_emoji.innerHTML  = icon;
-
+                        
                         const clone = document.importNode(template.content.firstElementChild, true);
+                        if(includesUsergroup) {
+                            clone.classList.remove('stripes');
+                        } else {
+                            clone.classList.add('stripes');                        
+                        }
+
                         target.appendChild(clone);
 
                         if(user_calendar_min || user_calendar_full) {

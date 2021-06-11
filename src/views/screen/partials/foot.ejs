@@ -27,6 +27,7 @@
 
     const url_dwd_warnings = 'https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=json&CQL_FILTER=WARNCELLID%20IN%20(%27:warncellid%27)';
     
+    const url_praesentation_file = '/api/v1/praesentation/files/:filename'
 
     async function initialLoad() {
         

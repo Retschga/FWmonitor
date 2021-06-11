@@ -20,7 +20,7 @@
 
                 <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="openModal_device(undefined);">devices</button> 
+                <button class="material-icons" onclick="openModal_device(undefined);">refresh</button> 
 
                 <div class="spacer" style="width: 0.5em;"></div>
 
@@ -79,7 +79,7 @@
                             <div class="item smallitem">
                                 <span class="left material-icons">description</span>
                                 <span class="text var_name">Dateiname</span>
-                                <span class="right material-icons">tv</span>
+                                <span class="right material-icons">cast_connected</span>
                             </div>
 
                         </template>
@@ -149,6 +149,10 @@
                     const devices = await fetch_get(url_praesentation_devicelist, true);
                     console.log('devices', devices);
 
+                    // Vorhandene Elemente löschen
+                    const elements = target.getElementsByClassName("deleteme");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
                     for(let i = 0; i < devices.length; i++) {
 
                         const template     = document.querySelector('#template-device');       
@@ -172,7 +176,8 @@
             }
 
             // Hilfsfunktionen
-            function openModal_device(filename) {                
+            async function openModal_device(filename) {   
+                await load_device_list();             
                 const modal = document.querySelector('#modal_device');
                 modal.style.display = 'block';
                 targetfile = filename;
@@ -218,6 +223,8 @@
                     console.log('targetfile', targetfile)
                     const response = await fetch_post(url_praesentation_action.replace(':id', targetdevice_id), {action: action});
                     console.log('response', response);   
+
+                    if(response == false) openModal_device(undefined);
                     
                     if(action == 'stop') location.reload();
 
@@ -232,7 +239,6 @@
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_praes_list();
-                load_device_list();
             };
             
         </script>

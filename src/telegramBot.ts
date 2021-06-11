@@ -12,7 +12,7 @@ import { AlarmRow } from './models/alarm';
 import GroupService from './services/group';
 import fs from 'fs';
 import globalEvents from './utils/globalEvents';
-import { CalendarElement } from './services/calendar';
+import { CalendarElement, calendarService } from './services/calendar';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -99,6 +99,9 @@ class TelegramBot {
                     break;
                 case 'VerfuegbarZeige':
                     this.bot_verf_show(ctx);
+                    break;
+                case 'KalenderGes':
+                    this.bot_calendar_full(ctx);
                     break;
 
                 default:
@@ -794,6 +797,40 @@ _${st_nichtverf}_`,
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_calendar', { telegramid });
+
+            const list = await calendarService.find_all_upcoming();
+            if (!list || list.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            let usergroups =
+                user[0].kalenderGroups == '' ? ['1'] : user[0].kalenderGroups.split('|');
+            console.log('usergroups: ', usergroups);
+
+            var str = '';
+            for (let i = 0; i < list.length; i++) {
+                for (let j = 0; j < list[i].group.length; j++) {
+                    if (usergroups.indexOf(String(list[i].group[j].id)) != -1) {
+                        str += '<i>' + list[i].summary + '</i>\n';
+                    }
+                }
+            }
+
+            str = str.replace(/<br>/g, '\n');
+
+            ctx.reply('<b>Deine Termine:</b>\n' + str, {
+                parse_mode: 'HTML',
+                ...Markup.inlineKeyboard([
+                    Markup.button.callback('Gesamter Kalender', 'KalenderGes')
+                ])
+            });
         } catch (error) {
             logging.error(NAMESPACE, 'bot_calendar error', error);
         }
@@ -803,19 +840,42 @@ _${st_nichtverf}_`,
         try {
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_calendar_full', { telegramid });
+            logging.debug(NAMESPACE, 'bot_calendar', { telegramid });
+
+            const list = await calendarService.find_all_upcoming();
+            if (!list || list.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            let usergroups =
+                user[0].kalenderGroups == '' ? ['1'] : user[0].kalenderGroups.split('|');
+            console.log('usergroups: ', usergroups);
+
+            var str = '';
+            for (let i = 0; i < list.length; i++) {
+                for (let j = 0; j < list[i].group.length; j++) {
+                    if (usergroups.indexOf(String(list[i].group[j].id)) != -1) {
+                        str += '<b>' + list[i].summary + '</b>\n';
+                    } else {
+                        str += '<i>' + list[i].summary + '</i>\n';
+                    }
+                }
+            }
+
+            str = str.replace(/<br>/g, '\n');
+
+            ctx.editMessageText('<b>Alle Termine:</b>\n' + str, {
+                parse_mode: 'HTML'
+            });
         } catch (error) {
             logging.error(NAMESPACE, 'bot_calendar_full error', error);
-        }
-    }
-
-    private async bot_calendar_all(ctx: Context) {
-        try {
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_calendar_all', { telegramid });
-        } catch (error) {
-            logging.error(NAMESPACE, 'bot_calendar_all error', error);
         }
     }
 

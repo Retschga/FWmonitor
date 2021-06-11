@@ -25,7 +25,7 @@ router.get(
 // Benutzer Rollen
 router.get(
     '/roles/all',
-    auth_api(UserRights.admin, UserRights.ownid),
+    auth_api(UserRights.admin, UserRights.ownid, UserRights.http),
     awaitHandlerFactory(userController.get_user_roles_all.bind(userController))
 );
 

@@ -110,6 +110,7 @@ class RouterApi {
             this.router.use('/alarm', alarmRoutes);
             this.router.use('/diashow', diashowRoutes);
             this.router.use('/calendar', calendarRoutes);
+            this.router.use('/praesentation', praesentationRoutes);
             this.router.use('/user', userRoutes);
         }
 

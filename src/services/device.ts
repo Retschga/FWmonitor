@@ -69,11 +69,12 @@ class DeviceService {
     }
 
     public send_action(id: string, action: number, value: string) {
+        let response = false;
         for (let i = 0; i < this.sockets.length; i++) {
-            this.sockets[i].sendToID(id, 'action_' + action, value);
+            if (this.sockets[i].sendToID(id, 'action_' + action, value)) response = true;
         }
 
-        return true;
+        return response;
     }
 
     public broadcast_userstatus(userid: number, alarmid: number, value: boolean) {

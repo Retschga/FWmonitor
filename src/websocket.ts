@@ -193,12 +193,15 @@ class Websocket {
         });
     }
 
-    public sendToID(id: string, topic: string, message: string) {
+    public sendToID(id: string, topic: string, message: string): boolean {
+        let response = false;
         this.socket.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN && client.allowed == true && client.id == id) {
                 client.send(JSON.stringify({ topic: topic, message: message }));
+                response = true;
             }
         });
+        return response;
     }
 
     public getOpenSockets(): SocketInfo[] {

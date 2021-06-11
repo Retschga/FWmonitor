@@ -77,6 +77,11 @@ class UserService {
             (params as any).approved = true;
         }
         const response = await UserModel.model.find(params);
+        for (let i = 0; i < response.length; i++) {
+            let usergroups = response[i].kalenderGroups.split('|').map((x) => Number(x));
+            usergroups.push(1);
+            response[i].kalenderGroups = usergroups.join('|');
+        }
         return response;
     }
 
@@ -473,9 +478,11 @@ class UserService {
         let result = await this.find({ id: id });
         if (result.length < 1) return;
         let user = result[0];
+        let usergroups = user.kalenderGroups.split('|').map((x) => Number(x));
+        usergroups.push(1);
         return {
             id: user.id,
-            groups: user.kalenderGroups.split('|').map((x) => Number(x))
+            groups: usergroups
         };
     }
 
