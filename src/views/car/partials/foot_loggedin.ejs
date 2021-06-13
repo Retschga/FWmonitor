@@ -1,7 +1,7 @@
 <!-- SCRIPT LOADER -->
 <script>    
 
-    let car_name;
+    let car_name = localStorage.getItem('car_name');
 
     // Websockets
     var ws_software = null;
@@ -28,19 +28,25 @@
     }
 
     // Websocket Server Verbindung
-    function ws_server_connect() {	
+    async function ws_server_connect() {	
         ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
         let wsStatusInterval = null;
         var keepAliveInterval = null;
         let log = "";
+
+        const userrights = await fetch_get('/api/v1/user/rights', true);
+        console.log('userrights', userrights);
+
+        car_name = userrights.name;
+        localStorage.setItem('car_name', car_name);
 
         // Sende Status Datensatz
         let sendStatus = () => {ws_software.send(
             `{
                 "topic": "init",
                 "type":"AutoClient",
-                "name":"Auto",
-                "info":"${car_name}",
+                "name":"Auto - ${car_name}",
+                "info":"Initial",
                 "actions":[
                     {"id":"0"},
                     {"id":"7"},
@@ -55,6 +61,7 @@
         let sendStatusUpdate = () => {ws_software.send(
             `{
                 "topic": "update",
+                "info":"Update",
                 "actions":[
                     {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                     {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
@@ -145,8 +152,12 @@
             clearInterval(wsStatusInterval);
             clearInterval(keepAliveInterval);
             ws_software.close();
+            setTimeout(function() {
+                ws_server_connect();
+            }, 15000);
         };
     }
+
 
 
 

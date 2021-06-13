@@ -40,7 +40,7 @@ nomInstalDir=$(pwd)
 
 # Installiere Programme
 echo "Installiere Programme"
-sudo apt -y install --no-install-recommends unclutter
+sudo apt -y install --no-install-recommends unclutter xscreensaver
 
 # Herunterladen der Skripte
 echo "Lade Skripte herunter"
@@ -85,7 +85,7 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-features=TranslateUI \
 --fast \
 --fast-start \
---app=http://${1}/?name=${2}
+--app=http://${1}/index?name=${2}
 EOF
 
 # Installation watchdog

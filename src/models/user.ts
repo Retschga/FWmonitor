@@ -61,8 +61,8 @@ class UserModel extends Model {
      * @param params //{spalte: wert, ...}
      * @returns {Promise<undefined | CalendarRow[]}
      */
-    public async find(params: object = {}): Promise<UserRow[]> {
-        return await super.findElement<UserRow>(params);
+    public async find(params: object = {}, extra?: string): Promise<UserRow[]> {
+        return await super.findElement<UserRow>(params, undefined, undefined, extra);
     }
 }
 

@@ -12,6 +12,7 @@ import {
 } from '../utils/common';
 import AlarmParserService from './alarmParser';
 import globalEvents from '../utils/globalEvents';
+import printService from './printing';
 
 const NAMESPACE = 'AlarmInputFileService';
 
@@ -42,7 +43,7 @@ class AlarmInputFileService {
                     NAMESPACE,
                     'Print -> Seite ' + (i + 1) + ' von ' + config.printing.pagecountOriginal
                 );
-                //print.print(path);
+                printService.print(path.substring(0, path.lastIndexOf('.')));
             } catch (error) {
                 logging.ecxeption(NAMESPACE, error);
             }
@@ -107,6 +108,7 @@ class AlarmInputFileService {
 
                 // PDF -> TIFF
                 await this.convertPdfToTiff(path, config.folders.temp + file + '.tiff');
+
                 // Move -> Archiv
                 moveFile(
                     config.folders.temp + file + '.tiff',
@@ -114,7 +116,7 @@ class AlarmInputFileService {
                 );
                 path = config.folders.archive + '/' + file + '.tiff';
 
-                // TIFF -> Tesseract
+                // TIFF -> TXT
                 await this.tiffToTxt(path, config.folders.temp + file);
 
                 // Textdatei verarbeiten
@@ -124,11 +126,12 @@ class AlarmInputFileService {
             }
 
             if (filetype == 'tif' || filetype == 'tiff') {
-                // TIFF -> Tesseract
+                // TIFF -> TXT
                 await this.tiffToTxt(path, config.folders.temp + file);
 
                 // TIFF -> PDF
                 await this.tiffToPdf(path, config.folders.temp + file);
+
                 // Move -> Archiv
                 await moveFile(
                     config.folders.temp + file + '.pdf',
@@ -150,7 +153,7 @@ class AlarmInputFileService {
         });
 
         let lastStatus = true;
-        let interval = setInterval(async () => {
+        async function check_inputFolder() {
             logging.debug(NAMESPACE, 'Folder-Input CHECK...');
 
             let status = await checkFolderOrFile(config.folders.fileInput);
@@ -165,7 +168,11 @@ class AlarmInputFileService {
             }
 
             lastStatus = status;
+        }
+        let interval = setInterval(async () => {
+            check_inputFolder();
         }, 60000 * 5);
+        check_inputFolder();
     }
 }
 

@@ -1,4 +1,4 @@
-const staticCacheName = 'cache-vers-2021-05-07-003';
+const staticCacheName = 'cache-vers-2021-05-07-011';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];

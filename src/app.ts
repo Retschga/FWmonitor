@@ -79,7 +79,8 @@ appHttp.use('/print', routePrint);
 appHttp.get('/', (req: Request, res: Response, next: NextFunction) => {
     res.redirect('/screen/index');
 });
-appHttp.use(express.static('filesPublic/'));
+appHttp.use(express.static('./filesPublic/'));
+appHttp.use('/scripts', express.static('./build/scripts'));
 
 const httpServer = http.createServer(appHttp);
 httpServer.listen(config.server_http.port, () =>
@@ -108,7 +109,7 @@ const routerApi_secure = new RouterApi(true).router;
 appHttps.use('/api/v1', routerApi_secure);
 appHttps.use('/app', routermobile);
 appHttps.use('/car', routerCar);
-appHttps.use(express.static('filesPublic/'));
+appHttps.use(express.static('./filesPublic/'));
 
 var secureContext: tls.SecureContext;
 function reloadCert(path_key: string, path_cert: string) {

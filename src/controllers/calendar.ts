@@ -26,12 +26,12 @@ class CalendarController {
 
         const list = await calendarService.find_all_upcoming();
         if (!list || list.length < 1) {
-            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found1');
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
         }
 
         const user = await userService.find_by_userid(Number(req.params.id));
         if (!user || user.length < 1) {
-            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found2');
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
         }
 
         let usergroups = user[0].kalenderGroups == '' ? ['1'] : user[0].kalenderGroups.split('|');
@@ -46,7 +46,7 @@ class CalendarController {
             }
         }
 
-        throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found6');
+        throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
     }
 
     public async get_list_upcoming(req: Request, res: Response, next: NextFunction) {

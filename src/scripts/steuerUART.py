@@ -14,6 +14,7 @@ import sys, time, datetime
 import RPi.GPIO as GPIO
 import os
 import serial
+import json
 
 
 # -------------- Einstellungen --------------
@@ -163,22 +164,26 @@ class WebSocketRetry:
                             data = await asyncio.wait_for(ws.recv(), self.timeout)
                             asyncState.log = data
                             await asyncio.wait_for(printLog(data), 5)
-                            if 'alarm' in str(data):
+                            parsedData = json.loads(data)
+                            if parsedData["topic"] == "ping":
+                                self._dataToSend = "{\"topic\":\"pong\", \"value\":\""+parsedData["message"]+"\"}"
+                            if parsedData["topic"] == 'alarm':
                                 await asyncio.wait_for(schirman(asyncState), 10)
                                 await asyncio.wait_for(schirman(asyncState), 10)
                                 await asyncio.wait_for(schirman(asyncState), 10)
-                            if 'rebootScreen' in str(data):                                
+                            if parsedData["topic"] == 'action_7':                                
                                 ws.close()
                                 os.system('sudo shutdown -r now')
-                            if 'updateScript' in str(data):    
+                            if parsedData["topic"] == 'action_8':    
                                 ws.close()                            
                                 os.system("sudo bash /home/pi/steuerUpdate.sh \"" + targetserver + "\" >> update.log")
                                 
                         except (asyncio.TimeoutError):
                             #await asyncio.wait_for(printLog("No IN Data"), 5)
                             pass
-                        except:
+                        except Exception as inst:
                             await asyncio.wait_for(printLog("Connection error"), 5)
+                            print("error: ", inst)
                             self.connected = False
                             raise
                         
@@ -211,7 +216,7 @@ class WebSocketRetry:
 
 async def connectWebsocket(asyncState):
     asyncState.client = await WebSocketRetry.create("ws://" + targetserver)
-    await asyncState.client.send("Hi")
+    await asyncState.client.send("{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
 
 async def closeWebsocket(asyncState):
     await asyncState.client.close()
@@ -222,7 +227,7 @@ async def endProgram(asyncState):
 
 async def keepAlive(asyncState):    
     await asyncState.client.sendPing("TESTPING")
-    await asyncState.client.send("{\"type\":\"PySteuerClient\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"LOG\",\"value\":\""+asyncState.log+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-1\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-1\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
+    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
 
 async def mainLoop(asyncState):
     while True:

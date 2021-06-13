@@ -34,7 +34,7 @@
 
                     </div>
 
-                    <div class="user_list">
+                    <div class="user_list padding_1">
                    
                         <template id="template-userelement">
                             <div class="userelement margin_none padding_none deleteme">
@@ -163,7 +163,12 @@
                         let badge_group = "";
                         badge_group += `<span class="badge blue">${alarmGroups.find(x => x.id == element.group).name}</span>`;
                         for(let j = 0; j < calendarGroups_arr.length; j++) {
-                            badge_group += `<span class="badge green">${calendarGroups.find(x => x.id == calendarGroups_arr[j]).name}</span>`;
+                            const calgr = calendarGroups.find(x => x.id == calendarGroups_arr[j]);
+                            if(!calgr) {
+                                console.log('calendar group ' + calendarGroups_arr[j]  + ' is undefined');
+                                continue;
+                            }
+                            badge_group += `<span class="badge green">${calgr.name}</span>`;
                         }                    
                         var_group.innerHTML = badge_group;
 
@@ -174,6 +179,7 @@
                         if(element.softwareInfo == 1) badge_permission +=  `<span class="badge green">Software-Info</span>`;
                         if(element.kalender == 1) badge_permission +=  `<span class="badge green">Kalender</span>`;
                         if(element.kalender == 2) badge_permission +=  `<span class="badge green">Kalender</span>`;
+                        if(element.telefonliste == 1) badge_permission +=  `<span class="badge green">Telefonbuch</span>`;
                         var_permissions.innerHTML = badge_permission;
                         if(badge_permission != '') {
                             var_permissions.classList.remove('hidden');

@@ -2,5 +2,5 @@
 #cd /home/pi/Desktop/FWMonitor
 while true
 do
-  sudo npm run start
+  sudo npm run-script run
 done

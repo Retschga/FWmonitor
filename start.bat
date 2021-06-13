@@ -1,4 +1,4 @@
 :loop
-npm run start
+npm run-script run
 echo "ENDE -> NEUSTART"
 goto loop

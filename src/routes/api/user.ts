@@ -18,7 +18,7 @@ router.get(
 // Benutzer Rechte
 router.get(
     '/rights',
-    auth_api(UserRights.admin, UserRights.ownid),
+    auth_api(UserRights.admin, UserRights.ownid, UserRights.car),
     awaitHandlerFactory(userController.get_user_rights.bind(userController))
 );
 

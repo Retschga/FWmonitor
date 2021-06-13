@@ -274,7 +274,7 @@ class AlarmParserService {
 
         logging.debug(NAMESPACE, 'Erstelle PDF und JPG... Fertig');
 
-        if (process.env.ALARMDRUCK == 'true') {
+        if (config.printing.pagecountAlarm > 0) {
             logging.debug(NAMESPACE, 'Alarmausdruck...');
 
             for (let i = 0; i < config.printing.pagecountAlarm; i++) {
@@ -283,7 +283,7 @@ class AlarmParserService {
                     NAMESPACE,
                     'Seite ' + (i + 1) + ' von ' + config.printing.pagecountAlarm
                 );
-                PrintingServoce.print(config.folders.temp + 'druck.pdf');
+                PrintingServoce.print(config.folders.temp + 'druck');
             }
         }
     }

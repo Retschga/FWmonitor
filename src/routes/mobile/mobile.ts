@@ -126,5 +126,8 @@ router.get('/offline', (req: Request, res: Response, next: NextFunction) => {
 router.get('/picture_upload', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/picture_upload', generateParams(req));
 });
+router.get('/phonebook', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/phonebook', generateParams(req));
+});
 
 export = router;

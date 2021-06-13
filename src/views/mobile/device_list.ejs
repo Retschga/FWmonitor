@@ -27,7 +27,7 @@
             <div class="content">
 
                 <template id="template-element">
-                    <div class="flex_column list">
+                    <div class="flex_column list" style="min-height: auto;">
                         <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
                         <div class="accordion_panel element_list">
                         </div>               
@@ -93,13 +93,21 @@
 
                     const target = document.querySelector(".content");
 
+                    console.log(devices.length + ' devices found')
+
                     for(let i = 0; i < devices.length; i++) {
                         const device = devices[i];
                         let clone;
 
+                        if(!device.name) {
+                            console.log('empty device');
+                            continue;
+                        }
+
                         const template            = document.querySelector('#template-element');  
                         const var_header_name     = template.content.querySelector(".var_header_name");   
-                        const target_elements     = template.content.querySelector(".element_list");      
+                        const target_elements     = template.content.querySelector(".element_list");  
+                        target_elements.innerHTML = '';    
 
                         const template_text       = document.querySelector('#template-element-text');    
                         const text_var_name       = template_text.content.querySelector(".var_name");
@@ -129,141 +137,143 @@
 
                         // siehe websocket.ts
 
-                        for(let i = 0; i < device.actions.length; i++) {
-                            const action = device.actions[i];                            
-                            
-                            switch (action.id) {
-                                case '0':
-                                    button_var_name.innerHTML = 'Reload';  
-                                    button_var_action.innerHTML = 'Ausführen';
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                                      
-                                    clone = document.importNode(template_button.content.firstElementChild, true);  
-                                    target_elements.append(clone);                                    
-                                    break;
-                                case '1':
-                                    button_var_name.innerHTML = 'Letzter Alarm';  
-                                    button_var_action.innerHTML = 'Ausführen';          
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                          
-                                    clone = document.importNode(template_button.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '2':
-                                    text_var_name.innerHTML = 'Funktion';  
-                                    text_var_value.innerHTML = 'Diashow'; 
-                                    clone = document.importNode(template_text.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '3':
-                                    textinput_var_name.innerHTML = 'Kalender Elemente';  
-                                    textinput_var_value.value = action.value;                  
-                                    textinput_var_btn.dataset.deviceid = device.id
-                                    textinput_var_btn.dataset.action = action.id;                    
-                                    clone = document.importNode(template_textinput.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '4':
-                                    text_var_name.innerHTML = 'Funktion';  
-                                    text_var_value.innerHTML = 'Präsentation'; 
-                                    clone = document.importNode(template_text.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '5':
-                                    button_var_name.innerHTML = 'Zurück';  
-                                    button_var_action.innerHTML = 'Ausführen';                          
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                
-                                    clone = document.importNode(template_button.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '6':
-                                    text_var_name.innerHTML = 'Funktion';  
-                                    text_var_value.innerHTML = 'Kalender'; 
-                                    clone = document.importNode(template_text.content.firstElementChild, true);
-                                    target_elements.append(clone);
-                                    break;
-                                case '7':
-                                    button_var_name.innerHTML = 'Neustart';  
-                                    button_var_action.innerHTML = 'Ausführen';          
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                               
-                                    clone = document.importNode(template_button.content.firstElementChild, true);                                     
-                                    target_elements.append(clone);
-                                    break;
-                                case '8':
-                                    button_var_name.innerHTML = 'Version ' + action.value;  
-                                    button_var_action.innerHTML = 'Update';             
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                           
-                                    clone = document.importNode(template_button.content.firstElementChild, true);                                      
-                                    target_elements.append(clone);
-                                    break;
-                                case '9':
-                                    button_var_name.innerHTML = 'Position';  
-                                    button_var_action.innerHTML = 'Karte';        
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                              
-                                    clone = document.importNode(template_button.content.firstElementChild, true);                                      
-                                    target_elements.append(clone);
-                                    break;
-                                case '10':
-                                    dropdown_var_name.innerHTML = 'Kalender Position';                                      
-                                    dropdown_var_value.dataset.selectedindex = action.value;
-                                    dropdown_var_btn.dataset.deviceid = device.id
-                                    dropdown_var_btn.dataset.action = action.id;     
-                                    clone = document.importNode(template_dropdown.content.firstElementChild, true);  
-                                    target_elements.append(clone);
-                                    break;
-                                case '11':
-                                    dropdown_var_name.innerHTML = 'DWD Position';                      
-                                    dropdown_var_value.dataset.selectedindex = action.value;
-                                    dropdown_var_btn.dataset.deviceid = device.id
-                                    dropdown_var_btn.dataset.action = action.id;     
-                                    clone = document.importNode(template_dropdown.content.firstElementChild, true);                                    
-                                    target_elements.append(clone);
-                                    break;
-                                case '12':
-                                    textinput_var_name.innerHTML = 'Diashow Wechselzeit';  
-                                    textinput_var_value.value = action.value;               
-                                    textinput_var_btn.dataset.deviceid = device.id
-                                    textinput_var_btn.dataset.action = action.id;                        
-                                    clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
-                                    target_elements.append(clone);
-                                    break;
-                                case '13':
-                                    button_var_name.innerHTML = 'Verfügbar: ' + action.value;  
-                                    button_var_action.innerHTML = 'Umschalten';             
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                           
-                                    clone = document.importNode(template_button.content.firstElementChild, true);                                      
-                                    target_elements.append(clone);
-                                    break;
-                                case '14':
-                                    button_var_name.innerHTML = 'N. Verfügbar: ' + action.value;  
-                                    button_var_action.innerHTML = 'Umschalten';             
-                                    button_var_btn.dataset.deviceid = device.id
-                                    button_var_btn.dataset.action = action.id;                           
-                                    clone = document.importNode(template_button.content.firstElementChild, true);                                      
-                                    target_elements.append(clone);
-                                    break;
-                                case '15':
-                                    textinput_var_name.innerHTML = 'Alarm Anzeigezeit';  
-                                    textinput_var_value.value = action.value;               
-                                    textinput_var_btn.dataset.deviceid = device.id
-                                    textinput_var_btn.dataset.action = action.id;                        
-                                    clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
-                                    target_elements.append(clone);
-                                    break;
-                            }
+                        if(device.actions) {
+                            for(let i = 0; i < device.actions.length; i++) {
+                                const action = device.actions[i];                            
+                                
+                                switch (action.id) {
+                                    case '0':
+                                        button_var_name.innerHTML = 'Reload';  
+                                        button_var_action.innerHTML = 'Ausführen';
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                                      
+                                        clone = document.importNode(template_button.content.firstElementChild, true);  
+                                        target_elements.append(clone);                                    
+                                        break;
+                                    case '1':
+                                        button_var_name.innerHTML = 'Letzter Alarm';  
+                                        button_var_action.innerHTML = 'Ausführen';          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                          
+                                        clone = document.importNode(template_button.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '2':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Diashow'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '3':
+                                        textinput_var_name.innerHTML = 'Kalender Elemente';  
+                                        textinput_var_value.value = action.value;                  
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                    
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '4':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Präsentation'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '5':
+                                        button_var_name.innerHTML = 'Zurück';  
+                                        button_var_action.innerHTML = 'Ausführen';                          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                
+                                        clone = document.importNode(template_button.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '6':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Kalender'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '7':
+                                        button_var_name.innerHTML = 'Neustart';  
+                                        button_var_action.innerHTML = 'Ausführen';          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                               
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                     
+                                        target_elements.append(clone);
+                                        break;
+                                    case '8':
+                                        button_var_name.innerHTML = 'Version ' + action.value;  
+                                        button_var_action.innerHTML = 'Update';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '9':
+                                        button_var_name.innerHTML = 'Position';  
+                                        button_var_action.innerHTML = 'Karte';        
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                              
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '10':
+                                        dropdown_var_name.innerHTML = 'Kalender Position';                                      
+                                        dropdown_var_value.dataset.selectedindex = action.value;
+                                        dropdown_var_btn.dataset.deviceid = device.id
+                                        dropdown_var_btn.dataset.action = action.id;     
+                                        clone = document.importNode(template_dropdown.content.firstElementChild, true);  
+                                        target_elements.append(clone);
+                                        break;
+                                    case '11':
+                                        dropdown_var_name.innerHTML = 'DWD Position';                      
+                                        dropdown_var_value.dataset.selectedindex = action.value;
+                                        dropdown_var_btn.dataset.deviceid = device.id
+                                        dropdown_var_btn.dataset.action = action.id;     
+                                        clone = document.importNode(template_dropdown.content.firstElementChild, true);                                    
+                                        target_elements.append(clone);
+                                        break;
+                                    case '12':
+                                        textinput_var_name.innerHTML = 'Diashow Wechselzeit';  
+                                        textinput_var_value.value = action.value;               
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                        
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
+                                        target_elements.append(clone);
+                                        break;
+                                    case '13':
+                                        button_var_name.innerHTML = 'Verfügbar: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '14':
+                                        button_var_name.innerHTML = 'N. Verfügbar: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '15':
+                                        textinput_var_name.innerHTML = 'Alarm Anzeigezeit';  
+                                        textinput_var_value.value = action.value;               
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                        
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
+                                        target_elements.append(clone);
+                                        break;
+                                }
 
-                            if (parseInt(action.id) < 0) {
-                                text_var_name.innerHTML = escapeHtml(action.key);  
-                                text_var_value.innerHTML = escapeHtml(action.value); 
-                                clone = document.importNode(template_text.content.firstElementChild, true);
-                                target_elements.append(clone);
-                            }
-                        }                       
+                                if (parseInt(action.id) < 0) {
+                                    text_var_name.innerHTML = escapeHtml(action.key);  
+                                    text_var_value.innerHTML = escapeHtml(action.value); 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                }
+                            }  
+                        }                     
                         
                         clone = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);
@@ -279,6 +289,8 @@
                         clone.querySelectorAll('.var_dropdown').forEach(function(anchorElement) {
                             setSelectedIndex(anchorElement, String(anchorElement.dataset.selectedindex));            
                         });
+
+                        console.log(device);
                         
 
                     }

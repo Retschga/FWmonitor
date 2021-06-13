@@ -82,7 +82,7 @@ class StatisticService {
             let zeit = 0;
             let anzahl = 0;
 
-            var parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/E_PERSON.DBF'));
+            const parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/E_PERSON.DBF'));
 
             parser.on('header', (h: any) => {
                 //debug('dBase file header has been parsed');

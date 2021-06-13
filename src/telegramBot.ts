@@ -13,6 +13,9 @@ import GroupService from './services/group';
 import fs from 'fs';
 import globalEvents from './utils/globalEvents';
 import { CalendarElement, calendarService } from './services/calendar';
+import { instance as DeviceServiceInstance, init, DeviceService } from './services/device';
+import diashowService from './services/diashow';
+import axios from 'axios';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -104,12 +107,21 @@ class TelegramBot {
                     this.bot_calendar_full(ctx);
                     break;
 
+                case 'KommenJa':
+                    this.bot_alarm_yes(ctx, cbArray[1]);
+                    break;
+
+                case 'KommenNein':
+                    this.bot_alarm_no(ctx, cbArray[1]);
+                    break;
                 default:
                     break;
             }
         });
 
-        this.bot.on('text', this.bot_default);
+        this.bot.on('photo', this.bot_photo.bind(this));
+
+        this.bot.on('text', this.bot_default.bind(this));
 
         // Bot starten
         this.bot.launch();
@@ -222,7 +234,7 @@ class TelegramBot {
                 });
             }
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_start error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -254,7 +266,7 @@ class TelegramBot {
             // Alles OK -> Nächste Route
             await next();
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_securityMiddleware error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -265,11 +277,11 @@ class TelegramBot {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_unknown', { telegramid });
 
-            ctx.reply('Telegram Bot der' + process.env.FW_NAME_BOT, {
-                ...Markup.keyboard(this.mainKeyboard).resize()
+            ctx.reply('Telegram Bot der' + config.common.fwName_short, {
+                ...Markup.keyboard([['/start']]).resize()
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_unknown error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -292,7 +304,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_app_menu error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -335,7 +347,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_app_getLogin error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -358,7 +370,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_history error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -398,7 +410,7 @@ ${list[0].ort}_`,
                 }
             );
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_history_showAlarm error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -438,7 +450,7 @@ ${list[0].ort}_`,
                 parse_mode: 'Markdown'
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_history_showStatistic error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -474,7 +486,7 @@ ${list[0].ort}_`,
                 parse_mode: 'Markdown'
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_hostory_time error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -502,7 +514,7 @@ ${list[0].ort}_`,
                 ...Markup.inlineKeyboard(keyboard, { columns: 2 })
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -520,7 +532,7 @@ ${list[0].ort}_`,
                 ])
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_calendarNotifications error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -537,20 +549,20 @@ ${list[0].ort}_`,
             }
 
             if (value == '1') {
-                userService.update_notifications_calendar(user[i].id, true);
+                userService.update_notifications_calendar(user[0].id, true);
                 ctx.answerCbQuery('📅 Kalender Erinnerungen -> Ein', {
                     show_alert: false
                 });
                 ctx.editMessageText('📅 Kalender Erinnerungen -> Ein');
             } else {
-                userService.update_notifications_calendar(user[i].id, false);
+                userService.update_notifications_calendar(user[0].id, false);
                 ctx.answerCbQuery('📅 Kalender Erinnerungen -> Aus', {
                     show_alert: false
                 });
                 ctx.editMessageText('📅 Kalender Erinnerungen -> Aus');
             }
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_calendarNotifications_set error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -560,7 +572,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_hydrant error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -570,7 +582,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_location', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_hydrant_location error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -580,7 +592,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_location_ok', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_hydrant_location_ok error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -590,7 +602,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_type', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_more_hydrant_type error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -636,7 +648,7 @@ ${list[0].ort}_`,
                 )
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_verf error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -654,7 +666,7 @@ ${list[0].ort}_`,
 
             userService.update_status(user[0].id, UserStatus.VERFUEGBAR);
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_verf_yes error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -688,7 +700,7 @@ ${list[0].ort}_`,
                 userService.update_status(user[0].id, UserStatus.NICHT_VERFUEGBAR, until);
             }
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_verf_no error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -749,7 +761,7 @@ ${list[0].ort}_`,
                 )
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_verf_no_options error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -787,7 +799,7 @@ _${st_nichtverf}_`,
                 }
             );
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_verf_show error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -832,7 +844,7 @@ _${st_nichtverf}_`,
                 ])
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_calendar error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -875,15 +887,15 @@ _${st_nichtverf}_`,
                 parse_mode: 'HTML'
             });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_calendar_full error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
     // Alarm
     private async sendAlarm(alarm: AlarmRow) {
         const keyboard = Markup.inlineKeyboard([
-            Markup.button.callback('👍 JA!', 'KommenJa'),
-            Markup.button.callback('👎 NEIN!', 'KommenNein')
+            Markup.button.callback('👍 JA!', 'KommenJa:' + alarm.id),
+            Markup.button.callback('👎 NEIN!', 'KommenNein:' + alarm.id)
         ]);
 
         if (!config.alarm.telegram) {
@@ -1040,38 +1052,114 @@ _${st_nichtverf}_`,
 
             //Alarmmeldung
             await timeout(4000);
-            this.sendMessage(user.telegramid, alarmMessage, keyboard);
+            this.sendMessage(user.telegramid, alarmMessage, {
+                parse_mode: 'Markdown',
+                ...keyboard
+            });
         }
     }
 
-    private async bot_alarm_yes(ctx: Context) {
+    private async bot_alarm_yes(ctx: Context, alarmid: string) {
         try {
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_alarm_yes', { telegramid });
+
+            if (!DeviceServiceInstance) {
+                ctx.replyWithMarkdown('Error');
+                return;
+            }
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            const reponse = DeviceServiceInstance.broadcast_userstatus(
+                user[0].id,
+                Number(alarmid),
+                true
+            );
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_alarm_yes error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
-    private async bot_alarm_no(ctx: Context) {
+    private async bot_alarm_no(ctx: Context, alarmid: string) {
         try {
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_alarm_no', { telegramid });
+
+            if (!DeviceServiceInstance) {
+                ctx.replyWithMarkdown('Error');
+                return;
+            }
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.replyWithMarkdown('Error: No User found');
+                return;
+            }
+
+            const reponse = DeviceServiceInstance.broadcast_userstatus(
+                user[0].id,
+                Number(alarmid),
+                false
+            );
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_alarm_no error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
     // Bilder
-    private async savePicture(ctx: Context) {
+    private async bot_photo(ctx: any) {
         try {
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'savePicture', { telegramid });
+
+            ctx.replyWithChatAction('typing');
+
+            // Normales Bild
+            let filepath = config.folders.temp;
+
+            let d = new Date();
+            let time = d.toLocaleTimeString().replace(/[:]/g, '-');
+            let date = d.toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            const imageData = await this.bot.telegram.getFile(
+                ctx.message.photo[ctx.message.photo.length - 1].file_id
+            );
+
+            if (!imageData.file_path) return;
+
+            const filename = time + ' - ' + date + ' - ' + imageData.file_path.substr(7);
+
+            const writer = fs.createWriteStream(filepath + '/' + filename);
+
+            axios({
+                method: 'get',
+                url: `https://api.telegram.org/file/bot${config.telegram.bot_token}/${imageData.file_path}`,
+                responseType: 'stream'
+            })
+                .then(async (response) => {
+                    await response.data.pipe(writer);
+                    diashowService.process_new(config.folders.temp, filename);
+
+                    ctx.reply(`Bild gespeichert.`);
+                })
+                .catch((err) => {
+                    console.error(err);
+                    ctx.reply('Bild speichern: Fehler.');
+                });
         } catch (error) {
-            logging.error(NAMESPACE, 'savePicture error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -1082,7 +1170,7 @@ _${st_nichtverf}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_printer_paper', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_printer_paper error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -1093,7 +1181,7 @@ _${st_nichtverf}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_software_info', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_software_info error', error);
+            logging.ecxeption(NAMESPACE, error);
         }
     }
 
@@ -1104,7 +1192,7 @@ _${st_nichtverf}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_example', { telegramid });
         } catch (error) {
-            logging.error(NAMESPACE, 'bot_example error', error);
+            logging.ecxeption(NAMESPACE, 'bot_example error', error);
         }
     }
     */

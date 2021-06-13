@@ -5,6 +5,7 @@
     padding: 0.5em;
     min-width: 15em;
     margin-top: 0.3em;;
+    max-width: 15em;;
 }
 
 .calendar_element .var_emoji {
@@ -22,4 +23,22 @@
     float: left;
     padding: 0.5em;
     margin: 0.3em 0 0 0.5em;
+}
+
+/* fonts*/
+@font-face {
+    font-family: "emoji";
+    src: local("Noto Emoji");
+    src: url("../NotoEmoji-Regular.ttf");
+}
+@font-face {
+    font-family: "color-emoji";
+    src: local("Noto Color Emoji");
+    src: url("../NotoColorEmoji.ttf");
+}
+.emoji {
+    font-family: 'emoji';
+}
+.color-emoji {
+    font-family: 'color-emoji';
 }

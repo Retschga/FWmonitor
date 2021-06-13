@@ -121,7 +121,8 @@ class UserController {
             calendar_min: req.session.calendar_min,
             calendar_full: req.session.calendar_full,
             telefone: req.session.telefone,
-            praes: req.session.praesentation
+            praes: req.session.praesentation,
+            name: req.session.name
         });
     }
 

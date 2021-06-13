@@ -347,10 +347,10 @@ function fetch_handleError(error) {
         alert(error.statusText);     
     } else if(error.status == 404) {
         // NOT_FOUND
-        alert(error.statusText);     
+        console.log(error.statusText);     
     } else if(error.status == 500) {
         // INTERNAL_SERVER_ERROR
-        alert(error.statusText);     
+        console.log(error.statusText);     
     }
     return Promise.reject(error);
 }

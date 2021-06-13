@@ -67,7 +67,9 @@ const FOLDERS = {
 
     temp: './temp/',
 
-    praesentation: process.env.FOLDER_PRAESENTATION || './filesPraesentation/'
+    praesentation: process.env.FOLDER_PRAESENTATION || './filesPraesentation/',
+
+    hydranten: './filesHydranten/'
 };
 
 const FWVV = {

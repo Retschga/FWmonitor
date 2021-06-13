@@ -136,6 +136,13 @@
                 let loginFormContainer = document.querySelector("#loginFormContainer");
                 loginFormContainer.classList.add("hidden");
 
+                let telid = document.getElementById("var_telid").value;
+                let pw = document.getElementById("var_passwort").value;
+                if(telid == 'AUTO') {
+                    telid = undefined;
+                    pw = undefined;
+                }
+
                 fetch(url_login, {                    
                     method: 'POST', // *GET, POST, PUT, DELETE, etc.
                     mode: 'cors', // no-cors, *cors, same-origin
@@ -146,8 +153,8 @@
                     referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
 					headers: {'Content-Type': 'application/json'},					
 					body: JSON.stringify(useToken == true ? {} : {
-						telegramid: document.getElementById("var_telid").value,
-						password: document.getElementById("var_passwort").value
+						telegramid: telid,
+						password: pw
 					})
 				})
 				.then(data => data.json())

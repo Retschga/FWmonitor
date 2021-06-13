@@ -189,9 +189,10 @@ PRINT_ALARM_PAGES=0
 #PRINT_IPP_URL=
 
 # Version B:
-# Alarmdrucker Name (Nur Raspberry; Bei Windows wird auf dem Standard-Drucker gedruckt)
+# RASPBERRY: Alarmdrucker Name
 #PRINT_PRINTERNAME=
-# Pfad zu Foxit Reader (Nur relevant unter Windows)
+
+# WINDOWS: Pfad zu Foxit Reader (Es wird auf dem Standard-Drucker gedruckt)
 # lokaler Pfad C:/ordner/ordner/
 #READER_PATH=C:/Program Files (x86)/Foxit Software/Foxit Reader/FoxitReader.exe
 

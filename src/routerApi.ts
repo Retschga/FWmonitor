@@ -17,6 +17,7 @@ import authRoutes from './routes/api/auth';
 import hydrantRoutes from './routes/api/hydrant';
 import deviceRoutes from './routes/api/device';
 import praesentationRoutes from './routes/api/praesentation';
+import contactRoutes from './routes/api/contact';
 import notificationactionRoutes from './routes/api/notificationaction';
 import { auth_api } from './middleware/auth';
 import rateLimit from 'express-rate-limit';
@@ -104,6 +105,7 @@ class RouterApi {
             this.router.use('/device', auth_api(), deviceRoutes);
             this.router.use('/hydrant', auth_api(), hydrantRoutes);
             this.router.use('/praesentation', auth_api(), praesentationRoutes);
+            this.router.use('/contact', auth_api(), contactRoutes);
             this.router.use('/', auth_api(), sampleRoutes);
         } else {
             // HTTP Bildschirm

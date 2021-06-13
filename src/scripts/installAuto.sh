@@ -177,7 +177,7 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-features=TranslateUI \
 --fast \
 --fast-start \
---app=https://${1}/app/auto/?name=${2}&auto=true
+--app=https://${1}/car/?name=${2}&auto=true
 EOF2
 
 # Autostart für Steuerskripte

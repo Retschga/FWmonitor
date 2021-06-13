@@ -72,12 +72,21 @@ class UserService {
     }
 
     // USER
-    public async find(params: object = {}, approved: boolean = true): Promise<UserModel.UserRow[]> {
+    public async find(
+        params: object = {},
+        approved: boolean = true,
+        extra?: string
+    ): Promise<UserModel.UserRow[]> {
         if (approved) {
             (params as any).approved = true;
         }
-        const response = await UserModel.model.find(params);
+        const response = await UserModel.model.find(params, extra);
+
         for (let i = 0; i < response.length; i++) {
+            if (response[i].kalenderGroups == '') {
+                response[i].kalenderGroups = '1';
+                continue;
+            }
             let usergroups = response[i].kalenderGroups.split('|').map((x) => Number(x));
             usergroups.push(1);
             response[i].kalenderGroups = usergroups.join('|');
@@ -102,7 +111,7 @@ class UserService {
     }
 
     public async find_all_approved() {
-        return await this.find({ approved: 1 }, true);
+        return await this.find({ approved: 1 }, true, 'ORDER BY name');
     }
 
     public async create(telegramid: string, name: string, vorname: string) {
@@ -480,6 +489,11 @@ class UserService {
         let user = result[0];
         let usergroups = user.kalenderGroups.split('|').map((x) => Number(x));
         usergroups.push(1);
+
+        if (user.kalenderGroups == '') {
+            usergroups = [1];
+        }
+
         return {
             id: user.id,
             groups: usergroups

@@ -81,7 +81,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         }
 
         // Error
-        if (userid == -1) {
+        if (userid == -1 || userid == NaN || userid == undefined) {
             throw new HttpException(
                 HttpStatusCodes.UNAUTHORIZED,
                 'Access denied. No credentials sent!'
@@ -122,6 +122,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
             req.session.telefone = true;
             req.session.car = true;
             req.session.praesentation = false;
+            req.session.name = car[0].name;
         }
 
         // JWT erzeugen und als Cookie senden
