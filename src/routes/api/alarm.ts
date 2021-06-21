@@ -13,7 +13,7 @@ let cache = apicache.middleware;
 // Alarmliste
 router.get(
     '/list',
-    auth_api(UserRights.admin, UserRights.car),
+    //    auth_api(UserRights.admin, UserRights.car),
     ValidatorAlarm.getList,
     awaitHandlerFactory(alarmController.get_list.bind(alarmController))
 );

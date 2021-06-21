@@ -30,14 +30,14 @@ class RouterCar {
         /** Log the request */
         this.router.use((req, res, next) => {
             /** Log the req */
-            logging.info(
+            logging.debug(
                 NAMESPACE,
                 `METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`
             );
 
             res.on('finish', () => {
                 /** Log the res */
-                logging.info(
+                logging.debug(
                     NAMESPACE,
                     `METHOD: [${req.method}] - URL: [${req.url}] - STATUS: [${res.statusCode}] - IP: [${req.socket.remoteAddress}]`
                 );

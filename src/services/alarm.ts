@@ -115,7 +115,7 @@ class AlarmService {
             out%20skel%20qt;`;
 
         let streetResponse: any = await axios.get(overpassStrassenUrl).catch(function (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         });
 
         let responseJSON = streetResponse.data;
@@ -164,7 +164,7 @@ class AlarmService {
             });
             return JSON.stringify(direct);
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
         return;
     }

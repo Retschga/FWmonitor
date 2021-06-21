@@ -29,7 +29,7 @@ function generateParams(req: Request) {
 }
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
-    res.render('screen/index?name=' + req.query.name, generateParams(req));
+    res.redirect('screen/index?name=' + req.query.name);
 });
 
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {

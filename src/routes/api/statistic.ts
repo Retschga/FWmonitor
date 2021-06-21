@@ -12,5 +12,9 @@ router.get(
     '/time/:id/:year',
     awaitHandlerFactory(statisticController.get_einsatzzeit.bind(statisticController))
 );
-
+router.get(
+    '/list/:year',
+    auth_api(UserRights.admin),
+    awaitHandlerFactory(statisticController.get_einsatzzeit_all.bind(statisticController))
+);
 export = router;

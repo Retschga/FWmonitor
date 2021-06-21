@@ -302,7 +302,7 @@
 
                         const userstatus = userStatusList[i];
 
-                        if(userstatus.status != 1) {
+                        if(userstatus.status == 2) {
            
                             addUsertatus(userstatus.id, -1);
                            
@@ -352,7 +352,7 @@
 					this.send(`{
                         "topic": "init",
 						"type":"WebClient",
-						"name":"Alarmdisplay - ${clientName}",
+						"name":"Alarmdisplay ${clientName}",
 						"info":"Alarm",
 						"actions":[
 							{"id":"0"},		

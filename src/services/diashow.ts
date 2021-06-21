@@ -31,7 +31,7 @@ class DiashowService {
                 };
             })
             .sort(function (a, b) {
-                return a.time - b.time;
+                return b.time - a.time;
             })
             .map(function (v) {
                 return v.name;
@@ -41,6 +41,7 @@ class DiashowService {
             if (
                 filenames[i] != '.gitignore' &&
                 filenames[i].indexOf('.') != -1 &&
+                filenames[i].indexOf('.org') == -1 &&
                 filenames[i].indexOf(config.folders.thumbnailPrefix) == -1
             )
                 if (filenames[i].indexOf('.disabled') == -1) {

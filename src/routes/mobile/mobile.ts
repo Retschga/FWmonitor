@@ -129,5 +129,8 @@ router.get('/picture_upload', (req: Request, res: Response, next: NextFunction) 
 router.get('/phonebook', (req: Request, res: Response, next: NextFunction) => {
     res.render('mobile/phonebook', generateParams(req));
 });
+router.get('/einsatzzeit', (req: Request, res: Response, next: NextFunction) => {
+    res.render('mobile/einsatzzeit', generateParams(req));
+});
 
 export = router;

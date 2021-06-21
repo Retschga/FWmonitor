@@ -341,6 +341,9 @@ function fetch_handleError(error) {
         loaderIn('offline', true, error.statusText);      
     } else if(error.status == 400) {
         // BAD_REQUEST
+        alert(error.statusText);  
+    } else if(error.status == 429) {
+        // RATE_LIMIT
         alert(error.statusText);     
     } else if(error.status == 403) {
         // FORBIDDEN

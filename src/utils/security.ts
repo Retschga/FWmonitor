@@ -9,6 +9,7 @@ import jsonwebtoken from 'jsonwebtoken';
 
 export interface TokenSession {
     id: number;
+    isV3: boolean;
     car: boolean;
     // ... Eigenschaften
     /**

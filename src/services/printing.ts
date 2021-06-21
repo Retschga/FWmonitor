@@ -16,10 +16,12 @@ class PrintingService {
     private isPaperStatusError = false;
 
     constructor() {
-        setInterval(this.checkPaper.bind(this), 1500);
+        setInterval(this.checkPaper.bind(this), config.paper.interval);
     }
 
     private async checkPaper() {
+        logging.debug(NAMESPACE, 'ckeckPaper()');
+
         let response;
         if (!config.paper.printer_path) {
             response = await this.checkPaper_ipp();
@@ -104,8 +106,11 @@ class PrintingService {
     private async checkPaper_http() {
         if (!config.paper.printer_path || !config.paper.printer_regex) return undefined;
 
-        var browser = await puppeteer.launch();
+        let browser;
+
         try {
+            browser = await puppeteer.launch();
+
             const [page] = await browser.pages();
 
             await page.goto(config.paper.printer_path, {
@@ -122,8 +127,9 @@ class PrintingService {
                 return false;
             }
             return true;
-        } catch (err) {
-            await browser.close();
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+            await browser?.close();
             return undefined;
         }
     }

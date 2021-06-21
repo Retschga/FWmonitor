@@ -52,7 +52,7 @@ class HydrantService {
 
             return features;
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
             return;
         }
     }

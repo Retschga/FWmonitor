@@ -27,12 +27,16 @@ const loginAccountLimiter = rateLimit({
     windowMs: config.rateLimit.api_login_time * 60 * 1000,
     max: config.rateLimit.api_login_count, // start blocking after 5 requests
     message: JSON.stringify({
-        message: 'Too many accounts created from this IP, please try again after an 10minutes'
+        message: 'Too many logins from this IP, please try again after an 10minutes'
     })
 });
 const apiLimiter = rateLimit({
     windowMs: config.rateLimit.api_time * 60 * 1000, // 15 minutes
     max: config.rateLimit.api_count
+});
+const diashowLimiter = rateLimit({
+    windowMs: config.rateLimit.api_time * 60 * 1000, // 15 minutes
+    max: config.rateLimit.api_count_diashow
 });
 
 const NAMESPACE = 'ROUTER_API';
@@ -51,14 +55,14 @@ class RouterApi {
         /** Log the request */
         this.router.use((req, res, next) => {
             /** Log the req */
-            logging.info(
+            logging.debug(
                 NAMESPACE,
                 `METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`
             );
 
             res.on('finish', () => {
                 /** Log the res */
-                logging.info(
+                logging.debug(
                     NAMESPACE,
                     `METHOD: [${req.method}] - URL: [${req.url}] - STATUS: [${res.statusCode}] - IP: [${req.socket.remoteAddress}]`
                 );
@@ -68,7 +72,6 @@ class RouterApi {
         });
 
         /** Parse the body of the request */
-        this.router.use(apiLimiter);
         this.router.use(express.urlencoded({ extended: false }));
         this.router.use(express.json());
 
@@ -93,20 +96,20 @@ class RouterApi {
         if (this.secured) {
             // HTTPS App
             this.router.use('/auth', loginAccountLimiter, authRoutes);
-            this.router.use('/notificationaction', notificationactionRoutes);
-            this.router.use('/calendar', auth_api(), calendarRoutes);
-            this.router.use('/calendarGroups', auth_api(), calendarGroupRoutes);
-            this.router.use('/car', auth_api(), carRoutes);
-            this.router.use('/user', auth_api(), userRoutes);
-            this.router.use('/statistic', auth_api(), statisticRoutes);
-            this.router.use('/alarm', auth_api(), alarmRoutes);
-            this.router.use('/group', auth_api(), groupRoutes);
-            this.router.use('/diashow', auth_api(), diashowRoutes);
-            this.router.use('/device', auth_api(), deviceRoutes);
-            this.router.use('/hydrant', auth_api(), hydrantRoutes);
-            this.router.use('/praesentation', auth_api(), praesentationRoutes);
-            this.router.use('/contact', auth_api(), contactRoutes);
-            this.router.use('/', auth_api(), sampleRoutes);
+            this.router.use('/notificationaction', apiLimiter, notificationactionRoutes);
+            this.router.use('/calendar', apiLimiter, auth_api(), calendarRoutes);
+            this.router.use('/calendarGroups', apiLimiter, auth_api(), calendarGroupRoutes);
+            this.router.use('/car', apiLimiter, auth_api(), carRoutes);
+            this.router.use('/user', apiLimiter, auth_api(), userRoutes);
+            this.router.use('/statistic', apiLimiter, auth_api(), statisticRoutes);
+            this.router.use('/alarm', apiLimiter, auth_api(), alarmRoutes);
+            this.router.use('/group', apiLimiter, auth_api(), groupRoutes);
+            this.router.use('/diashow', diashowLimiter, auth_api(), diashowRoutes);
+            this.router.use('/device', apiLimiter, auth_api(), deviceRoutes);
+            this.router.use('/hydrant', apiLimiter, auth_api(), hydrantRoutes);
+            this.router.use('/praesentation', apiLimiter, auth_api(), praesentationRoutes);
+            this.router.use('/contact', apiLimiter, auth_api(), contactRoutes);
+            this.router.use('/', apiLimiter, auth_api(), sampleRoutes);
         } else {
             // HTTP Bildschirm
             this.router.use('/alarm', alarmRoutes);

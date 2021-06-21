@@ -46,6 +46,29 @@
                         </div>
 
                     </div>
+
+                    <div class="list">
+
+                        <div class="item">
+                            <span class="left material-icons">notifications_active</span>
+                            <span class="text">Telegram</span>
+                            <label class="switch right">
+                                <input type="checkbox" checked disabled>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="item">
+                            <span class="left material-icons">notifications_active</span>
+                            <span class="text">App</span>
+                            <label class="switch right hidden onpermission">
+                                <input class="var_appnotifications" type="checkbox" onchange="update_settings_notifications_app(this.checked)">
+                                <span class="slider round"></span>
+                            </label>
+                            <span class="right notificationBtn" onclick="notifications_askPermission()">Erlauben</span>
+                        </div>
+
+                    </div>
                     
                     
                 </div>
@@ -57,6 +80,9 @@
 
         <script>
 
+            // https://itnext.io/an-introduction-to-web-push-notifications-a701783917ce
+            const pushServerPublicKey = "<%= vapid_public %>";
+
             // Laden
             async function load_settings_all() {
                 try {
@@ -65,9 +91,11 @@
 
                     const var_notifications_calendar = document.querySelector('.var_notifications_calendar');      
                     const var_status_hidden          = document.querySelector('.var_status_hidden');  
+                    const var_appnotifications       = document.querySelector('.var_appnotifications');     
 
                     var_notifications_calendar.checked = user.sendRemembers == 1;
                     var_status_hidden.checked          = user.statusHidden == 1;
+                    var_appnotifications.checked       = user.appNotifications > 0 ;
 
                 } catch (error) {
                     console.error('load_settings_all', error);
@@ -100,11 +128,105 @@
                     console.error('update_status_hidden', error);
                 }                
                 loaderOut();
-            }            
+            }          
+            
+            async function update_settings_notifications_app(status) {
+                loaderIn()
+                try {
+                    const var_appnotifications = document.querySelector('.var_appnotifications');
+                    const subscription = await notifications_createSubscription();
+                    
+                    const response = await fetch_post(url_user_notifications_app_update.replace(':id', user_id), 
+                        {value: status ? 5 : 0, subscription: JSON.stringify(subscription)});
+                } catch (error) {
+                    console.error('update_settings_notifications_app', error);
+                }
+                loaderOut();
+            }
+
+            // Hilfsfunktionen
+            function isPushNotificationSupported() {
+                return "serviceWorker" in navigator && "PushManager" in window && location.protocol === 'https:';
+            }
+
+            function notifications_checkPromise() {
+                try {
+                    Notification.requestPermission().then();
+                } catch(e) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            function notifications_handlePermission(permission) {
+                const notificationBtn = document.querySelector('.notificationBtn');     
+                const onpermission    = document.querySelector('.onpermission'); 
+
+                // set the button to shown or hidden, depending on what the user answers
+                if(Notification.permission === 'denied' || Notification.permission === 'default') {
+                    notificationBtn.style.display = 'block';
+                    onpermission.classList.add('hidden');
+                } else {
+                    notificationBtn.style.display = 'none';
+                    onpermission.classList.remove('hidden');
+                }
+            }
+
+            function notifications_askPermission() {
+                const notificationBtn = document.querySelector('.notificationBtn');     
+
+                // Let's check if the browser supports notifications
+                if (!isPushNotificationSupported()) {
+                    console.log("This browser does not support notifications.");
+                    notificationBtn.innerHTML = '----';
+                } else {
+                    if(notifications_checkPromise()) {
+                        Notification.requestPermission()
+                        .then((permission) => {
+                            notifications_handlePermission(permission);
+                        })
+                    } else {
+                        Notification.requestPermission(function(permission) {
+                            notifications_handlePermission(permission);
+                        });
+                    }
+                }
+            }
+
+            function notifications_checkForPermission() {
+                Notification.permission
+                const notificationBtn = document.querySelector('.notificationBtn');     
+
+                // Let's check if the browser supports notifications
+                if (!isPushNotificationSupported()) {
+                    console.log("This browser does not support notifications.");
+                    notificationBtn.innerHTML = '<span class="material-icons">extension_off</span>';
+                } else {
+                    notifications_handlePermission(Notification.permission);
+                }
+            }
+
+            function notifications_createSubscription() {
+                //wait for service worker installation to be ready, and then
+                return navigator.serviceWorker.ready.then(function(serviceWorker) {
+                    // subscribe and return the subscription
+                    return serviceWorker.pushManager
+                        .subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: pushServerPublicKey
+                        })
+                        .then(function(subscription) {
+                            console.log("User is subscribed.", subscription);
+                            return subscription;
+                        });
+                });
+            }
 
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_settings_all();
+                notifications_checkForPermission();
             };
             
 

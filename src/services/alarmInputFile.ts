@@ -45,7 +45,7 @@ class AlarmInputFileService {
                 );
                 printService.print(path.substring(0, path.lastIndexOf('.')));
             } catch (error) {
-                logging.ecxeption(NAMESPACE, error);
+                logging.exception(NAMESPACE, error);
             }
         }
     }

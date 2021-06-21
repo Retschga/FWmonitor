@@ -76,7 +76,7 @@ const error = (namespace: string, message: string, object?: any) => {
     }
 };
 
-const ecxeption = (namespace: string, err: Error) => {
+const exception = (namespace: string, err: Error) => {
     console.log(
         colors.red(
             `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${JSON.stringify(
@@ -112,6 +112,6 @@ export default {
     warn,
     error,
     debug,
-    ecxeption,
+    exception,
     LOGLEVEL
 };

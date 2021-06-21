@@ -115,6 +115,10 @@ ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
 # Optional
 #ALARM_FILE_FOLDER_IN=C:\Eingang
 
+# Ghostskript Auflösung
+# Mit der Auflösung kann für bessere Ergebnisse experimentiert werden
+#GHOSTSCRIPT_RESOLUTION=600x600
+
 
 ######## ORDNER ########
 

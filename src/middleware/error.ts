@@ -10,7 +10,7 @@ const errorMiddleware = (error: HttpException, req: Request, res: Response, next
     let { status = 500, message, data } = error;
 
     logging.info(NAMESPACE, 'ErrorMiddleware called');
-    logging.ecxeption(NAMESPACE, error);
+    logging.exception(NAMESPACE, error);
 
     if (error.status === HttpStatusCodes.INTERNAL_SERVER_ERROR || message == undefined) {
         logging.info(NAMESPACE, 'INTERNAL_SERVER_ERROR');

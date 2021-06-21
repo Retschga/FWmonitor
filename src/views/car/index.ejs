@@ -35,7 +35,7 @@
 
             </div>
 
-            <div class="content">
+            <div class="content" style="overflow: hidden;">
 
                  <!-- LOADER KARTE -->
                 <div 
@@ -118,19 +118,31 @@
                     alarm = (await fetch_get(url_alarm_last, true))[0];
                     console.log('alarm', alarm);
 
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+
+                try {
+
                     streetCache = await fetch_get(url_alarm_streetCache.replace(':id', alarm.id), true);
                     console.log('streetCache', streetCache);
-
-                    routeData = await fetch_get(url_alarm_route.replace(':id', alarm.id), true);
-                    console.log('route data', routeData);
-
-                    const alert_alarm = document.querySelector('.alert_alarm'); 
-                    alert_alarm.classList.remove('hidden');  
 
 
                 } catch (error) {
                     console.error('load_alarm', error);
                 }
+
+                try {
+
+                    routeData = await fetch_get(url_alarm_route.replace(':id', alarm.id), true);
+                    console.log('route data', routeData);            
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+
+                const alert_alarm = document.querySelector('.alert_alarm'); 
+                alert_alarm.classList.remove('hidden');  
             }
 
             async function hydrantenkarte_load() { 
@@ -174,7 +186,7 @@
                 polylinePoints = null;
                 instructions = null;
                 if(routeData != undefined) {                    
-                    nav_parseJSON(routeData);
+                    nav_parseJSON(JSON.parse(routeData));
 	            }
                 var helpline = new ol.Feature({
                     'title': 'circleOnRoute',
@@ -213,7 +225,7 @@
 
                 // Alarm Zielmarker
                 let posiswitch = true;
-                if(isalarm.isAlarm && alarm.lat != '' && alarm.lat != 0) {
+                if(streetCache && isalarm.isAlarm && alarm.lat != '' && alarm.lat != 0) {
                     // Strassenmarker zur Karte hinzufügen 
                     if(streetCache[0]) {
                         streetCache = streetCache[0].map(function(l) {

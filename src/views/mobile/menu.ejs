@@ -44,61 +44,58 @@
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
+                        <% if (fwvv == true) { %>
+                        <div class="item only_admin hidden" onclick="loaderIn('einsatzzeit');">
+                            <span class="left material-icons">schedule</span>
+                            <span class="text">Einsatzzeiten</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+                        <% } %>
+
+                        <div class="padding_none only_admin hidden">
+                            <div class="item only_praes hidden" onclick="loaderIn('presentation');">
+                                <span class="left material-icons">present_to_all</span>
+                                <span class="text">Präsentation</span>
+                                <span class="right material-icons">chevron_right</span>
+                            </div>
+                        </div>
+
 
                     </div>
 
-                    <div class="list only_admin hidden">
+                    <div class="list">                        
 
-                        <div class="item" onclick="loaderIn('alarmsettings');">
-                            <span class="left material-icons">edit_notifications</span>
-                            <span class="text">Alarmierung</span>
-                            <span class="right material-icons">chevron_right</span>
-                        </div>
-
-                        <div class="item only_praes hidden" onclick="loaderIn('presentation');">
-                            <span class="left material-icons">present_to_all</span>
-                            <span class="text">Präsentation</span>
-                            <span class="right material-icons">chevron_right</span>
-                        </div>
-                        <div class="item" onclick="loaderIn('picturesdiashow');">
+                        <div class="item only_admin hidden" onclick="loaderIn('picturesdiashow');">
                             <span class="left material-icons">photo_library</span>
                             <span class="text">Diashowbilder</span>
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                    </div> 
-
-                    <div class="list">
-
                         <div class="item" onclick="loaderIn('settings_user');">
                             <span class="left material-icons">manage_accounts</span>
-                            <span class="text">Einstellungen - Benutzer</span>
+                            <span class="text">Einstellungen</span>
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                        <div class="item" onclick="loaderIn('settings_alarm');">
-                            <span class="left material-icons">settings</span>
-                            <span class="text">Einstellungen - Alarm</span>
+                        <div class="item only_admin hidden" onclick="loaderIn('alarmsettings');">
+                            <span class="left material-icons">edit_notifications</span>
+                            <span class="text">Einstellungen - Alarmierung</span>
                             <span class="right material-icons">chevron_right</span>
-                        </div>
+                        </div> 
 
-                    </div>     
-
-                    <div class="list only_admin hidden">
-
-                        <div class="item" onclick="loaderIn('user_list');">
+                        <div class="item only_admin hidden" onclick="loaderIn('user_list');">
                             <span class="left material-icons">manage_accounts</span>
-                            <span class="text">Benutzer</span>
+                            <span class="text">Einstellungen - Alle Benutzer</span>
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                        <div class="item" onclick="loaderIn('car_list');">
-                            <span class="left material-icons">settings</span>
-                            <span class="text">Auto Bildschirme</span>
+                        <div class="item only_admin hidden" onclick="loaderIn('car_list');">
+                            <span class="left material-icons">local_shipping</span>
+                            <span class="text">Einstellungen - Autos</span>
                             <span class="right material-icons">chevron_right</span>
                         </div>
 
-                    </div>                     
+                    </div>        
 
                     <div class="list only_admin hidden">
 

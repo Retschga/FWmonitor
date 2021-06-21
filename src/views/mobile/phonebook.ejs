@@ -50,23 +50,22 @@
                                             <div class="item subitem">
                                                 <span class="material-icons">phone</span>
                                                 <span class="text">Festnetz</span>
-                                                <span class="right var_tel">Festnetz</span>
+                                                <a class="var_tel_a"><span class="right var_tel">Festnetz</span></a> 
                                             </div>
                                             <div class="item subitem">
                                                 <span class="material-icons">phone</span>
                                                 <span class="text">Dienstlich</span>
-                                                <span class="right var_tel_dienst">Dienstlich</span>
+                                                <a class="var_tel_dienst_a"><span class="right var_tel_dienst">Dienstlich</span></a> 
                                             </div>
                                             <div class="item subitem">
                                                 <span class="material-icons">phone_in_talk</span>
                                                 <span class="text">Mobil</span>
-                                                <span class="right var_mobil">Mobil</span>
+                                                <a class="var_mobil_a"><span class="right var_mobil">Mobil</span></a> 
                                             </div>
                                             <div class="item subitem">
                                                 <span class="material-icons">email</span>
                                                 <span class="text">Email</span>
-                                                <span class="right var_email">Email</span>
-
+                                                <a class="var_email_a"><span class="right var_email">Email</span></a> 
                                             </div>
             
                                         </div>
@@ -116,13 +115,23 @@
                         const var_tel        = template.content.querySelector(".var_tel"); 
                         const var_tel_dienst = template.content.querySelector(".var_tel_dienst"); 
                         const var_mobil      = template.content.querySelector(".var_mobil"); 
-                        const var_email      = template.content.querySelector(".var_email");  
+                        const var_email      = template.content.querySelector(".var_email"); 
+                        
+                        const var_tel_a        = template.content.querySelector(".var_tel_a"); 
+                        const var_tel_dienst_a = template.content.querySelector(".var_tel_dienst_a"); 
+                        const var_mobil_a      = template.content.querySelector(".var_mobil_a"); 
+                        const var_email_a      = template.content.querySelector(".var_email_a"); 
                         
                         var_name.innerHTML       = contact.name + ' ' + contact.vorname;
                         var_tel.innerHTML        = contact.tel;
                         var_tel_dienst.innerHTML = contact.tel_dienst;
                         var_mobil.innerHTML      = contact.tel_mobil;
                         var_email.innerHTML      = contact.email; 
+
+                        var_tel_a.href = 'tel:' + contact.tel.replace(/[/-]/g, '');
+                        var_tel_dienst_a.href = 'tel:' + contact.tel_dienst.replace(/[/-]/g, '');
+                        var_mobil_a.href = 'tel:' + contact.tel_mobil.replace(/[/-]/g, '');
+                        var_email_a.href = 'mailto:' + contact.email;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);

@@ -16,16 +16,12 @@ router.get(
 );
 
 // Benutzer Rechte
-router.get(
-    '/rights',
-    auth_api(UserRights.admin, UserRights.ownid, UserRights.car),
-    awaitHandlerFactory(userController.get_user_rights.bind(userController))
-);
+router.get('/rights', awaitHandlerFactory(userController.get_user_rights.bind(userController)));
 
 // Benutzer Rollen
 router.get(
     '/roles/all',
-    auth_api(UserRights.admin, UserRights.ownid, UserRights.http),
+    auth_api(UserRights.admin, UserRights.http),
     awaitHandlerFactory(userController.get_user_roles_all.bind(userController))
 );
 

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <style>
+            table {
+              border-spacing: 0;
+              width: 100%;
+              border: 1px solid #ddd;     
+              max-height: 100%;         
+            }
+            
+            th {
+              cursor: pointer;
+            }
+            
+            th, td {
+              text-align: left;
+              padding: 16px;
+            }
+            
+            tr:nth-child(even) {
+              background-color: #f2f2f2
+            }
+
+            table          { overflow: auto; height: 100px; }
+            table thead th { position: sticky; top: 0; z-index: 1; background-color: #fff; }
+        </style>
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Einsatzzeiten</h1>      
+
+                <div class="flex_grow"></div> 
+
+                <button class="material-icons" onclick="yearBack()">chevron_left</button>
+                <h1 class="var_year">XXXX</h1>    
+                <button class="material-icons" onclick="yearForeward()">chevron_right</button>
+
+            </div>
+
+            <div class="content" style="overflow: hidden;">
+                
+                <div class="flex_column" style="height: 100%;">
+
+
+                    <div class="margin_top_0_5 padding_bottom_0_5 border_bottom">
+
+                        <div class="padding_top_1 padding_left_1 padding_right_1">
+
+                            <select 
+                                id="sortorder" 
+                                style="width: 100%;" 
+                                onChange="sortTable(this.options[this.selectedIndex].value)">
+                                <option value="1">Sortierung: Zeit</option>
+                                <option value="2">Sortierung: Einsätze</option>                                
+                            </select>
+    
+                        </div>
+    
+                    </div>
+    
+                    <div class="flex_grow" style="overflow-y: scroll; height: 100%;">
+    
+                        <table id="myTable">
+                            <thead>
+                                <tr>
+                                <!--When a header is clicked, run the sortTable function, with a parameter, 0 for sorting by names, 1 for sorting by country:-->  
+                                <th>Name</th>
+                                <th>Zeit (h)</th>
+                                <th>Anzahl</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template id="template-row">
+                                    <tr class="deleteme">
+                                        <td class="var_name">Berglunds snabbkop</td>
+                                        <td class="var_time">1,5h</td>
+                                        <td class="var_count">3</td>
+                                    </tr>   
+                                </template>                        
+                            </tbody>
+                        </table>                      
+
+                    </div>
+                            
+                     
+
+                </div>
+
+                
+                
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+        
+        <script>
+
+            const target = document.querySelector("#myTable");
+            var   year     = new Date().getFullYear();
+            const thisyear = year;
+
+            // Laden
+            async function load_list(year) {  
+                try {
+                    const time_elements = await fetch_get(url_statistic_list.replace(':year', year), true);
+                    console.log('contacts', time_elements);
+
+                    // Vorhandene Elemente löschen
+                    const elements = target.getElementsByClassName("deleteme");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                  
+                    // Kontakliste erstellen
+                    for(let i = 0; i < time_elements.length; i++) {
+                        const element = time_elements[i];
+
+                        const template       = document.querySelector('#template-row');       
+                        const var_name       = template.content.querySelector(".var_name");    
+                        const var_time       = template.content.querySelector(".var_time"); 
+                        const var_count      = template.content.querySelector(".var_count"); 
+                       
+                        
+                        var_name.innerHTML     = element.name + ' ' + element.vorname;
+                        var_time.innerHTML     = (parseInt(element.time) / 60).toFixed(2);
+                        var_count.innerHTML    = element.count;
+
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                    }
+
+                    const var_year   = document.querySelector(".var_year");
+                    const var_counttotal   = document.querySelector(".var_counttotal");
+                    var_year.innerHTML   = year;
+               
+                } catch (error) {
+                    console.error('load_contacts', error);
+                } 
+            }
+
+            // Hilfsfunktionen
+            // https://www.w3schools.com/howto/howto_js_sort_table.asp
+            function sortTable(n) {
+                var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+                table = document.getElementById("myTable");
+                switching = true;
+                // Set the sorting direction to ascending:
+                dir = "desc";
+                /* Make a loop that will continue until
+                no switching has been done: */
+                while (switching) {
+                    // Start by saying: no switching is done:
+                    switching = false;
+                    rows = table.rows;
+                    /* Loop through all table rows (except the
+                    first, which contains table headers): */
+                    for (i = 1; i < (rows.length - 1); i++) {
+                    // Start by saying there should be no switching:
+                    shouldSwitch = false;
+                    /* Get the two elements you want to compare,
+                    one from current row and one from the next: */
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    /* Check if the two rows should switch place,
+                    based on the direction, asc or desc: */
+                    if (dir == "asc") {
+                        if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                            shouldSwitch = true;
+                            break;
+                        };                    
+                    } else if (dir == "desc") {
+                            if (Number(x.innerHTML) < Number(y.innerHTML)) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                    }
+                    if (shouldSwitch) {
+                    /* If a switch has been marked, make the switch
+                    and mark that a switch has been done: */
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    // Each time a switch is done, increase this count by 1:
+                    switchcount ++;
+                    } else {
+                    /* If no switching has been done AND the direction is "asc",
+                    set the direction to "desc" and run the while loop again. */
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                    }
+                }
+            }
+
+            async function yearBack() {                
+                year--;
+                loaderIn();
+                await load_list(year);
+                sortTable(1);
+                loaderOut();
+            }
+
+            async function yearForeward() {                
+                year++;
+                if (year > thisyear)  {year = thisyear; return;}
+                loaderIn();
+                await load_list(year);
+                sortTable(1);
+                loaderOut();
+            }
+
+
+            // Funktionsaufrufe
+            loaderFunction = async () => {
+                await load_list(thisyear);
+                sortTable(1);
+            };
+            
+        </script>
+
+    </body>
+	
+</html>

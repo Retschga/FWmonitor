@@ -26,7 +26,7 @@ class DiashowController {
         try {
             await DiashowService.enable_pic(String(req.body.filename));
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not disabled');
         }
         res.send('OK');
@@ -38,7 +38,7 @@ class DiashowController {
         try {
             await DiashowService.disable_pic(String(req.body.filename));
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not enabled');
         }
         res.send('OK');
@@ -50,7 +50,7 @@ class DiashowController {
         try {
             await DiashowService.delete_pic(String(req.body.filename));
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not deleted');
         }
         res.send('OK');

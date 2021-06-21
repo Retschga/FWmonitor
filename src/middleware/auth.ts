@@ -50,6 +50,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
 
             userid = decodedSession.session.id;
             if (Number(userid) < 10) car = decodedSession.session.car;
+            if (!decodedSession.session.isV3) userid = -1;
         }
 
         // Anmeldung mit Login/Passwort
@@ -125,15 +126,24 @@ export const login_app = async function (req: Request, res: Response, next: Next
             req.session.name = car[0].name;
         }
 
+        console.log('\n\n\n\n\n');
+        console.log(req.session);
+        console.log('\n\n\n\n\n');
+
         // JWT erzeugen und als Cookie senden
-        const tokenSession: PartialTokenSession = { id: userid, car: car };
+        const tokenSession: PartialTokenSession = { id: userid, car: car, isV3: true };
         const new_token_session = createToken(tokenSession);
         res.header('Access-Control-Allow-Credentials', 'true');
         res.cookie('token', new_token_session.token, {
             secure: true,
             path: '/',
-            maxAge: config.app.jwt_expire * 1000
-            //httpOnly: true
+            maxAge: config.app.jwt_expire * 1000,
+            sameSite: 'strict' //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
+            //    signed?: boolean;
+            //    expires?: Date;
+            //  domain: config.app.enabled ? config.app.url : undefined
+            //    encode?: (val: string) => string;
+            // httpOnly: true,
         });
 
         res.cookie('car', car, {

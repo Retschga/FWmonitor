@@ -19,6 +19,10 @@
     overflow: hidden;
 }
 
+.col_left, .col_right {
+    min-width: fit-content;
+}
+
 .st_verf, .st_nverf {
     float: left;
     padding: 0.5em;

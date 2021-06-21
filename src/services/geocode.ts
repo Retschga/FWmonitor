@@ -138,7 +138,7 @@ class GeocodeService {
                         logging.debug(NAMESPACE, 'Ergebnis: Bahnübergang ', ret);
                     }
                 } catch (error) {
-                    logging.ecxeption(NAMESPACE, error);
+                    logging.exception(NAMESPACE, error);
                 }
             }
             if (ret.lat != '0') return ret;
@@ -186,7 +186,7 @@ class GeocodeService {
                     if (ret.lat != '0') return ret;
                 }
             } catch (error) {
-                logging.ecxeption(NAMESPACE, error);
+                logging.exception(NAMESPACE, error);
             }
         }
 
@@ -199,7 +199,7 @@ class GeocodeService {
                 ret.lng = response_bing.lng;
                 if (ret.lat != '0') return ret;
             } catch (error) {
-                logging.ecxeption(NAMESPACE, error);
+                logging.exception(NAMESPACE, error);
             }
         }
 

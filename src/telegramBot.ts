@@ -56,7 +56,7 @@ class TelegramBot {
         // Sichere Routen
         this.bot.hears('📅 Kalender', this.bot_calendar.bind(this));
         this.bot.hears('🚒 Verfügbarkeit', this.bot_verf.bind(this));
-        this.bot.hears('▪️ Mehr', this.bot_more.bind(this));
+        this.bot.hears('️▪️ Mehr', this.bot_more.bind(this));
         this.bot.hears('🔥 Einsätze', this.bot_history.bind(this));
         this.bot.hears('📱 FWmonitor APP', this.bot_app_menu.bind(this));
 
@@ -130,12 +130,12 @@ class TelegramBot {
         process.once('SIGINT', () => this.bot.stop('SIGINT'));
         process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
 
-        globalEvents.on('alarm', this.sendAlarm.bind(this));
-        globalEvents.on('calendar-remind', (termin: CalendarElement) => {});
+        globalEvents.on('alarm', this.alarm_send.bind(this));
+        globalEvents.on('calendar-remind', this.calendar_terminerinnerung.bind(this));
         globalEvents.on('userstatus-change', this.send_verf_status.bind(this));
-        globalEvents.on('paperstatus-change', (status: boolean) => {});
-        globalEvents.on('softwareinfo', (text: string) => {});
-        globalEvents.on('user-created', (name: string, vorname: string) => {});
+        globalEvents.on('paperstatus-change', this.bot_printer_paper_info.bind(this));
+        globalEvents.on('softwareinfo', this.bot_software_info.bind(this));
+        globalEvents.on('user-created', this.bot_user_created_info.bind(this));
 
         logging.debug(NAMESPACE, 'Initializing Telegram Bot... DONE');
     }
@@ -234,7 +234,7 @@ class TelegramBot {
                 });
             }
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -266,7 +266,7 @@ class TelegramBot {
             // Alles OK -> Nächste Route
             await next();
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -281,7 +281,7 @@ class TelegramBot {
                 ...Markup.keyboard([['/start']]).resize()
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -304,7 +304,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -318,7 +318,7 @@ class TelegramBot {
             if (!user || user.length < 1) throw new Error('user not found');
 
             const { password, hash } = Security.createNewPassword();
-            const loginToken = Security.createToken({ id: user[0].id, car: false }, 60);
+            const loginToken = Security.createToken({ id: user[0].id, car: false, isV3: true }, 60);
 
             userService.update_login(user[0].id, hash);
 
@@ -347,7 +347,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -370,7 +370,7 @@ class TelegramBot {
                 ...Markup.inlineKeyboard(keyboard)
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -410,7 +410,7 @@ ${list[0].ort}_`,
                 }
             );
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -450,7 +450,7 @@ ${list[0].ort}_`,
                 parse_mode: 'Markdown'
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -486,7 +486,7 @@ ${list[0].ort}_`,
                 parse_mode: 'Markdown'
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -514,7 +514,7 @@ ${list[0].ort}_`,
                 ...Markup.inlineKeyboard(keyboard, { columns: 2 })
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -532,7 +532,7 @@ ${list[0].ort}_`,
                 ])
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -562,7 +562,7 @@ ${list[0].ort}_`,
                 ctx.editMessageText('📅 Kalender Erinnerungen -> Aus');
             }
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -572,7 +572,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant', { telegramid });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -582,7 +582,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_location', { telegramid });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -592,7 +592,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_location_ok', { telegramid });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -602,7 +602,7 @@ ${list[0].ort}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_type', { telegramid });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -648,7 +648,7 @@ ${list[0].ort}_`,
                 )
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -666,7 +666,7 @@ ${list[0].ort}_`,
 
             userService.update_status(user[0].id, UserStatus.VERFUEGBAR);
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -700,7 +700,7 @@ ${list[0].ort}_`,
                 userService.update_status(user[0].id, UserStatus.NICHT_VERFUEGBAR, until);
             }
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -761,7 +761,7 @@ ${list[0].ort}_`,
                 )
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -799,7 +799,7 @@ _${st_nichtverf}_`,
                 }
             );
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -844,7 +844,7 @@ _${st_nichtverf}_`,
                 ])
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -887,12 +887,46 @@ _${st_nichtverf}_`,
                 parse_mode: 'HTML'
             });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
+        }
+    }
+
+    private async calendar_terminerinnerung(termin: CalendarElement) {
+        logging.debug(NAMESPACE, 'Sende terminerinnerung');
+
+        const users = await userService.find_all_approved();
+        if (!users || users.length < 1) {
+            throw new Error('Error: No User found');
+        }
+
+        for (let i = 0; i < users.length; i++) {
+            const user = users[i];
+
+            const calGroups = user.kalenderGroups.split('|');
+            let send = false;
+
+            for (let j = 0; j < termin.group.length; j++) {
+                if (calGroups.indexOf(String(termin.group[j].id)) != -1) {
+                    send = true;
+                    break;
+                }
+            }
+
+            if (send) {
+                const time = new Date(String(termin.start)).toLocaleTimeString(config.timezone);
+                this.sendMessage(
+                    user.telegramid,
+                    `<b>Terminerinnerung:</b>\n<i>${time} - ${termin.summary}</i>`,
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+            }
         }
     }
 
     // Alarm
-    private async sendAlarm(alarm: AlarmRow) {
+    private async alarm_send(alarm: AlarmRow) {
         const keyboard = Markup.inlineKeyboard([
             Markup.button.callback('👍 JA!', 'KommenJa:' + alarm.id),
             Markup.button.callback('👎 NEIN!', 'KommenNein:' + alarm.id)
@@ -1082,7 +1116,7 @@ _${st_nichtverf}_`,
                 true
             );
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -1109,7 +1143,7 @@ _${st_nichtverf}_`,
                 false
             );
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -1159,32 +1193,83 @@ _${st_nichtverf}_`,
                     ctx.reply('Bild speichern: Fehler.');
                 });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
     // Druckerinfo
-    private async bot_printer_paper(ctx: Context) {
+    private async bot_printer_paper_info(status: boolean) {
         try {
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_printer_paper', { telegramid });
+            const users = await userService.find_all_approved();
+            if (!users || users.length < 1) {
+                throw new Error('Error: No User found');
+            }
+
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+
+                if (!user.drucker) continue;
+
+                this.sendMessage(
+                    user.telegramid,
+                    `*Alarmdrucker*\n_Papierstatus: ${status ? 'OK' : 'LEER'}_`,
+                    {
+                        parse_mode: 'Markdown'
+                    }
+                );
+            }
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
     // Softwareinfo
-    private async bot_software_info(ctx: Context) {
+    private async bot_software_info(text: string) {
         try {
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_software_info', { telegramid });
+            const users = await userService.find_all_approved();
+            if (!users || users.length < 1) {
+                throw new Error('Error: No User found');
+            }
+
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+
+                if (!user.softwareInfo) continue;
+
+                this.sendMessage(user.telegramid, `<b>Softwareinfo:</b>\n<i>${text}</i>`, {
+                    parse_mode: 'HTML'
+                });
+            }
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
+    // User Created Info
+    private async bot_user_created_info(name: string, vorname: string) {
+        try {
+            const users = await userService.find_all_approved();
+            if (!users || users.length < 1) {
+                throw new Error('Error: No User found');
+            }
+
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+
+                if (!user.softwareInfo || !user.admin) continue;
+
+                this.sendMessage(
+                    user.telegramid,
+                    `<b>Softwareinfo:</b>\n<i>Neuer Benutzer angemeldet: ${name} ${vorname}</i>`,
+                    {
+                        parse_mode: 'HTML'
+                    }
+                );
+            }
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+    }
     /*
     private async bot_example(ctx: Context) {
         try {
@@ -1192,7 +1277,7 @@ _${st_nichtverf}_`,
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_example', { telegramid });
         } catch (error) {
-            logging.ecxeption(NAMESPACE, 'bot_example error', error);
+            logging.exception(NAMESPACE, error);
         }
     }
     */

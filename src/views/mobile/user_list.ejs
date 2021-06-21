@@ -6,6 +6,12 @@
         <%- include('partials/head') -%>	
         <title>FWmonitor - APP</title>	
 
+        <style>
+            .userelement {
+                scroll-margin-top: 20vh;
+            }
+        </style>
+
     </head>	
 
     <body>
@@ -125,7 +131,7 @@
                     for(let i = 1; i < calendarGroups.length; i++) {
                         tempStr += '<option value="'+calendarGroups[i].name+'">Kalendergruppe: '+calendarGroups[i].name+'</option>';
                     }
-                    document.getElementById("benutzer_filter").innerHTML = tempStr;
+                    document.getElementById("benutzer_filter").innerHTML = tempStr;                    
 
                     // Benutzerliste erstellen
                     for(let i = 0; i < users.blocked.length; i++) {
@@ -137,10 +143,12 @@
                         var_name.innerHTML = user.name + ' ' + user.vorname; 
 
                         const clone = document.importNode(template.content.firstElementChild, true);
+                        clone.id = 'scroll_'+ user.id;
                         target.append(clone);
 
                         clone.addEventListener("click", () => {
                             loaderIn('user?id=' + user.id);
+                            localStorage.setItem('user_list-scrollid', user.id);
                         });
                     }
 
@@ -195,13 +203,20 @@
                         }
                    
                         const clone = document.importNode(template.content.firstElementChild, true);
+                        clone.id = 'scroll_'+ element.id;
                         target.append(clone);
 
                         clone.addEventListener("click", () => {
                             loaderIn('user?id=' + element.id);
+                            localStorage.setItem('user_list-scrollid', element.id);
                         });
                     }
 
+                    const scrolltarget = document.querySelector('#scroll_' + localStorage.getItem('user_list-scrollid'));    
+                    if(scrolltarget) scrolltarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+
+                    if(localStorage.getItem('user_list-filter'))
+                        setSelectedIndex(document.getElementById("benutzer_filter"), localStorage.getItem('user_list-filter'));
                
                 } catch (error) {
                     console.error('load_users_all', error);
@@ -210,6 +225,8 @@
 
             // Hilfsfunktionen
             function filter_users(filter) {
+
+                localStorage.setItem('user_list-filter', filter)
 
                 ul = target;
                 li = ul.getElementsByClassName('userelement');

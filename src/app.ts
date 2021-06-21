@@ -48,7 +48,7 @@ const sessionstore = new MemoryStore({
     checkPeriod: 86400000 // clear expired every 24h
 });
 const sessionOptions: SessionOptions = {
-    secret: process.env.BOT_TOKEN || 'Super SECRET',
+    secret: process.env.BOT_TOKEN || 'Super NOT SECRET',
     name: 'FWmonitor',
     store: sessionstore,
     saveUninitialized: false,
@@ -57,7 +57,7 @@ const sessionOptions: SessionOptions = {
         secure: process.env.NODE_ENV != 'development',
         httpOnly: true,
         path: '/',
-        //	  sameSite: true, //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
+        sameSite: 'strict', //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
         maxAge: 1000 * 60 * 30
         //    signed?: boolean;
         //    expires?: Date;
@@ -77,7 +77,7 @@ appHttp.use('/api/v1', routerApi_open);
 appHttp.use('/screen', routerScreen);
 appHttp.use('/print', routePrint);
 appHttp.get('/', (req: Request, res: Response, next: NextFunction) => {
-    res.redirect('/screen/index');
+    res.redirect('/screen/index?name=' + req.query.name);
 });
 appHttp.use(express.static('./filesPublic/'));
 appHttp.use('/scripts', express.static('./build/scripts'));
@@ -110,6 +110,7 @@ appHttps.use('/api/v1', routerApi_secure);
 appHttps.use('/app', routermobile);
 appHttps.use('/car', routerCar);
 appHttps.use(express.static('./filesPublic/'));
+appHttps.use('/scripts', express.static('./build/scripts'));
 
 var secureContext: tls.SecureContext;
 function reloadCert(path_key: string, path_cert: string) {
@@ -118,7 +119,10 @@ function reloadCert(path_key: string, path_cert: string) {
         cert: fs.readFileSync(path_cert, 'utf8')
     });
 }
-setInterval(reloadCert, 1000 * 60 * 60 * 24);
+setInterval(() => {
+    if (!config.server_https.key || !config.server_https.cert) return;
+    reloadCert(config.server_https.key, config.server_https.cert);
+}, 1000 * 60 * 60 * 24);
 reloadCert(config.server_https.key, config.server_https.cert);
 var httpsOptions: https.ServerOptions = {
     SNICallback: function (domain, cb) {

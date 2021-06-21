@@ -84,7 +84,7 @@ const ALARM = {
 
 const PROGRAMS = {
     ghostscript: process.env.GHOSTSCRIPT_PATH,
-    ghostscript_res: process.env.GHOSTSCRIPT_RESOLUTION || '500x500',
+    ghostscript_res: process.env.GHOSTSCRIPT_RESOLUTION || '600x600',
 
     tesseract: process.env.TESSERACT_PATH,
 
@@ -109,7 +109,8 @@ const PRINTING = {
 
 const PAPER = {
     printer_path: process.env.PAPER_PRINTER_PATH,
-    printer_regex: process.env.PAPER_PRINTER_REGEX
+    printer_regex: process.env.PAPER_PRINTER_REGEX,
+    interval: 60000
 };
 
 const COMMON = {
@@ -170,10 +171,11 @@ const ALARMFIELDS = {
 };
 
 const RATE_LIMITS = {
-    api_count: Number(process.env.RATELIMIT_API_COUNT || 100),
+    api_count: Number(process.env.RATELIMIT_API_COUNT || 1000),
     api_time: Number(process.env.RATELIMIT_API_TIME || 10), //min
     api_login_count: Number(process.env.RATELIMIT_API_LOGIN_COUNT || 15),
     api_login_time: Number(process.env.RATELIMIT_API_LOGIN_TIME || 10), //min
+    api_count_diashow: Number(process.env.RATELIMIT_API_DIASHOW_COUNT || 5000),
     app_count: Number(process.env.RATELIMIT_APP_COUNT || 200),
     app_time: Number(process.env.RATELIMIT_APP_TIME || 15), //min
     car_count: Number(process.env.RATELIMIT_CAR_COUNT || 200),
@@ -204,7 +206,8 @@ const config = {
     logging: LOG,
     screen: SCREEN,
     paper: PAPER,
-    rateLimit: RATE_LIMITS
+    rateLimit: RATE_LIMITS,
+    timezone: 'de-DE'
 };
 
 export default config;

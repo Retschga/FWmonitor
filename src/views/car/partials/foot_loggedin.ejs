@@ -5,6 +5,7 @@
 
     // Websockets
     var ws_software = null;
+    let lastKeepAlive = new Date();
 
     const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
     const url_alarm = '/api/v1/alarm/:id';
@@ -31,14 +32,15 @@
     async function ws_server_connect() {	
         ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
         let wsStatusInterval = null;
-        var keepAliveInterval = null;
-        let log = "";
+        let keepAliveInterval = null;
 
         const userrights = await fetch_get('/api/v1/user/rights', true);
         console.log('userrights', userrights);
 
         car_name = userrights.name;
         localStorage.setItem('car_name', car_name);
+
+        console.log('Software-connection socket connecting...');
 
         // Sende Status Datensatz
         let sendStatus = () => {ws_software.send(
@@ -54,8 +56,7 @@
                     {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                     {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                     {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
-                    {"id":"-4", "key": "LOG", "value": "${log}"}
+                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
             ]}`
         );}   
         let sendStatusUpdate = () => {ws_software.send(
@@ -66,13 +67,12 @@
                     {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                     {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                     {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
-                    {"id":"-4", "key": "LOG", "value": "${log}"}
+                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
             ]}`
         );}      
 
         ws_software.onopen = function() {
-            console.log("Software-connection socketconnected:");
+            console.log("Software-connection socket connected!");
 
             // Sende Status Datensatz
             sendStatus();
@@ -92,7 +92,7 @@
                     update_server_status(false);				
                     location.reload(); 
                 }
-            }, 10000)
+            }, 60000)
         };
 
         ws_software.onmessage = function(e) {
@@ -107,7 +107,8 @@
             // Keep Alive
             if(topic == 'ping') {
                 lastKeepAlive = new Date();	
-                socket.send(JSON.stringify({topic: 'pong', message :message}));				
+                socket.send(JSON.stringify({topic: 'pong', message :message}));			
+                update_server_status(true);		
                 loaderOut();
             }
 
@@ -119,6 +120,11 @@
                 localStorage.setItem('gps.altMin', GPS_alt_min);
 
                 location.reload(); 
+            } 
+            
+            if(topic == 'init') {
+                // Sende Status Datensatz
+                sendStatus();
             }
 
             if(topic == 'action_0') {
@@ -127,12 +133,12 @@
             
             if(topic == 'action_7') {
                 loaderIn(undefined, undefined, 'Neustart');
-                wsSteuer.send('restart');
+                restart();
             }
 
             if(topic == 'action_8') {
                 loaderIn(undefined, undefined, 'Update');
-                wsSteuer.send('update');
+                update();
             }
         };
 
@@ -152,14 +158,8 @@
             clearInterval(wsStatusInterval);
             clearInterval(keepAliveInterval);
             ws_software.close();
-            setTimeout(function() {
-                ws_server_connect();
-            }, 15000);
         };
     }
-
-
-
 
     
 

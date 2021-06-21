@@ -34,8 +34,7 @@ class CalendarController {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
         }
 
-        let usergroups = user[0].kalenderGroups == '' ? ['1'] : user[0].kalenderGroups.split('|');
-        console.log('usergroups: ', usergroups);
+        let usergroups = user[0].kalenderGroups.split('|');
 
         for (let i = 0; i < list.length; i++) {
             for (let j = 0; j < list[i].group.length; j++) {

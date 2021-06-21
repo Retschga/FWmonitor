@@ -340,6 +340,12 @@
                             var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
                             var clone = document.importNode(template.content, true);
                             target_nichtverfuegbar.appendChild(clone);
+                        } else if (status_nverf && (userstatus.status == -2 || userstatus.status == -1 || userstatus.status == 0)) {
+                            const template = document.querySelector('#template-nichtverfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = "Telegram Fehler: " + userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_nichtverfuegbar.appendChild(clone);
                         }
                     }
 
@@ -359,7 +365,7 @@
 					this.send(`{
                         "topic": "init",
 						"type":"WebClient",
-						"name":"Alarmdisplay - ${clientName}",
+						"name":"Alarmdisplay ${clientName}",
 						"info":"Index",
 						"actions":[
 							{"id":"0"},

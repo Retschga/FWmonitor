@@ -25,6 +25,10 @@ router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
     res.render('car/redirect', generateParams(req));
 });
 
+router.get('/', (req: Request, res: Response, next: NextFunction) => {
+    res.redirect('index?name=' + req.query.name);
+});
+
 router.get('/index', (req: Request, res: Response, next: NextFunction) => {
     res.render('car/index', generateParams(req));
 });

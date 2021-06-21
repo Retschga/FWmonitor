@@ -31,7 +31,6 @@ class CalendarService {
      * @param {*} b Element 2
      */
     private sortByDate(a: CalendarElement, b: CalendarElement) {
-        0;
         if (!b.start) return 1;
         if (!a.start) return -1;
         return +new Date(a.start) - +new Date(b.start);
@@ -148,7 +147,7 @@ class CalendarService {
 
             return calendarElements;
         } catch (error) {
-            logging.ecxeption(NAMESPACE, error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -269,7 +268,10 @@ class CalendarService {
 
                 if (termin.remind != undefined) {
                     // Erinnerungs-Datum zwischen letzter Überprüfung und jetzt
-                    if (lastTime < termin.remind && termin.remind < date_now) {
+
+                    const timeRemind = new Date(termin.remind).getTime();
+
+                    if (lastTime.getTime() < timeRemind && timeRemind < date_now.getTime()) {
                         logging.debug(NAMESPACE, 'Terminerinnerung: ', termin);
                         globalEvents.emit('calendar-remind', termin);
                     }

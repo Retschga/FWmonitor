@@ -218,73 +218,77 @@ class AlarmParserService {
 
         AlarmService.create(alarmRow);
 
-        // Alarmusdruck erzeugen
-        logging.debug(NAMESPACE, 'Starte Puppeteer');
-        const browser = await puppeteer.launch({
-            args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
-        });
-        var page = await browser.newPage();
+        try {
+            // Alarmusdruck erzeugen
+            logging.debug(NAMESPACE, 'Starte Puppeteer');
+            const browser = await puppeteer.launch({
+                args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
+            });
+            var page = await browser.newPage();
 
-        // Navigiere puppeteer zu Ausdruck Seite
-        await page.goto(
-            'http://' +
-                config.server_http.hostname +
-                ':' +
-                config.server_http.port +
-                '/print?varEINSATZSTICHWORT=' +
-                alarmFields.EINSATZSTICHWORT +
-                '&varSCHLAGWORT=' +
-                alarmFields.SCHLAGWORT +
-                '&varOBJEKT=' +
-                alarmFields.OBJEKT +
-                '&varBEMERKUNG=' +
-                alarmFields.BEMERKUNG +
-                '&varSTRASSE=' +
-                alarmFields.STRASSE +
-                '&varORTSTEIL=' +
-                alarmFields.ORTSTEIL +
-                '&varORT=' +
-                alarmFields.ORT +
-                '&lat=' +
-                geoData.lat +
-                '&lng=' +
-                geoData.lng +
-                '&isAddress=' +
-                (geoData.isAddress == true ? 1 : 0) +
-                '&noMap=' +
-                (alarmFields.STRASSE == '' && geoData.isAddress == false ? 1 : 0),
-            { waitUntil: 'networkidle2' }
-        );
+            // Navigiere puppeteer zu Ausdruck Seite
+            await page.goto(
+                'http://' +
+                    config.server_http.hostname +
+                    ':' +
+                    config.server_http.port +
+                    '/print?varEINSATZSTICHWORT=' +
+                    alarmFields.EINSATZSTICHWORT +
+                    '&varSCHLAGWORT=' +
+                    alarmFields.SCHLAGWORT +
+                    '&varOBJEKT=' +
+                    alarmFields.OBJEKT +
+                    '&varBEMERKUNG=' +
+                    alarmFields.BEMERKUNG +
+                    '&varSTRASSE=' +
+                    alarmFields.STRASSE +
+                    '&varORTSTEIL=' +
+                    alarmFields.ORTSTEIL +
+                    '&varORT=' +
+                    alarmFields.ORT +
+                    '&lat=' +
+                    geoData.lat +
+                    '&lng=' +
+                    geoData.lng +
+                    '&isAddress=' +
+                    (geoData.isAddress == true ? 1 : 0) +
+                    '&noMap=' +
+                    (alarmFields.STRASSE == '' && geoData.isAddress == false ? 1 : 0),
+                { waitUntil: 'networkidle2' }
+            );
 
-        // Warten bis gerendert
-        await timeout(5000);
+            // Warten bis gerendert
+            await timeout(5000);
 
-        logging.debug(NAMESPACE, 'Erstelle PDF und JPG...');
+            logging.debug(NAMESPACE, 'Erstelle PDF und JPG...');
 
-        // Ausdruck erstellen
-        const paperFormat: puppeteer.PaperFormat = 'a4';
-        await page.pdf({
-            path: config.folders.temp + 'druck.pdf',
-            format: paperFormat,
-            margin: { top: 0, right: 0, bottom: 0, left: 0 },
-            printBackground: false
-        });
+            // Ausdruck erstellen
+            const paperFormat: puppeteer.PaperFormat = 'a4';
+            await page.pdf({
+                path: config.folders.temp + 'druck.pdf',
+                format: paperFormat,
+                margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                printBackground: false
+            });
 
-        await browser.close();
+            await browser.close();
 
-        logging.debug(NAMESPACE, 'Erstelle PDF und JPG... Fertig');
+            logging.debug(NAMESPACE, 'Erstelle PDF und JPG... Fertig');
 
-        if (config.printing.pagecountAlarm > 0) {
-            logging.debug(NAMESPACE, 'Alarmausdruck...');
+            if (config.printing.pagecountAlarm > 0) {
+                logging.debug(NAMESPACE, 'Alarmausdruck...');
 
-            for (let i = 0; i < config.printing.pagecountAlarm; i++) {
-                // Drucken
-                logging.info(
-                    NAMESPACE,
-                    'Seite ' + (i + 1) + ' von ' + config.printing.pagecountAlarm
-                );
-                PrintingServoce.print(config.folders.temp + 'druck');
+                for (let i = 0; i < config.printing.pagecountAlarm; i++) {
+                    // Drucken
+                    logging.info(
+                        NAMESPACE,
+                        'Seite ' + (i + 1) + ' von ' + config.printing.pagecountAlarm
+                    );
+                    PrintingServoce.print(config.folders.temp + 'druck');
+                }
             }
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
         }
     }
 }

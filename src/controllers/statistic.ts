@@ -34,6 +34,17 @@ class StatisticController {
         }
         res.send(response);
     }
+
+    public async get_einsatzzeit_all(req: Request, res: Response, next: NextFunction) {
+        logging.debug(NAMESPACE, 'get_einsatzzeit_all');
+
+        let response;
+        response = await StatisticServise.einsatzzeit_all(Number(req.params.year));
+        if (!response) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No time not found');
+        }
+        res.send(response);
+    }
 }
 
 export default new StatisticController();

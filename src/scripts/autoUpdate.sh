@@ -33,10 +33,10 @@ sudo chmod +x /home/pi/autoUpdate.sh
 sudo chmod +x /home/pi/restartWlan.sh
 
 ## RPI Update
-#apt-get update
-#apt-get upgrade -y 
-#apt-get autoremove -y
-#apt-get autoclean -y
+apt-get update
+apt-get upgrade -y 
+apt-get autoremove -y
+apt-get autoclean -y
 
 ## Raspberry PI neustarten
 echo "System-Neustart"

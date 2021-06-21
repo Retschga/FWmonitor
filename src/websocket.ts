@@ -74,7 +74,7 @@ class Websocket {
                             return;
                         }
                     } catch (error) {
-                        logging.ecxeption(NAMESPACE, error);
+                        logging.exception(NAMESPACE, error);
                         socket.write('HTTP/1.1 500 internal server error\r\n\r\n');
                         socket.destroy();
                         return;
@@ -106,25 +106,25 @@ class Websocket {
                 try {
                     logging.debug(NAMESPACE, 'Websocket received: ', data);
 
-                    /** Beispiel
-                    {
-                    "topic": "init/update",
-                    "type":"WebClient/PySteuerClient",
-                    "name":"Alarmdisplay - ${clientName}",
-                    "info":"Index",
-                    "actions":[
-                        {"id":"-2"},
-                        {"id":"0"},
-                        {"id":"1"},
-                        {"id":"2"},
-                        {"id":"3", "value": ${kalenderElemente}},
-                        {"id":"4"},
-                        {"id":"6"},
-                        {"id":"10", "value": ${pos_calendar}},
-                        {"id":"11", "value": ${pos_dwd}},
-                        {"id":"12", "value": ${diashow_time/1000}}
-                    ]}
-                 */
+                    /* Beispiel
+                        {
+                        "topic": "init/update",
+                        "type":"WebClient/PySteuerClient",
+                        "name":"Alarmdisplay - ${clientName}",
+                        "info":"Index",
+                        "actions":[
+                            {"id":"-2"},
+                            {"id":"0"},
+                            {"id":"1"},
+                            {"id":"2"},
+                            {"id":"3", "value": ${kalenderElemente}},
+                            {"id":"4"},
+                            {"id":"6"},
+                            {"id":"10", "value": ${pos_calendar}},
+                            {"id":"11", "value": ${pos_dwd}},
+                            {"id":"12", "value": ${diashow_time/1000}}
+                        ]}
+                    */
                     // {"id":"alles<1", "key":${key} "value": ${text}}   Textanzeige
                     // {"id":"0"}                           Button Reload
                     // {"id":"1"}                           Button Letzter Alarm
@@ -161,6 +161,7 @@ class Websocket {
                         ws.info = data_json.info;
 
                         for (let i = 0; i < data_json.actions.length; i++) {
+                            if (!ws.actions) continue;
                             const found = ws.actions.findIndex(
                                 (element) => element.id == data_json.actions[i].id
                             );
@@ -172,7 +173,7 @@ class Websocket {
                         }
                     }
                 } catch (error) {
-                    logging.ecxeption(NAMESPACE, error);
+                    logging.exception(NAMESPACE, error);
                 }
             });
 
@@ -208,6 +209,9 @@ class Websocket {
         let socks: SocketInfo[] = [];
         this.socket.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
+                if (!client.id) {
+                    client.send(JSON.stringify({ topic: 'init', message: '' }));
+                }
                 socks.push({
                     type: client.type,
                     id: client.id,

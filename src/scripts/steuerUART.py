@@ -151,6 +151,7 @@ class WebSocketRetry:
                     self._websocket_connection = ws
                     self.connected = True
                     await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
+                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}"
 
                     while self.connected:               
                         # Senden         
@@ -216,7 +217,6 @@ class WebSocketRetry:
 
 async def connectWebsocket(asyncState):
     asyncState.client = await WebSocketRetry.create("ws://" + targetserver)
-    await asyncState.client.send("{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
 
 async def closeWebsocket(asyncState):
     await asyncState.client.close()

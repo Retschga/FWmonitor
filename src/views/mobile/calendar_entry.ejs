@@ -126,6 +126,10 @@
 
             const id = $_GET['id'];
 
+            function localIsoDateTime(date) {
+                return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
+            }
+
             // Laden
             async function load_groups_all() {   
                 try {
@@ -173,12 +177,15 @@
             }
 
             async function load_entry() {
+
+
                 try {
                     const entry = await fetch_get(url_calendar.replace(':id', id), true);
-                    console.log('entry', entry);
+                    console.log('entry', entry);   
 
-                    const date = new Date(entry.start).toISOString();   
-                    const remind = new Date(entry.remind).toISOString();  
+
+                    const date = localIsoDateTime(new Date(entry.start));   
+                    const remind = localIsoDateTime(new Date(entry.remind));  
                     const {text, icon} = parseKalenderSummary(entry.summary);
 
                     const var_name         = document.querySelector(".var_name"); 

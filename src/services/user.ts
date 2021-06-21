@@ -95,13 +95,13 @@ class UserService {
     }
 
     public async find_by_telegramid(telegramid: string): Promise<UserModel.UserRow[] | undefined> {
-        const response = await UserModel.model.find({ telegramid: telegramid });
+        const response = await this.find({ telegramid: telegramid });
         if (response.length < 1) return;
         return response;
     }
 
     public async find_by_userid(id: Number): Promise<UserModel.UserRow[] | undefined> {
-        const response = await UserModel.model.find({ id: id });
+        const response = await this.find({ id: id });
         if (response.length < 1) return;
         return response;
     }

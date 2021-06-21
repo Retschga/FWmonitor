@@ -30,6 +30,7 @@ bashCommand_listNetw   = "sudo ip a"
 bashCommand_screen_on  = "vcgencmd display_power 1"
 bashCommand_screen_off = "vcgencmd display_power 0"
 bashCommand_updateNTP  = "sudo systemctl status systemd-timesyncd.service"
+bashCommand_cpuFreq    = "sudo cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq"
 
 if len(sys.argv) < 4:
     print("Aufruf: auto.py UBLOX_API_KEY SERVER_IP:PORT GPS_DEVICE")
@@ -163,6 +164,15 @@ async def echo(websocket, path):
             output = (output.stdout.read()).decode('utf-8')
             await printLog("cpuIdle OUT: " + output)
             await websocket.send("cpuIdle:" + output.rstrip("\n"))
+        if message == "getCpuFreq":
+            output = subprocess.Popen(bashCommand_cpuFreq, shell=True , stdout=subprocess.PIPE)
+            output.wait()
+            output = (output.stdout.read()).decode('utf-8')
+            await printLog("cpuFreq OUT: " + output)
+            await websocket.send("cpuFreq:" + output.rstrip("\n"))
+        if message == "getTimeToSleep":
+            await printLog("timeToSleep OUT: " + asyncState.timeToSleep)
+            await websocket.send("timeToSleep:" + asyncState.timeToSleep)
         if message == "getHostname":
             output = subprocess.Popen(bashCommand_hostname, shell=True , stdout=subprocess.PIPE)
             output.wait()

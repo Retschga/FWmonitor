@@ -858,3 +858,9 @@ button {
 .ol-control button {
     font-size: 2em;
 }
+
+
+
+.subitem .material-icons {
+    margin-right: 0.5em;
+}

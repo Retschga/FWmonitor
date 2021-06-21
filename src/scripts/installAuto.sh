@@ -217,7 +217,7 @@ do_overscan 1             # Enable overscan
 #do_camera 1               # Enable the camera
 do_ssh 0                  # Enable remote ssh login
 do_spi 1                  # Disable spi bus
-do_memory_split 128        # Set the GPU memory limit to 64MB
+do_memory_split 256        # Set the GPU memory limit to 64MB
 do_i2c 1                  # Disable the i2c bus
 #do_serial 1               # Disable the RS232 serial bus
 do_boot_behaviour B4

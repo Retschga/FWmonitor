@@ -9,11 +9,8 @@
 <script>    
 
     let firststart = true;
-
-    // Websockets
     var ws_hardware = null;
 
-    // GPS
     var GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
     var GPS_now = JSON.parse(localStorage.getItem('gps.now') || JSON.stringify(GPS_last));
     var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
@@ -24,7 +21,6 @@
     var GPS_alt_min = parseInt(localStorage.getItem('gps.altMin') || 0);
     var GPS_dist_sum = parseInt(localStorage.getItem('gps.distSum') || 0);				
 
-    // Raspberry PI Infos
     var status_memFree = 0;
     var status_memTotal = 0;
     var status_cpuTemp = 0;
@@ -35,13 +31,13 @@
     var status_usbtether = false;
 
     let loaderFunction = () => {};
+    let serviceWorker_registration = null;
 
     const url_login = '/api/v1/auth/login';
-
-    var serviceWorker_registration = null;
+   
 
     // -------- Update a Service Worker--------
-    function invokeServiceWorkerUpdateFlow(registration) {
+    function serviceWorker_invokeUpdateFlow(registration) {
         // TODO implement your own UI notification element
         loaderIn();
         notification.show("New version of the app is available. Refresh now?");
@@ -97,7 +93,7 @@
         // ensure the case when the updatefound event was missed is also handled
         // by re-invoking the prompt when there's a waiting Service Worker
         if (serviceWorker_registration.waiting) {
-            invokeServiceWorkerUpdateFlow(serviceWorker_registration)
+            serviceWorker_invokeUpdateFlow(serviceWorker_registration)
         }
 
         console.log('waiting for ready...');
@@ -224,7 +220,7 @@
         };
 
         ws_hardware.onmessage = function(e) {
-            console.log("Hardware-connection socket data received: " + e.data);
+        //    console.log("Hardware-connection socket data received: " + e.data);
 
             // Kein FIX
             if(e.data == "-1") {
@@ -362,7 +358,7 @@
     }			
 
     
-    async function initialLoad() {
+    async function load_initial() {
 
         ws_hardware_connect();          
         
@@ -393,6 +389,18 @@
         
     }
 
+    async function load_later() {
+        if(window.location.href.indexOf('login') == -1) {
+            const userrights = await fetch_get('/api/v1/user/rights', true)
+            .catch((err) => {location.reload()});
+            console.log('userrights', userrights);    
+            
+            if(userrights == undefined) location.reload();
+        }
+
+        loaderOut(); 
+    }
+
 
     // **** Events ****
     document.addEventListener('readystatechange', event => { 
@@ -412,7 +420,7 @@
     window.addEventListener('load', async (event) => {
         console.log('The page has fully loaded');
         try {
-            await initialLoad();  
+            await load_initial();  
         } catch (error) {
             console.error(error);            
         }
@@ -422,32 +430,31 @@
         loaderOut();    
     });
 
-    window.addEventListener('onpageshow', (event) => {
+    window.addEventListener('pageshow', (event) => {
         console.log('The page has been shown');
-        loaderOut();  
+        load_later();
     });
    
     window.addEventListener("click", (event) => {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = "none";
         }
-    }, false);
 
+        beep();               
+        dispAktiv();
+    }, false);
+/*
     window.onunload = function(){
         console.log('The page is unloading');
     };   
-    
+*/    
     window.addEventListener("visibilitychange", async () => {
         console.log(document.visibilityState, firststart);
 
         if (document.visibilityState === 'visible' && !firststart) {
             console.log("open");
 
-            const userrights = await fetch_get('/api/v1/user/rights', true)
-            .catch((err) => {location.reload()});
-            console.log('userrights', userrights);    
-            
-            if(userrights == undefined) location.reload();
+            load_later();
 
         } else {
             console.log("close");
@@ -468,11 +475,10 @@
         ws_hardware.send('restart');		
     }
 
-    window.onclick = function() {
-        beep();               
-        dispAktiv();
+    function update() {
+        ws_hardware.send('update');	
     }
-    
+
 
 
 </script>

@@ -10,6 +10,13 @@ import fs from 'fs';
 
 const NAMESPACE = 'Statistic_Service';
 
+type einsatzzeit = {
+    name: string;
+    vorname: string;
+    time: number;
+    count: number;
+};
+
 class StatisticService {
     // https://stackoverflow.com/questions/10473745/compare-strings-javascript-return-of-likely
     private editDistance(s1: string, s2: string) {
@@ -105,14 +112,14 @@ class StatisticService {
 
                 anzahl++;
                 if (record.E_VON != '' && record.BIS_DATUM != '' && record.E_BIS != '') {
-                    var eintragMonat = record.E_DATUM.substring(4, 6);
-                    var eintragTag = record.E_DATUM.substring(6, 8);
+                    const eintragMonat = record.E_DATUM.substring(4, 6);
+                    const eintragTag = record.E_DATUM.substring(6, 8);
 
-                    var bisJahr = record.BIS_DATUM.substring(0, 4);
-                    var bisMonat = record.BIS_DATUM.substring(4, 6);
-                    var bisTag = record.BIS_DATUM.substring(6, 8);
+                    const bisJahr = record.BIS_DATUM.substring(0, 4);
+                    const bisMonat = record.BIS_DATUM.substring(4, 6);
+                    const bisTag = record.BIS_DATUM.substring(6, 8);
 
-                    var startTime = new Date(
+                    const startTime = new Date(
                         eintragJahr +
                             '-' +
                             eintragMonat +
@@ -122,7 +129,7 @@ class StatisticService {
                             record.E_VON +
                             'Z'
                     );
-                    var endTime = new Date(
+                    const endTime = new Date(
                         bisJahr + '-' + bisMonat + '-' + bisTag + 'T' + record.E_BIS + 'Z'
                     );
 
@@ -139,6 +146,91 @@ class StatisticService {
             parser.on('end', () => {
                 logging.debug(NAMESPACE, 'ergebnis', { zeit, anzahl });
                 resolve({ time: zeit, count: anzahl });
+            });
+        });
+    }
+
+    public einsatzzeit_all(year: number) {
+        return new Promise(async (resolve, reject) => {
+            if (!config.fwvv.enabled) {
+                throw new Error(NAMESPACE + ' fwvv is not enabled');
+            }
+
+            logging.debug(NAMESPACE, 'einsatzzeit_all', {
+                year
+            });
+
+            let times: einsatzzeit[] = [];
+
+            const parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/E_PERSON.DBF'));
+
+            parser.on('header', (h: any) => {
+                //debug('dBase file header has been parsed');
+                //debug(h);
+            });
+
+            parser.on('record', (record: any) => {
+                if (record['@deleted'] == true) {
+                    return;
+                }
+
+                var eintragJahr = record.E_DATUM.substring(0, 4);
+                if (
+                    eintragJahr != year ||
+                    record.PERS_NR.indexOf('F') != -1 ||
+                    record.PERS_NR.indexOf('A') != -1 ||
+                    Number(record.PERS_NR) >= 200000
+                ) {
+                    return;
+                }
+
+                let user_index = times.findIndex(
+                    (el) => el.name == record.NAME && el.vorname == record.VORNAME
+                );
+
+                if (user_index == -1) {
+                    times.push({
+                        name: record.NAME,
+                        vorname: record.VORNAME,
+                        time: 0,
+                        count: 0
+                    });
+                    user_index = times.length - 1;
+                }
+
+                times[user_index].count++;
+
+                if (record.E_VON != '' && record.BIS_DATUM != '' && record.E_BIS != '') {
+                    const eintragMonat = record.E_DATUM.substring(4, 6);
+                    const eintragTag = record.E_DATUM.substring(6, 8);
+
+                    const bisJahr = record.BIS_DATUM.substring(0, 4);
+                    const bisMonat = record.BIS_DATUM.substring(4, 6);
+                    const bisTag = record.BIS_DATUM.substring(6, 8);
+
+                    const startTime = new Date(
+                        eintragJahr +
+                            '-' +
+                            eintragMonat +
+                            '-' +
+                            eintragTag +
+                            'T' +
+                            record.E_VON +
+                            'Z'
+                    );
+                    const endTime = new Date(
+                        bisJahr + '-' + bisMonat + '-' + bisTag + 'T' + record.E_BIS + 'Z'
+                    );
+
+                    let diff = (startTime.getTime() - endTime.getTime()) / 1000;
+                    diff /= 60;
+
+                    times[user_index].time += Math.abs(Math.round(diff));
+                }
+            });
+
+            parser.on('end', () => {
+                resolve(times);
             });
         });
     }
