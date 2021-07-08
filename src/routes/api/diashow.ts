@@ -8,6 +8,7 @@ import config from '../../utils/config';
 import { auth_api, UserRights } from '../../middleware/auth';
 import multer from 'multer';
 import diashowService from '../../services/diashow';
+import { italic } from 'colors/safe';
 
 const router = express.Router();
 const upload = multer({
@@ -65,6 +66,10 @@ router.get('/files/:file', auth_api(UserRights.admin, UserRights.http), async fu
 });
 
 router.post('/upload', upload.single('image'), function (req, res, next) {
+    if (req.file == undefined) {
+        res.send('error');
+        return;
+    }
     diashowService.process_new(config.folders.temp, req.file.filename);
     res.send('OK');
 });

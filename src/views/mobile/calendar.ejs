@@ -117,7 +117,7 @@
 
                         target.appendChild(clone);
 
-                        if(user_calendar_min || user_calendar_full) {
+                        if(element.id != -1 && (user_calendar_min || user_calendar_full)) {
                             clone.addEventListener("click", () => {
                                 loaderIn('calendar_entry?id=' + element.id);
                             });

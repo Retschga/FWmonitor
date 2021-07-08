@@ -89,20 +89,23 @@ class Websocket {
             );
         }
 
-        this.socket.on('connection', (ws) => {
+        this.socket.on('connection', (client) => {
             logging.debug(NAMESPACE, 'event connection');
-            ws.allowed = true;
+            client.allowed = true;
 
             // KeepAlive
-            ws.interval_keepAlive = setInterval(function () {
-                ws.send(JSON.stringify({ topic: 'ping', message: new Date().toISOString() }));
-                if (ws.readyState === WebSocket.CLOSED) {
-                    clearInterval(ws.interval_keepAlive);
-                    ws.terminate();
+            client.interval_keepAlive = setInterval(function () {
+                client.send(JSON.stringify({ topic: 'ping', message: new Date().toISOString() }));
+                if (!client.id) {
+                    client.send(JSON.stringify({ topic: 'init', message: '' }));
+                }
+                if (client.readyState === WebSocket.CLOSED) {
+                    clearInterval(client.interval_keepAlive);
+                    client.terminate();
                 }
             }, this.keepAliveTime);
 
-            ws.on('message', function incoming(data) {
+            client.on('message', function incoming(data) {
                 try {
                     logging.debug(NAMESPACE, 'Websocket received: ', data);
 
@@ -149,26 +152,26 @@ class Websocket {
 
                     if (topic == 'init') {
                         if (data_json.type) {
-                            ws.type = data_json.type;
-                            ws.id = getUniqueID();
-                            ws.name = data_json.name;
-                            ws.info = data_json.info;
-                            ws.actions = data_json.actions;
+                            client.type = data_json.type;
+                            client.id = getUniqueID();
+                            client.name = data_json.name;
+                            client.info = data_json.info;
+                            client.actions = data_json.actions;
                         }
                     }
 
                     if (topic == 'update') {
-                        ws.info = data_json.info;
+                        client.info = data_json.info;
 
                         for (let i = 0; i < data_json.actions.length; i++) {
-                            if (!ws.actions) continue;
-                            const found = ws.actions.findIndex(
+                            if (!client.actions) continue;
+                            const found = client.actions.findIndex(
                                 (element) => element.id == data_json.actions[i].id
                             );
                             if (found != -1) {
-                                ws.actions[found] = data_json.actions[i];
+                                client.actions[found] = data_json.actions[i];
                             } else {
-                                ws.actions.push(data_json.actions[i]);
+                                client.actions.push(data_json.actions[i]);
                             }
                         }
                     }
@@ -177,8 +180,8 @@ class Websocket {
                 }
             });
 
-            ws.on('close', function close() {
-                clearInterval(ws.interval_keepAlive);
+            client.on('close', function close() {
+                clearInterval(client.interval_keepAlive);
                 logging.debug(NAMESPACE, 'Websocket disconnect');
             });
         });

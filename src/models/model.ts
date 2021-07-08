@@ -37,7 +37,7 @@ class Model {
         if (limit > 0) sql += ` LIMIT ${limit}`;
         if (offset > 0) sql += ` OFFSET ${offset}`;
 
-        let response: undefined | T[] = await DatabaseConnection.query<[T]>(sql, valueData);
+        const response = DatabaseConnection.query<T>(sql, valueData);
 
         return response != undefined ? response : [];
     }
@@ -48,7 +48,7 @@ class Model {
      * @param params //{spalte: wert, ...}
      * @returns
      */
-    public async update(id: Number, params: object = {}): Promise<number> {
+    public async update(id: Number, params: object = {}) {
         logging.debug(NAMESPACE, 'update', { tablename: this.tablename, id, params });
 
         if (!Object.keys(params).length) {
@@ -56,11 +56,11 @@ class Model {
         }
 
         const { columnSet, valueData } = multibleColumnSet(params, ',');
-        let sql = `UPDATE ${this.tablename} SET ${columnSet} WHERE id=@id`;
+        const sql = `UPDATE ${this.tablename} SET ${columnSet} WHERE id=@id`;
 
-        (valueData as any)['@id'] = id;
+        (valueData as any)['id'] = id;
 
-        let response: any = await DatabaseConnection.runSQL(sql, valueData);
+        const response: any = DatabaseConnection.runSQL(sql, valueData);
 
         if (response == undefined) return 0;
         return response.changes;
@@ -71,10 +71,10 @@ class Model {
      * @param id
      * @returns
      */
-    public async delete(id: Number): Promise<number> {
+    public async delete(id: Number) {
         logging.debug(NAMESPACE, 'delete', { tablename: this.tablename, id });
         const sql = `DELETE FROM ${this.tablename} WHERE id=@id`;
-        let response: any = await DatabaseConnection.runSQL(sql, { '@id': id });
+        const response: any = DatabaseConnection.runSQL(sql, { id: id });
         if (response == undefined) return 0;
         return response.changes;
     }
@@ -84,15 +84,15 @@ class Model {
      * @param params //{spalte: wert, ...}
      * @returns
      */
-    public async insert(params: object = {}): Promise<number> {
+    public insert(params: object = {}) {
         logging.debug(NAMESPACE, 'insert', { tablename: this.tablename, params });
         if (!Object.keys(params).length) {
             return 0;
         }
         const { keySet, valueSet, valueData } = multibleKeySet(params);
-        let sql = `INSERT INTO ${this.tablename} (${keySet}) VALUES (${valueSet}) `;
+        const sql = `INSERT INTO ${this.tablename} (${keySet}) VALUES (${valueSet}) `;
 
-        let response: any = await DatabaseConnection.runSQL(sql, valueData);
+        const response: any = DatabaseConnection.runSQL(sql, valueData);
         if (response == undefined) return 0;
         return response.changes;
     }

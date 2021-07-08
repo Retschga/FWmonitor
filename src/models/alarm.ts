@@ -55,12 +55,9 @@ class AlarmModel extends Model {
 
         let sql = `SELECT einsatzstichwort, count(einsatzstichwort) AS count FROM ${this.tablename} WHERE strftime('%Y', date)=@year GROUP BY einsatzstichwort ORDER BY count DESC`;
 
-        let response: undefined | StatisticRow[] = await DatabaseConnection.query<[StatisticRow]>(
-            sql,
-            {
-                '@year': String(year)
-            }
-        );
+        let response = await DatabaseConnection.query<StatisticRow>(sql, {
+            year: String(year)
+        });
 
         return response != undefined ? response : [];
     }

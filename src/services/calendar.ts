@@ -82,10 +82,10 @@ class CalendarService {
             const calendarElement: CalendarElement = {
                 id: element.id,
                 summary: element.summary,
-                start: element.start != null ? element.start : undefined,
+                start: element.start != null ? new Date(element.start) : undefined,
                 end: undefined,
                 location: '',
-                remind: element.remind != null ? element.remind : undefined,
+                remind: element.remind != null ? new Date(element.remind) : undefined,
                 group: groupArray
             };
             calendarElements.push(calendarElement);

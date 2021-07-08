@@ -91,9 +91,9 @@ class AlarmService {
             undefined,
             undefined,
             undefined,
-            'WHERE strftime("%Y-%m-%d %H:%M",date) >= datetime("now", "-' +
+            "WHERE strftime('%Y-%m-%d %H:%M',date) >= datetime('now', '-" +
                 config.common.time_alarm +
-                ' minutes")'
+                " minutes')"
         );
 
         return response.length > 0;

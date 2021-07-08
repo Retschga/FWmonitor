@@ -5,7 +5,7 @@ import logging from './utils/logging';
 import userService from './services/user';
 import { UserStatus, UserApproved } from './models/user';
 import * as Security from './utils/security';
-import { getFormattedAlarmTime, timeout, fileExists } from './utils/common';
+import { getFormattedAlarmTime, timeout, fileExists, addLeadingZero } from './utils/common';
 import AlarmService from './services/alarm';
 import StatisticServise from './services/statistic';
 import { AlarmRow } from './models/alarm';
@@ -277,7 +277,7 @@ class TelegramBot {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_unknown', { telegramid });
 
-            ctx.reply('Telegram Bot der' + config.common.fwName_short, {
+            ctx.reply('Telegram Bot der ' + config.common.fwName_short, {
                 ...Markup.keyboard([['/start']]).resize()
             });
         } catch (error) {
@@ -723,7 +723,7 @@ ${list[0].ort}_`,
                 month: '2-digit',
                 day: '2-digit'
             });
-            let bis = date + ' ' + time;
+            bis = date + ' ' + time;
         }
 
         if (user[0].status == UserStatus.NICHT_VERFUEGBAR) {
@@ -830,7 +830,19 @@ _${st_nichtverf}_`,
             for (let i = 0; i < list.length; i++) {
                 for (let j = 0; j < list[i].group.length; j++) {
                     if (usergroups.indexOf(String(list[i].group[j].id)) != -1) {
-                        str += '<i>' + list[i].summary + '</i>\n';
+                        let d = new Date(list[i].start || '1970-01-01');
+                        str +=
+                            '<i>' +
+                            addLeadingZero(d.getDate()) +
+                            '.' +
+                            addLeadingZero(d.getMonth() + 1) +
+                            '. ' +
+                            addLeadingZero(d.getHours()) +
+                            ':' +
+                            addLeadingZero(d.getMinutes()) +
+                            ' - ' +
+                            list[i].summary +
+                            '</i>\n';
                     }
                 }
             }
@@ -874,9 +886,35 @@ _${st_nichtverf}_`,
             for (let i = 0; i < list.length; i++) {
                 for (let j = 0; j < list[i].group.length; j++) {
                     if (usergroups.indexOf(String(list[i].group[j].id)) != -1) {
-                        str += '<b>' + list[i].summary + '</b>\n';
+                        let d = new Date(list[i].start || '1970-01-01');
+                        str +=
+                            '<b>' +
+                            addLeadingZero(d.getDate()) +
+                            '.' +
+                            addLeadingZero(d.getMonth() + 1) +
+                            '. ' +
+                            addLeadingZero(d.getHours()) +
+                            ':' +
+                            addLeadingZero(d.getMinutes()) +
+                            ' - ' +
+                            list[i].summary +
+                            '</b>\n';
+                        break;
                     } else {
-                        str += '<i>' + list[i].summary + '</i>\n';
+                        let d = new Date(list[i].start || '1970-01-01');
+                        str +=
+                            '<i>' +
+                            addLeadingZero(d.getDate()) +
+                            '.' +
+                            addLeadingZero(d.getMonth() + 1) +
+                            '. ' +
+                            addLeadingZero(d.getHours()) +
+                            ':' +
+                            addLeadingZero(d.getMinutes()) +
+                            ' - ' +
+                            list[i].summary +
+                            '</i>\n';
+                        break;
                     }
                 }
             }

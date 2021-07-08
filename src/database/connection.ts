@@ -1,14 +1,15 @@
 'use strict';
 
-import sqlite3 from 'sqlite3';
-import * as sqlite from 'sqlite';
+import Database from 'better-sqlite3';
 import logging from '../utils/logging';
 import config from '../utils/config';
+import path from 'path';
+import fs from 'fs';
 
 const NAMESPACE = 'databaseConnection';
 
 class DatabaseConnection {
-    private db: sqlite.Database | undefined = undefined;
+    private db: Database.Database | undefined = undefined;
     private file: string;
 
     constructor(file: string) {
@@ -16,50 +17,39 @@ class DatabaseConnection {
         this.init();
     }
 
-    private async init() {
+    private init() {
         try {
             logging.debug(NAMESPACE, 'INIT...');
-            await this.open();
+            this.open();
             if (this.db == undefined) {
                 logging.error(NAMESPACE, 'INIT... ERROR - db is undefined');
                 return;
             }
             logging.debug(NAMESPACE, 'MIGRATING...');
-            await this.db.migrate({
-                force: false,
-                migrationsPath: './src/migrations/'
-            });
+            this.migrate(false, '../migrations');
             logging.debug(NAMESPACE, 'MIGRATING... DONE');
-            await this.close();
             logging.debug(NAMESPACE, 'INIT... OK');
         } catch (error) {
-            logging.error(NAMESPACE, 'Error', error);
+            logging.exception(NAMESPACE, error);
         }
+
+        process.on('exit', () => this.close());
     }
 
-    private async open() {
+    private open() {
         logging.debug(NAMESPACE, 'OPEN...');
-        this.db = await sqlite.open({
-            filename: this.file,
-            driver: sqlite3.Database
-        });
 
-        this.db.on('trace', (data: any) => {
-            logging.error(NAMESPACE, 'Errordata', data);
-        });
-        this.db.on('profile', (data: any) => {
-            logging.error(NAMESPACE, 'Profiledata', data);
-        });
-        sqlite3.verbose();
+        this.db = new Database(this.file, { verbose: console.log });
+        this.db.pragma('journal_mode = WAL');
 
         logging.debug(NAMESPACE, 'OPEN... DONE');
     }
 
-    private async close() {
+    private close() {
         try {
             logging.debug(NAMESPACE, 'CLOSE...');
             if (this.db == undefined) return;
-            await this.db.close();
+            this.db.close();
             this.db = undefined;
             logging.debug(NAMESPACE, 'CLOSE... DONE');
         } catch (error) {
@@ -67,35 +57,39 @@ class DatabaseConnection {
         }
     }
 
-    public async query<T = any[]>(sql: string, values?: object): Promise<T | undefined> {
+    public query<T = any>(sql: string, values?: object) {
         try {
             logging.debug(NAMESPACE, 'QUERY...', { sql, values });
-            await this.open();
             if (this.db == undefined) return;
-            const stmt = await this.db.prepare(sql);
-            if (values != undefined) await stmt.bind(values);
-            let result = await stmt.all<T>();
-            stmt.finalize();
+
+            const stmt = this.db.prepare(sql);
+            if (values != undefined) {
+                console.log(values);
+                stmt.bind(values);
+            }
+
+            const result: T[] = <T[]>stmt.all();
+
             logging.debug(NAMESPACE, 'QUERY... OK', result);
+
             return result;
         } catch (error) {
             logging.error(NAMESPACE, 'QUERY... ERROR', error);
             console.trace(error);
-            return undefined;
+            return;
         }
     }
 
-    public async runSQL(sql: string, values?: object): Promise<object | undefined> {
+    public runSQL(sql: string, values?: object) {
         try {
             logging.debug(NAMESPACE, 'RUN SQL...', { sql, values });
-            await this.open();
             if (this.db == undefined) return;
-            const stmt = await this.db.prepare(sql);
+            const stmt = this.db.prepare(sql);
             if (values != undefined) {
-                await stmt.bind(values);
+                console.log(values);
+                stmt.bind(values);
             }
-            let result = await stmt.run();
-            stmt.finalize();
+            const result = stmt.run();
             logging.debug(NAMESPACE, 'RUN SQL... OK', result);
             return result;
         } catch (error) {
@@ -103,6 +97,130 @@ class DatabaseConnection {
             console.trace(error);
             return undefined;
         }
+    }
+
+    // https://github.com/Kauto/better-sqlite3-helper/blob/master/src/database.js
+    private migrate(
+        force: boolean,
+        migrationsPath: string = 'migrations',
+        table: string = 'migrations'
+    ) {
+        const location = path.join(__dirname, migrationsPath);
+        if (this.db == undefined) {
+            logging.error(NAMESPACE, 'MIGRATION... ERROR - db is undefined');
+            return;
+        }
+
+        // Get the list of migration files, for example:
+        //   { id: 1, name: 'initial', filename: '001-initial.sql' }
+        //   { id: 2, name: 'feature', fielname: '002-feature.sql' }
+        const migrationFiles = fs
+            .readdirSync(location)
+            .map((x) => x.match(/^(\d+).(.*?)\.sql$/))
+            .filter((x) => x !== null)
+
+            .map((x) => ({
+                //@ts-ignore
+                id: Number(x[1]),
+                //@ts-ignore
+                name: x[2],
+                //@ts-ignore
+                filename: x[0],
+                data: '',
+                up: '',
+                down: ''
+            }))
+            .sort((a, b) => Math.sign(a.id - b.id));
+
+        if (!migrationFiles.length) {
+            // No migration files found
+            return;
+        }
+
+        logging.debug(NAMESPACE, 'MIGRATIONS FOUND: ' + migrationFiles.length);
+
+        // Ge the list of migrations, for example:
+        //   { id: 1, name: 'initial', filename: '001-initial.sql', up: ..., down: ... }
+        //   { id: 2, name: 'feature', fielname: '002-feature.sql', up: ..., down: ... }
+        migrationFiles.map((migration) => {
+            const filename = path.join(location, migration.filename);
+            migration.data = fs.readFileSync(filename, 'utf-8');
+        });
+        let migrations = migrationFiles;
+
+        migrations.map((migration) => {
+            const [up, down] = migration.data.split(/^\s*--\s+?down\b/im);
+            if (!down) {
+                const message = `The ${migration.filename} file does not contain '-- Down' separator.`;
+                throw new Error(message);
+            } else {
+                migration.up = up.replace(/^-- .*?$/gm, '').trim(); // Remove comments
+                migration.down = down.trim(); // and trim whitespaces
+            }
+        });
+
+        // Create a database table for migrations meta data if it doesn't exist
+        this.db.exec(`CREATE TABLE IF NOT EXISTS "${table}" (
+  id   INTEGER PRIMARY KEY,
+  name TEXT    NOT NULL,
+  up   TEXT    NOT NULL,
+  down TEXT    NOT NULL
+)`);
+
+        // Get the list of already applied migrations
+        let dbMigrations = this.query(`SELECT id, name, up, down FROM "${table}" ORDER BY id ASC`);
+
+        if (dbMigrations == undefined) return;
+
+        // Undo migrations that exist only in the database but not in files,
+        // also undo the last migration if the `force` option was set to `last`.
+        const lastMigration = migrations[migrations.length - 1];
+        for (const migration of dbMigrations.slice().sort((a, b) => Math.sign(b.id - a.id))) {
+            const isForceLastMigration = force == true && migration.id === lastMigration.id;
+            logging.debug(NAMESPACE, 'MIGRATION: ' + migration.id + '...');
+
+            if (!migrations.some((x) => x.id === migration.id) || isForceLastMigration) {
+                logging.debug(NAMESPACE, 'RUN MIGRATION...');
+                this.db.exec('BEGIN');
+                try {
+                    this.db.exec(isForceLastMigration ? lastMigration.down : migration.down);
+                    this.runSQL(`DELETE FROM "${table}" WHERE id = @id`, { id: migration.id });
+                    this.db.exec('COMMIT');
+                    dbMigrations = dbMigrations.filter((x) => x.id !== migration.id);
+                } catch (err) {
+                    this.db.exec('ROLLBACK');
+                    throw err;
+                }
+            } else {
+                break;
+            }
+        }
+
+        // Apply pending migrations
+        const lastMigrationId = dbMigrations.length ? dbMigrations[dbMigrations.length - 1].id : 0;
+        for (const migration of migrations) {
+            if (migration.id > lastMigrationId) {
+                this.db.exec('BEGIN');
+                try {
+                    this.db.exec(migration.up);
+                    this.runSQL(
+                        `INSERT INTO "${table}" (id, name, up, down) VALUES (@id, @name, @up, @down)`,
+                        {
+                            id: migration.id,
+                            name: migration.name,
+                            up: migration.up,
+                            down: migration.down
+                        }
+                    );
+                    this.db.exec('COMMIT');
+                } catch (err) {
+                    this.db.exec('ROLLBACK');
+                    throw err;
+                }
+            }
+        }
+
+        return this;
     }
 }
 

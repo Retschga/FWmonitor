@@ -29,10 +29,34 @@ export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => 
 
     const mappedKeys = keys.map((key) => {
         key = key.replace(/[<>=]/g, '');
-        return `@${key}`;
+        return `${key}`;
     });
     let valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
+        if (values[i] instanceof Date) {
+            values[i] = (<Date>values[i]).toISOString();
+        } else {
+            switch (typeof values[i]) {
+                case 'boolean':
+                    values[i] = values[i] == true ? 1 : 0;
+                    break;
+
+                case 'number':
+                    break;
+                case 'bigint':
+                    break;
+
+                case 'string':
+                    break;
+
+                default:
+                    values[i] = String(values[i]);
+                    break;
+            }
+        }
+
+        console.log(typeof values[i]);
+
         valueData[mappedKeys[i]] = values[i];
     }
 
@@ -54,9 +78,33 @@ export const multibleKeySet = (obj: object) => {
     const keySet = keys.map((key) => `"${key}"`).join(', ');
     const valueSet = keys.map((key) => `@${key}`).join(', ');
 
-    const mappedKeys = keys.map((key) => `@${key}`);
+    const mappedKeys = keys.map((key) => `${key}`);
     let valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
+        if (values[i] instanceof Date) {
+            values[i] = (<Date>values[i]).toISOString();
+        } else {
+            switch (typeof values[i]) {
+                case 'boolean':
+                    values[i] = values[i] == true ? 1 : 0;
+                    break;
+
+                case 'number':
+                    break;
+                case 'bigint':
+                    break;
+
+                case 'string':
+                    break;
+
+                default:
+                    values[i] = String(values[i]);
+                    break;
+            }
+        }
+
+        console.log(typeof values[i]);
+
         valueData[mappedKeys[i]] = values[i];
     }
 

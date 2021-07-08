@@ -105,6 +105,7 @@ async function logout() {
 
         if(data.message && data.message == 'OK') {                
             setCookie('logout_status', 'true', 1);
+            setCookie('token', '', 1);
             loaderIn('login?manuell=true', true);
             return false;
         }
@@ -679,7 +680,8 @@ function createMap(dest, center = false, preload = false) {
     let tileLayer_OSM = new ol.layer.Tile({
         source: new ol.source.OSM({
             url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png',
-            preload: (preload ? 18 : 0)
+            preload: (preload ? 18 : 0),
+            crossOrigin: null
         })
     })
     let tileLayer_Hillshade = new ol.layer.Tile({
@@ -688,12 +690,14 @@ function createMap(dest, center = false, preload = false) {
             attributions: ['© wmflabs'],
             preload: (preload ? 16 : 0),
 		    maxZoom: 16,
+            crossOrigin: null
         })
     })             
     tileLayer_OpenTopoMap = new ol.layer.Tile({
 		source: new ol.source.XYZ({
 			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-			attributions: ['© OpenTopoMap']
+			attributions: ['© OpenTopoMap'],
+            crossOrigin: null
 		}),
 		preload: (preload ? 17 : 0)
 	})   

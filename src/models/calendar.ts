@@ -8,8 +8,8 @@ const TABLENAME = 'kalender';
 interface CalendarRow {
     id: number;
     summary: string;
-    start: Date;
-    remind: Date | null;
+    start: string;
+    remind: string | null;
     group: string | null;
 }
 

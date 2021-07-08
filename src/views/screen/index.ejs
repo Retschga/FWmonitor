@@ -356,7 +356,12 @@
 
             function connect_software() {			
 				let keepAliveInterval = null;
-                socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));
+                try {
+                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));                    
+                } catch (error) {
+                    console.error(error);
+                    setTimeout(function() { connect_software(); }, 1000);
+                }
 				
 				// Event: Socket geöffnet
                 socket_software.onopen = function() {

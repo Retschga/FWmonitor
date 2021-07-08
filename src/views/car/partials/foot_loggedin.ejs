@@ -30,7 +30,15 @@
 
     // Websocket Server Verbindung
     async function ws_server_connect() {	
-        ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
+        try {
+            ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
+        } catch (error) {
+            console.error(error);
+            setTimeout(function() {
+                ws_server_connect();
+            }, 15000);
+        }
+        
         let wsStatusInterval = null;
         let keepAliveInterval = null;
 

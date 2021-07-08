@@ -55,7 +55,7 @@ Raspberry PI:
 -   CUPS siehe https://www.elektronik-kompendium.de/sites/raspberry-pi/2007081.htm
 -   im Browser unter `127.0.0.1:631` CUPS konfigurieren (Login gleich wie Raspberry): gewünschten
     Drucker als `Alarmdrucker` (Name) einrichten;
--   NodeJS installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
+-   NodeJS 14 installiern siehe https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp
 -   Tesseract `sudo apt-get install tesseract-ocr`  
     (Test mit: `tesseract -v`)
 -   Ghostscript `sudo apt-get install ghostscript`
@@ -65,7 +65,7 @@ Raspberry PI:
 
 Windows:
 
--   NodeJS: https://nodejs.org/de/
+-   NodeJS 14: https://nodejs.org/de/
 -   FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
 -   Git: https://git-scm.com/downloads
 -   Ghostscript: https://www.ghostscript.com/download/gsdnld.html
@@ -75,12 +75,14 @@ Windows:
 Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) (sudo unter Windows weglassen):
 
 -   Aktuelle Version Datei unter Releases herunterladen, extrahieren
--   `cd "FWMonitor"`
--   `sudo npm install --unsafe-perm`
--   `sudo npm i puppeteer`
+-   `cd "FWmonitor"`
+-   `npm install --production`
+-   `npm i puppeteer`
 
 ## Update
 
+-   NodeJS 14: https://nodejs.org/de/
+-   npm: `npm install -g npm@latest`
 -   Updatehinweise beachten
 -   Einfach die neue Version unter Releases herunterladen und die alten ersetzen (evtl. vorher
     Sicherungskopie anlegen)
@@ -243,7 +245,7 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 ## Hardware Empfehlung
 
 -   Server:
-    -   Windows PC
+    -   Windows 10 PC
     -   min. Raspberry PI 3
 -   Client:
     -   min. Raspberry PI 2

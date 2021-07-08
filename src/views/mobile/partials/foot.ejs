@@ -208,10 +208,10 @@
     async function load_later() {
         if(window.location.href.indexOf('login') == -1) {
             const userrights = await fetch_get('/api/v1/user/rights', true)
-            .catch((err) => {location.reload()});
+            //.catch((err) => {/* location.reload() */});
             console.log('userrights', userrights);    
             
-            if(userrights == undefined) location.reload();
+            //if(userrights == undefined) location.reload();
         }
 
         loaderOut(); 

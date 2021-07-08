@@ -1,4 +1,4 @@
-import sharp from 'sharp';
+import Jimp from 'jimp';
 import moveFile from 'move-file';
 
 /**
@@ -8,7 +8,14 @@ import moveFile from 'move-file';
  * @returns
  */
 export const createThumbnail = async (path: string, file: string) => {
-    return new Promise(async (resolve, reject) => {
+    let img = await Jimp.read(path + '/' + file).catch((err) => {
+        throw err;
+    });
+    img.scaleToFit(512, 256) // resize
+        .quality(60) // set JPEG quality
+        .write(path + '/thumbnail-' + file); // save
+
+    /*     return new Promise(async (resolve, reject) => {
         sharp(path + '/' + file)
             .resize(200)
             .toFile(path + '/thumbnail-' + file, (err, resizeImage) => {
@@ -18,7 +25,7 @@ export const createThumbnail = async (path: string, file: string) => {
                     resolve(resizeImage);
                 }
             });
-    });
+    }); */
 };
 
 /**
@@ -28,7 +35,14 @@ export const createThumbnail = async (path: string, file: string) => {
  * @returns
  */
 export const getImageSize = async (path: string, file: string) => {
-    return new Promise(async (resolve, reject) => {
+    let img = await Jimp.read(path + '/' + file).catch((err) => {
+        throw err;
+    });
+    img.getWidth();
+    const dims = { width: img.getWidth(), height: img.getHeight() };
+    return dims;
+
+    /*     return new Promise(async (resolve, reject) => {
         sharp(path + '/' + file)
             .metadata()
             .then((info) => {
@@ -38,11 +52,20 @@ export const getImageSize = async (path: string, file: string) => {
                 resolve(dims);
             })
             .catch((error) => reject(error));
-    });
+    }); */
 };
 
 export const createHd = async (path: string, file: string) => {
-    return new Promise(async (resolve, reject) => {
+    await moveFile(path + '/' + file, path + '/' + file + '.org');
+
+    let img = await Jimp.read(path + '/' + file + '.org').catch((err) => {
+        throw err;
+    });
+    img.scaleToFit(1920, 1080) // resize
+        .quality(60) // set JPEG quality
+        .write(path + '/' + file); // save
+
+    /* return new Promise(async (resolve, reject) => {
         await moveFile(path + '/' + file, path + '/' + file + '.org');
         sharp(path + '/' + file + '.org')
             .resize(1920)
@@ -53,5 +76,5 @@ export const createHd = async (path: string, file: string) => {
                     resolve(resizeImage);
                 }
             });
-    });
+    }); */
 };
