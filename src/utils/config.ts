@@ -167,7 +167,8 @@ const ALARMFIELDS = {
     s_CAR: process.env.ALARMFIELDS_EINSATZMITTEL_ZEILE_S || 'Name :', // Filter Beginn
     e_CAR: process.env.ALARMFIELDS_EINSATZMITTEL_ZEILE_E || '\n', // Filter Ende
     CAR1: process.env.ALARMFIELDS_FW_NAME || '123456789123456789', // Filter um als eigenes Fahrzeug erkannt zu weden
-    EMPTY: '-/-'
+    EMPTY: '-/-',
+    KOMBIALARM_REGEX: process.env.ALARMFIELDS_KOMBI_FW_NAME
 };
 
 const ALARM_REPLACE = {

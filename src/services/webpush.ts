@@ -88,8 +88,19 @@ class WebpushService {
                     let notAfter = new Date();
                     notAfter.setTime(notAfter.getTime() + 2 * 60 * 1000);
 
+                    // Kombialarm
+                    let alarmtype = 'ALARM';
+                    if (config.alarmfields.KOMBIALARM_REGEX) {
+                        const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
+                        if (alarm.cars1 == '' && kombi_regex.test(alarm.cars2)) {
+                            const kombi_name = alarm.cars2.match(kombi_regex);
+                            alarmtype = 'KOMBIALARM mit ' + kombi_name;
+                        }
+                    }
+
                     let title =
-                        'ALARM: ' +
+                        alarmtype +
+                        ': ' +
                         (group?.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1
                             ? alarm.einsatzstichwort
                             : '') +

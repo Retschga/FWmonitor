@@ -43,6 +43,7 @@ class AlarmService {
         extra?: string
     ): Promise<AlarmModel.AlarmRow[]> {
         const response = await AlarmModel.model.find(params, limit, offset, extra);
+
         return response;
     }
 

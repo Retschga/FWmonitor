@@ -85,6 +85,7 @@
                         <div 
                         id="mapLoader"
                         class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
+                        style="overflow: hidden;"
                         >
                                 <div class="spinner_rotateplane"></div>
                                 <h2 class="text_align_center text_white">Lade Karte...</h2>
@@ -93,6 +94,17 @@
                         <div id="mapidContainer" class="flex_grow flex_column">
                             <div id="mapid" class="flex_grow hide_on_no_map"></div>   
                         </div>	
+
+                        <div style="position: absolute; 
+                        bottom: 1em; left: calc(50% - 15em); 
+                        width: 30em; 
+                        text-align: center; 
+                        padding: .5em 0 .5em 0;
+                        background-color: var(--bg_navbar);
+                        color: var(--color_navbar)"
+                        class="hidden var_kombi">
+                        Kombialarm
+                        </div>
     
                     </div>
     
@@ -176,6 +188,13 @@
                     const var_color   = document.querySelectorAll(".var_color");
                     for (let i = 0; i < var_color.length; i++){
                         var_color[i].classList.add(color);
+                    }
+
+                    const var_kombi        = document.querySelector(".var_kombi");
+                    
+                    if(alarm.kombi) {
+                        var_kombi.classList.remove('hidden');
+                        var_kombi.innerHTML = 'Kombialarm ' + alarm.kombi;
                     }
 
                     const var_stichwort   = document.querySelector(".var_stichwort");

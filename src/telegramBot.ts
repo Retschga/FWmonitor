@@ -1055,6 +1055,16 @@ _${st_nichtverf}_`,
 
             await timeout(8000);
 
+            // Kombialarm
+            if (config.alarmfields.KOMBIALARM_REGEX) {
+                const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
+                if (alarm.cars1 == '' && kombi_regex.test(alarm.cars2)) {
+                    const kombi_name = alarm.cars2.match(kombi_regex);
+                    this.sendMessage(user.telegramid, '❗  KOMBIALARM mit ' + kombi_name + '  ❗');
+                    await timeout(200);
+                }
+            }
+
             this.sendMessage(user.telegramid, alarmMessage, {
                 parse_mode: 'Markdown'
             });

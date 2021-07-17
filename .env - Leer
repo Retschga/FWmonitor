@@ -75,6 +75,9 @@ ALARM_VISIBLE=250
 # Filter für die Erkennung eigener Einsatzmittel
 ALARMFIELDS_FW_NAME=Feuerwehr Name 
 
+# Filter für die Erkennung Kombialarm bei keinen eigenen Einsatzmitteln
+#ALARMFIELDS_KOMBI_FW_NAME=Kombifeuerwehr Name 
+
 
 ######## EMAIL ALARMEINGANG ########
 

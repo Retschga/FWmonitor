@@ -10,6 +10,7 @@ import userService from '../services/user';
 import groupService from '../services/group';
 import { instance as DeviceServiceInstance } from '../services/device';
 import logging from '../utils/logging';
+import config from '../utils/config';
 
 const NAMESPACE = 'Alarm_Controller';
 
@@ -68,6 +69,19 @@ class AlarmController {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
+        // Kombialarm hinzufügen
+        if (config.alarmfields.KOMBIALARM_REGEX) {
+            const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
+
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].cars1 == '' && kombi_regex.test(list[i].cars2)) {
+                    (<any>list[i]).kombi = list[i].cars2.match(kombi_regex) || undefined;
+                } else {
+                    (<any>list[i]).kombi = undefined;
+                }
+            }
+        }
+
         // Prüfe ob Bildschirm oder Auto
         if (!req.session.userid || req.session.car == true) {
             res.send(list);
@@ -91,6 +105,19 @@ class AlarmController {
         // Alarmfarbe hinzufügen
         for (let i = 0; i < list.length; i++) {
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
+        }
+
+        // Kombialarm hinzufügen
+        if (config.alarmfields.KOMBIALARM_REGEX) {
+            const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
+
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].cars1 == '' && kombi_regex.test(list[i].cars2)) {
+                    (<any>list[i]).kombi = list[i].cars2.match(kombi_regex) || undefined;
+                } else {
+                    (<any>list[i]).kombi = undefined;
+                }
+            }
         }
 
         // Prüfe ob Bildschirm oder Auto

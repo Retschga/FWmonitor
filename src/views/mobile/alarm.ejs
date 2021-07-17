@@ -30,6 +30,15 @@
 
                 <div class="flex_column">
 
+                    <div class="list hidden var_kombi">
+
+                        <div class="item">
+                            <span class="left material-icons">report_problem</span>
+                            <span class="text">Kombialarm: </span>             
+                            <span class="text right var_kombi_name">Feuerwehr Name</span>                 
+                        </div>
+
+                    </div>
                     
                     <div class="list">
 
@@ -182,6 +191,14 @@
                             break;
                         default:
                             break;
+                    }
+
+                    const var_kombi        = document.querySelector(".var_kombi");
+                    const var_kombi_name   = document.querySelector(".var_kombi_name");
+                    
+                    if(alarm.kombi) {
+                        var_kombi.classList.remove('hidden');
+                        var_kombi_name.innerHTML = alarm.kombi;
                     }
 
                     const var_color   = document.querySelectorAll(".var_color");
