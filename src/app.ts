@@ -195,3 +195,15 @@ process.on('SIGTERM', () => {
     console.log('Terminate...');
     exit();
 });
+process.on('SIGHUP', () => {
+    console.log('Terminate...');
+    exit();
+});
+process.on('SIGUSR2', () => {
+    console.log('Terminate...');
+    exit();
+});
+process.on('exit', () => {
+    console.log('exit');
+    exit();
+});

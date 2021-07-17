@@ -62,11 +62,7 @@ class WebpushService {
                         actions: []
                     };
 
-                    await this.notify(
-                        user.id,
-                        JSON.parse(user.appNotificationsSubscription),
-                        message
-                    );
+                    this.notify(user.id, JSON.parse(user.appNotificationsSubscription), message);
                 }
             });
 
@@ -75,7 +71,7 @@ class WebpushService {
                 if (!config.alarm.app) {
                     logging.warn(
                         NAMESPACE,
-                        'Telegrammalarmierung deaktiviert! --> Keine Benachrichtigung'
+                        'App-Alarmierung deaktiviert! --> Keine Benachrichtigung'
                     );
                     return;
                 }

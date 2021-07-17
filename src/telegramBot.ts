@@ -1022,8 +1022,8 @@ _${st_nichtverf}_`,
             text = text.replace(/{{ORTSTEIL}}/g, alarm.ortsteil);
             text = text.replace(/{{ORT}}/g, alarm.ort);
             text = text.replace(/{{BEMERKUNG}}/g, alarm.bemerkung);
-            text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, alarm.cars1.replace(/|/g, '\n'));
-            text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, alarm.cars2.replace(/|/g, '\n'));
+            text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, alarm.cars1.replace(/\|/g, '\n'));
+            text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, alarm.cars2.replace(/\|/g, '\n'));
 
             const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
             text = text.replace(/{{FAX}}/g, '');
@@ -1083,11 +1083,13 @@ _${st_nichtverf}_`,
 
             // Pattern
             for (let i = 0; i < lines.length; i++) {
-                lines[i] = text[i].trim();
+                let str = lines[i].trim();
+
+                if (str == '') str = '----';
 
                 await timeout(4000);
 
-                this.sendMessage(user.telegramid, text[i] + ' ', {
+                this.sendMessage(user.telegramid, str, {
                     parse_mode: 'Markdown'
                 });
             }
