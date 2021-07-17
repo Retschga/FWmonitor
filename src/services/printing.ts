@@ -15,7 +15,9 @@ class PrintingService {
     private isFirstPaperCheck = true;
     private isPaperStatusError = false;
 
-    constructor() {
+    constructor() {}
+
+    public init() {
         setInterval(this.checkPaper.bind(this), config.paper.interval);
     }
 

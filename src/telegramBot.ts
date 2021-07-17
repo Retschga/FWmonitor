@@ -1328,4 +1328,4 @@ _${st_nichtverf}_`,
     }
 }
 
-export default new TelegramBot();
+export default TelegramBot;

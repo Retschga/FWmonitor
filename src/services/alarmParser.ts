@@ -3,15 +3,15 @@
 import puppeteer from 'puppeteer';
 import moveFile from 'move-file';
 import fs from 'fs';
-import logging from '../utils/logging';
-import config from '../utils/config';
-import { timeout } from '../utils/common';
 import { AlarmRow } from '../models/alarm';
 import AlarmService from './alarm';
 import GeocodeService from './geocode';
 import PrintingServoce from './printing';
+import logging from '../utils/logging';
+import config from '../utils/config';
+import { timeout } from '../utils/common';
 
-const NAMESPACE = 'AlarmParserService';
+const NAMESPACE = 'AlarmParser_Service';
 
 class AlarmFields {
     // ---------------- Fax Suchworte (RegEx) ----------------

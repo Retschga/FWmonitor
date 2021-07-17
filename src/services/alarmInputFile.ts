@@ -2,8 +2,6 @@
 
 import chokidar from 'chokidar';
 import moveFile from 'move-file';
-import logging from '../utils/logging';
-import config from '../utils/config';
 import {
     timeout,
     execShellCommand,
@@ -11,10 +9,12 @@ import {
     getFormattedAlarmTime
 } from '../utils/common';
 import AlarmParserService from './alarmParser';
-import globalEvents from '../utils/globalEvents';
 import printService from './printing';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
+import config from '../utils/config';
 
-const NAMESPACE = 'AlarmInputFileService';
+const NAMESPACE = 'AlarmInputFile_Service';
 
 class AlarmInputFileService {
     private async convertPdfToTiff(file: string, targetPath: string) {
@@ -54,12 +54,15 @@ class AlarmInputFileService {
         if (!config.programs.ghostscript || !config.programs.tesseract) {
             logging.warn(
                 NAMESPACE,
-                'Ghostscript oder Tesseract nicht gefunden -> Keine Alarm-Dateiauswertung'
+                'Ghostscript oder TesseractPfad nicht angegeben -> Keine Alarm-Dateiauswertung'
             );
             return;
         }
         if (!config.folders.fileInput) {
-            logging.warn(NAMESPACE, 'Kein Dateieingangsordner -> Keine Alarm-Dateiauswertung');
+            logging.warn(
+                NAMESPACE,
+                'Kein Dateieingangsordner angegeben -> Keine Alarm-Dateiauswertung'
+            );
             return;
         }
 
@@ -80,13 +83,13 @@ class AlarmInputFileService {
             logging.info(NAMESPACE, `File ${path} has been added`);
             await timeout(config.folders.fileInput_delay * 1000);
 
-            let filetype = (path.split('.').pop() || '').toLowerCase();
-            let file = getFormattedAlarmTime(alarmdate); //path.split(/[/\\]/g).pop().split('.')[0];
+            const filetype = (path.split('.').pop() || '').toLowerCase();
+            const file = getFormattedAlarmTime(alarmdate); //path.split(/[/\\]/g).pop().split('.')[0];
 
             logging.info(NAMESPACE, `Filetype: ${filetype}`);
 
             if (filetype != 'pdf' && filetype != 'tif' && filetype != 'tiff' && filetype != 'txt') {
-                logging.warn(NAMESPACE, `FEHLER: Filetype nicht unterstützt!`);
+                logging.warn(NAMESPACE, `FEHLER: Dateityp nicht unterstützt!`);
                 return;
             }
 
@@ -152,11 +155,12 @@ class AlarmInputFileService {
             AlarmParserService.parseFile(path, alarmdate);
         });
 
+        // Ordner Verbindungsüberwachung
         let lastStatus = true;
         async function check_inputFolder() {
             logging.debug(NAMESPACE, 'Folder-Input CHECK...');
 
-            let status = await checkFolderOrFile(config.folders.fileInput);
+            const status = await checkFolderOrFile(config.folders.fileInput);
 
             logging.debug(NAMESPACE, 'Check IN Folder: status=' + status + '; last=' + lastStatus);
 
@@ -169,7 +173,7 @@ class AlarmInputFileService {
 
             lastStatus = status;
         }
-        let interval = setInterval(async () => {
+        const interval = setInterval(async () => {
             check_inputFolder();
         }, 60000 * 5);
         check_inputFolder();

@@ -9,7 +9,9 @@ import globalEvents from '../utils/globalEvents';
 const NAMESPACE = 'User_Service';
 
 class UserService {
-    constructor() {
+    constructor() {}
+
+    public init() {
         // Verfügbarkeitsintervall
         var interval = setInterval(this.checkUserStatus.bind(this), 35000);
         this.checkUserStatus();

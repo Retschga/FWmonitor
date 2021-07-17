@@ -1,10 +1,12 @@
 'use strict';
 
-import express, { application } from 'express';
+import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
-import session, { SessionOptions } from 'express-session';
 import createMemoryStore from 'memorystore';
+import session, { SessionOptions } from 'express-session';
+import helmet from 'helmet';
+import compression from 'compression';
 import http from 'http';
 import https from 'https';
 import tls from 'tls';
@@ -20,30 +22,38 @@ import alarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
 import routePrint from './routes/print';
 import globalEvents from './utils/globalEvents';
-import telegramBot from './telegramBot';
+import TelegramBot from './telegramBot';
 import diashowService from './services/diashow';
 import { calendarService } from './services/calendar';
-import { Websocket, SocketInfo } from './websocket';
-import { init as initDeviceService, DeviceService } from './services/device';
+import { Websocket } from './websocket';
+import { init as initDeviceService } from './services/device';
 import webpushService from './services/webpush';
-import compression from 'compression';
-import helmet from 'helmet';
+import userService from './services/user';
+import printingService from './services/printing';
+import database from './database/connection';
 
 const NAMESPACE = 'APP';
-const MemoryStore = createMemoryStore(session);
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+const MemoryStore = createMemoryStore(session);
 
-// Programmstart
+// -------- Programmstart --------
 logging.info(NAMESPACE, 'Starte Software v' + config.version);
 logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
 startupCheck.check();
 
+// Prüfe ob SSL Zertifikat vorhanden ist
 if (!config.server_https.key || !config.server_https.cert) {
-    logging.error(NAMESPACE, 'Es wurde kei SSL Zertifikat angegeben! -> Programmende');
+    logging.error(NAMESPACE, 'Es wurde kei TLS Zertifikat angegeben! -> Programmende');
     process.exit(1);
 }
+
+// Diashow Thubnnails erstellen, falls noch nicht vorhanden
 diashowService.createThumbnails();
 
+// Initialisiere Datenbank
+database.init();
+
+// Session Store für App erstellen
 const sessionstore = new MemoryStore({
     checkPeriod: 86400000 // clear expired every 24h
 });
@@ -57,12 +67,12 @@ const sessionOptions: SessionOptions = {
         secure: process.env.NODE_ENV != 'development',
         httpOnly: true,
         path: '/',
-        sameSite: 'strict', //boolean | 'lax' | 'strict' | 'none';  IOS Fehler, keine Ahnung warum
+        sameSite: 'strict', //boolean | 'lax' | 'strict' | 'none';
         maxAge: 1000 * 60 * 30
-        //    signed?: boolean;
-        //    expires?: Date;
-        //domain: config.app.enabled ? config.app.url : undefined
-        //    encode?: (val: string) => string;
+        // domain: config.app.enabled ? config.app.url : undefined
+        // expires?: Date;
+        // signed?: boolean;
+        // encode?: (val: string) => string;
     }
 };
 
@@ -150,11 +160,12 @@ globalEvents.on('alarm', async () => {
 // -------- Starte Websocket-Server für die WebApp --------
 const httpsSocket = new Websocket(httpsServer, true);
 
+// -------- Starte Programmkomponenten --------
 // Initialisiere DeviceService
 initDeviceService([httpSocket, httpsSocket]);
 
 // Starte Telegram-Bot
-const telbot = telegramBot;
+const telegramBot = new TelegramBot();
 
 // Starte Fax/Email Auswertung
 alarmInputFileService.init();
@@ -163,13 +174,24 @@ alarmInputFileService.init();
 calendarService.init();
 
 // Starte Verfügbarkeits-Planüberwachung
+userService.init();
 
 // Starte Drucker-Papierüberwachung
+printingService.init();
 
 // Starte webpush service
 const webpush = webpushService;
 
-process.on('SIGINT', () => {
+// -------- Programmende --------
+function exit() {
     httpServer.close();
     process.exit(1);
+}
+process.on('SIGINT', () => {
+    console.log('Ctrl-C...');
+    exit();
+});
+process.on('SIGTERM', () => {
+    console.log('Terminate...');
+    exit();
 });

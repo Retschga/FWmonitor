@@ -1,12 +1,12 @@
 'use strict';
 
 import Database from 'better-sqlite3';
-import logging from '../utils/logging';
-import config from '../utils/config';
 import path from 'path';
 import fs from 'fs';
+import logging from '../utils/logging';
+import config from '../utils/config';
 
-const NAMESPACE = 'databaseConnection';
+const NAMESPACE = 'DatabaseConnection';
 
 class DatabaseConnection {
     private db: Database.Database | undefined = undefined;
@@ -14,20 +14,21 @@ class DatabaseConnection {
 
     constructor(file: string) {
         this.file = file;
-        this.init();
     }
 
-    private init() {
+    public init() {
         try {
             logging.debug(NAMESPACE, 'INIT...');
+
             this.open();
             if (this.db == undefined) {
-                logging.error(NAMESPACE, 'INIT... ERROR - db is undefined');
-                return;
+                throw new Error('database is undefined');
             }
+
             logging.debug(NAMESPACE, 'MIGRATING...');
             this.migrate(false, '../migrations');
             logging.debug(NAMESPACE, 'MIGRATING... DONE');
+
             logging.debug(NAMESPACE, 'INIT... OK');
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -47,21 +48,22 @@ class DatabaseConnection {
 
     private close() {
         try {
-            logging.debug(NAMESPACE, 'CLOSE...');
             if (this.db == undefined) return;
+
+            logging.debug(NAMESPACE, 'CLOSE...');
             this.db.close();
             this.db = undefined;
             logging.debug(NAMESPACE, 'CLOSE... DONE');
         } catch (error) {
-            logging.debug(NAMESPACE, 'CLOSE... ERROR', error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
     public query<T = any>(sql: string, values?: object) {
         try {
-            logging.debug(NAMESPACE, 'QUERY...', { sql, values });
             if (this.db == undefined) return;
 
+            logging.debug(NAMESPACE, 'QUERY...', { sql, values });
             const stmt = this.db.prepare(sql);
             if (values != undefined) {
                 console.log(values);
@@ -74,16 +76,16 @@ class DatabaseConnection {
 
             return result;
         } catch (error) {
-            logging.error(NAMESPACE, 'QUERY... ERROR', error);
-            console.trace(error);
-            return;
+            logging.exception(NAMESPACE, error);
+            return undefined;
         }
     }
 
     public runSQL(sql: string, values?: object) {
         try {
-            logging.debug(NAMESPACE, 'RUN SQL...', { sql, values });
             if (this.db == undefined) return;
+
+            logging.debug(NAMESPACE, 'RUN SQL...', { sql, values });
             const stmt = this.db.prepare(sql);
             if (values != undefined) {
                 console.log(values);
@@ -93,8 +95,7 @@ class DatabaseConnection {
             logging.debug(NAMESPACE, 'RUN SQL... OK', result);
             return result;
         } catch (error) {
-            logging.error(NAMESPACE, 'RUN SQL... ERROR', error);
-            console.trace(error);
+            logging.exception(NAMESPACE, error);
             return undefined;
         }
     }

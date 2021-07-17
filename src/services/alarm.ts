@@ -1,20 +1,18 @@
 'use strict';
 
-import logging from '../utils/logging';
-import * as AlarmModel from '../models/alarm';
-import config from '../utils/config';
-import globalEvents from '../utils/globalEvents';
 import axios from 'axios';
+import * as AlarmModel from '../models/alarm';
 // @ts-ignore
 import openrouteservice from 'openrouteservice-js';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
+import config from '../utils/config';
 
 const NAMESPACE = 'Alarm_Service';
 
 class AlarmService {
     /**
      * Gibt die Alarmfarbe zu einem Einsatzstichwort zurück
-     * @param einsatzstichwort
-     * @returns
      */
     public getAlarmColor(einsatzstichwort: string) {
         if (!einsatzstichwort) return 0;
@@ -67,11 +65,7 @@ class AlarmService {
             throw new Error(NAMESPACE + ' error on creating alarm');
         }
 
-        this.sendAlarmEvents(list[0]);
-    }
-
-    private sendAlarmEvents(alarm: AlarmModel.AlarmRow) {
-        globalEvents.emit('alarm', alarm);
+        globalEvents.emit('alarm', list[0]);
     }
 
     public set_alarmsettings_telegram(value: boolean) {
@@ -86,6 +80,9 @@ class AlarmService {
         return { telegram: config.alarm.telegram, app: config.alarm.app };
     }
 
+    /**
+     * Ist ein Alarm anstehend
+     */
     public async isAlarm(): Promise<boolean> {
         const response = await this.find(
             undefined,
@@ -99,6 +96,9 @@ class AlarmService {
         return response.length > 0;
     }
 
+    /**
+     * Overpass Abfrage für eine Strasse an gegebenen Koordinaten
+     */
     public async get_streetCache(id: number) {
         let response = await this.find_by_id(id);
 
@@ -140,6 +140,9 @@ class AlarmService {
         return polylinePoints;
     }
 
+    /**
+     * OpenRoutService Abfrage für eine Route
+     */
     public async get_route(id: number) {
         if (!config.common.fw_position || !config.geocode.ors_key) return;
 
