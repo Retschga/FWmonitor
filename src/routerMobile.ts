@@ -3,7 +3,6 @@
 import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
-import sampleRoutes from './routes/sample';
 import { Request, Response, NextFunction } from 'express';
 import mobileRoutes from './routes/mobile/mobile';
 import { auth_page } from './middleware/auth';
@@ -75,7 +74,6 @@ class RouterMobile {
             res.render('mobile/redirect');
         });
 
-        this.router.use('/', sampleRoutes);
         this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);
 
         /** Error handling */

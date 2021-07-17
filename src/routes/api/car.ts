@@ -1,7 +1,6 @@
 'use strict';
 
 import express from 'express';
-import sampleController from '../../controllers/sample';
 import CarController from '../../controllers/car';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
 import * as ValidatorsCar from '../../middleware/carValidator';

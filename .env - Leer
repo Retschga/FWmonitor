@@ -66,6 +66,12 @@ ALARM_VISIBLE=250
 #ALARMFIELDS_EINSATZMITTEL_ZEILE_S=Name :
 #ALARMFIELDS_EINSATZMITTEL_ZEILE_E=\n
 
+# Textersetzung  https://regexr.com/
+# REGEX1|REGEX2|REGEX3 ...
+#ALARM_REPLACE_REGEX=8aum|Ha11e
+# ERSETZUNG1|ERSETZUNG2<ERSETZUNG3 ...
+#ALARM_REPLACE_TEXT=Baum|Halle
+
 # Filter für die Erkennung eigener Einsatzmittel
 ALARMFIELDS_FW_NAME=Feuerwehr Name 
 
@@ -234,6 +240,7 @@ PRINT_ALARM_PAGES=0
 ## SSL Zertifikat
 # lokaler Pfad C:/ordner/ordner/datei.pem
 # Wenn APP Funktion über das Web verwendet wird siehe Readme.md
-# Wenn APP Funktion nur im LAN für Einstellungen verwendet wird, kann ein selbst signiertes Zertifikat verwendet werden (siehe https://www.selfsignedcertificate.com/)
+# Wenn APP Funktion nur im LAN für Einstellungen verwendet wird, kann ein selbst signiertes Zertifikat verwendet werden 
+# (siehe https://www.selfsignedcertificate.com/ ; Einfach 'localhost' oder die IP des PCs eintragen) 
 #SSL_KEY=zertifikat-key.key
 #SSL_CERT=zertifikat-cert.crt

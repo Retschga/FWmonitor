@@ -3,7 +3,6 @@
 import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
-import sampleRoutes from './routes/sample';
 import { Request, Response, NextFunction } from 'express';
 import carRoutes from './routes/car/car';
 import { auth_page } from './middleware/auth';
@@ -78,7 +77,6 @@ class RouterCar {
             res.render('car/settings');
         });
 
-        this.router.use('/', sampleRoutes);
         this.router.use('/', auth_page('/car/redirect?target=login'), carRoutes);
 
         /** Error handling */

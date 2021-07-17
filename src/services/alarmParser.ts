@@ -153,7 +153,18 @@ class AlarmParserService {
         data = data.replace(/BEinsatzplan/g, 'Einsatzplan');
         data = data.replace(/Binsatz/g, 'Einsatz');
 
-        data = data.replace(/1.5.3 MB/g, 'Dienststellenalarm');
+        if (
+            config.alarm_replace.regex &&
+            config.alarm_replace.text &&
+            config.alarm_replace.regex.length == config.alarm_replace.text.length
+        ) {
+            for (let i = 0; i < config.alarm_replace.regex.length; i++) {
+                data = data.replace(
+                    new RegExp(config.alarm_replace.regex[i], 'g'),
+                    config.alarm_replace.text[i]
+                );
+            }
+        }
 
         return data;
     };

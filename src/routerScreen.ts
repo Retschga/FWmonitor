@@ -3,7 +3,6 @@
 import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
-import sampleRoutes from './routes/sample';
 import { Request, Response, NextFunction } from 'express';
 
 import screenRoutes from './routes/screen/screen';
@@ -60,7 +59,6 @@ class RouterMobile {
         });
 
         /** Routes go here */
-        this.router.use('/', sampleRoutes);
         this.router.use('/', screenRoutes);
 
         /** Error handling */

@@ -170,6 +170,11 @@ const ALARMFIELDS = {
     EMPTY: '-/-'
 };
 
+const ALARM_REPLACE = {
+    regex: process.env.ALARM_REPLACE_REGEX ? process.env.ALARM_REPLACE_REGEX.split('|') : [],
+    text: process.env.ALARM_REPLACE_TEXT ? process.env.ALARM_REPLACE_TEXT.split('|') : []
+};
+
 const RATE_LIMITS = {
     api_count: Number(process.env.RATELIMIT_API_COUNT || 1000),
     api_time: Number(process.env.RATELIMIT_API_TIME || 10), //min
@@ -203,6 +208,7 @@ const config = {
     geocode: GEOCODE,
     common: COMMON,
     alarmfields: ALARMFIELDS,
+    alarm_replace: ALARM_REPLACE,
     logging: LOG,
     screen: SCREEN,
     paper: PAPER,

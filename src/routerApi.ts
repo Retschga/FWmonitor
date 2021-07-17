@@ -3,7 +3,6 @@
 import express from 'express';
 import logging from './utils/logging';
 import errorMiddleware from './middleware/error';
-import sampleRoutes from './routes/sample';
 
 import alarmRoutes from './routes/api/alarm';
 import calendarRoutes from './routes/api/calendar';
@@ -109,7 +108,6 @@ class RouterApi {
             this.router.use('/hydrant', apiLimiter, auth_api(), hydrantRoutes);
             this.router.use('/praesentation', apiLimiter, auth_api(), praesentationRoutes);
             this.router.use('/contact', apiLimiter, auth_api(), contactRoutes);
-            this.router.use('/', apiLimiter, auth_api(), sampleRoutes);
         } else {
             // HTTP Bildschirm
             this.router.use('/alarm', alarmRoutes);
