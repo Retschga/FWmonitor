@@ -64,6 +64,8 @@
                     const user = await fetch_get(url_user_status.replace(':id', user_id), true);
                     console.log('user', user);
 
+                    if(user.plans == undefined) user.plans = '{"plans":[]}';
+
                     plans = JSON.parse(user.plans).plans;
                     console.log('plans', plans);
 

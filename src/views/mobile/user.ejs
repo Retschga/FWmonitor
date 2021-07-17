@@ -184,11 +184,11 @@
                                 <span class="text">Löschen</span>                                
                             </div>
                             <div class="flex_grow"></div>
-                            <div class="green right item rounded savebutton" onclick="save_user()">
+                            <div class="green right item rounded savebutton hidden" onclick="save_user()">
                                 <span class="text text_align_right">Speichern</span>
                                 <span class="right material-icons">save</span>
                             </div>  
-                            <div class="green right item rounded freigabebutton" onclick="approve_user()">
+                            <div class="green right item rounded freigabebutton hidden" onclick="approve_user()">
                                 <span class="text text_align_right">Freigeben</span>
                                 <span class="right material-icons">verified_user</span>
                             </div>                            
@@ -232,8 +232,10 @@
 
                     if(user.approved == 1) {
                         document.querySelector(".freigabebutton").classList.add('hidden');
+                        document.querySelector(".savebutton").classList.remove('hidden');
                     } else {
                         document.querySelector(".savebutton").classList.add('hidden');
+                        document.querySelector(".freigabebutton").classList.remove('hidden');
                         document.querySelector(".element1").classList.add('hidden');
                         document.querySelector(".element2").classList.add('hidden');
                         document.querySelector(".element3").classList.add('hidden');

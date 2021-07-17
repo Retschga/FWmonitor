@@ -69,7 +69,7 @@ class RouterMobile {
 
         /** Routes go here */
         this.router.get('/login', (req: Request, res: Response, next: NextFunction) => {
-            res.render('mobile/login');
+            res.render('mobile/login', { fw_name: config.common.fwName });
         });
         this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
             res.render('mobile/redirect');

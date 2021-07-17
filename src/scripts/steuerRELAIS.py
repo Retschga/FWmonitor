@@ -2,233 +2,269 @@
 # -*- coding: utf-8 -*-
 
 
-# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Strom geschalten über Relais)
-# (c) 2019 Johannes Resch
-
-# IP Adresse des Server PC ganz unten!
-
+# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Samsung Smart Signage Display ED65E LED)
+# (c) 2020 Johannes Resch
+# benötigt Python > 3.6
 
 # -------------- Includes --------------
-from ws4py.client.threadedclient import WebSocketClient
-import serial, time, sys, socket, datetime
-from reset_timer import RU_Timer
+import asyncio
+import websockets
+from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
+import sys, time, datetime
 import RPi.GPIO as GPIO
 import os
+import json
 
 
 # -------------- Einstellungen --------------
-# GPIO PIN Bewegungsmelder
-pirpin = 11
-
-# GPIO PIN Relais
-relaispin = 12
+if len(sys.argv) < 4:
+    print("Aufruf: python3 "+sys.argv[0]+" SERVER_IP:SERVER_PORT CLIENT_NAME PIR_PIN RELAIS_PIN")
+    sys.exit()
 
 # IP Adresse des FWmonitor servers
-targetserver = 'ws://192.168.178.28:8080/';
+targetserver = sys.argv[1]
 
+# Name des Clienten
+name = sys.argv[2]
 
+# GPIO PIN Bewegungsmelder
+pirpin = int(sys.argv[3])
+
+# GPIO PIN RELAIS (Fernseher)
+relaispin = sys.argv[4]
+
+starttime = str(datetime.datetime.now())
+version = "3.0.0"
 
 # ------- GPIO Setup -------
 # RPi.GPIO Layout verwenden (wie Pin-Nummern)
 GPIO.setmode(GPIO.BOARD)
 # RASPBERRY GPIO Pins Setup
 GPIO.setup(pirpin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(relaispin, GPIO.OUT)
-
-
-logtext = ""
-schirmstatus = "????"
-schirmstatusTime = "????"
-
-# -------------- Hilfsfunktionen --------------
 
 # ------- Konsolenausgabe -------
-def printHard(*args):
+async def printLog(*args):
     time = datetime.datetime.now()
     print(str(time), args)
     sys.stdout.flush()
-    global logtext
-    logtext = ', '.join(args)
-    try:
-        ws.send("PySteuerClient*Alarmdisplay*Steuerskript*7*LOG:" + logtext + ";SCHIRM:" + schirmstatus + " " + schirmstatusTime)
-    except:
-        print("No ws open")
+
+# ------- 3h Log -------
+async def create3hLog(asyncState):
+    if asyncState.schirmstatus == "AN":
+        asyncState.logbuff = asyncState.logbuff[1:] + "#"
+    else:
+        asyncState.logbuff = asyncState.logbuff[1:] + "_"
 
 # ------- Bildschirm AUS -------
-def schirmaus():
+async def schirmaus(asyncState):
+    # Sende Daten
     GPIO.output(relaispin, GPIO.LOW)
-    # Konsolenausgabe
-    global schirmstatus
-    global schirmstatusTime
-    if schirmstatus != "AUS":
-        schirmstatus = "AUS"
-        schirmstatusTime = str(datetime.datetime.now())
-    printHard(" ---> Schirm AUS")
-    taus.stop_timer()
+    if asyncState.schirmstatus != "AUS":
+        asyncState.schirmstatus = "AUS"
+        asyncState.schirmstatusTime = str(datetime.datetime.now())
+    await asyncio.wait_for(printLog(" ---> Schirm AUS"), 5)
 
 # ------- Bildschirm AN -------
-def schirman():
+async def schirman(asyncState):
+    # Sende Daten
     GPIO.output(relaispin, GPIO.HIGH)
     # Konsolenausgabe
-    global schirmstatus
-    global schirmstatusTime
-    if schirmstatus != "AN":
-        schirmstatus = "AN"
-        schirmstatusTime = str(datetime.datetime.now())
-    printHard(" ---> Schirm AN")
-    # Timer rücksetzen
-    tpir.stop_timer()
-    tpir.start_timer()
+    if asyncState.schirmstatus != "AN":
+        asyncState.schirmstatus = "AN"
+        asyncState.schirmstatusTime = str(datetime.datetime.now())
+    await asyncio.wait_for(printLog(" ---> Schirm AN"), 5)
 
 # ------- BewegMelder Signal? -------
 def isPIRHIGH():
-#    printHard(GPIO.input(pirpin))
-    if GPIO.input(pirpin) == GPIO.HIGH:
-        # Signal anliegend -> Bildschirm nicht ausschalten
-        taus.stop_timer()
-#        printHard(" --> STILL ON")
-        # Timer rücksetzen
-        tpir.stop_timer()
-        tpir.start_timer()
-    else:
-        # Kein Signal      -> Ausschalttimer starten
-        taus.stop_timer()
-        taus.start_timer()
+    return GPIO.input(pirpin) == GPIO.HIGH
 
 # ------- Neue Bewegung erkannt -------
-def doIfHigh(channel):
-    printHard("Bewegung erkannt")
-    # Bildschirm aktivieren
-    schirman()
-    # Ausschalttimer rücksetzen
-    taus.stop_timer()
-    taus.start_timer()
-    # zur Sicherheit weils nicht schadet
-    schirman()
-    schirman()
-    schirman()
+async def checkPIR(asyncState):
+    if isPIRHIGH():
+        if asyncState.timeToSleep < 299:
+            await asyncio.wait_for(schirman(asyncState), 10)
+        asyncState.timeToSleep = 299
 
-# -------------- Klassen --------------
+    elif asyncState.timeToSleep > 0:
+        asyncState.timeToSleep -= 5
+
+    if asyncState.timeToSleep < 0:
+        await asyncio.wait_for(schirmaus(asyncState), 10)
+        asyncState.timeToSleep = 0
+
+    await asyncio.wait_for(printLog("TimerOFF: " + str(asyncState.timeToSleep)), 5)
+
 # ------- Websocket -------
-# Verbindung über Websockets zum Hauptprogramm
-# -> Schaltet Bildschirm bei Alarm sofort ein
-class DummyClient(WebSocketClient):
+class WebSocketRetry:
+    def __init__(self, uri, timeout=1):
+        """
+        IF __INIT__ WAS CALLED DIRECTLY
+        THEN GENERATOR MUST SETUP MANUALLY
+        """
+        self.timeout = timeout
+        self._flag_closed = False
+        self._dataToSend = ""
 
-    reconn = False
+    @property
+    def closed(self):
+        return self._flag_closed
 
-    # (Event) WebSocket geöffnet
-    def opened(self):
-        self.send("WS Connection...")
-        printHard("WS Opened")
-        self.send("PySteuerClient*Alarmdisplay*Steuerskript*7")
+    @classmethod
+    async def create(cls, uri, timeout=1):        
+        asyncio.ensure_future(printLog("Websocket: Create..."))
+        self = cls(uri, timeout=timeout)
+        self.connected = False
+        asyncio.ensure_future(self.get_websocket_connection(uri))
+        return self
 
-    # WebSocket Setup
-    def setup(self, timeout=5):
-        # Verbindungsaufbau zum Ziel
+    async def get_websocket_connection(self, uri):
+        while not self.closed:
+            await asyncio.sleep(2)
+            try:
+                await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen..."), 5)
+
+                async with websockets.connect(uri) as ws:
+                    self._websocket_connection = ws
+                    self.connected = True
+                    await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
+                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}"
+
+                    while self.connected:               
+                        # Senden         
+                        if self._dataToSend != "":
+                            await asyncio.wait_for(printLog("Websocket: ...sende", self._dataToSend), 5)
+                            await ws.send(self._dataToSend)
+                            self._dataToSend  = ""
+
+                        # Empfangen
+                        try:
+                            data = await asyncio.wait_for(ws.recv(), self.timeout)
+                            asyncState.log = data
+                            await asyncio.wait_for(printLog(data), 5)
+                            parsedData = json.loads(data)
+                            if parsedData["topic"] == "ping":
+                                self._dataToSend = "{\"topic\":\"pong\", \"value\":\""+parsedData["message"]+"\"}"
+                            if parsedData["topic"] == 'alarm':
+                                await asyncio.wait_for(schirman(asyncState), 10)
+                                await asyncio.wait_for(schirman(asyncState), 10)
+                                await asyncio.wait_for(schirman(asyncState), 10)
+                            if parsedData["topic"] == 'action_7':                                
+                                ws.close()
+                                os.system('sudo shutdown -r now')
+                            if parsedData["topic"] == 'action_8':    
+                                ws.close()                            
+                                os.system("sudo bash /home/pi/steuerUpdate.sh \"" + targetserver + "\" >> update.log")
+                                
+                        except (asyncio.TimeoutError):
+                            #await asyncio.wait_for(printLog("No IN Data"), 5)
+                            pass
+                        except Exception as inst:
+                            await asyncio.wait_for(printLog("Connection error"), 5)
+                            print("error: ", inst)
+                            self.connected = False
+                            raise
+                        
+
+            except (asyncio.TimeoutError, ConnectionClosedOK, ConnectionClosedError):
+                await asyncio.wait_for(printLog("Loop error2"), 5)
+                self.connected = False
+            except Exception:
+                await asyncio.wait_for(printLog("Connection error2"), 5)
+                self.connected = False
+
+    async def send(self, data):
+        await asyncio.wait_for(printLog("Websocket: Senden...", data), 5)
+        self._dataToSend = data
+
+    async def sendPing(self, data):
+        if self.connected:
+            try:
+                await asyncio.wait_for(printLog("Websocket: PING"), 5)
+                await self._websocket_connection.ping()
+            except Exception:
+                await asyncio.wait_for(printLog("PING error"), 5)
+
+    async def close(self):
+        if not self.closed:
+            await asyncio.wait_for(printLog("Websocket: Verbindung schliessen..."), 5)
+            self._flag_closed = True
+            await self._websocket_connection.close()
+
+
+async def connectWebsocket(asyncState):
+    asyncState.client = await WebSocketRetry.create("ws://" + targetserver)
+
+async def closeWebsocket(asyncState):
+    await asyncState.client.close()
+
+async def endProgram(asyncState):
+    await asyncio.wait_for(printLog("Steuerskript UART", "Version " + version, "ENDE"), 5)
+    await asyncio.wait_for(closeWebsocket(asyncState), 5)
+
+async def keepAlive(asyncState):    
+    await asyncState.client.sendPing("TESTPING")
+    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
+
+async def mainLoop(asyncState):
+    while True:
         try:
-            self.reconn = False
-            self.__init__(self.url)
-            self.connect()
-            self.run_forever()
+            await asyncio.sleep(1)         
 
-        # Bei Tastendruck schließen
-        except KeyboardInterrupt:
-            self.close()
-
-        # Fehler / Verbindungsabbruch
-        except:
-            newTimeout = timeout + 1
-            printHard("Error > Timing out for %i seconds. . ." % newTimeout)
-            time.sleep(newTimeout)
-            if self.reconn == False:
-                self.reconn = True
-                printHard("Attempting reconnect. . .")
-                self.setup(newTimeout)
-
-    # (Event) WebSocket geschlossen
-    def closed(self, code, reason=None):
-        printHard("Closed down", code, reason)
-        if self.reconn == False:
-            printHard("Closed > Timing out for a bit. . .")
-            time.sleep(3)
-            printHard("Reconnecting. . .")
-            # self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
-            self.setup()
-
-    # (Event) WebSocket Daten empfangen
-    def received_message(self, m):
-        printHard("=> %d %s" % (len(m), str(m)))
-
-        # Meldunf für Alarm empfangen
-        if 'alarm' in str(m):
-            schirman()
-            schirman() # 2mal hält besser:)
-            schirman() # und 3mal noch besser
-            printHard("ScreenOn Time", str(m).split("|")[1])
-            taus.stop_timer()
-            taus.start_timer()
-            schirman()
-            schirman()
-        if 'rebootScreen' in str(m):
-            ws.send("PySteuerClient*Alarmdisplay*Steuerskript**RESTARTING")
-            ws.close()
-            os.system('sudo shutdown -r now')
+            asyncState.timer5 += 1
+            if asyncState.timer5 >= 5:
+                asyncState.timer5 = 0
+                await checkPIR(asyncState)
+            
+            asyncState.timer15 += 1
+            if asyncState.timer15 >= 15:
+                asyncState.timer15 = 0
+                await keepAlive(asyncState)
+            
+            asyncState.timer300 += 1
+            if asyncState.timer300 >= 300:
+                asyncState.timer300 = 0
+                await create3hLog(asyncState)
+        except Exception:
+            await asyncio.wait_for(printLog("MAIN LOOP error"), 5)
 
 
 # -------------- Programmstart --------------
-# Prüft irgendwas ??? -> siehe Internet :)
 if __name__ == '__main__':
+
+    loop = asyncio.get_event_loop()
+    asyncState = type('', (), {})()
+
+    asyncState.schirmstatus = "???"
+    asyncState.schirmstatusTime = "???"
+    asyncState.log = "???"
+    asyncState.logbuff = "                                    "
+    asyncState.timeToSleep = 1
+    asyncState.timer5 = 0
+    asyncState.timer15 = 0
+    asyncState.timer300 = 0
+
     try:
 
         # Programmstart Ausgabe auf Konsole
-        printHard(" --- PROGRAMMSTART --- ")
+        asyncio.ensure_future(printLog("FWmonitor (c) 2021 Resch"))
+        asyncio.ensure_future(printLog("Steuerskript RELAIS", "Version " + version, "START"))
+        asyncio.ensure_future(printLog("Steuerskript Server", targetserver))
+        asyncio.ensure_future(printLog("Steuerskript Client-Name", name))
+        asyncio.ensure_future(printLog("#"))
+        
+        # WebSocket
+        asyncio.ensure_future(connectWebsocket(asyncState))
+        asyncio.ensure_future(mainLoop(asyncState))
 
-        # Programmstart Ausgabe auf COM Port (Notwendig = ?)
-        # Hilfreich, wenn serieller Monitor angesteckt ist
-        ser = serial.Serial(
-            port=uartport,
-            baudrate=9600,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            bytesize=serial.EIGHTBITS,
-            xonxoff=False
-        )
-        ser.write("\n\rProgrammstart\n\r")
-        ser.close()
+        # Starte AsyncIO Eventloop
+        loop.run_forever()
+     
 
-
-        # ------- Setup Timer -------
-        # "Bildschirm AUS"
-        # Setup für 15min
-        taus = RU_Timer(10 *60 *10, schirmaus)
-        taus.start()
-        taus.start_timer()
-
-        # ------- Setup Timer -------
-        # "Bewegungsmelder überprüfen"
-        # Prüfen ob noch Signal anliegt
-        # -> Noch Bewegung vorhanden
-        # Setup für 5s
-        tpir = RU_Timer(5 *10, isPIRHIGH)
-        tpir.start()
-        tpir.start_timer()
-
-        # ------- Setup GPIO Events -------
-        # GPIO Event "Steigende Flanke"
-        # an Bewegungsmelder Pin
-        # -> Neue Bewegung erkannt
-        GPIO.add_event_detect(pirpin, GPIO.RISING, callback = doIfHigh, bouncetime = 600)
-
-
-        # ------- Starte Websocket -------
-        #                            V-- IP Adresse Server PC
-        ws = DummyClient(targetserver, protocols=['http-only', 'chat'])
-        ws.setup()
-
-    # Beende bei Tastendruck (Haut ned hi K.A. warum)
+    # Beende bei Tastendruck
     except KeyboardInterrupt:
-        tpir.stop_timer()
-        GPIO.remove_event_detect(pirpin)
-        GPIO.cleanup()
-        ws.close()
+        pass
+
+    # Beende AsyncIO Eventloop
+    finally:
+        loop.run_until_complete(endProgram(asyncState))
+        

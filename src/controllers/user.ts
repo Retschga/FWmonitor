@@ -17,7 +17,7 @@ class UserController {
         logging.debug(NAMESPACE, 'get_user_id');
         checkValidation(req);
 
-        let list = await UserService.find_by_userid(Number(req.params.id));
+        let list = await UserService.find_by_userid(Number(req.params.id), false);
         if (!list || list.length < 1) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }

@@ -25,7 +25,7 @@ class TelegramBot {
     private sendtMessages: number = 0;
     private mainKeyboard = [
         ['📅 Kalender', '🚒 Verfügbarkeit'],
-        ['️▪️ Mehr', '🔥 Einsätze'],
+        ['▪️ Mehr', '🔥 Einsätze'],
         ['📱 FWmonitor APP']
     ];
 
@@ -56,7 +56,7 @@ class TelegramBot {
         // Sichere Routen
         this.bot.hears('📅 Kalender', this.bot_calendar.bind(this));
         this.bot.hears('🚒 Verfügbarkeit', this.bot_verf.bind(this));
-        this.bot.hears('️▪️ Mehr', this.bot_more.bind(this));
+        this.bot.hears('▪️ Mehr', this.bot_more.bind(this));
         this.bot.hears('🔥 Einsätze', this.bot_history.bind(this));
         this.bot.hears('📱 FWmonitor APP', this.bot_app_menu.bind(this));
 
@@ -85,6 +85,9 @@ class TelegramBot {
                     break;
                 case 'einstell_Kalender_set':
                     this.bot_more_calendarNotifications_set(ctx, cbArray[1]);
+                    break;
+                case 'einstell_picture':
+                    this.bot_more_picture(ctx);
                     break;
 
                 case 'einstell_Hydrant':
@@ -499,7 +502,8 @@ ${list[0].ort}_`,
 
             let keyboard = [
                 Markup.button.callback('📅 Erinnerungen', 'einstell_Kalender'),
-                Markup.button.callback('🧯 Hydrant eintragen', 'einstell_Hydrant')
+                Markup.button.callback('🧯 Hydrant eintragen', 'einstell_Hydrant'),
+                Markup.button.callback('🖼️ Bild für Diashow', 'einstell_picture')
             ];
 
             if (config.common.fw_position) {
@@ -601,6 +605,20 @@ ${list[0].ort}_`,
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_type', { telegramid });
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+    }
+
+    private async bot_more_picture(ctx: Context) {
+        try {
+            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
+            const telegramid: string = String(ctx.from?.id);
+            logging.debug(NAMESPACE, 'bot_more_picture', { telegramid });
+
+            ctx.editMessageText('Bild über Büroklammer-Symbol unten senden.', {
+                parse_mode: 'Markdown'
+            });
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }

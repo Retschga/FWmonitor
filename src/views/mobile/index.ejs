@@ -205,7 +205,7 @@
 
                     const target = document.querySelector(".content");
 
-                    const date = user_status.until ? new Date(user_status.until) : undefined;  
+                    const date = user_status.until != '' && user_status.until != null  ? new Date(user_status.until) : undefined;  
 
                     const template = document.querySelector('#template-status');                
                     const var_text   = template.content.querySelector(".var_text");

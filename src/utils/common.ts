@@ -49,10 +49,16 @@ export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => 
                 case 'string':
                     break;
 
+                case 'undefined':
+                    values[i] = null;
+                    break;
+
                 default:
                     values[i] = String(values[i]);
                     break;
             }
+
+            if (values[i] == 'null') values[i] = null;
         }
 
         console.log(typeof values[i]);
@@ -84,6 +90,7 @@ export const multibleKeySet = (obj: object) => {
         if (values[i] instanceof Date) {
             values[i] = (<Date>values[i]).toISOString();
         } else {
+            console.log(typeof values[i]);
             switch (typeof values[i]) {
                 case 'boolean':
                     values[i] = values[i] == true ? 1 : 0;
@@ -97,10 +104,16 @@ export const multibleKeySet = (obj: object) => {
                 case 'string':
                     break;
 
+                case 'undefined':
+                    values[i] = null;
+                    break;
+
                 default:
                     values[i] = String(values[i]);
                     break;
             }
+
+            if (values[i] == 'null') values[i] = null;
         }
 
         console.log(typeof values[i]);
@@ -195,11 +208,21 @@ export const getUniqueID = (): string => {
     return s4() + s4() + '-' + s4();
 };
 
-export const addLeadingZero = (i: number) => {
-    return Number(i) < 10 ? '0' + i : i;
+/**
+ * Hängt eine führende 0 an eine Zahl (<10)
+ * @param i
+ * @returns {string}
+ */
+export const addLeadingZero = (i: number): string => {
+    return Number(i) < 10 ? '0' + i : String(i);
 };
 
-export const getFormattedAlarmTime = (date?: Date) => {
+/**
+ * Gibt eine Datumsstring im Alarmzeit format zurück
+ * @param date
+ * @returns {string}
+ */
+export const getFormattedAlarmTime = (date?: Date): string => {
     var today = new Date();
     if (date) today = new Date(date);
 

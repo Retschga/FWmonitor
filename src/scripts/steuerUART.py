@@ -35,7 +35,7 @@ pirpin = int(sys.argv[3])
 uartport = sys.argv[4]
 
 starttime = str(datetime.datetime.now())
-version = "2.3.1"
+version = "3.0.0"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = b'\xAA\x11\xFE\x01\x01\x11'
@@ -192,7 +192,7 @@ class WebSocketRetry:
             except (asyncio.TimeoutError, ConnectionClosedOK, ConnectionClosedError):
                 await asyncio.wait_for(printLog("Loop error2"), 5)
                 self.connected = False
-            except:
+            except Exception:
                 await asyncio.wait_for(printLog("Connection error2"), 5)
                 self.connected = False
 
@@ -205,15 +205,15 @@ class WebSocketRetry:
             try:
                 await asyncio.wait_for(printLog("Websocket: PING"), 5)
                 await self._websocket_connection.ping()
-            except:
+            except Exception:
                 await asyncio.wait_for(printLog("PING error"), 5)
-
 
     async def close(self):
         if not self.closed:
             await asyncio.wait_for(printLog("Websocket: Verbindung schliessen..."), 5)
             self._flag_closed = True
             await self._websocket_connection.close()
+
 
 async def connectWebsocket(asyncState):
     asyncState.client = await WebSocketRetry.create("ws://" + targetserver)
@@ -248,7 +248,7 @@ async def mainLoop(asyncState):
             if asyncState.timer300 >= 300:
                 asyncState.timer300 = 0
                 await create3hLog(asyncState)
-        except:
+        except Exception:
             await asyncio.wait_for(printLog("MAIN LOOP error"), 5)
 
 
@@ -270,7 +270,7 @@ if __name__ == '__main__':
     try:
 
         # Programmstart Ausgabe auf Konsole
-        asyncio.ensure_future(printLog("FWmonitor (c) 2020 Resch"))
+        asyncio.ensure_future(printLog("FWmonitor (c) 2021 Resch"))
         asyncio.ensure_future(printLog("Steuerskript UART", "Version " + version, "START"))
         asyncio.ensure_future(printLog("Steuerskript Server", targetserver))
         asyncio.ensure_future(printLog("Steuerskript Client-Name", name))

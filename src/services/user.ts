@@ -100,8 +100,11 @@ class UserService {
         return response;
     }
 
-    public async find_by_userid(id: Number): Promise<UserModel.UserRow[] | undefined> {
-        const response = await this.find({ id: id });
+    public async find_by_userid(
+        id: Number,
+        approved: boolean = true
+    ): Promise<UserModel.UserRow[] | undefined> {
+        const response = await this.find({ id: id }, approved);
         if (response.length < 1) return;
         return response;
     }

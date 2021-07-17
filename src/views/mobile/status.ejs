@@ -86,7 +86,7 @@
                     const user_status = await fetch_get(url_user_status.replace(':id', id), true);
                     console.log('user status', user_status);
 
-                    const date = user_status.until ? new Date(user_status.until) : undefined;   
+                    const date = user_status.until != '' && user_status.until != null ? new Date(user_status.until) : undefined;   
                 
                     const var_text   = document.querySelector(".var_statustext");
                     const var_until   = document.querySelector(".var_until");
