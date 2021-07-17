@@ -3,13 +3,16 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { checkValidation } from './controller';
 import DiashowService from '../services/diashow';
 import logging from '../utils/logging';
-import { checkValidation } from './controller';
 
-const NAMESPACE = 'DiashowController';
+const NAMESPACE = 'Diashow_Controller';
 
 class DiashowController {
+    /**
+     * Eine Liste aller Bilder (Dateinamen)
+     */
     public async get_list(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list');
 
@@ -20,6 +23,9 @@ class DiashowController {
         res.send(filelist);
     }
 
+    /**
+     * Aktiviert ein Bild
+     */
     public async enable_pic(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -29,9 +35,13 @@ class DiashowController {
             logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not disabled');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Deaktiviert ein Bild
+     */
     public async disable_pic(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -41,9 +51,13 @@ class DiashowController {
             logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not enabled');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Löscht ein Bild
+     */
     public async delete_pic(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -53,6 +67,7 @@ class DiashowController {
             logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not deleted');
         }
+
         res.send('OK');
     }
 }

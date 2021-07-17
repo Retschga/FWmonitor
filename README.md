@@ -89,7 +89,7 @@ Bei beiden: In Konsole (Windows: Rechtsklick - Git Bash here) (sudo unter Window
 -   Achtung bei eigens veränderten Dateien (Wappen, ...), diese unter Umständen nicht überschreiben
 -   .env (Ist-Stand) mit .env-leer (Soll-Stand) vergleichen, gegebenfalls Einträge
     hinzufügen/ändern/löschen
--   Libraries updaten `npm install`
+-   Libraries updaten `npm install --production`
 -   Wenn nötig die verbundenen Geräte unter Einstellungen updaten
 -   Software neu starten
 

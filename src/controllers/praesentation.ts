@@ -6,9 +6,12 @@ import HttpStatusCodes from '../utils/httpStatusCodes';
 import PraesentationService from '../services/praesentation';
 import logging from '../utils/logging';
 
-const NAMESPACE = 'PraesentationController';
+const NAMESPACE = 'Praesentation_Controller';
 
 class DiashowController {
+    /**
+     * Liste aller verfügbaren Präsentationen
+     */
     public async get_list(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list');
 
@@ -16,6 +19,7 @@ class DiashowController {
         if (!filelist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Files found');
         }
+
         res.send(filelist);
     }
 }

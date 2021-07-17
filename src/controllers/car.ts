@@ -3,14 +3,17 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import CarService from '../services/car';
-import logging from '../utils/logging';
 import { checkValidation } from './controller';
+import CarService from '../services/car';
 import { createNewPassword, hashPassword } from '../utils/security';
+import logging from '../utils/logging';
 
-const NAMESPACE = 'CarController';
+const NAMESPACE = 'Car_Controller';
 
 class CalendarController {
+    /**
+     * Findet ein Auto anhand der ID
+     */
     public async get_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_id');
         checkValidation(req);
@@ -20,6 +23,7 @@ class CalendarController {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Car not found');
         }
 
+        // Passwort Hash aus Antwort entfernen
         for (let i = 0; i < list.length; i++) {
             list[i].appPasswort = '****';
         }
@@ -27,6 +31,9 @@ class CalendarController {
         res.send(list);
     }
 
+    /**
+     * Findet alle Autos
+     */
     public async get_list_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list_all');
 
@@ -35,6 +42,7 @@ class CalendarController {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Car found');
         }
 
+        // Passwort Hash aus Antwort entferenen
         for (let i = 0; i < list.length; i++) {
             list[i].appPasswort = '****';
         }
@@ -42,6 +50,9 @@ class CalendarController {
         res.send(list);
     }
 
+    /**
+     * Update eines Autos
+     */
     public async update_id(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -59,22 +70,28 @@ class CalendarController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Erstellt ein neues Auto
+     */
     public async create(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
         try {
-            let now = new Date();
-            now.setTime(now.getTime() + 60 * 60 * 1000);
             await CarService.create('Neues Auto', '', '');
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Löscht ein Auto
+     */
     public async delete(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -83,9 +100,13 @@ class CalendarController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Generiert ein neues Passwort
+     */
     public async password(req: Request, res: Response, next: NextFunction) {
         const password = createNewPassword();
         res.send({ password: password.password });

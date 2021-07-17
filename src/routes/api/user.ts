@@ -71,7 +71,7 @@ router.post(
     '/notifications/calendar/:id',
     auth_api(UserRights.ownid),
     ValidatorsUser.updateNotificationsCalendar,
-    awaitHandlerFactory(userController.update_user_notifications_calendar.bind(userController))
+    awaitHandlerFactory(userController.update_user_notifications_calendar_id.bind(userController))
 );
 
 // Benutzerliste
@@ -98,12 +98,12 @@ router.post(
 router.get(
     '/approve/:id',
     auth_api(UserRights.admin),
-    awaitHandlerFactory(userController.approve.bind(userController))
+    awaitHandlerFactory(userController.approve_id.bind(userController))
 );
 router.get(
     '/delete/:id',
     auth_api(UserRights.admin),
-    awaitHandlerFactory(userController.delete.bind(userController))
+    awaitHandlerFactory(userController.delete_id.bind(userController))
 );
 
 export = router;

@@ -3,14 +3,17 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import { calendarService } from '../services/calendar';
-import logging from '../utils/logging';
 import { checkValidation } from './controller';
+import { calendarService } from '../services/calendar';
 import userService from '../services/user';
+import logging from '../utils/logging';
 
-const NAMESPACE = 'CalerndarController';
+const NAMESPACE = 'Calerndar_Controller';
 
 class CalendarController {
+    /**
+     * Findet einen Kalendereintrag anhand der ID
+     */
     public async get_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_next');
 
@@ -18,9 +21,13 @@ class CalendarController {
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
         }
+
         res.send(list[0]);
     }
 
+    /**
+     * Findet den nächsten anstehenden Termin des Users
+     */
     public async get_next(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_next');
 
@@ -31,7 +38,7 @@ class CalendarController {
 
         const user = await userService.find_by_userid(Number(req.params.id));
         if (!user || user.length < 1) {
-            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
 
         let usergroups = user[0].kalenderGroups.split('|');
@@ -48,6 +55,9 @@ class CalendarController {
         throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Entry found');
     }
 
+    /**
+     * Findet alle kommenden Termine
+     */
     public async get_list_upcoming(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list_upcoming');
 
@@ -58,6 +68,9 @@ class CalendarController {
         res.send(list);
     }
 
+    /**
+     * Findet alle vorhandenen Kalendereinträge
+     */
     public async get_list_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list_all');
 
@@ -68,6 +81,9 @@ class CalendarController {
         res.send(list);
     }
 
+    /**
+     * Update eines bestimmten Kalendereintrags
+     */
     public async update_id(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -80,32 +96,41 @@ class CalendarController {
                 String(req.body.group)
             );
         } catch (error) {
-            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Entry update error');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Erstellt einen neuen Kalendereintrag
+     */
     public async create(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
         try {
-            let now = new Date();
-            now.setTime(now.getTime() + 60 * 60 * 1000);
-            await calendarService.create('Neuer Termin', now, now, '');
+            let eventDate = new Date();
+            eventDate.setTime(eventDate.getTime() + 60 * 60 * 1000);
+            await calendarService.create('Neuer Termin', eventDate, eventDate, '');
         } catch (error) {
-            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Entry creation error');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Löscht einen Kalendereintrag
+     */
     public async delete(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
         try {
             await calendarService.delete(Number(req.params.id));
         } catch (error) {
-            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Entry deletion error');
         }
+
         res.send('OK');
     }
 }

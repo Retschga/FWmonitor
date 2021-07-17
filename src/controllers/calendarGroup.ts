@@ -3,13 +3,16 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { checkValidation } from './controller';
 import CalendarGroupService from '../services/calendarGroup';
 import logging from '../utils/logging';
-import { checkValidation } from './controller';
 
-const NAMESPACE = 'CalendarGroupController';
+const NAMESPACE = 'CalendarGroup_Controller';
 
 class CalendarGroupController {
+    /**
+     * Liest alle Kalendergruppen aus
+     */
     public async get_list_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_list_all');
 
@@ -17,9 +20,13 @@ class CalendarGroupController {
         if (!alarmlist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No calendarGroup found');
         }
+
         res.send(alarmlist);
     }
 
+    /**
+     * Update einer Kalendergruppe
+     */
     public async update_id(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -32,6 +39,7 @@ class CalendarGroupController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 }

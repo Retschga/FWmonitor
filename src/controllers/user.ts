@@ -3,16 +3,17 @@
 import { Request, Response, NextFunction } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import UserService from '../services/user';
-import logging from '../utils/logging';
 import { checkValidation } from './controller';
 import { UserStatus } from '../models/user';
+import UserService from '../services/user';
+import logging from '../utils/logging';
 
 const NAMESPACE = 'User_Controller';
 
 class UserController {
-    // User
-
+    /**
+     * Findet einen Benutzer anhand der ID
+     */
     public async get_user_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_id');
         checkValidation(req);
@@ -22,6 +23,7 @@ class UserController {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
 
+        // Passtwort Hash aus der Antwort entfernen
         for (let i = 0; i < list.length; i++) {
             list[i].appPasswort = '****';
         }
@@ -29,20 +31,29 @@ class UserController {
         res.send(list);
     }
 
+    /**
+     * Liste aller Benutzer (approved und not approved)
+     */
     public async get_user_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_all');
 
         let list1 = await UserService.find_all_approved();
         let list2 = await UserService.find_all_notApproved();
+
+        // Passwort Hash aus der Antwort entfernen
         for (let i = 0; i < list1.length; i++) {
             list1[i].appPasswort = '****';
         }
         for (let i = 0; i < list2.length; i++) {
             list2[i].appPasswort = '****';
         }
+
         res.send({ approved: list1, blocked: list2 });
     }
 
+    /**
+     * Update eines Benutzers
+     */
     public async update_user_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_status_id');
         checkValidation(req);
@@ -97,9 +108,13 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Liste aller Kalendergruppen eines Benutzers
+     */
     public async get_user_calendargroups_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_calendargroups_id');
 
@@ -111,6 +126,9 @@ class UserController {
         res.send(calendargroups);
     }
 
+    /**
+     * Berechtigungen des angemeldeten Benutzers
+     */
     public async get_user_rights(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_rights');
 
@@ -126,19 +144,23 @@ class UserController {
         });
     }
 
+    /**
+     * Berechtigungen aller Benutzer
+     */
     public async get_user_roles_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_roles_all');
 
         let users = await UserService.get_roles_all();
         if (!users) {
-            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No user found');
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No users found');
         }
 
         res.send(users);
     }
 
-    // Status
-
+    /**
+     * Status eines Benutzers
+     */
     public async get_user_status_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_status_id');
         checkValidation(req);
@@ -151,16 +173,22 @@ class UserController {
         res.send(status);
     }
 
+    /**
+     * Statusliste aller Benutzer
+     */
     public async get_user_status_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_user_status_all');
         let statusList = await UserService.get_status_allUsers();
         if (statusList.length < 1) {
-            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No users found');
         }
 
         res.send(statusList);
     }
 
+    /**
+     * Update Benutzerstatus
+     */
     public async update_user_status_id(req: Request, res: Response, next: NextFunction) {
         checkValidation(req);
 
@@ -177,7 +205,6 @@ class UserController {
                     HttpStatusCodes.INTERNAL_SERVER_ERROR,
                     'Wrong value for value parameter'
                 );
-                break;
         }
 
         try {
@@ -189,9 +216,13 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Update Statusplan
+     */
     public async update_user_statusPlans_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'update_user_statusPlans_id');
         checkValidation(req);
@@ -201,9 +232,13 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Update Status verborgen
+     */
     public async update_user_statusHidden_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'update_user_statusHidden_id');
         checkValidation(req);
@@ -213,11 +248,14 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
-    // Approve/Delete
-    public async delete(req: Request, res: Response, next: NextFunction) {
+    /**
+     * Benutzer löschen
+     */
+    public async delete_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'delete');
         checkValidation(req);
 
@@ -226,10 +264,14 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
-    public async approve(req: Request, res: Response, next: NextFunction) {
+    /**
+     * Benutzer freigeben
+     */
+    public async approve_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'approve');
         checkValidation(req);
 
@@ -238,11 +280,14 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
-    // Notifications
-    public async update_user_notifications_calendar(
+    /**
+     * Update Kalenderbenachrichtigungen
+     */
+    public async update_user_notifications_calendar_id(
         req: Request,
         res: Response,
         next: NextFunction
@@ -257,9 +302,13 @@ class UserController {
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
+
         res.send('OK');
     }
 
+    /**
+     * Update App Benachrichtigungen
+     */
     public async update_user_notifications_app_id(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'update_user_appNotifications_id');
         checkValidation(req);

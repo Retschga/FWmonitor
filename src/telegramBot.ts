@@ -733,7 +733,7 @@ ${list[0].ort}_`,
         }
 
         let bis = 'unbegrenzt';
-        if (user[0].statusUntil != '') {
+        if (user[0].statusUntil != null && user[0].statusUntil != '') {
             const result = new Date(user[0].statusUntil);
             const time = result.toLocaleTimeString();
             const date = result.toLocaleDateString('de-DE', {
@@ -1326,17 +1326,6 @@ _${st_nichtverf}_`,
             logging.exception(NAMESPACE, error);
         }
     }
-    /*
-    private async bot_example(ctx: Context) {
-        try {
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_example', { telegramid });
-        } catch (error) {
-            logging.exception(NAMESPACE, error);
-        }
-    }
-    */
 }
 
 export default new TelegramBot();

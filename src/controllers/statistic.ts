@@ -9,8 +9,9 @@ import logging from '../utils/logging';
 const NAMESPACE = 'Statistic_Controller';
 
 class StatisticController {
-    // Alarm
-
+    /**
+     * Einsatzstatistik für ein bestimmtes Jahr
+     */
     public async get_year(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_year');
 
@@ -18,14 +19,17 @@ class StatisticController {
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No entrys not found');
         }
+
         res.send(list);
     }
 
+    /**
+     * Einsatzzeit eines Benutzers für ein bestimmtes Jahr
+     */
     public async get_einsatzzeit(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_einsatzzeit');
 
-        let response;
-        response = await StatisticServise.einsatzzeit(
+        let response = await StatisticServise.einsatzzeit(
             Number(req.params.id),
             Number(req.params.year)
         );
@@ -35,14 +39,17 @@ class StatisticController {
         res.send(response);
     }
 
+    /**
+     * Einsatzzeit aller Benutzer für ein bestimmtes Jahr
+     */
     public async get_einsatzzeit_all(req: Request, res: Response, next: NextFunction) {
         logging.debug(NAMESPACE, 'get_einsatzzeit_all');
 
-        let response;
-        response = await StatisticServise.einsatzzeit_all(Number(req.params.year));
+        let response = await StatisticServise.einsatzzeit_all(Number(req.params.year));
         if (!response) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No time not found');
         }
+
         res.send(response);
     }
 }
