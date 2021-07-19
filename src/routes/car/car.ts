@@ -1,7 +1,7 @@
 'use strict';
 
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import config from '../../utils/config';
 
 const router = express.Router();

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use strict';
 
 import DatabaseConnection from '../database/connection';
@@ -89,8 +90,8 @@ class Model {
      * @param params //{spalte: wert, ...}
      * @returns
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public insert(params: Record<string, unknown> = {}): any {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    public insert(params: object = {}): any {
         logging.debug(NAMESPACE, 'insert', { tablename: this.tablename, params });
         if (!Object.keys(params).length) {
             return 0;

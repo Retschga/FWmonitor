@@ -89,7 +89,7 @@ class TelegramBot {
             const cbQuerry: any = ctx.callbackQuery;
             if (!cbQuerry.data) throw new Error('callback_query data not availible!');
             const cbArray = String(cbQuerry.data).split(':');
-            this.inlineKeyboardEvents.emit(cbArray[0], cbArray[1]);
+            this.inlineKeyboardEvents.emit(cbArray[0], ctx, cbArray[1]);
         });
 
         this.bot.on('photo', this.bot_photo.bind(this));

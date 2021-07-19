@@ -14,6 +14,7 @@ const NAMESPACE = 'COMMON_FUNC';
 export function multibleColumnSet(
     obj: Record<string, unknown>,
     verknuepfung: string = 'AND'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): { columnSet: string; valueData: any } {
     const keys = Object.keys(obj);
     const values = Object.values(obj);
@@ -34,6 +35,7 @@ export function multibleColumnSet(
         key = key.replace(/[<>=]/g, '');
         return `${key}`;
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
         if (values[i] instanceof Date) {
@@ -78,9 +80,11 @@ export function multibleColumnSet(
  * @param obj //{spalte: value}
  * @returns {{keySet: string, valueSet: string, valueData: any}}
  */
-export function multibleKeySet(obj: Record<string, unknown>): {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function multibleKeySet(obj: object): {
     keySet: string;
     valueSet: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueData: any;
 } {
     const keys = Object.keys(obj);
@@ -90,6 +94,7 @@ export function multibleKeySet(obj: Record<string, unknown>): {
     const valueSet = keys.map((key) => `@${key}`).join(', ');
 
     const mappedKeys = keys.map((key) => `${key}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
         if (values[i] instanceof Date) {

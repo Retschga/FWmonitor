@@ -20,6 +20,7 @@ const NAMESPACE = 'GlobalEvents';
 // globalEvents.on('paperstatus-change', (status: boolean) => { });
 
 class GlobalEvents extends EventEmitter {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public emit(event: string | symbol, ...args: any[]) {
         logging.debug(NAMESPACE, String(event) + ' emitted');
         return super.emit(event, ...args);
