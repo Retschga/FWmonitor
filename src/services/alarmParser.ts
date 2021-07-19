@@ -4,9 +4,9 @@ import puppeteer from 'puppeteer';
 import moveFile from 'move-file';
 import fs from 'fs';
 import { AlarmRow } from '../models/alarm';
-import AlarmService from './alarm';
-import GeocodeService from './geocode';
-import PrintingServoce from './printing';
+import alarmService from './alarm';
+import geocodeService from './geocode';
+import printingServoce from './printing';
 import logging from '../utils/logging';
 import config from '../utils/config';
 import { timeout } from '../utils/common';
@@ -27,18 +27,24 @@ class AlarmFields {
     public cars1: string[] = []; // Variable Fahrzeuge eigen
     public cars2: string[] = []; // Variable Fahrzeuge andere
 
+    /**
+     * Sucht ein Element mit Start und Stop Regex
+     */
     private searchElement(start: string, end: string, data: string) {
-        var s = data.search(start);
+        let s = data.search(start);
         if (s >= 0) {
             s += start.length;
-            var e = data.slice(s).search(end);
-            var elem = data.slice(s, s + e);
+            const e = data.slice(s).search(end);
+            const elem = data.slice(s, s + e);
             return elem.trim();
         }
         return null;
     }
 
-    public parseData = (data: string) => {
+    /**
+     * Parst den gesamten Alarmtext
+     */
+    public parseData(data: string) {
         // Variablen leeren
         this.EINSATZSTICHWORT = '-/-';
         this.SCHLAGWORT = '-/-';
@@ -106,30 +112,30 @@ class AlarmFields {
 
         this.EINSATZMITTEL = this.EINSATZMITTEL.replace(/-/g, '');
 
-        var cars = this.EINSATZMITTEL.split('\n');
-        for (let i in cars) {
-            var c = this.searchElement(
+        const cars = this.EINSATZMITTEL.split('\n');
+        for (const i in cars) {
+            const c = this.searchElement(
                 config.alarmfields.s_CAR,
                 config.alarmfields.e_CAR,
                 cars[i] + '\n'
             );
 
-            var regex = RegExp(config.alarmfields.CAR1, 'gi');
+            const regex = RegExp(config.alarmfields.CAR1, 'gi');
 
             if (c != null) {
                 if (regex.test(cars[i])) this.cars1.push(c);
                 else this.cars2.push(c);
             }
         }
-    };
+    }
 }
 
 class AlarmParserService {
-    private replaceErrors = (data: string) => {
+    private replaceErrors(data: string) {
         data = data.replace(/[—_*`]/g, '-');
 
         data = data.replace(/2222+/g, '--------');
-        data = data.replace(/---([-\s\.](?!\n))+/g, '--------');
+        data = data.replace(/---([-\s.](?!\n))+/g, '--------');
         data = data.replace(/Kinsatz/g, 'Einsatz');
 
         data = data.replace(/BI/g, 'B1');
@@ -167,9 +173,9 @@ class AlarmParserService {
         }
 
         return data;
-    };
+    }
 
-    public async parseFile(path: string, alarmdate: Date) {
+    public async parseTextFile(path: string, alarmdate: Date) {
         let fileData = await fs.promises.readFile(path, 'utf8');
 
         logging.info(NAMESPACE, 'File OK -> Begin processing...');
@@ -196,8 +202,12 @@ class AlarmParserService {
         // Daten Filtern
         alarmFields.parseData(fileData);
 
+        await this.processAlarmData(alarmFields, alarmdate);
+    }
+
+    private async processAlarmData(alarmFields: AlarmFields, alarmdate: Date) {
         // Geocoding
-        var geoData = await GeocodeService.geocode(
+        const geoData = await geocodeService.geocode(
             'Germany, Bayern, ' +
                 alarmFields.ORT +
                 ', ' +
@@ -210,7 +220,7 @@ class AlarmParserService {
         );
 
         // Daten in Datenbank schreiben
-        let alarmRow: AlarmRow = {
+        const alarmRow: AlarmRow = {
             einsatzstichwort: alarmFields.EINSATZSTICHWORT,
             schlagwort: alarmFields.SCHLAGWORT,
             objekt: alarmFields.OBJEKT,
@@ -227,15 +237,19 @@ class AlarmParserService {
             id: undefined
         };
 
-        AlarmService.create(alarmRow);
+        alarmService.create(alarmRow);
 
+        await this.createPrint(alarmRow);
+    }
+
+    private async createPrint(alarmRow: AlarmRow) {
         try {
             // Alarmusdruck erzeugen
             logging.debug(NAMESPACE, 'Starte Puppeteer');
             const browser = await puppeteer.launch({
                 args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
             });
-            var page = await browser.newPage();
+            const page = await browser.newPage();
 
             // Navigiere puppeteer zu Ausdruck Seite
             await page.goto(
@@ -244,27 +258,27 @@ class AlarmParserService {
                     ':' +
                     config.server_http.port +
                     '/print?varEINSATZSTICHWORT=' +
-                    alarmFields.EINSATZSTICHWORT +
+                    alarmRow.einsatzstichwort +
                     '&varSCHLAGWORT=' +
-                    alarmFields.SCHLAGWORT +
+                    alarmRow.schlagwort +
                     '&varOBJEKT=' +
-                    alarmFields.OBJEKT +
+                    alarmRow.objekt +
                     '&varBEMERKUNG=' +
-                    alarmFields.BEMERKUNG +
+                    alarmRow.bemerkung +
                     '&varSTRASSE=' +
-                    alarmFields.STRASSE +
+                    alarmRow.strasse +
                     '&varORTSTEIL=' +
-                    alarmFields.ORTSTEIL +
+                    alarmRow.ortsteil +
                     '&varORT=' +
-                    alarmFields.ORT +
+                    alarmRow.ort +
                     '&lat=' +
-                    geoData.lat +
+                    alarmRow.lat +
                     '&lng=' +
-                    geoData.lng +
+                    alarmRow.lng +
                     '&isAddress=' +
-                    (geoData.isAddress == true ? 1 : 0) +
+                    (alarmRow.isAddress == true ? 1 : 0) +
                     '&noMap=' +
-                    (alarmFields.STRASSE == '' && geoData.isAddress == false ? 1 : 0),
+                    (alarmRow.strasse == '' && alarmRow.isAddress == false ? 1 : 0),
                 { waitUntil: 'networkidle2' }
             );
 
@@ -295,7 +309,7 @@ class AlarmParserService {
                         NAMESPACE,
                         'Seite ' + (i + 1) + ' von ' + config.printing.pagecountAlarm
                     );
-                    PrintingServoce.print(config.folders.temp + 'druck');
+                    printingServoce.print(config.folders.temp + 'druck');
                 }
             }
         } catch (error) {

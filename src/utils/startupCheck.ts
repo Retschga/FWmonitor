@@ -2,7 +2,7 @@
 
 import logging from '../utils/logging';
 import config from '../utils/config';
-import fs from 'fs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import mdns from 'mdns-js';
 import { timeout, execShellCommand, checkFolderOrFile } from '../utils/common';
@@ -85,14 +85,14 @@ class StartupCheck {
 
         // Alarm Eingangsordner - dateien
         logging.info(NAMESPACE, '');
-        let stat_folderIn = await checkFolderOrFile(config.folders.fileInput);
+        const stat_folderIn = await checkFolderOrFile(config.folders.fileInput);
         logging.info(
             NAMESPACE,
             ' - Eingangsordner         ' + (stat_folderIn ? ' OK' : ' -> FEHLER')
         );
 
         // Archivordner
-        let stat_folderArchive = await checkFolderOrFile(process.env.FOLDER_ARCHIVE);
+        const stat_folderArchive = await checkFolderOrFile(process.env.FOLDER_ARCHIVE);
         logging.info(
             NAMESPACE,
             ' - Archivordner           ' + (stat_folderArchive ? ' OK' : ' -> FEHLER')
@@ -112,7 +112,7 @@ class StartupCheck {
         if (process.env.ALARMDRUCK == 'true') {
             // Version B
             if (config.raspiversion && process.env.AREADER != '') {
-                let stat_folderReader = await checkFolderOrFile(process.env.AREADER);
+                const stat_folderReader = await checkFolderOrFile(process.env.AREADER);
                 logging.info(
                     NAMESPACE,
                     ' - Programmpfad           ' + (stat_folderReader ? ' OK' : ' -> FEHLER')
@@ -190,9 +190,9 @@ class StartupCheck {
             browser.discover();
         });
         browser.on('update', (data: any) => {
-            let txtRecord: any = {};
-            for (let i in data.txt) {
-                let e = data.txt[i].split('=');
+            const txtRecord: any = {};
+            for (const i in data.txt) {
+                const e = data.txt[i].split('=');
                 txtRecord[e[0]] = e[1];
             }
             logging.info(

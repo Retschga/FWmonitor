@@ -2,8 +2,8 @@
 
 import passwordGenerator from 'generate-password';
 import bcrypt from 'bcryptjs';
-import config from '../utils/config';
 import jsonwebtoken from 'jsonwebtoken';
+import config from '../utils/config';
 
 // https://nozzlegear.com/blog/implementing-a-jwt-auth-system-with-typescript-and-node
 
@@ -49,9 +49,11 @@ export type DecodeResult =
 
 /**
  * Generiert ein neues Passwort
- * @returns
  */
-export const createNewPassword = () => {
+export function createNewPassword(): {
+    password: string;
+    hash: string;
+} {
     const password = passwordGenerator.generate({
         length: config.app.password_length,
         numbers: true,
@@ -62,35 +64,36 @@ export const createNewPassword = () => {
     const hash = bcrypt.hashSync(password, salt);
 
     return { password, hash };
-};
+}
 
 /**
  * Generiert den Hash zu einem Passwort
- * @param password
- * @returns
  */
-export const hashPassword = (password: string) => {
+export function hashPassword(password: string): string {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
     return hash;
-};
+}
 
 /**
  * Vergleicht ein Passwort mit einem Hash
- * @param password
- * @param hash
  * @returns {boolean}
  */
-export const checkPassword = (password: string, hash: string) => {
+export function checkPassword(password: string, hash: string): boolean {
     return bcrypt.compareSync(password, hash);
-};
+}
 
 /**
  * Erstellt einen JWT für eine Session
- * @param partialSession
- * @returns
  */
-export const createToken = (partialSession: PartialTokenSession, customExpireSeconds?: number) => {
+export function createToken(
+    partialSession: PartialTokenSession,
+    customExpireSeconds?: number
+): {
+    token: string;
+    iat: number;
+    exp: number;
+} {
     // Always use HS512 to sign the token
     const algorithm: jsonwebtoken.Algorithm = 'HS512';
     // Determine when the token should expire
@@ -115,16 +118,14 @@ export const createToken = (partialSession: PartialTokenSession, customExpireSec
         iat: issued,
         exp: expires
     };
-};
+}
 
 /**
  * Prüft einen JWT
- * @param token
- * @returns
  */
-export const checkToken = (token: string): DecodeResult => {
+export function checkToken(token: string): DecodeResult {
     // Always use HS512 to decode the token
-    const algorithm: jsonwebtoken.Algorithm = 'HS512';
+    //const algorithm: jsonwebtoken.Algorithm = 'HS512';
 
     let result: TokenSession;
 
@@ -179,4 +180,4 @@ export const checkToken = (token: string): DecodeResult => {
         type: 'valid',
         session: result
     };
-};
+}

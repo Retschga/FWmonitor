@@ -1,20 +1,13 @@
 'use strict';
 
 import express from 'express';
-import logging from './utils/logging';
-import errorMiddleware from './middleware/error';
+import logging from '../utils/logging';
+import errorMiddleware from '../middleware/error';
 import { Request, Response, NextFunction } from 'express';
-import mobileRoutes from './routes/mobile/mobile';
-import { auth_page } from './middleware/auth';
-import rateLimit from 'express-rate-limit';
-import config from './utils/config';
 
-const NAMESPACE = 'ROUTER_MOBILE';
+import screenRoutes from './screen/screen';
 
-const rateLimiter = rateLimit({
-    windowMs: config.rateLimit.app_time * 60 * 1000, // 15 minutes
-    max: config.rateLimit.app_count
-});
+const NAMESPACE = 'ROUTER_SCREEN';
 
 class RouterMobile {
     public router;
@@ -29,14 +22,14 @@ class RouterMobile {
         /** Log the request */
         this.router.use((req, res, next) => {
             /** Log the req */
-            logging.debug(
+            logging.info(
                 NAMESPACE,
                 `METHOD: [${req.method}] - URL: [${req.url}] - IP: [${req.socket.remoteAddress}]`
             );
 
             res.on('finish', () => {
                 /** Log the res */
-                logging.debug(
+                logging.info(
                     NAMESPACE,
                     `METHOD: [${req.method}] - URL: [${req.url}] - STATUS: [${res.statusCode}] - IP: [${req.socket.remoteAddress}]`
                 );
@@ -46,7 +39,6 @@ class RouterMobile {
         });
 
         /** Parse the body of the request */
-        this.router.use(rateLimiter);
         this.router.use(express.urlencoded({ extended: false }));
         this.router.use(express.json());
 
@@ -67,14 +59,7 @@ class RouterMobile {
         });
 
         /** Routes go here */
-        this.router.get('/login', (req: Request, res: Response, next: NextFunction) => {
-            res.render('mobile/login', { fw_name: config.common.fwName });
-        });
-        this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
-            res.render('mobile/redirect');
-        });
-
-        this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);
+        this.router.use('/', screenRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);

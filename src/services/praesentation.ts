@@ -1,10 +1,9 @@
 'use strict';
 
-import logging from '../utils/logging';
-import config from '../utils/config';
 import fs from 'fs';
+import config from '../utils/config';
 
-const NAMESPACE = 'PraesentationService';
+//const NAMESPACE = 'Praesentation_Service';
 
 class DiashowService {
     /**
@@ -12,7 +11,7 @@ class DiashowService {
      * @returns { enabled, disabled }
      */
     public async get_list() {
-        let files = [];
+        const files = [];
 
         // https://stackoverflow.com/questions/10559685/using-node-js-how-do-you-get-a-list-of-files-in-chronological-order
         const filenames = fs
@@ -30,7 +29,7 @@ class DiashowService {
                 return v.name;
             });
 
-        for (var i = 0; i < filenames.length; i++) {
+        for (let i = 0; i < filenames.length; i++) {
             if (filenames[i] != '.gitignore') files.push(filenames[i]);
         }
 

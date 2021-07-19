@@ -9,9 +9,12 @@ const NAMESPACE = 'COMMON_FUNC';
 /**
  * Erzeugt aus einem Key-Pair Objekt einen SQL Spalten (name = ?, ...) String
  * @param obj //{spalte: value}
- * @returns {{columnSet: string, values: [any]}}
+ * @returns {{columnSet: string, valueData: any}}
  */
-export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => {
+export function multibleColumnSet(
+    obj: Record<string, unknown>,
+    verknuepfung: string = 'AND'
+): { columnSet: string; valueData: any } {
     const keys = Object.keys(obj);
     const values = Object.values(obj);
 
@@ -31,7 +34,7 @@ export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => 
         key = key.replace(/[<>=]/g, '');
         return `${key}`;
     });
-    let valueData: any = {};
+    const valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
         if (values[i] instanceof Date) {
             values[i] = (<Date>values[i]).toISOString();
@@ -60,8 +63,6 @@ export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => 
 
             if (values[i] == 'null') values[i] = null;
         }
-
-        console.log(typeof values[i]);
 
         valueData[mappedKeys[i]] = values[i];
     }
@@ -70,14 +71,18 @@ export const multibleColumnSet = (obj: object, verknuepfung: string = 'AND') => 
         columnSet,
         valueData
     };
-};
+}
 
 /**
  * Erzeugt aus einem Key-Pair Objekt einen SQL Spalten (name, name, ...) String + einen (?, ?, ...) String
  * @param obj //{spalte: value}
- * @returns {{keySet: string, valueSet: string, values: [any]}}
+ * @returns {{keySet: string, valueSet: string, valueData: any}}
  */
-export const multibleKeySet = (obj: object) => {
+export function multibleKeySet(obj: Record<string, unknown>): {
+    keySet: string;
+    valueSet: string;
+    valueData: any;
+} {
     const keys = Object.keys(obj);
     const values = Object.values(obj);
 
@@ -85,12 +90,11 @@ export const multibleKeySet = (obj: object) => {
     const valueSet = keys.map((key) => `@${key}`).join(', ');
 
     const mappedKeys = keys.map((key) => `${key}`);
-    let valueData: any = {};
+    const valueData: any = {};
     for (let i = 0; i < mappedKeys.length; i++) {
         if (values[i] instanceof Date) {
             values[i] = (<Date>values[i]).toISOString();
         } else {
-            console.log(typeof values[i]);
             switch (typeof values[i]) {
                 case 'boolean':
                     values[i] = values[i] == true ? 1 : 0;
@@ -115,8 +119,6 @@ export const multibleKeySet = (obj: object) => {
 
             if (values[i] == 'null') values[i] = null;
         }
-
-        console.log(typeof values[i]);
 
         valueData[mappedKeys[i]] = values[i];
     }
@@ -126,30 +128,30 @@ export const multibleKeySet = (obj: object) => {
         valueSet,
         valueData
     };
-};
+}
 
 /**
  * Prüft ob ein String ein valider JSON String ist
  * @param str
  * @returns {boolean}
  */
-export const isJsonString = (str: string): boolean => {
+export function isJsonString(str: string): boolean {
     try {
         JSON.parse(str);
         return true;
     } catch (error) {
         return false;
     }
-};
+}
 
 /**
  * Awaitable timeout Fuktion
  * @param ms
  * @returns Promise
  */
-export const timeout = (ms: number) => {
+export function timeout(ms: number): Promise<unknown> {
     return new Promise((resolve) => setTimeout(resolve, ms));
-};
+}
 
 /**
  * https://ali-dev.medium.com/how-to-use-promise-with-exec-in-node-js-a39c4d7bbf77
@@ -157,82 +159,81 @@ export const timeout = (ms: number) => {
  * @param cmd {string}
  * @return {Promise<string>} Stdout
  */
-export const execShellCommand = (cmd: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
+export function execShellCommand(cmd: string): Promise<string> {
+    return new Promise((resolve) => {
         const start = new Date();
         logging.debug(NAMESPACE, 'EXECUTE: ' + cmd);
         exec(cmd, (error, stdout, stderr) => {
             if (error) {
-                console.warn(error);
+                logging.exception(NAMESPACE, error);
             }
             const ms = new Date().getTime() - start.getTime();
             logging.debug(NAMESPACE, 'EXECUTION TIME: %sms', ms);
             resolve(stdout ? stdout : stderr);
         });
     });
-};
+}
 
 /**
  * Prüft ob eine Datei existiert
- * @param path
- * @returns
  */
-export const fileExists = async (path: string) =>
-    !!(await fs.promises.stat(path).catch((e) => false));
+export async function fileExists(path: string): Promise<boolean> {
+    return !!(await fs.promises.stat(path).catch(() => false));
+}
 
 /**
  * Prüft ob eine Datei oder ein Ordner existiert
  * @param folderPath
  * @returns
  */
-export const checkFolderOrFile = async (folderPath?: string): Promise<boolean> => {
+export async function checkFolderOrFile(folderPath?: string): Promise<boolean> {
     if (!folderPath) return false;
     try {
-        var stats = await fs.promises.stat(folderPath);
+        await fs.promises.stat(folderPath);
         return true;
     } catch (err) {
         return false;
     }
-};
+}
 
 /**
  * Generiert eine Unique ID
  * @returns {string} Unique ID
  */
-export const getUniqueID = (): string => {
+export function getUniqueID(): string {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
             .toString(16)
             .substring(1);
     }
     return s4() + s4() + '-' + s4();
-};
+}
 
 /**
  * Hängt eine führende 0 an eine Zahl (<10)
  * @param i
  * @returns {string}
  */
-export const addLeadingZero = (i: number): string => {
+export function addLeadingZero(i: number): string {
     return Number(i) < 10 ? '0' + i : String(i);
-};
+}
 
 /**
  * Gibt eine Datumsstring im Alarmzeit format zurück
  * @param date
  * @returns {string}
  */
-export const getFormattedAlarmTime = (date?: Date): string => {
-    var today = new Date();
+export function getFormattedAlarmTime(date?: Date): string {
+    let today = new Date();
     if (date) today = new Date(date);
 
-    var y = today.getFullYear();
+    const y = today.getFullYear();
 
-    var m = ('0' + (today.getMonth() + 1)).slice(-2);
-    var d = ('0' + today.getDate()).slice(-2);
-    var h = ('0' + today.getHours()).slice(-2);
-    var mi = ('0' + today.getMinutes()).slice(-2);
-    var s = ('0' + today.getSeconds()).slice(-2);
+    const m = ('0' + (today.getMonth() + 1)).slice(-2);
+    const d = ('0' + today.getDate()).slice(-2);
+    const h = ('0' + today.getHours()).slice(-2);
+    const mi = ('0' + today.getMinutes()).slice(-2);
+    const s = ('0' + today.getSeconds()).slice(-2);
 
     return y + '-' + m + '-' + d + ' ' + h + '-' + mi + '-' + s;
-};
+}

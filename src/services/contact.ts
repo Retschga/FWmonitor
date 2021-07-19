@@ -1,12 +1,12 @@
 'use strict';
 
-import logging from '../utils/logging';
-import config from '../utils/config';
+import fs from 'fs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Dbfparser from '@episage/dbf-parser';
-import fs from 'fs';
+import config from '../utils/config';
 
-const NAMESPACE = 'ContactService';
+const NAMESPACE = 'Contact_Service';
 
 type Contact = {
     name: string;
@@ -19,19 +19,20 @@ type Contact = {
 
 class Contactservice {
     public async get_contacts_all(): Promise<Contact[] | undefined> {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve) => {
             if (!config.fwvv.enabled) {
                 throw new Error(NAMESPACE + ' fwvv is not enabled');
             }
 
             const parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/MITGLIED.DBF'));
-            let list: Contact[] = [];
+            const list: Contact[] = [];
 
-            parser.on('header', (h: any) => {
+            /*  parser.on('header', (h: undefined) => {
                 //debug('dBase file header has been parsed');
                 //debug(h);
-            });
+            }); */
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             parser.on('record', (record: any) => {
                 if (record['@deleted'] == true) {
                     return;

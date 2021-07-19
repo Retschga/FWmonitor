@@ -1,18 +1,20 @@
 'use strict';
 
 import axios from 'axios';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import geobing from 'geobing';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 import Nominatim from 'nominatim-geocoder';
-const nominatim = new Nominatim();
 import csv from 'csv-parser';
 import fs from 'fs';
+import diffmatch from '../utils/diff_match_patch.utils';
 import logging from '../utils/logging';
 import config from '../utils/config';
-import diffmatch from '../utils/diff_match_patch.utils';
 
-const NAMESPACE = 'GeocodeService';
+const NAMESPACE = 'Geocode_Service';
+const nominatim = new Nominatim();
 
 class GeocodeService {
     constructor() {
@@ -21,6 +23,7 @@ class GeocodeService {
 
     private geocode_bing(searchString: string): Promise<{ lat: string; lng: string }> {
         return new Promise((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             geobing.getCoordinates(searchString, function (err: any, coordinates: any) {
                 if (err) reject(err);
                 resolve({ lat: coordinates.lat, lng: coordinates.lng });
@@ -29,7 +32,7 @@ class GeocodeService {
     }
 
     private async geocode_overpass(ORT: string, OBJEKT: string) {
-        let ret = { lat: '0', lng: '0', isAddress: false };
+        const ret = { lat: '0', lng: '0', isAddress: false };
 
         if (OBJEKT == '') return ret;
 
@@ -42,7 +45,7 @@ class GeocodeService {
 
         // Overpass Objektabfrage
         logging.debug(NAMESPACE, 'Durchsuche OSM Gebaude und Objekte');
-        var overpassObjektUrl =
+        const overpassObjektUrl =
             'http://overpass-api.de/api/interpreter?data=' +
             '[out:csv(::lat, ::lon, name; false; "|")][timeout:25];' +
             'area[admin_level][name="' +
@@ -56,50 +59,46 @@ class GeocodeService {
             'relation["amenity"]["name"](area.searchArea);' +
             ');out body center;';
 
-        const response = await axios
-            .get(overpassObjektUrl)
-            .then((response) => {
-                var csvDat = response.data.split('\n');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response: any = await axios.get(overpassObjektUrl).catch((err) => {
+            logging.exception(NAMESPACE, err);
+        });
 
-                for (var i = 0; i < csvDat.length; i++) {
-                    var dmp = new diffmatch();
-                    dmp.Match_Distance = 100000000;
-                    dmp.Match_Threshold = 0.3;
+        const csvDat = response.data.split('\n');
 
-                    if (csvDat[i] != '') {
-                        var linearr = csvDat[i].split('|');
-                        for (var j = 2; j <= 3; j++) {
-                            if (linearr[j] != undefined) {
-                                var pattern = linearr[j].substring(0, 31);
-                                var match = dmp.match_main(OBJEKT, pattern, 0);
-                                if (match != -1) {
-                                    var quote = OBJEKT.substring(match, match + pattern.length);
-                                    logging.debug(
-                                        NAMESPACE,
-                                        'Match: ' + csvDat[i] + '  --> ' + quote
-                                    );
+        for (let i = 0; i < csvDat.length; i++) {
+            const dmp = new diffmatch();
+            dmp.Match_Distance = 100000000;
+            dmp.Match_Threshold = 0.3;
 
-                                    ret.lat = linearr[0];
-                                    ret.lng = linearr[1];
-                                    ret.isAddress = true;
-                                }
-                            }
+            if (csvDat[i] != '') {
+                const linearr = csvDat[i].split('|');
+                for (let j = 2; j <= 3; j++) {
+                    if (linearr[j] != undefined) {
+                        const pattern = linearr[j].substring(0, 31);
+                        const match = dmp.match_main(OBJEKT, pattern, 0);
+                        if (match != -1) {
+                            const quote = OBJEKT.substring(match, match + pattern.length);
+                            logging.debug(NAMESPACE, 'Match: ' + csvDat[i] + '  --> ' + quote);
+
+                            ret.lat = linearr[0];
+                            ret.lng = linearr[1];
+                            ret.isAddress = true;
                         }
                     }
                 }
-            })
-            .catch((err) => {
-                console.error('[GeocodeManager] [Objektsuche] Fehler ', err);
-            });
+            }
+        }
 
         return ret;
     }
 
     private geocode_bahn(OBJEKT: string) {
-        return new Promise(async (resolve, reject) => {
-            let results: any[] = [];
-            let s1 = OBJEKT.split(' ');
-            let s = s1[s1.length - 1];
+        return new Promise((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const results: any[] = [];
+            const s1 = OBJEKT.split(' ');
+            const s = s1[s1.length - 1];
 
             fs.createReadStream('bahnuebergaenge.csv')
                 .pipe(csv({ separator: ';' }))
@@ -128,6 +127,7 @@ class GeocodeService {
         if (config.geocode.bahn) {
             if (OBJEKT.toLowerCase().indexOf('bahn') != -1) {
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const response_bahn: any = await this.geocode_bahn(OBJEKT);
 
                     logging.debug(NAMESPACE, 'Response', response_bahn);

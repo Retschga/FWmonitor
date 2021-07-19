@@ -1,22 +1,22 @@
 'use strict';
 
 import express from 'express';
-import logging from './utils/logging';
-import errorMiddleware from './middleware/error';
+import logging from '../utils/logging';
+import errorMiddleware from '../middleware/error';
 import { Request, Response, NextFunction } from 'express';
-import carRoutes from './routes/car/car';
-import { auth_page } from './middleware/auth';
+import mobileRoutes from './mobile/mobile';
+import { auth_page } from '../middleware/auth';
 import rateLimit from 'express-rate-limit';
-import config from './utils/config';
+import config from '../utils/config';
 
-const NAMESPACE = 'ROUTER_CAR';
+const NAMESPACE = 'ROUTER_MOBILE';
 
 const rateLimiter = rateLimit({
-    windowMs: config.rateLimit.car_time * 60 * 1000, // 15 minutes
-    max: config.rateLimit.car_count
+    windowMs: config.rateLimit.app_time * 60 * 1000, // 15 minutes
+    max: config.rateLimit.app_count
 });
 
-class RouterCar {
+class RouterMobile {
     public router;
 
     constructor() {
@@ -68,16 +68,13 @@ class RouterCar {
 
         /** Routes go here */
         this.router.get('/login', (req: Request, res: Response, next: NextFunction) => {
-            res.render('car/login');
+            res.render('mobile/login', { fw_name: config.common.fwName });
         });
         this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
-            res.render('car/redirect');
-        });
-        this.router.get('/settings', (req: Request, res: Response, next: NextFunction) => {
-            res.render('car/settings');
+            res.render('mobile/redirect');
         });
 
-        this.router.use('/', auth_page('/car/redirect?target=login'), carRoutes);
+        this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);
 
         /** Error handling */
         this.router.use(errorMiddleware);
@@ -91,4 +88,4 @@ class RouterCar {
     }
 }
 
-export default new RouterCar().router;
+export default new RouterMobile().router;

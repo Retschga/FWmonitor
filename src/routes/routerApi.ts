@@ -1,26 +1,26 @@
 'use strict';
 
 import express from 'express';
-import logging from './utils/logging';
-import errorMiddleware from './middleware/error';
+import logging from '../utils/logging';
+import errorMiddleware from '../middleware/error';
 
-import alarmRoutes from './routes/api/alarm';
-import calendarRoutes from './routes/api/calendar';
-import calendarGroupRoutes from './routes/api/calendarGroup';
-import carRoutes from './routes/api/car';
-import userRoutes from './routes/api/user';
-import statisticRoutes from './routes/api/statistic';
-import groupRoutes from './routes/api/group';
-import diashowRoutes from './routes/api/diashow';
-import authRoutes from './routes/api/auth';
-import hydrantRoutes from './routes/api/hydrant';
-import deviceRoutes from './routes/api/device';
-import praesentationRoutes from './routes/api/praesentation';
-import contactRoutes from './routes/api/contact';
-import notificationactionRoutes from './routes/api/notificationaction';
-import { auth_api } from './middleware/auth';
+import alarmRoutes from './api/alarm';
+import calendarRoutes from './api/calendar';
+import calendarGroupRoutes from './api/calendarGroup';
+import carRoutes from './api/car';
+import userRoutes from './api/user';
+import statisticRoutes from './api/statistic';
+import groupRoutes from './api/group';
+import diashowRoutes from './api/diashow';
+import authRoutes from './api/auth';
+import hydrantRoutes from './api/hydrant';
+import deviceRoutes from './api/device';
+import praesentationRoutes from './api/praesentation';
+import contactRoutes from './api/contact';
+import notificationactionRoutes from './api/notificationaction';
+import { auth_api } from '../middleware/auth';
 import rateLimit from 'express-rate-limit';
-import config from './utils/config';
+import config from '../utils/config';
 
 const loginAccountLimiter = rateLimit({
     windowMs: config.rateLimit.api_login_time * 60 * 1000,

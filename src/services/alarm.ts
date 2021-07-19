@@ -2,6 +2,7 @@
 
 import axios from 'axios';
 import * as AlarmModel from '../models/alarm';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import openrouteservice from 'openrouteservice-js';
 import globalEvents from '../utils/globalEvents';
@@ -37,7 +38,7 @@ class AlarmService {
     }
 
     public async find(
-        params: object = {},
+        params: Record<string, unknown> = {},
         limit = -1,
         offset = -1,
         extra?: string
@@ -47,7 +48,7 @@ class AlarmService {
         return response;
     }
 
-    public async find_by_id(id: Number): Promise<AlarmModel.AlarmRow[] | undefined> {
+    public async find_by_id(id: number): Promise<AlarmModel.AlarmRow[] | undefined> {
         const response = await AlarmModel.model.find({ id: id });
         if (response.length < 1) return;
         return response;
@@ -61,7 +62,7 @@ class AlarmService {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
 
-        let list = await this.find({}, 1, 0, 'ORDER BY id DESC');
+        const list = await this.find({}, 1, 0, 'ORDER BY id DESC');
         if (!list || list.length < 1) {
             throw new Error(NAMESPACE + ' error on creating alarm');
         }
@@ -101,11 +102,11 @@ class AlarmService {
      * Overpass Abfrage für eine Strasse an gegebenen Koordinaten
      */
     public async get_streetCache(id: number) {
-        let response = await this.find_by_id(id);
+        const response = await this.find_by_id(id);
 
         if (!response || response.length < 1 || response[0].lat == '') return;
 
-        let overpassStrassenUrl = `http://overpass-api.de/api/interpreter?data=
+        const overpassStrassenUrl = `http://overpass-api.de/api/interpreter?data=
             [out:json][timeout:25];
             (
             way[%22name%22~%22${response[0].strasse.replace(/ss|ß/g, '(ss|%C3%9F)')}%22]
@@ -115,21 +116,22 @@ class AlarmService {
             %3E;
             out%20skel%20qt;`;
 
-        let streetResponse: any = await axios.get(overpassStrassenUrl).catch(function (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const streetResponse: any = await axios.get(overpassStrassenUrl).catch(function (error) {
             logging.exception(NAMESPACE, error);
         });
 
-        let responseJSON = streetResponse.data;
-        let dataIn = responseJSON['elements'];
-        let polylinePoints = [];
+        const responseJSON = streetResponse.data;
+        const dataIn = responseJSON['elements'];
+        const polylinePoints = [];
 
         if (dataIn.length < 1) return;
 
         for (let i = 0; i < dataIn.length; i++) {
-            var dataElement = dataIn[i];
+            const dataElement = dataIn[i];
 
             if (dataElement.type == 'way') {
-                let polyarr = [];
+                const polyarr = [];
                 for (let j = 0; j < dataElement.geometry.length; j++) {
                     polyarr.push([dataElement.geometry[j].lat, dataElement.geometry[j].lon]);
                 }
@@ -147,16 +149,16 @@ class AlarmService {
     public async get_route(id: number) {
         if (!config.common.fw_position || !config.geocode.ors_key) return;
 
-        let response = await this.find_by_id(id);
+        const response = await this.find_by_id(id);
 
         if (!response || response.length < 1 || response[0].lat == '') return;
 
-        var Directions = new openrouteservice.Directions({
+        const Directions = new openrouteservice.Directions({
             api_key: process.env.ORS_KEY
         });
 
         try {
-            let direct = await Directions.calculate({
+            const direct = await Directions.calculate({
                 coordinates: [
                     [config.common.fw_position.lng, config.common.fw_position.lat],
                     [response[0].lng, response[0].lat]

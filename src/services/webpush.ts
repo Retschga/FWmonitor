@@ -1,14 +1,14 @@
 'use strict';
 
 import webpush from 'web-push';
-import config from '../utils/config';
-import userService from './user';
-import globalEvents from '../utils/globalEvents';
 import { AlarmRow } from '../models/alarm';
-import logging from '../utils/logging';
+import userService from './user';
 import groupService from './group';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
+import config from '../utils/config';
 
-const NAMESPACE = 'WebpushService';
+const NAMESPACE = 'Webpush_Service';
 
 type NotificationAction = {
     action: string;
@@ -48,7 +48,7 @@ class WebpushService {
                 for (let i = 0; i < users.length; i++) {
                     const user = users[i];
 
-                    let notAfter = new Date();
+                    const notAfter = new Date();
                     notAfter.setTime(notAfter.getTime() + 60 * 60 * 1000);
 
                     const message: NotificationMessage = {
@@ -85,7 +85,7 @@ class WebpushService {
                     const user = users[i];
                     const group = groups.find((element) => element.id == user.group);
 
-                    let notAfter = new Date();
+                    const notAfter = new Date();
                     notAfter.setTime(notAfter.getTime() + 2 * 60 * 1000);
 
                     // Kombialarm
@@ -98,7 +98,7 @@ class WebpushService {
                         }
                     }
 
-                    let title =
+                    const title =
                         alarmtype +
                         ': ' +
                         (group?.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1
@@ -108,7 +108,7 @@ class WebpushService {
                             ? ' ' + alarm.schlagwort
                             : '');
 
-                    let text =
+                    const text =
                         (group?.pattern.indexOf('{{STRASSE}}') != -1 ? alarm.strasse : '') +
                         (group?.pattern.indexOf('{{ORT}}') != -1 ? ' ' + alarm.ort : '');
 
@@ -142,11 +142,7 @@ class WebpushService {
                         ]
                     };
 
-                    await this.notify(
-                        user.id,
-                        JSON.parse(user.appNotificationsSubscription),
-                        message
-                    );
+                    this.notify(user.id, JSON.parse(user.appNotificationsSubscription), message);
                 }
             });
 
@@ -161,7 +157,7 @@ class WebpushService {
                 for (let i = 0; i < users.length; i++) {
                     const user = users[i];
 
-                    let notAfter = new Date();
+                    const notAfter = new Date();
                     notAfter.setTime(notAfter.getTime() + 2 * 60 * 1000);
 
                     const message: NotificationMessage = {

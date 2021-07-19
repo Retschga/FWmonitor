@@ -2,14 +2,14 @@
 
 import chokidar from 'chokidar';
 import moveFile from 'move-file';
+import AlarmParserService from './alarmParser';
+import printService from './printing';
 import {
     timeout,
     execShellCommand,
     checkFolderOrFile,
     getFormattedAlarmTime
 } from '../utils/common';
-import AlarmParserService from './alarmParser';
-import printService from './printing';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import config from '../utils/config';
@@ -67,7 +67,7 @@ class AlarmInputFileService {
         }
 
         const watcher = chokidar.watch(config.folders.fileInput, {
-            ignored: /(^|[\/\\])\../,
+            ignored: /(^|[/\\])\../,
             usePolling: true,
             interval: 3000,
             binaryInterval: 3000,
@@ -173,7 +173,7 @@ class AlarmInputFileService {
 
             lastStatus = status;
         }
-        const interval = setInterval(async () => {
+        setInterval(async () => {
             check_inputFolder();
         }, 60000 * 5);
         check_inputFolder();

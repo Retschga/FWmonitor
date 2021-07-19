@@ -2,20 +2,18 @@
 
 import puppeteer from 'puppeteer';
 import fs from 'fs';
+import ipp from 'ipp';
+import { execShellCommand, fileExists } from '../utils/common';
+import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import config from '../utils/config';
-import { execShellCommand, fileExists } from '../utils/common';
-import ipp from 'ipp';
-import globalEvents from '../utils/globalEvents';
 
-const NAMESPACE = 'PrintingService';
+const NAMESPACE = 'Printing_Service';
 
 class PrintingService {
     private lastPaperState = false;
     private isFirstPaperCheck = true;
     private isPaperStatusError = false;
-
-    constructor() {}
 
     public init() {
         setInterval(this.checkPaper.bind(this), config.paper.interval);
@@ -58,7 +56,7 @@ class PrintingService {
     }
 
     private async checkPaper_ipp(): Promise<boolean | undefined> {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (resolve) {
             if (!config.printing.print_ipp_url) {
                 resolve(undefined);
                 return;
@@ -83,6 +81,7 @@ class PrintingService {
                         return;
                     }
 
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const pat: any = response['printer-attributes-tag'];
 
                     logging.debug(NAMESPACE, 'Status: ' + pat['printer-state']);
@@ -119,12 +118,13 @@ class PrintingService {
                 waitUntil: ['load', 'domcontentloaded', 'networkidle0']
             });
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            let data = await page.evaluate(() => document.querySelector('*').outerHTML);
+            const data = await page.evaluate(() => document.querySelector('*').outerHTML);
             await browser.close();
 
             // Faxfilter anwenden
-            var regex = RegExp(config.paper.printer_regex, 'gi');
+            const regex = RegExp(config.paper.printer_regex, 'gi');
             if (!regex.test(data)) {
                 return false;
             }
@@ -158,7 +158,7 @@ class PrintingService {
         // PDF
         if (fileExists(file_without_extension + '.pdf')) {
             logging.debug(NAMESPACE, 'print_raspberry > pdf');
-            let out = await execShellCommand(
+            const out = await execShellCommand(
                 `lp -d ${config.printing.print_printername} "${file_without_extension}.pdf"`
             );
             logging.debug(NAMESPACE, 'print_raspberry stdout:', out);
@@ -168,7 +168,7 @@ class PrintingService {
         // TIFF
         if (fileExists(file_without_extension + '.tif')) {
             logging.debug(NAMESPACE, 'print_raspberry > tif');
-            let out = await execShellCommand(
+            const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.tif" |lpr -P ${config.printing.print_printername}`
             );
             logging.debug(NAMESPACE, 'print_raspberry stdout:', out);
@@ -176,7 +176,7 @@ class PrintingService {
         }
         if (fileExists(file_without_extension + '.tiff')) {
             logging.debug(NAMESPACE, 'print_raspberry > tiff');
-            let out = await execShellCommand(
+            const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.tiff" |lpr -P ${config.printing.print_printername}`
             );
             logging.debug(NAMESPACE, 'print_raspberry stdout:', out);
@@ -186,7 +186,7 @@ class PrintingService {
         // TXT
         if (fileExists(file_without_extension + '.txt')) {
             logging.debug(NAMESPACE, 'print_raspberry > txt');
-            let out = await execShellCommand(
+            const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.txt" |lpr -P ${config.printing.print_printername}`
             );
             logging.debug(NAMESPACE, 'print_raspberry stdout:', out);
@@ -201,7 +201,7 @@ class PrintingService {
         // PDF
         if (fileExists(file_without_extension + '.pdf')) {
             logging.debug(NAMESPACE, 'print_windows > pdf');
-            let out = await execShellCommand(
+            const out = await execShellCommand(
                 `"${config.programs.foxit}" /p "${file_without_extension}.pdf"`
             );
             logging.debug(NAMESPACE, 'print_windows stdout:', out);
@@ -211,7 +211,7 @@ class PrintingService {
         // TXT
         if (fileExists(file_without_extension + '.txt')) {
             logging.debug(NAMESPACE, 'print_windows > txt');
-            let out = await execShellCommand(`notepad /p "${file_without_extension}.txt"`);
+            const out = await execShellCommand(`notepad /p "${file_without_extension}.txt"`);
             logging.debug(NAMESPACE, 'print_windows stdout:', out);
             return true;
         }

@@ -1,7 +1,7 @@
 'use strict';
 
-import config from './config';
 import colors from 'colors/safe';
+import config from './config';
 
 const PAD_NAMESPACE = config.logging.pad_namespace;
 
@@ -16,10 +16,11 @@ const getTimestamp = (): string => {
     return new Date().toISOString();
 };
 
-const info = (namespace: string, message: string, object?: any) => {
+const info = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.INFO)) return;
 
     if (object) {
+        // eslint-disable-next-line no-console
         console.log(
             colors.white(
                 `[${getTimestamp()}] [INFO]  [${namespace.padEnd(
@@ -28,6 +29,7 @@ const info = (namespace: string, message: string, object?: any) => {
             )
         );
     } else {
+        // eslint-disable-next-line no-console
         console.log(
             colors.white(
                 `[${getTimestamp()}] [INFO]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
@@ -36,10 +38,11 @@ const info = (namespace: string, message: string, object?: any) => {
     }
 };
 
-const warn = (namespace: string, message: string, object?: any) => {
+const warn = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.WARNING)) return;
 
     if (object) {
+        // eslint-disable-next-line no-console
         console.log(
             colors.yellow(
                 `[${getTimestamp()}] [WARN]  [${namespace.padEnd(
@@ -48,6 +51,7 @@ const warn = (namespace: string, message: string, object?: any) => {
             )
         );
     } else {
+        // eslint-disable-next-line no-console
         console.log(
             colors.yellow(
                 `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
@@ -56,10 +60,11 @@ const warn = (namespace: string, message: string, object?: any) => {
     }
 };
 
-const error = (namespace: string, message: string, object?: any) => {
+const error = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.ERROR)) return;
 
     if (object) {
+        // eslint-disable-next-line no-console
         console.log(
             colors.red(
                 `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
@@ -68,6 +73,7 @@ const error = (namespace: string, message: string, object?: any) => {
             )
         );
     } else {
+        // eslint-disable-next-line no-console
         console.log(
             colors.red(
                 `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
@@ -76,7 +82,8 @@ const error = (namespace: string, message: string, object?: any) => {
     }
 };
 
-const exception = (namespace: string, err: Error) => {
+const exception = (namespace: string, err: Error): void => {
+    // eslint-disable-next-line no-console
     console.log(
         colors.red(
             `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${JSON.stringify(
@@ -87,10 +94,11 @@ const exception = (namespace: string, err: Error) => {
     );
 };
 
-const debug = (namespace: string, message: string, object?: any) => {
+const debug = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.DEBUG)) return;
 
     if (object) {
+        // eslint-disable-next-line no-console
         console.log(
             colors.green(
                 `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(
@@ -99,6 +107,7 @@ const debug = (namespace: string, message: string, object?: any) => {
             )
         );
     } else {
+        // eslint-disable-next-line no-console
         console.log(
             colors.green(
                 `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`

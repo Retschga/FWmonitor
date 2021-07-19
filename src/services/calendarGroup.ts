@@ -4,18 +4,18 @@ import logging from '../utils/logging';
 import * as CalendarGroupModel from '../models/calendarGroup';
 import globalEvents from '../utils/globalEvents';
 
-const NAMESPACE = 'CalendarGroupService';
+const NAMESPACE = 'CalendarGroup_Service';
 
 class CalendarGroupService {
     public async find_all(): Promise<CalendarGroupModel.CalendarGroupRow[]> {
-        let response = await CalendarGroupModel.model.find();
+        const response = await CalendarGroupModel.model.find();
         return response;
     }
 
-    public async update(id: number, name: String, pattern: String) {
+    public async update(id: number, name: string, pattern: string) {
         logging.debug(NAMESPACE, 'update', { id, name, pattern });
 
-        let affectedRows = await CalendarGroupModel.model.update(id, {
+        const affectedRows = await CalendarGroupModel.model.update(id, {
             name: name,
             pattern: pattern
         });

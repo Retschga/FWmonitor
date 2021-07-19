@@ -1,12 +1,12 @@
 'use strict';
 
-import logging from './utils/logging';
 import WebSocket from 'ws';
+import { Socket } from 'net';
 import http from 'http';
 import https from 'https';
-import { Socket } from 'net';
 import { checkToken, DecodeResult } from './utils/security';
 import { getUniqueID } from './utils/common';
+import logging from './utils/logging';
 
 const NAMESPACE = 'WEBSOCKET';
 
@@ -37,13 +37,11 @@ interface SocketInfo {
 }
 
 class Websocket {
-    private server;
     private socket;
     private secure;
     private keepAliveTime = 15000;
 
     constructor(server: http.Server | https.Server, secure: boolean) {
-        this.server = server;
         this.secure = secure;
 
         // Socket erstellen
@@ -148,7 +146,7 @@ class Websocket {
 
                     const data_json = JSON.parse(String(data));
                     const topic = data_json.topic;
-                    const message = data_json.message;
+                    //const message = data_json.message;
 
                     if (topic == 'init') {
                         if (data_json.type) {
@@ -189,7 +187,7 @@ class Websocket {
         logging.debug(NAMESPACE, 'Websocket Server running.');
     }
 
-    public broadcast(topic: string, message: string) {
+    public broadcast(topic: string, message: string): void {
         this.socket.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN && client.allowed == true) {
                 client.send(JSON.stringify({ topic: topic, message: message }));
@@ -209,7 +207,7 @@ class Websocket {
     }
 
     public getOpenSockets(): SocketInfo[] {
-        let socks: SocketInfo[] = [];
+        const socks: SocketInfo[] = [];
         this.socket.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
                 if (!client.id) {

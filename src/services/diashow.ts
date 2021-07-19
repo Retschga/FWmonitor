@@ -1,14 +1,13 @@
 'use strict';
 
-import logging from '../utils/logging';
-import config from '../utils/config';
 import fs from 'fs';
-import { createThumbnail, createHd, getImageSize } from '../utils/thumbnail';
+import moveFile from 'move-file';
+import { createThumbnail, createHd } from '../utils/thumbnail';
 import { fileExists } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
-import moveFile from 'move-file';
+import config from '../utils/config';
 
-const NAMESPACE = 'DiashowService';
+//const NAMESPACE = 'Diashow_Service';
 
 class DiashowService {
     /**
@@ -16,8 +15,8 @@ class DiashowService {
      * @returns { enabled, disabled }
      */
     public async get_list() {
-        let enabled = [];
-        let disabled = [];
+        const enabled = [];
+        const disabled = [];
 
         //const filenames = await fs.promises.readdir(config.folders.diashow);
 
@@ -37,7 +36,7 @@ class DiashowService {
                 return v.name;
             });
 
-        for (var i = 0; i < filenames.length; i++) {
+        for (let i = 0; i < filenames.length; i++) {
             if (
                 filenames[i] != '.gitignore' &&
                 filenames[i].indexOf('.') != -1 &&
@@ -60,7 +59,7 @@ class DiashowService {
     public async createThumbnails() {
         const { enabled, disabled } = await this.get_list();
 
-        for (var i = 0; i < enabled.length; i++) {
+        for (let i = 0; i < enabled.length; i++) {
             if (
                 !(await fileExists(
                     config.folders.diashow + '/' + config.folders.thumbnailPrefix + enabled[i]
@@ -69,7 +68,7 @@ class DiashowService {
                 await createThumbnail(config.folders.diashow, enabled[i]);
             }
         }
-        for (var i = 0; i < disabled.length; i++) {
+        for (let i = 0; i < disabled.length; i++) {
             if (
                 !(await fileExists(
                     config.folders.diashow + '/' + config.folders.thumbnailPrefix + disabled[i]
@@ -82,14 +81,13 @@ class DiashowService {
 
     /**
      * Aktiviert ein Bild für die Diashow
-     * @param filename
      */
     public async enable_pic(filename: string) {
-        const response1 = await fs.promises.rename(
+        await fs.promises.rename(
             config.folders.diashow + '/' + filename,
             config.folders.diashow + '/' + filename.replace('.disabled', '')
         );
-        const response2 = await fs.promises.rename(
+        await fs.promises.rename(
             config.folders.diashow + '/' + config.folders.thumbnailPrefix + filename,
             config.folders.diashow +
                 '/' +
@@ -104,17 +102,16 @@ class DiashowService {
 
     /**
      * Deaktiviert ein Bild für die Diashow
-     * @param filename
      */
     public async disable_pic(filename: string) {
         const name = filename.substr(0, filename.lastIndexOf('.') - 1);
         const ext = filename.substr(filename.lastIndexOf('.') + 1);
 
-        const response1 = await fs.promises.rename(
+        await fs.promises.rename(
             config.folders.diashow + '/' + filename,
             config.folders.diashow + '/' + name + '.disabled.' + ext
         );
-        const response2 = await fs.promises.rename(
+        await fs.promises.rename(
             config.folders.diashow + '/' + config.folders.thumbnailPrefix + filename,
             config.folders.diashow +
                 '/' +
@@ -134,8 +131,8 @@ class DiashowService {
      * @param filename
      */
     public async delete_pic(filename: string) {
-        const response1 = await fs.promises.unlink(config.folders.diashow + '/' + filename);
-        const response2 = await fs.promises.unlink(
+        await fs.promises.unlink(config.folders.diashow + '/' + filename);
+        await fs.promises.unlink(
             config.folders.diashow + '/' + config.folders.thumbnailPrefix + filename
         );
 

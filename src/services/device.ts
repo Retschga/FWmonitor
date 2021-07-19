@@ -1,11 +1,10 @@
 'use strict';
 
-import logging from '../utils/logging';
 import { Websocket as _Websocket, SocketInfo } from '../websocket';
 import * as AlarmModel from '../models/alarm';
 import globalEvents from '../utils/globalEvents';
 
-const NAMESPACE = 'DeviceService';
+//const NAMESPACE = 'Device_Service';
 
 class DeviceService {
     private sockets: _Websocket[];
@@ -14,7 +13,6 @@ class DeviceService {
         this.sockets = sockets;
 
         globalEvents.on('alarm', (alarm: AlarmModel.AlarmRow) => {
-            console.log('alarm##################', alarm);
             for (let i = 0; i < this.sockets.length; i++) {
                 this.sockets[i].broadcast('alarm', String(alarm.id));
             }
@@ -39,8 +37,8 @@ class DeviceService {
         });
     }
 
-    public get_all() {
-        let devices: SocketInfo[] = [];
+    public get_all(): SocketInfo[] {
+        const devices: SocketInfo[] = [];
 
         for (let i = 0; i < this.sockets.length; i++) {
             const response: SocketInfo[] = this.sockets[i].getOpenSockets();
@@ -53,8 +51,8 @@ class DeviceService {
         return devices;
     }
 
-    public get_praesentation() {
-        let devices: SocketInfo[] = [];
+    public get_praesentation(): SocketInfo[] {
+        const devices: SocketInfo[] = [];
 
         for (let i = 0; i < this.sockets.length; i++) {
             const response: SocketInfo[] = this.sockets[i].getOpenSockets();
@@ -68,7 +66,7 @@ class DeviceService {
         return devices;
     }
 
-    public send_action(id: string, action: number, value: string) {
+    public send_action(id: string, action: number, value: string): boolean {
         let response = false;
         for (let i = 0; i < this.sockets.length; i++) {
             if (this.sockets[i].sendToID(id, 'action_' + action, value)) response = true;
@@ -77,7 +75,7 @@ class DeviceService {
         return response;
     }
 
-    public broadcast_userstatus(userid: number, alarmid: number, value: boolean) {
+    public broadcast_userstatus(userid: number, alarmid: number, value: boolean): void {
         for (let i = 0; i < this.sockets.length; i++) {
             this.sockets[i].broadcast(
                 'userstatus_' + (value ? '1' : 0),
@@ -88,9 +86,8 @@ class DeviceService {
 }
 
 let instance: DeviceService | undefined = undefined;
-
-const init = (sockets: _Websocket[]) => {
+function init(sockets: _Websocket[]): void {
     instance = new DeviceService(sockets);
-};
+}
 
 export { instance, init, DeviceService };

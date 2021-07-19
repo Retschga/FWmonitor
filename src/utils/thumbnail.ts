@@ -7,8 +7,8 @@ import moveFile from 'move-file';
  * @param file
  * @returns
  */
-export const createThumbnail = async (path: string, file: string) => {
-    let img = await Jimp.read(path + '/' + file).catch((err) => {
+export async function createThumbnail(path: string, file: string): Promise<void> {
+    const img = await Jimp.read(path + '/' + file).catch((err) => {
         throw err;
     });
     img.scaleToFit(512, 256) // resize
@@ -26,7 +26,7 @@ export const createThumbnail = async (path: string, file: string) => {
                 }
             });
     }); */
-};
+}
 
 /**
  * Gibt die Größe des Bildes zurück
@@ -34,8 +34,14 @@ export const createThumbnail = async (path: string, file: string) => {
  * @param file
  * @returns
  */
-export const getImageSize = async (path: string, file: string) => {
-    let img = await Jimp.read(path + '/' + file).catch((err) => {
+export async function getImageSize(
+    path: string,
+    file: string
+): Promise<{
+    width: number;
+    height: number;
+}> {
+    const img = await Jimp.read(path + '/' + file).catch((err) => {
         throw err;
     });
     img.getWidth();
@@ -53,12 +59,12 @@ export const getImageSize = async (path: string, file: string) => {
             })
             .catch((error) => reject(error));
     }); */
-};
+}
 
-export const createHd = async (path: string, file: string) => {
+export async function createHd(path: string, file: string): Promise<void> {
     await moveFile(path + '/' + file, path + '/' + file + '.org');
 
-    let img = await Jimp.read(path + '/' + file + '.org').catch((err) => {
+    const img = await Jimp.read(path + '/' + file + '.org').catch((err) => {
         throw err;
     });
     img.scaleToFit(1920, 1080) // resize
@@ -77,4 +83,4 @@ export const createHd = async (path: string, file: string) => {
                 }
             });
     }); */
-};
+}

@@ -1,7 +1,7 @@
 'use strict';
 
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import createMemoryStore from 'memorystore';
 import session, { SessionOptions } from 'express-session';
@@ -14,15 +14,15 @@ import fs from 'fs';
 import path from 'path';
 import logging from './utils/logging';
 import config from './utils/config';
-import RouterApi from './routerApi';
-import routerScreen from './routerScreen';
-import routermobile from './routerMobile';
-import routerCar from './routerCar';
+import RouterApi from './routes/routerApi';
+import routerScreen from './routes/routerScreen';
+import routermobile from './routes/routerMobile';
+import routerCar from './routes/routerCar';
 import alarmInputFileService from './services/alarmInputFile';
 import startupCheck from './utils/startupCheck';
 import routePrint from './routes/print';
 import globalEvents from './utils/globalEvents';
-import TelegramBot from './telegramBot';
+import TelegramBot from './telegram/bot';
 import diashowService from './services/diashow';
 import { calendarService } from './services/calendar';
 import { Websocket } from './websocket';
@@ -86,7 +86,7 @@ const routerApi_open = new RouterApi(false).router;
 appHttp.use('/api/v1', routerApi_open);
 appHttp.use('/screen', routerScreen);
 appHttp.use('/print', routePrint);
-appHttp.get('/', (req: Request, res: Response, next: NextFunction) => {
+appHttp.get('/', (req: Request, res: Response) => {
     res.redirect('/screen/index?name=' + req.query.name);
 });
 appHttp.use(express.static('./filesPublic/'));
@@ -122,7 +122,7 @@ appHttps.use('/car', routerCar);
 appHttps.use(express.static('./filesPublic/'));
 appHttps.use('/scripts', express.static('./build/scripts'));
 
-var secureContext: tls.SecureContext;
+let secureContext: tls.SecureContext;
 function reloadCert(path_key: string, path_cert: string) {
     secureContext = tls.createSecureContext({
         key: fs.readFileSync(path_key, 'utf8'),
@@ -134,7 +134,7 @@ setInterval(() => {
     reloadCert(config.server_https.key, config.server_https.cert);
 }, 1000 * 60 * 60 * 24);
 reloadCert(config.server_https.key, config.server_https.cert);
-var httpsOptions: https.ServerOptions = {
+const httpsOptions: https.ServerOptions = {
     SNICallback: function (domain, cb) {
         if (secureContext) {
             cb(null, secureContext);
@@ -165,6 +165,7 @@ const httpsSocket = new Websocket(httpsServer, true);
 initDeviceService([httpSocket, httpsSocket]);
 
 // Starte Telegram-Bot
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const telegramBot = new TelegramBot();
 
 // Starte Fax/Email Auswertung
@@ -180,6 +181,7 @@ userService.init();
 printingService.init();
 
 // Starte webpush service
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const webpush = webpushService;
 
 // -------- Programmende --------
@@ -188,22 +190,27 @@ function exit() {
     process.exit(1);
 }
 process.on('SIGINT', () => {
+    // eslint-disable-next-line no-console
     console.log('Ctrl-C...');
     exit();
 });
 process.on('SIGTERM', () => {
+    // eslint-disable-next-line no-console
     console.log('Terminate...');
     exit();
 });
 process.on('SIGHUP', () => {
+    // eslint-disable-next-line no-console
     console.log('Terminate...');
     exit();
 });
 process.on('SIGUSR2', () => {
+    // eslint-disable-next-line no-console
     console.log('Terminate...');
     exit();
 });
 process.on('exit', () => {
+    // eslint-disable-next-line no-console
     console.log('exit');
     exit();
 });

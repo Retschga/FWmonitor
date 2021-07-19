@@ -1,13 +1,13 @@
 'use strict';
 
-import logging from '../utils/logging';
+import ical from 'node-ical';
 import * as CalendarModel from '../models/calendar';
 import * as CalendarGroupsModel from '../models/calendarGroup';
 import globalEvents from '../utils/globalEvents';
-import ical from 'node-ical';
+import logging from '../utils/logging';
 import config from '../utils/config';
 
-const NAMESPACE = 'CalendarService';
+const NAMESPACE = 'Calendar_Service';
 
 interface CalendarGroup {
     id: number;
@@ -48,15 +48,12 @@ class CalendarService {
 
     /**
      * Erstellt aus einer Datenbankreihe ein Kalenderelement
-     * @param dbElements
-     * @param calendarGroups
-     * @returns
      */
     private createCalendarElementsFromRows(
         dbElements: CalendarModel.CalendarRow[],
         calendarGroups: CalendarGroupsModel.CalendarGroupRow[]
     ): CalendarElement[] {
-        let calendarElements: CalendarElement[] = [];
+        const calendarElements: CalendarElement[] = [];
 
         for (let i = 0; i < dbElements.length; i++) {
             const element = dbElements[i];
@@ -64,7 +61,7 @@ class CalendarService {
             // Kalendergruppen
             const groupNumbers =
                 element.group != null && element.group != '' ? element.group.split('|') : [];
-            let groupArray: CalendarGroup[] = [];
+            const groupArray: CalendarGroup[] = [];
 
             for (let i = 0; i < groupNumbers.length; i++) {
                 groupArray.push({
@@ -103,7 +100,7 @@ class CalendarService {
         if (!config.common.ical_url) return;
 
         try {
-            let calendarElements: CalendarElement[] = [];
+            const calendarElements: CalendarElement[] = [];
             const data = await ical.async.fromURL(config.common.ical_url);
 
             Object.keys(data).forEach((key) => {
@@ -114,7 +111,7 @@ class CalendarService {
                 if (onlyFuture && new Date(String(entry.start)).getTime() < Date.now()) return;
 
                 // Gruppen auslesen
-                let group = [];
+                const group = [];
                 for (let i = 0; i < calendarGroups.length; i++) {
                     if (String(entry.summary).indexOf(calendarGroups[i].pattern) != -1) {
                         group.push({
@@ -176,13 +173,13 @@ class CalendarService {
         return calendarElements;
     }
 
-    public async find_all_upcoming(limit: number = -1): Promise<CalendarElement[] | undefined> {
-        let now = new Date();
+    public async find_all_upcoming(): Promise<CalendarElement[] | undefined> {
+        const now = new Date();
         const calendarGroups = await CalendarGroupsModel.model.find();
-        let dbElements = await CalendarModel.model.find({ 'start>=': now.toISOString() });
+        const dbElements = await CalendarModel.model.find({ 'start>=': now.toISOString() });
         if (dbElements.length < 1) return;
 
-        let calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
+        const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
 
         const calendarElements2 = await this.get_ical(true, calendarGroups);
         if (calendarElements2) {
@@ -195,13 +192,13 @@ class CalendarService {
     }
 
     public async create(
-        summary: String,
+        summary: string,
         start: Date,
         remind: Date | undefined,
-        group: String | undefined
+        group: string | undefined
     ) {
         logging.debug(NAMESPACE, 'create', { summary, start, remind, group });
-        let affectedRows = await CalendarModel.model.insert({
+        const affectedRows = await CalendarModel.model.insert({
             summary: summary,
             start: start ? start.toISOString() : undefined,
             remind: remind ? remind.toISOString() : undefined,
@@ -222,7 +219,7 @@ class CalendarService {
             throw new Error(NAMESPACE + ' update - Entry is from ICAL -> cannot be updated');
         }
 
-        let affectedRows = await CalendarModel.model.delete(id);
+        const affectedRows = await CalendarModel.model.delete(id);
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' delete - No rows changed');
@@ -231,14 +228,14 @@ class CalendarService {
         globalEvents.emit('calendar-change');
     }
 
-    public async update(id: number, summary: String, start: Date, remind: Date, group: String) {
+    public async update(id: number, summary: string, start: Date, remind: Date, group: string) {
         logging.debug(NAMESPACE, 'update', { id, summary, start, remind, group });
 
         if (id < 0) {
             throw new Error(NAMESPACE + ' update - Entry is from ICAL -> cannot be updated');
         }
 
-        let affectedRows = await CalendarModel.model.update(id, {
+        const affectedRows = await CalendarModel.model.update(id, {
             summary: summary,
             start: start.toISOString(),
             remind: remind.toISOString(),
@@ -255,13 +252,13 @@ class CalendarService {
     public init() {
         let lastTime = new Date();
 
-        let interval = setInterval(async () => {
+        setInterval(async () => {
             logging.debug(NAMESPACE, 'Terminerinnerung CHECK...');
 
-            let termine = await this.find_all_upcoming();
+            const termine = await this.find_all_upcoming();
             if (!termine) return;
 
-            let date_now = new Date();
+            const date_now = new Date();
 
             for (let i = 0; i < termine.length; i++) {
                 const termin = termine[i];

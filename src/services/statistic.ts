@@ -1,12 +1,13 @@
 'use strict';
 
-import logging from '../utils/logging';
-import * as AlarmModel from '../models/alarm';
-import config from '../utils/config';
+import fs from 'fs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Dbfparser from '@episage/dbf-parser';
+import * as AlarmModel from '../models/alarm';
 import userService from './user';
-import fs from 'fs';
+import logging from '../utils/logging';
+import config from '../utils/config';
 
 const NAMESPACE = 'Statistic_Service';
 
@@ -23,14 +24,14 @@ class StatisticService {
         s1 = s1.toLowerCase();
         s2 = s2.toLowerCase();
 
-        var costs = new Array();
-        for (var i = 0; i <= s1.length; i++) {
-            var lastValue = i;
-            for (var j = 0; j <= s2.length; j++) {
+        const costs = [];
+        for (let i = 0; i <= s1.length; i++) {
+            let lastValue = i;
+            for (let j = 0; j <= s2.length; j++) {
                 if (i == 0) costs[j] = j;
                 else {
                     if (j > 0) {
-                        var newValue = costs[j - 1];
+                        let newValue = costs[j - 1];
                         if (s1.charAt(i - 1) != s2.charAt(j - 1))
                             newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
                         costs[j - 1] = lastValue;
@@ -43,13 +44,13 @@ class StatisticService {
         return costs[s2.length];
     }
     private similarity(s1: string, s2: string) {
-        var longer = s1;
-        var shorter = s2;
+        let longer = s1;
+        let shorter = s2;
         if (s1.length < s2.length) {
             longer = s2;
             shorter = s1;
         }
-        var longerLength = longer.length;
+        const longerLength = longer.length;
         if (longerLength == 0) {
             return 1.0;
         }
@@ -61,20 +62,44 @@ class StatisticService {
         return response;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private calcTime(record: any, eintragJahr: string) {
+        if (record.E_VON != '' && record.BIS_DATUM != '' && record.E_BIS != '') {
+            const eintragMonat = record.E_DATUM.substring(4, 6);
+            const eintragTag = record.E_DATUM.substring(6, 8);
+
+            const bisJahr = record.BIS_DATUM.substring(0, 4);
+            const bisMonat = record.BIS_DATUM.substring(4, 6);
+            const bisTag = record.BIS_DATUM.substring(6, 8);
+
+            const startTime = new Date(
+                eintragJahr + '-' + eintragMonat + '-' + eintragTag + 'T' + record.E_VON + 'Z'
+            );
+            const endTime = new Date(
+                bisJahr + '-' + bisMonat + '-' + bisTag + 'T' + record.E_BIS + 'Z'
+            );
+
+            let diff = (startTime.getTime() - endTime.getTime()) / 1000;
+            diff /= 60;
+
+            return Math.abs(Math.round(diff));
+        }
+        return 0;
+    }
+
     /**
      * Berechnet die Einsatzzeit eines Users (FWVV)
-     * @param id
      * @returns minutes
      */
     public async einsatzzeit(id: number, year: number) {
-        return new Promise(async (resolve, reject) => {
+        const response = await userService.find_by_userid(id);
+        if (!response || response.length < 1) {
+            throw new Error('User not found');
+        }
+
+        return new Promise((resolve) => {
             if (!config.fwvv.enabled) {
                 throw new Error(NAMESPACE + ' fwvv is not enabled');
-            }
-
-            const response = await userService.find_by_userid(id);
-            if (!response || response.length < 1) {
-                throw new Error('User not found');
             }
 
             const user = response[0];
@@ -91,17 +116,19 @@ class StatisticService {
 
             const parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/E_PERSON.DBF'));
 
-            parser.on('header', (h: any) => {
+            /* parser.on('header', (h: any) => {
                 //debug('dBase file header has been parsed');
                 //debug(h);
-            });
+            }); */
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             parser.on('record', (record: any) => {
+                // Abbruchbedingungen Zeile
                 if (record['@deleted'] == true) {
                     return;
                 }
 
-                var eintragJahr = record.E_DATUM.substring(0, 4);
+                const eintragJahr = record.E_DATUM.substring(0, 4);
                 if (
                     eintragJahr != year ||
                     record.NAME != user.name ||
@@ -110,37 +137,9 @@ class StatisticService {
                     return;
                 }
 
+                // Zeit Verarbeitung
+                zeit += this.calcTime(record, eintragJahr);
                 anzahl++;
-                if (record.E_VON != '' && record.BIS_DATUM != '' && record.E_BIS != '') {
-                    const eintragMonat = record.E_DATUM.substring(4, 6);
-                    const eintragTag = record.E_DATUM.substring(6, 8);
-
-                    const bisJahr = record.BIS_DATUM.substring(0, 4);
-                    const bisMonat = record.BIS_DATUM.substring(4, 6);
-                    const bisTag = record.BIS_DATUM.substring(6, 8);
-
-                    const startTime = new Date(
-                        eintragJahr +
-                            '-' +
-                            eintragMonat +
-                            '-' +
-                            eintragTag +
-                            'T' +
-                            record.E_VON +
-                            'Z'
-                    );
-                    const endTime = new Date(
-                        bisJahr + '-' + bisMonat + '-' + bisTag + 'T' + record.E_BIS + 'Z'
-                    );
-
-                    var diff = (startTime.getTime() - endTime.getTime()) / 1000;
-                    diff /= 60;
-
-                    zeit += Math.abs(Math.round(diff));
-
-                    //debug(record);
-                    //debug(record.E_DATUM + ":  " + Math.abs(Math.round(diff)));
-                }
             });
 
             parser.on('end', () => {
@@ -151,7 +150,7 @@ class StatisticService {
     }
 
     public einsatzzeit_all(year: number) {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve) => {
             if (!config.fwvv.enabled) {
                 throw new Error(NAMESPACE + ' fwvv is not enabled');
             }
@@ -160,21 +159,23 @@ class StatisticService {
                 year
             });
 
-            let times: einsatzzeit[] = [];
+            const times: einsatzzeit[] = [];
 
             const parser = Dbfparser(fs.createReadStream(config.fwvv.dat_folder + '/E_PERSON.DBF'));
 
-            parser.on('header', (h: any) => {
+            /* parser.on('header', (h: any) => {
                 //debug('dBase file header has been parsed');
                 //debug(h);
             });
-
+ */
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             parser.on('record', (record: any) => {
+                // Abbruchbedingungen Zeile
                 if (record['@deleted'] == true) {
                     return;
                 }
 
-                var eintragJahr = record.E_DATUM.substring(0, 4);
+                const eintragJahr = record.E_DATUM.substring(0, 4);
                 if (
                     eintragJahr != year ||
                     record.PERS_NR.indexOf('F') != -1 ||
@@ -184,6 +185,7 @@ class StatisticService {
                     return;
                 }
 
+                // Benutzer Datensatz finden oder erstellen
                 let user_index = times.findIndex(
                     (el) => el.name == record.NAME && el.vorname == record.VORNAME
                 );
@@ -198,35 +200,9 @@ class StatisticService {
                     user_index = times.length - 1;
                 }
 
+                // Zeit Verarbeitung
+                times[user_index].time += this.calcTime(record, eintragJahr);
                 times[user_index].count++;
-
-                if (record.E_VON != '' && record.BIS_DATUM != '' && record.E_BIS != '') {
-                    const eintragMonat = record.E_DATUM.substring(4, 6);
-                    const eintragTag = record.E_DATUM.substring(6, 8);
-
-                    const bisJahr = record.BIS_DATUM.substring(0, 4);
-                    const bisMonat = record.BIS_DATUM.substring(4, 6);
-                    const bisTag = record.BIS_DATUM.substring(6, 8);
-
-                    const startTime = new Date(
-                        eintragJahr +
-                            '-' +
-                            eintragMonat +
-                            '-' +
-                            eintragTag +
-                            'T' +
-                            record.E_VON +
-                            'Z'
-                    );
-                    const endTime = new Date(
-                        bisJahr + '-' + bisMonat + '-' + bisTag + 'T' + record.E_BIS + 'Z'
-                    );
-
-                    let diff = (startTime.getTime() - endTime.getTime()) / 1000;
-                    diff /= 60;
-
-                    times[user_index].time += Math.abs(Math.round(diff));
-                }
             });
 
             parser.on('end', () => {

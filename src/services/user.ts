@@ -1,51 +1,49 @@
 'use strict';
 
-import logging from '../utils/logging';
 import * as UserModel from '../models/user';
-import { isJsonString, addLeadingZero } from '../utils/common';
 import { UserStatus } from '../models/user';
+import { isJsonString, addLeadingZero } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
 
 const NAMESPACE = 'User_Service';
 
 class UserService {
-    constructor() {}
-
     public init() {
-        // Verfügbarkeitsintervall
-        var interval = setInterval(this.checkUserStatus.bind(this), 35000);
+        setInterval(this.checkUserStatus.bind(this), 35000);
         this.checkUserStatus();
     }
 
     private async checkUserStatus() {
         logging.debug(NAMESPACE, 'Intervall Verfügbarkeit');
         try {
-            let users = await this.find_all_approved();
+            const users = await this.find_all_approved();
 
             if (!users) {
                 throw new Error('No Users found');
             }
 
-            let dateNow = new Date();
-            let dateNow_h = addLeadingZero(dateNow.getHours());
-            let dateNow_m = addLeadingZero(dateNow.getMinutes());
-            let dateNow_d = dateNow.getDay();
+            const dateNow = new Date();
+            const dateNow_h = addLeadingZero(dateNow.getHours());
+            const dateNow_m = addLeadingZero(dateNow.getMinutes());
+            const dateNow_d = dateNow.getDay();
 
             users.forEach(async (user) => {
                 if (user.statusUntil != '' && user.statusUntil != null) {
-                    let dateUntil = new Date(user.statusUntil);
+                    const dateUntil = new Date(user.statusUntil);
                     if (dateUntil < dateNow) {
                         this.update_status(user.id, UserStatus.VERFUEGBAR);
                     }
                 } else if (user.statusPlans != '' && user.statusPlans != null && user.status != 2) {
-                    let el = JSON.parse(user.statusPlans);
-                    el.plans.forEach(async (plan: any) => {
+                    const element = JSON.parse(user.statusPlans);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    element.plans.forEach(async (plan: any) => {
                         if (
                             plan.weekdays[dateNow_d] == true &&
                             plan.active == true &&
                             plan.from == dateNow_h + ':' + dateNow_m
                         ) {
-                            let until = new Date();
+                            const until = new Date();
                             until.setHours(plan.to.split(':')[0]);
                             until.setMinutes(plan.to.split(':')[1]);
                             this.update_status(user.id, UserStatus.NICHT_VERFUEGBAR, until);
@@ -54,7 +52,7 @@ class UserService {
                 }
             });
         } catch (error) {
-            console.error('[TelegramBot] Interval Verfügbarkeit Fehler', error);
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -75,11 +73,12 @@ class UserService {
 
     // USER
     public async find(
-        params: object = {},
+        params: Record<string, unknown> = {},
         approved: boolean = true,
         extra?: string
     ): Promise<UserModel.UserRow[]> {
         if (approved) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (params as any).approved = true;
         }
         const response = await UserModel.model.find(params, extra);
@@ -89,7 +88,7 @@ class UserService {
                 response[i].kalenderGroups = '1';
                 continue;
             }
-            let usergroups = response[i].kalenderGroups.split('|').map((x) => Number(x));
+            const usergroups = response[i].kalenderGroups.split('|').map((x) => Number(x));
             usergroups.push(1);
             response[i].kalenderGroups = usergroups.join('|');
         }
@@ -103,7 +102,7 @@ class UserService {
     }
 
     public async find_by_userid(
-        id: Number,
+        id: number,
         approved: boolean = true
     ): Promise<UserModel.UserRow[] | undefined> {
         const response = await this.find({ id: id }, approved);
@@ -121,7 +120,7 @@ class UserService {
 
     public async create(telegramid: string, name: string, vorname: string) {
         logging.debug(NAMESPACE, 'create', { telegramid, name, vorname });
-        let affectedRows = await UserModel.model.insert({
+        const affectedRows = await UserModel.model.insert({
             telegramid: telegramid,
             name: name,
             vorname: vorname
@@ -136,7 +135,7 @@ class UserService {
 
     public async delete(id: number) {
         logging.debug(NAMESPACE, 'delete', { id });
-        let affectedRows = await UserModel.model.delete(id);
+        const affectedRows = await UserModel.model.delete(id);
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' delete - No rows changed');
@@ -144,7 +143,7 @@ class UserService {
     }
 
     public async set_approved(id: number) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             approved: true
         });
 
@@ -155,9 +154,10 @@ class UserService {
 
     // STATUS
     public async get_status(id: number) {
-        let result = await this.find({ id: id });
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             status: user.status,
@@ -195,7 +195,7 @@ class UserService {
         }
 
         logging.debug(NAMESPACE, 'update_status', { id, value, until });
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             status: value,
             statusUntil: _untilstring
         });
@@ -214,7 +214,7 @@ class UserService {
             throw new Error(NAMESPACE + ' update_status_plan - value must be valid json');
         }
 
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             statusPlans: value
         });
 
@@ -224,7 +224,7 @@ class UserService {
     }
 
     public async update_status_hidden(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             statusHidden: value
         });
 
@@ -236,7 +236,7 @@ class UserService {
     }
 
     public async update_notifications_calendar(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             sendRemembers: value
         });
 
@@ -247,9 +247,10 @@ class UserService {
 
     // App Settings
     public async get_login_id(id: number) {
-        let result = await this.find({ id: id });
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             username: user.telegramid,
@@ -258,9 +259,10 @@ class UserService {
     }
 
     public async get_login_telegramid(telegramid: string) {
-        let result = await this.find({ telegramid: telegramid });
+        const result = await this.find({ telegramid: telegramid });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             username: user.telegramid,
@@ -269,7 +271,7 @@ class UserService {
     }
 
     public async update_login(id: number, password: string) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             appPasswort: password
         });
 
@@ -278,10 +280,11 @@ class UserService {
         }
     }
 
-    public async get_notifications_app(id: Number) {
-        let result = await this.find({ id: id });
+    public async get_notifications_app(id: number) {
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             appNotifications: user.appNotifications,
@@ -295,17 +298,18 @@ class UserService {
         if (!response) throw new Error(NAMESPACE + ' update_notifications_app - No rows changed');
 
         const subscription_new = JSON.parse(subscription);
-        let subscription_old = JSON.parse(response.appNotificationsSubscription);
+        const subscription_old = JSON.parse(response.appNotificationsSubscription);
 
         if (
             subscription_old.findIndex(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (element: any) => JSON.parse(element).endpoint == subscription_new.endpoint
             ) == -1
         ) {
             subscription_old.push(subscription);
         }
 
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             appNotifications: value,
             appNotificationsSubscription: JSON.stringify(subscription_old)
         });
@@ -316,10 +320,11 @@ class UserService {
     }
 
     // Berechtigungen/Rollen
-    public async get_roles(id: Number) {
-        let result = await this.find({ id: id });
+    public async get_roles(id: number) {
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             admin: user.admin,
@@ -339,7 +344,8 @@ class UserService {
         const result = await this.find();
         if (result.length < 1) return;
 
-        let response: any = [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response: any = [];
 
         for (let i = 0; i < result.length; i++) {
             const user = result[i];
@@ -362,7 +368,7 @@ class UserService {
     }
 
     public async update_roles_admin(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             admin: value
         });
 
@@ -372,7 +378,7 @@ class UserService {
     }
 
     public async update_roles_stAGT(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             stAGT: value
         });
 
@@ -382,7 +388,7 @@ class UserService {
     }
 
     public async update_roles_stGRF(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             stGRF: value
         });
 
@@ -392,7 +398,7 @@ class UserService {
     }
 
     public async update_roles_stMA(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             stMA: value
         });
 
@@ -402,7 +408,7 @@ class UserService {
     }
 
     public async update_roles_stZUGF(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             stZUGF: value
         });
 
@@ -412,7 +418,7 @@ class UserService {
     }
 
     public async update_roles_drucker(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             drucker: value
         });
 
@@ -422,7 +428,7 @@ class UserService {
     }
 
     public async update_roles_softwareInfo(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             softwareInfo: value
         });
 
@@ -432,7 +438,7 @@ class UserService {
     }
 
     public async update_roles_telefonliste(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             telefonliste: value
         });
 
@@ -448,7 +454,7 @@ class UserService {
             );
         }
 
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             kalender: value
         });
 
@@ -458,7 +464,7 @@ class UserService {
     }
 
     public async update_roles_praes(id: number, value: boolean) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             praes: value
         });
 
@@ -468,10 +474,11 @@ class UserService {
     }
 
     // Gruppen
-    public async get_group(id: Number) {
-        let result = await this.find({ id: id });
+    public async get_group(id: number) {
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         return {
             id: user.id,
             group: user.group
@@ -479,7 +486,7 @@ class UserService {
     }
 
     public async update_group(id: number, value: number) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             group: value
         });
 
@@ -489,9 +496,10 @@ class UserService {
     }
 
     public async get_group_calendar(id: number) {
-        let result = await this.find({ id: id });
+        const result = await this.find({ id: id });
         if (result.length < 1) return;
-        let user = result[0];
+
+        const user = result[0];
         let usergroups = user.kalenderGroups.split('|').map((x) => Number(x));
         usergroups.push(1);
 
@@ -506,7 +514,7 @@ class UserService {
     }
 
     public async update_group_calendar(id: number, value: string) {
-        let affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(Number(id), {
             kalenderGroups: value
         });
 
