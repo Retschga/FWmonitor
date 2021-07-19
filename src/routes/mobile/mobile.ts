@@ -2,12 +2,11 @@
 
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
-import { Session } from 'express-session';
 import config from '../../utils/config';
 
 const router = express.Router();
 
-function generateParams(req: Request) {
+function generateParams() {
     return {
         fwvv: config.fwvv.enabled,
         fw_name: config.common.fwName,
@@ -17,120 +16,120 @@ function generateParams(req: Request) {
     };
 }
 
-router.get('/manifest.json', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/manifest', generateParams(req));
+router.get('/manifest.json', (req: Request, res: Response) => {
+    res.render('mobile/manifest', generateParams());
 });
 
-router.get('/index', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/index', generateParams(req));
+router.get('/index', (req: Request, res: Response) => {
+    res.render('mobile/index', generateParams());
 });
-router.get('/index.html', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/index', generateParams(req));
-});
-
-router.get('/calendar', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/calendar', generateParams(req));
+router.get('/index.html', (req: Request, res: Response) => {
+    res.render('mobile/index', generateParams());
 });
 
-router.get('/status', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/status', generateParams(req));
+router.get('/calendar', (req: Request, res: Response) => {
+    res.render('mobile/calendar', generateParams());
 });
 
-router.get('/status_plan', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/status_plan', generateParams(req));
+router.get('/status', (req: Request, res: Response) => {
+    res.render('mobile/status', generateParams());
 });
 
-router.get('/status_plan_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/status_plan_list', generateParams(req));
+router.get('/status_plan', (req: Request, res: Response) => {
+    res.render('mobile/status_plan', generateParams());
 });
 
-router.get('/map', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/map', generateParams(req));
+router.get('/status_plan_list', (req: Request, res: Response) => {
+    res.render('mobile/status_plan_list', generateParams());
 });
 
-router.get('/alarm_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/alarm_list', generateParams(req));
+router.get('/map', (req: Request, res: Response) => {
+    res.render('mobile/map', generateParams());
 });
 
-router.get('/menu', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/menu', generateParams(req));
+router.get('/alarm_list', (req: Request, res: Response) => {
+    res.render('mobile/alarm_list', generateParams());
 });
 
-router.get('/statistic', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/statistic', generateParams(req));
+router.get('/menu', (req: Request, res: Response) => {
+    res.render('mobile/menu', generateParams());
 });
 
-router.get('/map', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/map', generateParams(req));
+router.get('/statistic', (req: Request, res: Response) => {
+    res.render('mobile/statistic', generateParams());
 });
 
-router.get('/alarmsettings', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/alarmsettings', generateParams(req));
+router.get('/map', (req: Request, res: Response) => {
+    res.render('mobile/map', generateParams());
 });
 
-router.get('/presentation', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/presentation', generateParams(req));
+router.get('/alarmsettings', (req: Request, res: Response) => {
+    res.render('mobile/alarmsettings', generateParams());
 });
 
-router.get('/picturesdiashow', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/picturesdiashow', generateParams(req));
+router.get('/presentation', (req: Request, res: Response) => {
+    res.render('mobile/presentation', generateParams());
 });
 
-router.get('/settings_user', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/settings_user', generateParams(req));
+router.get('/picturesdiashow', (req: Request, res: Response) => {
+    res.render('mobile/picturesdiashow', generateParams());
 });
 
-router.get('/settings_alarm', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/settings_alarm', generateParams(req));
+router.get('/settings_user', (req: Request, res: Response) => {
+    res.render('mobile/settings_user', generateParams());
 });
 
-router.get('/user_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/user_list', generateParams(req));
+router.get('/settings_alarm', (req: Request, res: Response) => {
+    res.render('mobile/settings_alarm', generateParams());
 });
 
-router.get('/user', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/user', generateParams(req));
+router.get('/user_list', (req: Request, res: Response) => {
+    res.render('mobile/user_list', generateParams());
 });
 
-router.get('/car_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/car_list', generateParams(req));
+router.get('/user', (req: Request, res: Response) => {
+    res.render('mobile/user', generateParams());
 });
 
-router.get('/calendar_groups', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/calendar_groups', generateParams(req));
+router.get('/car_list', (req: Request, res: Response) => {
+    res.render('mobile/car_list', generateParams());
 });
 
-router.get('/calendar_entry', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/calendar_entry', generateParams(req));
+router.get('/calendar_groups', (req: Request, res: Response) => {
+    res.render('mobile/calendar_groups', generateParams());
 });
 
-router.get('/calendar_history', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/calendar_history', generateParams(req));
+router.get('/calendar_entry', (req: Request, res: Response) => {
+    res.render('mobile/calendar_entry', generateParams());
 });
 
-router.get('/alarm_groups', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/alarm_groups', generateParams(req));
+router.get('/calendar_history', (req: Request, res: Response) => {
+    res.render('mobile/calendar_history', generateParams());
 });
 
-router.get('/device_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/device_list', generateParams(req));
+router.get('/alarm_groups', (req: Request, res: Response) => {
+    res.render('mobile/alarm_groups', generateParams());
 });
 
-router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/alarm', generateParams(req));
+router.get('/device_list', (req: Request, res: Response) => {
+    res.render('mobile/device_list', generateParams());
 });
 
-router.get('/offline', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/offline', generateParams(req));
+router.get('/alarm', (req: Request, res: Response) => {
+    res.render('mobile/alarm', generateParams());
 });
-router.get('/picture_upload', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/picture_upload', generateParams(req));
+
+router.get('/offline', (req: Request, res: Response) => {
+    res.render('mobile/offline', generateParams());
 });
-router.get('/phonebook', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/phonebook', generateParams(req));
+router.get('/picture_upload', (req: Request, res: Response) => {
+    res.render('mobile/picture_upload', generateParams());
 });
-router.get('/einsatzzeit', (req: Request, res: Response, next: NextFunction) => {
-    res.render('mobile/einsatzzeit', generateParams(req));
+router.get('/phonebook', (req: Request, res: Response) => {
+    res.render('mobile/phonebook', generateParams());
+});
+router.get('/einsatzzeit', (req: Request, res: Response) => {
+    res.render('mobile/einsatzzeit', generateParams());
 });
 
 export = router;

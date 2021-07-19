@@ -1,10 +1,10 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import GroupService from '../services/group';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'GroupController';
@@ -13,11 +13,11 @@ class GroupController {
     /**
      * Findet eine Gruppe anhand der ID
      */
-    public async get_id(req: Request, res: Response, next: NextFunction) {
+    public async get_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_id');
         checkValidation(req);
 
-        let list = await GroupService.find_by_id(Number(req.params.id));
+        const list = await GroupService.find_by_id(Number(req.params.id));
         if (!list || list.length < 1) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Group not found');
         }
@@ -28,10 +28,10 @@ class GroupController {
     /**
      * Liste aller Gruppen
      */
-    public async get_list_all(req: Request, res: Response, next: NextFunction) {
+    public async get_list_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list_all');
 
-        let alarmlist = await GroupService.find_all();
+        const alarmlist = await GroupService.find_all();
         if (!alarmlist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Group found');
         }
@@ -42,7 +42,7 @@ class GroupController {
     /**
      * Update einer Gruppe
      */
-    public async update_id(req: Request, res: Response, next: NextFunction) {
+    public async update_id(req: Request, res: Response) {
         checkValidation(req);
 
         try {

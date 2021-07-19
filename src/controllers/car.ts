@@ -1,11 +1,11 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import CarService from '../services/car';
 import { createNewPassword, hashPassword } from '../utils/security';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Car_Controller';
@@ -14,11 +14,11 @@ class CalendarController {
     /**
      * Findet ein Auto anhand der ID
      */
-    public async get_id(req: Request, res: Response, next: NextFunction) {
+    public async get_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_id');
         checkValidation(req);
 
-        let list = await CarService.find_by_id(Number(req.params.id));
+        const list = await CarService.find_by_id(Number(req.params.id));
         if (!list || list.length < 1) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Car not found');
         }
@@ -34,10 +34,10 @@ class CalendarController {
     /**
      * Findet alle Autos
      */
-    public async get_list_all(req: Request, res: Response, next: NextFunction) {
+    public async get_list_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list_all');
 
-        let list = await CarService.find();
+        const list = await CarService.find();
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Car found');
         }
@@ -53,7 +53,7 @@ class CalendarController {
     /**
      * Update eines Autos
      */
-    public async update_id(req: Request, res: Response, next: NextFunction) {
+    public async update_id(req: Request, res: Response) {
         checkValidation(req);
 
         const password = req.body.appPassword
@@ -77,7 +77,7 @@ class CalendarController {
     /**
      * Erstellt ein neues Auto
      */
-    public async create(req: Request, res: Response, next: NextFunction) {
+    public async create(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -92,7 +92,7 @@ class CalendarController {
     /**
      * Löscht ein Auto
      */
-    public async delete(req: Request, res: Response, next: NextFunction) {
+    public async delete(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -107,7 +107,7 @@ class CalendarController {
     /**
      * Generiert ein neues Passwort
      */
-    public async password(req: Request, res: Response, next: NextFunction) {
+    public async password(req: Request, res: Response) {
         const password = createNewPassword();
         res.send({ password: password.password });
     }

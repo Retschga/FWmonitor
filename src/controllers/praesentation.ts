@@ -1,9 +1,9 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
+import PraesentationService from '../services/praesentation';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import PraesentationService from '../services/praesentation';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Praesentation_Controller';
@@ -12,10 +12,10 @@ class DiashowController {
     /**
      * Liste aller verfügbaren Präsentationen
      */
-    public async get_list(req: Request, res: Response, next: NextFunction) {
+    public async get_list(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list');
 
-        let filelist = await PraesentationService.get_list();
+        const filelist = await PraesentationService.get_list();
         if (!filelist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Files found');
         }

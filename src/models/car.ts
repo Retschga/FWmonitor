@@ -2,7 +2,7 @@
 
 import Model from './model';
 
-const NAMESPACE = 'CarModel';
+//const NAMESPACE = 'Car_Model';
 const TABLENAME = 'autos';
 
 interface CarRow {
@@ -22,7 +22,7 @@ class CarModel extends Model {
      * @param params //{spalte: wert, ...}
      * @returns {Promise<undefined | CarRow[]}
      */
-    public async find(params: object = {}): Promise<CarRow[]> {
+    public async find(params: Record<string, unknown> = {}): Promise<CarRow[]> {
         return await super.findElement<CarRow>(params);
     }
 }

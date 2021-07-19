@@ -1,9 +1,8 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import { checkValidation } from './controller';
 import HydrantService from '../services/hydrant';
 import logging from '../utils/logging';
 
@@ -13,10 +12,10 @@ class HydrantController {
     /**
      * Findet einen Hydranten anhand der Koordinaten
      */
-    public async get_latlng(req: Request, res: Response, next: NextFunction) {
+    public async get_latlng(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_lnglat');
 
-        let list = await HydrantService.find_latlng(
+        const list = await HydrantService.find_latlng(
             String(req.params.lat).replace(/%2E/g, '.'),
             String(req.params.lng).replace(/%2E/g, '.')
         );

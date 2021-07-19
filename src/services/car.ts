@@ -51,12 +51,7 @@ class CarService {
         }
     }
 
-    public async update(
-        id: number,
-        name: string,
-        appBenutzer: string,
-        appPasswort: SVGStringList | undefined
-    ) {
+    public async update(id: number, name: string, appBenutzer: string, appPasswort?: string) {
         logging.debug(NAMESPACE, 'update', { id, name, appBenutzer, appPasswort });
 
         if (appPasswort) {

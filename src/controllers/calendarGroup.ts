@@ -1,10 +1,10 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import CalendarGroupService from '../services/calendarGroup';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'CalendarGroup_Controller';
@@ -13,10 +13,10 @@ class CalendarGroupController {
     /**
      * Liest alle Kalendergruppen aus
      */
-    public async get_list_all(req: Request, res: Response, next: NextFunction) {
+    public async get_list_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list_all');
 
-        let alarmlist = await CalendarGroupService.find_all();
+        const alarmlist = await CalendarGroupService.find_all();
         if (!alarmlist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No calendarGroup found');
         }
@@ -27,7 +27,7 @@ class CalendarGroupController {
     /**
      * Update einer Kalendergruppe
      */
-    public async update_id(req: Request, res: Response, next: NextFunction) {
+    public async update_id(req: Request, res: Response) {
         checkValidation(req);
 
         try {

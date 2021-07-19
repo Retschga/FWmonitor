@@ -1,8 +1,7 @@
 'use strict';
 
 import express from 'express';
-import logging from '../utils/logging';
-import errorMiddleware from '../middleware/error';
+import rateLimit from 'express-rate-limit';
 
 import alarmRoutes from './api/alarm';
 import calendarRoutes from './api/calendar';
@@ -18,8 +17,10 @@ import deviceRoutes from './api/device';
 import praesentationRoutes from './api/praesentation';
 import contactRoutes from './api/contact';
 import notificationactionRoutes from './api/notificationaction';
+
+import errorMiddleware from '../middleware/error';
 import { auth_api } from '../middleware/auth';
-import rateLimit from 'express-rate-limit';
+import logging from '../utils/logging';
 import config from '../utils/config';
 
 const loginAccountLimiter = rateLimit({
@@ -119,7 +120,7 @@ class RouterApi {
 
         /** Error handling */
         this.router.use(errorMiddleware);
-        this.router.use((req, res, next) => {
+        this.router.use((req, res) => {
             const error = new Error('Not found');
 
             res.status(404).json({

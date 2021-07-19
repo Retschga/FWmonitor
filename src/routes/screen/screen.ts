@@ -1,13 +1,12 @@
 'use strict';
 
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
-import { Session } from 'express-session';
+import { Request, Response } from 'express';
 import config from '../../utils/config';
 
 const router = express.Router();
 
-function generateParams(req: Request) {
+function generateParams() {
     return {
         version: config.version,
 
@@ -28,20 +27,20 @@ function generateParams(req: Request) {
     };
 }
 
-router.get('/', (req: Request, res: Response, next: NextFunction) => {
+router.get('/', (req: Request, res: Response) => {
     res.redirect('screen/index?name=' + req.query.name);
 });
 
-router.get('/index', (req: Request, res: Response, next: NextFunction) => {
-    res.render('screen/index', generateParams(req));
+router.get('/index', (req: Request, res: Response) => {
+    res.render('screen/index', generateParams());
 });
 
-router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
-    res.render('screen/alarm', generateParams(req));
+router.get('/alarm', (req: Request, res: Response) => {
+    res.render('screen/alarm', generateParams());
 });
 
-router.get('/praesentation', (req: Request, res: Response, next: NextFunction) => {
-    res.render('screen/praesentation', generateParams(req));
+router.get('/praesentation', (req: Request, res: Response) => {
+    res.render('screen/praesentation', generateParams());
 });
 
 export = router;

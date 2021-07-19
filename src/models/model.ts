@@ -1,8 +1,8 @@
 'use strict';
 
 import DatabaseConnection from '../database/connection';
-import logging from '../utils/logging';
 import { multibleColumnSet, multibleKeySet } from '../utils/common';
+import logging from '../utils/logging';
 
 const NAMESPACE = 'Model';
 
@@ -19,7 +19,7 @@ class Model {
      * @returns {Promise<undefined | [T]>}
      */
     public async findElement<T>(
-        params: object = {},
+        params: Record<string, unknown> = {},
         limit = -1,
         offset = -1,
         extra?: string
@@ -48,7 +48,8 @@ class Model {
      * @param params //{spalte: wert, ...}
      * @returns
      */
-    public async update(id: Number, params: object = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async update(id: number, params: Record<string, unknown> = {}): Promise<any> {
         logging.debug(NAMESPACE, 'update', { tablename: this.tablename, id, params });
 
         if (!Object.keys(params).length) {
@@ -58,8 +59,10 @@ class Model {
         const { columnSet, valueData } = multibleColumnSet(params, ',');
         const sql = `UPDATE ${this.tablename} SET ${columnSet} WHERE id=@id`;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (valueData as any)['id'] = id;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = DatabaseConnection.runSQL(sql, valueData);
 
         if (response == undefined) return 0;
@@ -71,9 +74,11 @@ class Model {
      * @param id
      * @returns
      */
-    public async delete(id: Number) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public async delete(id: number): Promise<any> {
         logging.debug(NAMESPACE, 'delete', { tablename: this.tablename, id });
         const sql = `DELETE FROM ${this.tablename} WHERE id=@id`;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = DatabaseConnection.runSQL(sql, { id: id });
         if (response == undefined) return 0;
         return response.changes;
@@ -84,7 +89,8 @@ class Model {
      * @param params //{spalte: wert, ...}
      * @returns
      */
-    public insert(params: object = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public insert(params: Record<string, unknown> = {}): any {
         logging.debug(NAMESPACE, 'insert', { tablename: this.tablename, params });
         if (!Object.keys(params).length) {
             return 0;
@@ -92,6 +98,7 @@ class Model {
         const { keySet, valueSet, valueData } = multibleKeySet(params);
         const sql = `INSERT INTO ${this.tablename} (${keySet}) VALUES (${valueSet}) `;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = DatabaseConnection.runSQL(sql, valueData);
         if (response == undefined) return 0;
         return response.changes;

@@ -1,6 +1,6 @@
 'use strict';
 
-import { body, query } from 'express-validator';
+import { body } from 'express-validator';
 
 export const send_action = [
     body('action')

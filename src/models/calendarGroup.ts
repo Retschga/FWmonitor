@@ -2,7 +2,7 @@
 
 import Model from './model';
 
-const NAMESPACE = 'CalendarGroupModel';
+//const NAMESPACE = 'CalendarGroup_Model';
 const TABLENAME = 'kalenderGroups';
 
 interface CalendarGroupRow {
@@ -21,7 +21,7 @@ class CalendarGroupModel extends Model {
      * @param params //{spalte: wert, ...}
      * @returns {Promise<undefined | CalendarGroupRow[]}
      */
-    public async find(params: object = {}): Promise<CalendarGroupRow[]> {
+    public async find(params: Record<string, unknown> = {}): Promise<CalendarGroupRow[]> {
         return await super.findElement<CalendarGroupRow>(params);
     }
 }

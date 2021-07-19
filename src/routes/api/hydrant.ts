@@ -3,11 +3,10 @@
 import express from 'express';
 import hydrantController from '../../controllers/hydrant';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import apicache from 'apicache';
-import { auth_api, UserRights } from '../../middleware/auth';
+//import apicache from 'apicache';
 
 const router = express.Router();
-let cache = apicache.middleware;
+//const cache = apicache.middleware;
 
 router.get(
     '/:lat/:lng',

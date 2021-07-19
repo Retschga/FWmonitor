@@ -40,6 +40,7 @@ class DatabaseConnection {
     private open() {
         logging.debug(NAMESPACE, 'OPEN...');
 
+        // eslint-disable-next-line no-console
         this.db = new Database(this.file, { verbose: console.log });
         this.db.pragma('journal_mode = WAL');
 
@@ -59,14 +60,15 @@ class DatabaseConnection {
         }
     }
 
-    public query<T = any>(sql: string, values?: object) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public query<T = any>(sql: string, values?: Record<string, unknown>) {
         try {
             if (this.db == undefined) return;
 
             logging.debug(NAMESPACE, 'QUERY...', { sql, values });
             const stmt = this.db.prepare(sql);
             if (values != undefined) {
-                console.log(values);
+                //console.log(values);
                 stmt.bind(values);
             }
 
@@ -81,14 +83,14 @@ class DatabaseConnection {
         }
     }
 
-    public runSQL(sql: string, values?: object) {
+    public runSQL(sql: string, values?: Record<string, unknown>) {
         try {
             if (this.db == undefined) return;
 
             logging.debug(NAMESPACE, 'RUN SQL...', { sql, values });
             const stmt = this.db.prepare(sql);
             if (values != undefined) {
-                console.log(values);
+                //console.log(values);
                 stmt.bind(values);
             }
             const result = stmt.run();
@@ -121,10 +123,13 @@ class DatabaseConnection {
             .filter((x) => x !== null)
 
             .map((x) => ({
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 //@ts-ignore
                 id: Number(x[1]),
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 //@ts-ignore
                 name: x[2],
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 //@ts-ignore
                 filename: x[0],
                 data: '',
@@ -147,7 +152,7 @@ class DatabaseConnection {
             const filename = path.join(location, migration.filename);
             migration.data = fs.readFileSync(filename, 'utf-8');
         });
-        let migrations = migrationFiles;
+        const migrations = migrationFiles;
 
         migrations.map((migration) => {
             const [up, down] = migration.data.split(/^\s*--\s+?down\b/im);

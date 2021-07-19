@@ -8,7 +8,7 @@ import HttpStatusCodes from '../utils/httpStatusCodes';
 /**
  * Prüft die Parameter mit express validator
  */
-export const checkValidation = (req: Request) => {
+export function checkValidation(req: Request): void {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         throw new HttpException(
@@ -17,4 +17,4 @@ export const checkValidation = (req: Request) => {
             errors
         );
     }
-};
+}

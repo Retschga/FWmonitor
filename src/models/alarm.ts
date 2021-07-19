@@ -4,7 +4,7 @@ import Model from './model';
 import logging from '../utils/logging';
 import DatabaseConnection from '../database/connection';
 
-const NAMESPACE = 'AlarmModel';
+const NAMESPACE = 'Alarm_Model';
 const TABLENAME = 'alarms';
 
 interface AlarmRow {
@@ -40,7 +40,7 @@ class AlarmModel extends Model {
      * @returns {Promise<undefined | CalendarRow[]}
      */
     public async find(
-        params: object = {},
+        params: Record<string, unknown> = {},
         limit: number = -1,
         offset: number = -1,
         extra?: string
@@ -53,9 +53,9 @@ class AlarmModel extends Model {
 
         if (!year) year = new Date().getFullYear();
 
-        let sql = `SELECT einsatzstichwort, count(einsatzstichwort) AS count FROM ${this.tablename} WHERE strftime('%Y', date)=@year GROUP BY einsatzstichwort ORDER BY count DESC`;
+        const sql = `SELECT einsatzstichwort, count(einsatzstichwort) AS count FROM ${this.tablename} WHERE strftime('%Y', date)=@year GROUP BY einsatzstichwort ORDER BY count DESC`;
 
-        let response = await DatabaseConnection.query<StatisticRow>(sql, {
+        const response = await DatabaseConnection.query<StatisticRow>(sql, {
             year: String(year)
         });
 

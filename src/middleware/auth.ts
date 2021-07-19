@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import { CalendarRight } from '../models/user';
 import UserService from '../services/user';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
 import CarService from '../services/car';
-
 import {
     checkPassword,
     createToken,
@@ -11,9 +11,8 @@ import {
     DecodeResult,
     PartialTokenSession
 } from '../utils/security';
-import config from '../utils/config';
-import { CalendarRight } from '../models/user';
 import logging from '../utils/logging';
+import config from '../utils/config';
 
 const NAMESPACE = 'AUTH_MIDDLEWARE';
 
@@ -28,7 +27,12 @@ export const enum UserRights {
     praesentation = 8
 }
 
-export const login_app = async function (req: Request, res: Response, next: NextFunction) {
+export async function login_app(
+    req: Request,
+    res: Response,
+    next: NextFunction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<Response<any, Record<string, any>> | undefined> {
     try {
         const token = req.cookies?.token;
         const telegramid = req.body.telegramid;
@@ -82,7 +86,7 @@ export const login_app = async function (req: Request, res: Response, next: Next
         }
 
         // Error
-        if (userid == -1 || userid == NaN || userid == undefined) {
+        if (userid == -1 || isNaN(userid) || userid == undefined) {
             throw new HttpException(
                 HttpStatusCodes.UNAUTHORIZED,
                 'Access denied. No credentials sent!'
@@ -126,9 +130,9 @@ export const login_app = async function (req: Request, res: Response, next: Next
             req.session.name = car[0].name;
         }
 
-        console.log('\n\n\n\n\n');
+        /*         console.log('\n\n\n\n\n');
         console.log(req.session);
-        console.log('\n\n\n\n\n');
+        console.log('\n\n\n\n\n'); */
 
         // JWT erzeugen und als Cookie senden
         const tokenSession: PartialTokenSession = { id: userid, car: car, isV3: true };
@@ -168,7 +172,9 @@ export const login_app = async function (req: Request, res: Response, next: Next
         req.session.praesentation = false;
 
         // Login Cookies löschen
-        req.session.destroy(() => {});
+        req.session.destroy(() => {
+            return;
+        });
         res.cookie('token', '', {
             secure: true,
             path: '/',
@@ -187,9 +193,13 @@ export const login_app = async function (req: Request, res: Response, next: Next
         }
         next(e);
     }
-};
+}
 
-export const logout_app = async function (req: Request, res: Response, next: NextFunction) {
+export async function logout_app(
+    req: Request,
+    res: Response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<Response<any, Record<string, any>>> {
     req.session.telegramid = undefined;
     req.session.admin = false;
     req.session.calendar_min = false;
@@ -197,7 +207,9 @@ export const logout_app = async function (req: Request, res: Response, next: Nex
     req.session.telefone = false;
 
     // Login Cookies löschen
-    req.session.destroy(() => {});
+    req.session.destroy(() => {
+        return;
+    });
     /*
     res.cookie('token', '', {
         secure: true,
@@ -209,7 +221,7 @@ export const logout_app = async function (req: Request, res: Response, next: Nex
     return res.status(200).send({
         message: 'OK'
     });
-};
+}
 
 const auth = (redirect?: string, ...roles: UserRights[]) => {
     return async function (req: Request, res: Response, next: NextFunction) {
@@ -266,10 +278,12 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
     };
 };
 
-export const auth_page = (redirect?: string, ...roles: UserRights[]) => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function auth_page(redirect?: string, ...roles: UserRights[]) {
     return auth(redirect, ...roles);
-};
+}
 
-export const auth_api = (...roles: UserRights[]) => {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function auth_api(...roles: UserRights[]) {
     return auth(undefined, ...roles);
-};
+}

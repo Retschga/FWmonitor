@@ -1,11 +1,11 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
+import { UserStatus } from '../models/user';
+import { checkValidation } from './controller';
+import UserService from '../services/user';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import { checkValidation } from './controller';
-import { UserStatus } from '../models/user';
-import UserService from '../services/user';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'User_Controller';
@@ -14,11 +14,11 @@ class UserController {
     /**
      * Findet einen Benutzer anhand der ID
      */
-    public async get_user_id(req: Request, res: Response, next: NextFunction) {
+    public async get_user_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_id');
         checkValidation(req);
 
-        let list = await UserService.find_by_userid(Number(req.params.id), false);
+        const list = await UserService.find_by_userid(Number(req.params.id), false);
         if (!list || list.length < 1) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
@@ -34,11 +34,11 @@ class UserController {
     /**
      * Liste aller Benutzer (approved und not approved)
      */
-    public async get_user_all(req: Request, res: Response, next: NextFunction) {
+    public async get_user_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_all');
 
-        let list1 = await UserService.find_all_approved();
-        let list2 = await UserService.find_all_notApproved();
+        const list1 = await UserService.find_all_approved();
+        const list2 = await UserService.find_all_notApproved();
 
         // Passwort Hash aus der Antwort entfernen
         for (let i = 0; i < list1.length; i++) {
@@ -54,7 +54,7 @@ class UserController {
     /**
      * Update eines Benutzers
      */
-    public async update_user_id(req: Request, res: Response, next: NextFunction) {
+    public async update_user_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_status_id');
         checkValidation(req);
 
@@ -115,10 +115,10 @@ class UserController {
     /**
      * Liste aller Kalendergruppen eines Benutzers
      */
-    public async get_user_calendargroups_id(req: Request, res: Response, next: NextFunction) {
+    public async get_user_calendargroups_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_calendargroups_id');
 
-        let calendargroups = await UserService.get_group_calendar(Number(req.params.id));
+        const calendargroups = await UserService.get_group_calendar(Number(req.params.id));
         if (!calendargroups) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
@@ -129,7 +129,7 @@ class UserController {
     /**
      * Berechtigungen des angemeldeten Benutzers
      */
-    public async get_user_rights(req: Request, res: Response, next: NextFunction) {
+    public async get_user_rights(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_rights');
 
         res.send({
@@ -147,10 +147,10 @@ class UserController {
     /**
      * Berechtigungen aller Benutzer
      */
-    public async get_user_roles_all(req: Request, res: Response, next: NextFunction) {
+    public async get_user_roles_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_roles_all');
 
-        let users = await UserService.get_roles_all();
+        const users = await UserService.get_roles_all();
         if (!users) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No users found');
         }
@@ -161,11 +161,11 @@ class UserController {
     /**
      * Status eines Benutzers
      */
-    public async get_user_status_id(req: Request, res: Response, next: NextFunction) {
+    public async get_user_status_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_status_id');
         checkValidation(req);
 
-        let status = await UserService.get_status(Number(req.params.id));
+        const status = await UserService.get_status(Number(req.params.id));
         if (!status) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
@@ -176,9 +176,9 @@ class UserController {
     /**
      * Statusliste aller Benutzer
      */
-    public async get_user_status_all(req: Request, res: Response, next: NextFunction) {
+    public async get_user_status_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_user_status_all');
-        let statusList = await UserService.get_status_allUsers();
+        const statusList = await UserService.get_status_allUsers();
         if (statusList.length < 1) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No users found');
         }
@@ -189,7 +189,7 @@ class UserController {
     /**
      * Update Benutzerstatus
      */
-    public async update_user_status_id(req: Request, res: Response, next: NextFunction) {
+    public async update_user_status_id(req: Request, res: Response) {
         checkValidation(req);
 
         let status: UserStatus;
@@ -223,7 +223,7 @@ class UserController {
     /**
      * Update Statusplan
      */
-    public async update_user_statusPlans_id(req: Request, res: Response, next: NextFunction) {
+    public async update_user_statusPlans_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_user_statusPlans_id');
         checkValidation(req);
 
@@ -239,7 +239,7 @@ class UserController {
     /**
      * Update Status verborgen
      */
-    public async update_user_statusHidden_id(req: Request, res: Response, next: NextFunction) {
+    public async update_user_statusHidden_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_user_statusHidden_id');
         checkValidation(req);
 
@@ -255,7 +255,7 @@ class UserController {
     /**
      * Benutzer löschen
      */
-    public async delete_id(req: Request, res: Response, next: NextFunction) {
+    public async delete_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'delete');
         checkValidation(req);
 
@@ -271,7 +271,7 @@ class UserController {
     /**
      * Benutzer freigeben
      */
-    public async approve_id(req: Request, res: Response, next: NextFunction) {
+    public async approve_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'approve');
         checkValidation(req);
 
@@ -287,11 +287,7 @@ class UserController {
     /**
      * Update Kalenderbenachrichtigungen
      */
-    public async update_user_notifications_calendar_id(
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ) {
+    public async update_user_notifications_calendar_id(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -309,7 +305,7 @@ class UserController {
     /**
      * Update App Benachrichtigungen
      */
-    public async update_user_notifications_app_id(req: Request, res: Response, next: NextFunction) {
+    public async update_user_notifications_app_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_user_appNotifications_id');
         checkValidation(req);
 

@@ -1,11 +1,11 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
+import { checkValidation } from './controller';
+import userService from '../services/user';
+import { calendarService } from '../services/calendar';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import { checkValidation } from './controller';
-import { calendarService } from '../services/calendar';
-import userService from '../services/user';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Calerndar_Controller';
@@ -14,7 +14,7 @@ class CalendarController {
     /**
      * Findet einen Kalendereintrag anhand der ID
      */
-    public async get_id(req: Request, res: Response, next: NextFunction) {
+    public async get_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_next');
 
         const list = await calendarService.find_id(Number(req.params.id));
@@ -28,7 +28,7 @@ class CalendarController {
     /**
      * Findet den nächsten anstehenden Termin des Users
      */
-    public async get_next(req: Request, res: Response, next: NextFunction) {
+    public async get_next(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_next');
 
         const list = await calendarService.find_all_upcoming();
@@ -41,7 +41,7 @@ class CalendarController {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'User not found');
         }
 
-        let usergroups = user[0].kalenderGroups.split('|');
+        const usergroups = user[0].kalenderGroups.split('|');
 
         for (let i = 0; i < list.length; i++) {
             for (let j = 0; j < list[i].group.length; j++) {
@@ -58,7 +58,7 @@ class CalendarController {
     /**
      * Findet alle kommenden Termine
      */
-    public async get_list_upcoming(req: Request, res: Response, next: NextFunction) {
+    public async get_list_upcoming(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list_upcoming');
 
         const list = await calendarService.find_all_upcoming();
@@ -71,7 +71,7 @@ class CalendarController {
     /**
      * Findet alle vorhandenen Kalendereinträge
      */
-    public async get_list_all(req: Request, res: Response, next: NextFunction) {
+    public async get_list_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list_all');
 
         const list = await calendarService.find_all();
@@ -84,7 +84,7 @@ class CalendarController {
     /**
      * Update eines bestimmten Kalendereintrags
      */
-    public async update_id(req: Request, res: Response, next: NextFunction) {
+    public async update_id(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -105,11 +105,11 @@ class CalendarController {
     /**
      * Erstellt einen neuen Kalendereintrag
      */
-    public async create(req: Request, res: Response, next: NextFunction) {
+    public async create(req: Request, res: Response) {
         checkValidation(req);
 
         try {
-            let eventDate = new Date();
+            const eventDate = new Date();
             eventDate.setTime(eventDate.getTime() + 60 * 60 * 1000);
             await calendarService.create('Neuer Termin', eventDate, eventDate, '');
         } catch (error) {
@@ -122,7 +122,7 @@ class CalendarController {
     /**
      * Löscht einen Kalendereintrag
      */
-    public async delete(req: Request, res: Response, next: NextFunction) {
+    public async delete(req: Request, res: Response) {
         checkValidation(req);
 
         try {

@@ -1,14 +1,14 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import { AlarmRow } from '../models/alarm';
-import AlarmService from '../services/alarm';
 import userService from '../services/user';
 import groupService from '../services/group';
+import AlarmService from '../services/alarm';
 import { instance as DeviceServiceInstance } from '../services/device';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 import config from '../utils/config';
 
@@ -55,17 +55,18 @@ class AlarmController {
     /**
      * Findet einen Alarm anhand der Alarmid
      */
-    public async get_id(req: Request, res: Response, next: NextFunction) {
+    public async get_id(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_alarm_id', { id: req.params.id });
         checkValidation(req);
 
-        let list = await AlarmService.find_by_id(Number(req.params.id));
+        const list = await AlarmService.find_by_id(Number(req.params.id));
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'Alarm not found');
         }
 
         // Alarmfarbe hintufügen
         for (let i = 0; i < list.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
@@ -75,8 +76,10 @@ class AlarmController {
 
             for (let i = 0; i < list.length; i++) {
                 if (list[i].cars1 == '' && kombi_regex.test(list[i].cars2)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (<any>list[i]).kombi = list[i].cars2.match(kombi_regex) || undefined;
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (<any>list[i]).kombi = undefined;
                 }
             }
@@ -94,16 +97,17 @@ class AlarmController {
     /**
      * Findet den letzten Alarm
      */
-    public async get_last(req: Request, res: Response, next: NextFunction) {
+    public async get_last(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_last');
 
-        let list = await AlarmService.find({}, 1, 0, 'ORDER BY id DESC');
+        const list = await AlarmService.find({}, 1, 0, 'ORDER BY id DESC');
         if (!list) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Alarm found');
         }
 
         // Alarmfarbe hinzufügen
         for (let i = 0; i < list.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
@@ -113,8 +117,10 @@ class AlarmController {
 
             for (let i = 0; i < list.length; i++) {
                 if (list[i].cars1 == '' && kombi_regex.test(list[i].cars2)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (<any>list[i]).kombi = list[i].cars2.match(kombi_regex) || undefined;
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (<any>list[i]).kombi = undefined;
                 }
             }
@@ -132,11 +138,11 @@ class AlarmController {
     /**
      * Alarmliste auslesen
      */
-    public async get_list(req: Request, res: Response, next: NextFunction) {
+    public async get_list(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list', { limit: req.query.limit, offset: req.query.offset });
         checkValidation(req);
 
-        let list = await AlarmService.find(
+        const list = await AlarmService.find(
             {},
             Number(req.query.limit),
             Number(req.query.offset),
@@ -148,6 +154,7 @@ class AlarmController {
 
         // Alarmfarbe hinzufügen
         for (let i = 0; i < list.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (list[i] as any)['color'] = AlarmService.getAlarmColor(list[i].einsatzstichwort);
         }
 
@@ -163,7 +170,7 @@ class AlarmController {
     /**
      * Alarm Sendeinstellungen Telegram
      */
-    public async update_alarmsettings_telegram(req: Request, res: Response, next: NextFunction) {
+    public async update_alarmsettings_telegram(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_alarm_telegram', {
             value: req.body.value
         });
@@ -177,7 +184,7 @@ class AlarmController {
     /**
      * Alarm Sendeinstellungen APP
      */
-    public async update_alarmsettings_app(req: Request, res: Response, next: NextFunction) {
+    public async update_alarmsettings_app(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_alarm_app', {
             value: req.body.value
         });
@@ -191,7 +198,7 @@ class AlarmController {
     /**
      * Alarm Sendeinstellungen auslesen
      */
-    public async get_alarmsettings(req: Request, res: Response, next: NextFunction) {
+    public async get_alarmsettings(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_alarmsettings');
 
         const response = AlarmService.get_alarmsettings();
@@ -202,7 +209,7 @@ class AlarmController {
     /**
      * Ist aktuell ein Alarm anstehend
      */
-    public async get_isAlarm(req: Request, res: Response, next: NextFunction) {
+    public async get_isAlarm(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_isAlarm');
 
         const response = await AlarmService.isAlarm();
@@ -213,7 +220,7 @@ class AlarmController {
     /**
      * Alarm Rückmeldung
      */
-    public async update_userstatus(req: Request, res: Response, next: NextFunction) {
+    public async update_userstatus(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'update_userstatus', {
             userid: req.params.id,
             alarmid: req.body.alarmid,
@@ -225,7 +232,7 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        const reponse = DeviceServiceInstance.broadcast_userstatus(
+        DeviceServiceInstance.broadcast_userstatus(
             Number(req.params.id),
             Number(req.body.alarmid),
             Boolean(req.body.value)
@@ -234,7 +241,7 @@ class AlarmController {
         res.send('OK');
     }
 
-    public async get_streetCache(req: Request, res: Response, next: NextFunction) {
+    public async get_streetCache(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_streetCache');
 
         const response = await AlarmService.get_streetCache(Number(req.params.id));
@@ -242,7 +249,7 @@ class AlarmController {
         res.send(response);
     }
 
-    public async get_route(req: Request, res: Response, next: NextFunction) {
+    public async get_route(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_route');
 
         const response = await AlarmService.get_route(Number(req.params.id));

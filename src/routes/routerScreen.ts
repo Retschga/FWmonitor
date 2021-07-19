@@ -1,11 +1,11 @@
 'use strict';
 
 import express from 'express';
-import logging from '../utils/logging';
-import errorMiddleware from '../middleware/error';
-import { Request, Response, NextFunction } from 'express';
 
 import screenRoutes from './screen/screen';
+
+import logging from '../utils/logging';
+import errorMiddleware from '../middleware/error';
 
 const NAMESPACE = 'ROUTER_SCREEN';
 
@@ -63,7 +63,7 @@ class RouterMobile {
 
         /** Error handling */
         this.router.use(errorMiddleware);
-        this.router.use((req, res, next) => {
+        this.router.use((req, res) => {
             const error = new Error('Not found');
 
             res.status(404).json({

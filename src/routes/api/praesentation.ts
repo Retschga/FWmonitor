@@ -3,8 +3,8 @@
 import express from 'express';
 import PraesentationController from '../../controllers/praesentation';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import config from '../../utils/config';
 import { auth_api, UserRights } from '../../middleware/auth';
+import config from '../../utils/config';
 
 const router = express.Router();
 

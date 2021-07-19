@@ -2,7 +2,7 @@
 
 import Model from './model';
 
-const NAMESPACE = 'CalendarModel';
+//const NAMESPACE = 'Calendar_Model';
 const TABLENAME = 'kalender';
 
 interface CalendarRow {
@@ -24,7 +24,7 @@ class CalendarModel extends Model {
      * @returns {Promise<undefined | CalendarRow[]}
      */
     public async find(
-        params: object = {},
+        params: Record<string, unknown> = {},
         limit: number = -1,
         offset: number = -1,
         extra?: string

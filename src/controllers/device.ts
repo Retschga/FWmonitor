@@ -1,10 +1,10 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import { instance as DeviceServiceInstance } from '../services/device';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Alarm_Controller';
@@ -13,7 +13,7 @@ class AlarmController {
     /**
      * Findet alle verbundenen Geräte
      */
-    public async get_all(req: Request, res: Response, next: NextFunction) {
+    public async get_all(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_all');
 
         if (!DeviceServiceInstance) {
@@ -28,7 +28,7 @@ class AlarmController {
     /**
      * Findet alle verbundenen Geräte, die Präsentationen können
      */
-    public async get_praesentation(req: Request, res: Response, next: NextFunction) {
+    public async get_praesentation(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_praesentation');
 
         if (!DeviceServiceInstance) {
@@ -43,7 +43,7 @@ class AlarmController {
     /**
      * Sendet eine Aktion an das gewünschte Gerät
      */
-    public async send_action(req: Request, res: Response, next: NextFunction) {
+    public async send_action(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'send_action');
         checkValidation(req);
 
@@ -63,7 +63,7 @@ class AlarmController {
     /**
      * Startet eine Präsentation am gewünschten Gerät
      */
-    public async start_praesentation(req: Request, res: Response, next: NextFunction) {
+    public async start_praesentation(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'start_praesentation');
         checkValidation(req);
 
@@ -83,7 +83,7 @@ class AlarmController {
     /**
      * Sendet eine Präsentationssteuerung Aktion an das gewüschte Gerät
      */
-    public async send_action_praesentation(req: Request, res: Response, next: NextFunction) {
+    public async send_action_praesentation(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'send_action_praesentation');
         checkValidation(req);
 

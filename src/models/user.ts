@@ -1,9 +1,8 @@
 'use strict';
 
 import Model from './model';
-import webpush from 'web-push';
 
-const NAMESPACE = 'UserModel';
+//const NAMESPACE = 'User_Model';
 const TABLENAME = 'users';
 
 enum UserApproved {
@@ -61,7 +60,7 @@ class UserModel extends Model {
      * @param params //{spalte: wert, ...}
      * @returns {Promise<undefined | CalendarRow[]}
      */
-    public async find(params: object = {}, extra?: string): Promise<UserRow[]> {
+    public async find(params: Record<string, unknown> = {}, extra?: string): Promise<UserRow[]> {
         return await super.findElement<UserRow>(params, undefined, undefined, extra);
     }
 }

@@ -2,12 +2,11 @@
 
 import express from 'express';
 import { Request, Response, NextFunction } from 'express';
-import { Session } from 'express-session';
 import config from '../../utils/config';
 
 const router = express.Router();
 
-function generateParams(req: Request) {
+function generateParams() {
     return {
         fwvv: config.fwvv.enabled,
         fw_name: config.common.fwName,
@@ -17,48 +16,48 @@ function generateParams(req: Request) {
     };
 }
 
-router.get('/manifest.json', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/manifest', generateParams(req));
+router.get('/manifest.json', (req: Request, res: Response) => {
+    res.render('car/manifest', generateParams());
 });
 
-router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/redirect', generateParams(req));
+router.get('/redirect', (req: Request, res: Response) => {
+    res.render('car/redirect', generateParams());
 });
 
-router.get('/', (req: Request, res: Response, next: NextFunction) => {
+router.get('/', (req: Request, res: Response) => {
     res.redirect('index?name=' + req.query.name);
 });
 
-router.get('/index', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/index', generateParams(req));
+router.get('/index', (req: Request, res: Response) => {
+    res.render('car/index', generateParams());
 });
 
-router.get('/offline', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/offline', generateParams(req));
+router.get('/offline', (req: Request, res: Response) => {
+    res.render('car/offline', generateParams());
 });
 
-router.get('/menu', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/menu', generateParams(req));
+router.get('/menu', (req: Request, res: Response) => {
+    res.render('car/menu', generateParams());
 });
 
-router.get('/alarm_list', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/alarm_list', generateParams(req));
+router.get('/alarm_list', (req: Request, res: Response) => {
+    res.render('car/alarm_list', generateParams());
 });
 
-router.get('/alarm', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/alarm', generateParams(req));
+router.get('/alarm', (req: Request, res: Response) => {
+    res.render('car/alarm', generateParams());
 });
 
-router.get('/funk', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/funk', generateParams(req));
+router.get('/funk', (req: Request, res: Response) => {
+    res.render('car/funk', generateParams());
 });
 
-router.get('/gps', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/gps', generateParams(req));
+router.get('/gps', (req: Request, res: Response) => {
+    res.render('car/gps', generateParams());
 });
 
-router.get('/telefone', (req: Request, res: Response, next: NextFunction) => {
-    res.render('car/telefone', generateParams(req));
+router.get('/telefone', (req: Request, res: Response) => {
+    res.render('car/telefone', generateParams());
 });
 
 export = router;

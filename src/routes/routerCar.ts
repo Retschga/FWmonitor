@@ -1,12 +1,14 @@
 'use strict';
 
 import express from 'express';
-import logging from '../utils/logging';
-import errorMiddleware from '../middleware/error';
-import { Request, Response, NextFunction } from 'express';
-import carRoutes from './car/car';
-import { auth_page } from '../middleware/auth';
 import rateLimit from 'express-rate-limit';
+import { Request, Response } from 'express';
+
+import carRoutes from './car/car';
+
+import errorMiddleware from '../middleware/error';
+import { auth_page } from '../middleware/auth';
+import logging from '../utils/logging';
 import config from '../utils/config';
 
 const NAMESPACE = 'ROUTER_CAR';
@@ -67,13 +69,13 @@ class RouterCar {
         });
 
         /** Routes go here */
-        this.router.get('/login', (req: Request, res: Response, next: NextFunction) => {
+        this.router.get('/login', (req: Request, res: Response) => {
             res.render('car/login');
         });
-        this.router.get('/redirect', (req: Request, res: Response, next: NextFunction) => {
+        this.router.get('/redirect', (req: Request, res: Response) => {
             res.render('car/redirect');
         });
-        this.router.get('/settings', (req: Request, res: Response, next: NextFunction) => {
+        this.router.get('/settings', (req: Request, res: Response) => {
             res.render('car/settings');
         });
 
@@ -81,7 +83,7 @@ class RouterCar {
 
         /** Error handling */
         this.router.use(errorMiddleware);
-        this.router.use((req, res, next) => {
+        this.router.use((req, res) => {
             const error = new Error('Not found');
 
             res.status(404).json({

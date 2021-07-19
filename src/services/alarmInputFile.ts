@@ -123,7 +123,7 @@ class AlarmInputFileService {
                 await this.tiffToTxt(path, config.folders.temp + file);
 
                 // Textdatei verarbeiten
-                AlarmParserService.parseFile(config.folders.temp + file + '.txt', alarmdate);
+                AlarmParserService.parseTextFile(config.folders.temp + file + '.txt', alarmdate);
 
                 return;
             }
@@ -146,13 +146,13 @@ class AlarmInputFileService {
                     this.printPdf(config.folders.archive + '/' + file + '.pdf');
 
                 // Textdatei verarbeiten
-                AlarmParserService.parseFile(config.folders.temp + file + '.txt', alarmdate);
+                AlarmParserService.parseTextFile(config.folders.temp + file + '.txt', alarmdate);
 
                 return;
             }
 
             // Textdatei verarbeiten
-            AlarmParserService.parseFile(path, alarmdate);
+            AlarmParserService.parseTextFile(path, alarmdate);
         });
 
         // Ordner Verbindungsüberwachung

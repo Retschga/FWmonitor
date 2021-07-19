@@ -1,10 +1,10 @@
 'use strict';
 
-import { Request, Response, NextFunction } from 'express';
-import HttpException from '../utils/httpException';
-import HttpStatusCodes from '../utils/httpStatusCodes';
+import { Request, Response } from 'express';
 import { checkValidation } from './controller';
 import DiashowService from '../services/diashow';
+import HttpException from '../utils/httpException';
+import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Diashow_Controller';
@@ -13,10 +13,10 @@ class DiashowController {
     /**
      * Eine Liste aller Bilder (Dateinamen)
      */
-    public async get_list(req: Request, res: Response, next: NextFunction) {
+    public async get_list(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_list');
 
-        let filelist = await DiashowService.get_list();
+        const filelist = await DiashowService.get_list();
         if (!filelist) {
             throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No pictures found');
         }
@@ -26,7 +26,7 @@ class DiashowController {
     /**
      * Aktiviert ein Bild
      */
-    public async enable_pic(req: Request, res: Response, next: NextFunction) {
+    public async enable_pic(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -42,7 +42,7 @@ class DiashowController {
     /**
      * Deaktiviert ein Bild
      */
-    public async disable_pic(req: Request, res: Response, next: NextFunction) {
+    public async disable_pic(req: Request, res: Response) {
         checkValidation(req);
 
         try {
@@ -58,7 +58,7 @@ class DiashowController {
     /**
      * Löscht ein Bild
      */
-    public async delete_pic(req: Request, res: Response, next: NextFunction) {
+    public async delete_pic(req: Request, res: Response) {
         checkValidation(req);
 
         try {
