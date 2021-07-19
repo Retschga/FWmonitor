@@ -8,6 +8,20 @@
 
         <link rel="stylesheet" href="/css/mobile_status.css">
 
+        <style>
+            .modal-bottom {
+                background-color: #5252526b;
+            }
+            .modal-bottom .modal-content {
+                margin: 0;
+                bottom: 7em;
+                position: fixed;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 1em;
+            }
+        </style>
+
     </head>	
 
     <body>
@@ -38,7 +52,7 @@
                     <button class="btn green" onclick="update_status_id(user_id, 1)" style="border-radius: 50%; width: 5em; height: 5em;">
                         <span class="material-icons">done</span>
                     </button>
-                    <button class="btn red" onclick="update_status_id(user_id, 2)" style="border-radius: 50%; width: 5em; height: 5em;">
+                    <button class="btn red" onclick="openModal_until()" style="border-radius: 50%; width: 5em; height: 5em;">
                         <span class="material-icons">close</span>
                     </button>
                     <button class="btn grey" onclick="loaderIn('status_plan_list')" style="border-radius: 50%; width: 5em; height: 5em;">
@@ -73,6 +87,47 @@
 
                 </div>
 
+            </div>
+
+            <div id="modal_until" class="modal modal-bottom">
+                <span onclick="document.getElementById('modal_until').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <p>Zeitraum?</p>
+
+                        <div class="list">
+
+                            <div class="item" style="background-color: inherit;">
+                                <span class="text">Bis</span>
+                                <input class="var_until_select" type="datetime-local">
+                            </div>
+
+                            <div class="item" style="background-color: inherit;">
+                                <span class="text">Tage</span>
+                            </div>
+
+                            <div class="item" style="background-color: inherit; display: inherit;">
+                                <button type="button" onclick="setUntilDays(1)">01</button>
+                                <button type="button" onclick="setUntilDays(2)">02</button>
+                                <button type="button" onclick="setUntilDays(3)">03</button>
+                                <button type="button" onclick="setUntilDays(4)">04</button>
+                                <button type="button" onclick="setUntilDays(5)">05</button>
+                                <button type="button" onclick="setUntilDays(6)">06</button>
+                                <button type="button" onclick="setUntilDays(7)">07</button>
+                                <button type="button" onclick="setUntilDays(14)">14</button>
+                            </div>
+
+                        </div>
+
+                        
+                       
+                
+                        <div class="clearfix">
+                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_until').style.display='none'">Abbrechen</button>
+                            <button type="button" class="button_delete">Übernehmen</button>
+                        </div>
+                    </div>
+                </form>
             </div>
 
 
@@ -148,15 +203,32 @@
             async function update_status_id(id, value, until = null) {
                 loaderIn();
                 try {
-                    const response = await fetch_post(url_user_status_update.replace(':id', id), {value: value, until: null});
+                    const response = await fetch_post(url_user_status_update.replace(':id', id), {value: value, until: until});
                     console.log('update_status_id', response);               
                     await load_status_id(id);
                     await load_statuslist();
 
                 } catch (error) {
                     console.error('update_status_id', error);
-                }               
+                }           
+                document.getElementById('modal_until').style.display='none';    
                 loaderOut();
+            }
+
+            function setUntilDays(days) {
+                const var_until   = document.querySelector(".var_until_select");
+                const date = new Date();
+                date.setDate(date.getDate() + days);
+                const datestring = date.toISOString();
+                console.log(datestring.substring(0, (datestring.indexOf("T")|0) + 6|0));
+                var_until.value      = datestring.substring(0, (datestring.indexOf("T")|0) + 6|0);
+            }
+
+            function openModal_until() {                
+                const modal = document.querySelector('#modal_until');
+                const var_until   = document.querySelector(".var_until_select");
+                modal.style.display = 'block';
+                modal.querySelector('.button_delete').onclick = () => update_status_id(user_id, 2, new Date(var_until.value).toISOString());
             }
             
 
@@ -164,6 +236,8 @@
             loaderFunction = () => {
                 load_status_id(user_id);
                 load_statuslist();
+
+                setUntilDays(1);
             };
             
 

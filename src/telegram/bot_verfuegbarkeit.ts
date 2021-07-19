@@ -220,7 +220,7 @@ export default class BotVerfuegbarkeit {
             }
 
             ctx.editMessageText(
-                `*🟩  Verfügbar: (${st_vervNum} )*
+                `*🟩  Verfügbar: ( ${st_vervNum} )*
 _${st_verv}_
 *🟥  Nicht Verfügbar: ( ${st_nichtverfNum} )*
 _${st_nichtverf}_`,
