@@ -91,9 +91,45 @@
 
                                 <div class="item smallitem">
                                     <span class="left material-icons">visibility</span>
+                                    <span class="text">Kreuzung</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_kreuzung" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
                                     <span class="text">Bemerkung</span>
                                     <label class="right checkmark_container">
                                         <input class="var_bemerkung" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Hinweis</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_hinweis" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Priorität</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_prio" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Tetra</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_tetra" type="checkbox">
                                         <span class="checkmark"></span>
                                     </label>
                                 </div>
@@ -143,6 +179,44 @@
                                     </label>
                                 </div>
 
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Mitteiler</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_mitteiler" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Rufnummer</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_rufnummer" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Patient</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_patient" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">visibility</span>
+                                    <span class="text">Einsatzplan</span>
+                                    <label class="right checkmark_container">
+                                        <input class="var_einsatzplan" type="checkbox">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+
+                                
+
                                 <div class="item smallitem padding_top_1">        
                                     <div class="flex_grow"></div>
                                     <div class="green right item rounded savebutton">
@@ -191,6 +265,14 @@
                         const var_fax               = template.content.querySelector(".var_fax");
                         const var_map               = template.content.querySelector(".var_map");
                         const var_hydranten         = template.content.querySelector(".var_hydranten");                    
+                        const var_kreuzung          = template.content.querySelector(".var_kreuzung");                    
+                        const var_hinweis           = template.content.querySelector(".var_hinweis");                    
+                        const var_prio              = template.content.querySelector(".var_prio");                    
+                        const var_tetra             = template.content.querySelector(".var_tetra");                    
+                        const var_mitteiler         = template.content.querySelector(".var_mitteiler");                    
+                        const var_rufnummer         = template.content.querySelector(".var_rufnummer");                    
+                        const var_patient           = template.content.querySelector(".var_patient");                    
+                        const var_einsatzplan       = template.content.querySelector(".var_einsatzplan");                    
                         
                         const date = new Date(group.date); 
 
@@ -208,6 +290,14 @@
                         var_fax.checked                 = group.pattern.indexOf('{{FAX}}') != -1; 
                         var_map.checked                 = group.pattern.indexOf('{{KARTE}}') != -1; 
                         var_hydranten.checked           = group.pattern.indexOf('{{KARTE_EMG}}') != -1; 
+                        var_kreuzung.checked            = group.pattern.indexOf('{{KREUZUNG}}') != -1; 
+                        var_hinweis.checked             = group.pattern.indexOf('{{HINWEIS}}') != -1; 
+                        var_prio.checked                = group.pattern.indexOf('{{PRIO}}') != -1; 
+                        var_tetra.checked               = group.pattern.indexOf('{{TETRA}}') != -1; 
+                        var_mitteiler.checked           = group.pattern.indexOf('{{MITTEILER}}') != -1; 
+                        var_rufnummer.checked           = group.pattern.indexOf('{{RUFNUMMER}}') != -1; 
+                        var_patient.checked             = group.pattern.indexOf('{{PATIENT}}') != -1; 
+                        var_einsatzplan.checked         = group.pattern.indexOf('{{EINSATZPLAN}}') != -1; 
                         
                         const clone  = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);
@@ -250,6 +340,9 @@
                     if(alarmgroup.querySelector('.var_schlagwort').checked) {
                         pattern += '_> {{SCHLAGWORT}}_' + '\n';
                     }
+                    if(alarmgroup.querySelector('.var_prio').checked) {
+                        pattern += '_> Priorität {{PRIO}}_' + '\n';
+                    }
                     if(alarmgroup.querySelector('.var_objekt').checked) {
                         pattern += '_> {{OBJEKT}}_' + '\n';
                     }
@@ -262,15 +355,42 @@
                     if(alarmgroup.querySelector('.var_ort').checked) {
                         pattern += '_> {{ORT}}_' + '\n';
                     }
+                    if(alarmgroup.querySelector('.var_kreuzung').checked) {
+                        pattern += '_> {{KREUZUNG}}_\n';
+                    }
                     if(alarmgroup.querySelector('.var_bemerkung').checked) {
                         pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
                     }
+                    if(alarmgroup.querySelector('.var_einsatzplan').checked) {
+                        pattern +=  '\n' + '*Einsatzplan:*' + '\n' + '_{{EINSATZPLAN}}_';
+                    }
+                    if(alarmgroup.querySelector('.var_hinweis').checked) {
+                        pattern += '\n' + '*Hinweis:*' + '\n' + '_{{HINWEIS}}_';
+                    }   
                     if(alarmgroup.querySelector('.var_car1').checked) {
                         pattern += '{{newline}}' + '\n' + '*Einsatzmittel:*' + '\n' + '_{{EINSATZMITTEL_EIGEN}}_';
                     }
                     if(alarmgroup.querySelector('.var_car2').checked) {
                         pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
+                    }                                                         
+                    if(alarmgroup.querySelector('.var_tetra').checked) {
+                        pattern += '{{newline}}' + '\n' + '*Tetra:*' + '\n' + '_{{TETRA}}_';
                     }
+                    if(alarmgroup.querySelector('.var_mitteiler').checked ||
+                    alarmgroup.querySelector('.var_rufnummer').checked
+                    ) {
+                        pattern += '{{newline}}' + '\n' + '*Mitteiler:*';
+                        if(alarmgroup.querySelector('.var_mitteiler').checked) {
+                            pattern += '\n' + '_{{MITTEILER}}_';
+                        }
+                        if(alarmgroup.querySelector('.var_rufnummer').checked) {
+                            pattern += '\n' + '_{{RUFNUMMER}}_';
+                        }
+                    }
+                    if(alarmgroup.querySelector('.var_patient').checked) {
+                        pattern +=  '{{newline}}' + '\n' + '*Patient:*' + '\n' + '_{{PATIENT}}_';
+                    }
+                    
 
                     const response = await fetch_post(url_group_update.replace(':id', id), {name: name, pattern: pattern});
                     console.log('update_group_id', response);  

@@ -9,6 +9,7 @@ import userService from '../services/user';
 import diashowService from '../services/diashow';
 import { UserStatus, UserApproved } from '../models/user';
 import globalEvents from '../utils/globalEvents';
+import { timeout } from '../utils/common';
 import logging from '../utils/logging';
 import config from '../utils/config';
 
@@ -17,6 +18,7 @@ import BotCalendar from './bot_calendar';
 import BotHistory from './bot_history';
 import BotMore from './bot_more';
 import BotVerfuegbarkeit from './bot_verfuegbarkeit';
+import BotAlarm from './bot_alarm';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -39,6 +41,7 @@ class TelegramBot {
     private botHistory: BotHistory;
     private botMore: BotMore;
     private botVerfuegbarkeit: BotVerfuegbarkeit;
+    private botAlarm: BotAlarm;
 
     constructor() {
         // Bot erstellen
@@ -49,6 +52,7 @@ class TelegramBot {
         this.botHistory = new BotHistory();
         this.botMore = new BotMore();
         this.botVerfuegbarkeit = new BotVerfuegbarkeit();
+        this.botAlarm = new BotAlarm();
 
         // Bot starten
         this.init();
@@ -65,6 +69,7 @@ class TelegramBot {
         this.botHistory.init(this);
         this.botMore.init(this);
         this.botVerfuegbarkeit.init(this);
+        this.botAlarm.init(this);
 
         // Fehlerausgabe
         this.bot.catch((err) => {
@@ -112,32 +117,39 @@ class TelegramBot {
     /**
      * Senden einer Message mite rate limiting
      */
-    public sendMessage(telegramid: string, msg: string, extra?: ExtraReplyMessage): void {
+    public async sendMessage(
+        telegramid: string,
+        msg: string,
+        extra?: ExtraReplyMessage
+    ): Promise<number> {
         this.sendtMessages++;
         const delay = Math.floor(this.sendtMessages / 30) * 1500;
         setTimeout(() => {
             this.sendtMessages--;
         }, 1000 + delay);
-        setTimeout(async () => {
-            try {
-                this.bot.telegram.sendMessage(telegramid, msg, extra);
-            } catch (error) {
-                logging.error(NAMESPACE, 'telegramid: ' + telegramid, error);
-                logging.error(NAMESPACE, 'sendMessage', error);
 
-                if (error.message.indexOf('blocked') != -1) {
-                    const user = await userService.find_by_telegramid(telegramid);
-                    if (user) {
-                        userService.update_status(user[0].id, UserStatus.TELEGR_BOT_BLOCKED);
-                    }
-                } else if (error.message.indexOf('disabled') != -2) {
-                    const user = await userService.find_by_telegramid(telegramid);
-                    if (user) {
-                        userService.update_status(user[0].id, UserStatus.TELEGR_USER_DISABLED);
-                    }
+        await timeout(delay);
+
+        try {
+            return (await this.bot.telegram.sendMessage(telegramid, msg, extra)).message_id;
+        } catch (error) {
+            logging.error(NAMESPACE, 'telegramid: ' + telegramid, error);
+            logging.error(NAMESPACE, 'sendMessage', error);
+
+            if (error.message.indexOf('blocked') != -1) {
+                const user = await userService.find_by_telegramid(telegramid);
+                if (user) {
+                    userService.update_status(user[0].id, UserStatus.TELEGR_BOT_BLOCKED);
+                }
+            } else if (error.message.indexOf('disabled') != -2) {
+                const user = await userService.find_by_telegramid(telegramid);
+                if (user) {
+                    userService.update_status(user[0].id, UserStatus.TELEGR_USER_DISABLED);
                 }
             }
-        }, delay);
+        }
+
+        return -1;
     }
 
     private async bot_start(ctx: Context) {

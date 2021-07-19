@@ -155,7 +155,7 @@ const ALARMFIELDS = {
     s_OBJEKT: process.env.ALARMFIELDS_OBJEKT_S || 'Objekt :', // Filter Beginn
     e_OBJEKT: process.env.ALARMFIELDS_OBJEKT_E || '\n', // Filter Ende
     s_BEMERKUNG: process.env.ALARMFIELDS_BEMERKUNG_S || 'BEMERKUNG', // Filter Beginn
-    e_BEMERKUNG: process.env.ALARMFIELDS_BEMERKUNG_E || 'EINSATZHINWEIS', // Filter Ende
+    e_BEMERKUNG: process.env.ALARMFIELDS_BEMERKUNG_E || '(EINSATZHINWEIS|Einsatzplan)', // Filter Ende
     s_STRASSE: process.env.ALARMFIELDS_STRASSE_S || 'Straße :', // Filter Beginn
     e_STRASSE: process.env.ALARMFIELDS_STRASSE_E || '\n', // Filter Ende
     s_ORTSTEIL: process.env.ALARMFIELDS_ORTSTEIL_S || 'Ortsteil :', // Filter Beginn
@@ -164,11 +164,33 @@ const ALARMFIELDS = {
     e_ORT: process.env.ALARMFIELDS_ORT_E || '\n', // Filter Ende
     s_EINSATZMITTEL: process.env.ALARMFIELDS_EINSATZMITTEL_S || 'EINSATZMITTEL', // Filter Beginn
     e_EINSATZMITTEL: process.env.ALARMFIELDS_EINSATZMITTEL_E || 'BEMERKUNG', // Filter Ende
+    split_EINSATZMITTEL: process.env.ALARMFIELDS_EINSATZMITTEL_SPLIT || '\n', // Unterteilung
     s_CAR: process.env.ALARMFIELDS_EINSATZMITTEL_ZEILE_S || 'Name :', // Filter Beginn
     e_CAR: process.env.ALARMFIELDS_EINSATZMITTEL_ZEILE_E || '\n', // Filter Ende
     CAR1: process.env.ALARMFIELDS_FW_NAME || '123456789123456789', // Filter um als eigenes Fahrzeug erkannt zu weden
+    s_KREUZUNG: process.env.ALARMFIELDS_KREUZUNG_S || 'Kreuzung :', // Filter Beginn
+    e_KREUZUNG: process.env.ALARMFIELDS_KREUZUNG_E || '\n', // Filter Ende
+    s_HINWEIS: process.env.ALARMFIELDS_HINWEIS_S || 'EINSATZHINWEIS', // Filter Beginn
+    e_HINWEIS: process.env.ALARMFIELDS_HINWEIS_E || 'ENDE', // Filter Ende
+    s_PRIO: process.env.ALARMFIELDS_PRIO_S || 'Priorität :', // Filter Beginn
+    // prettier-ignore
+    // eslint-disable-next-line no-useless-escape
+    e_PRIO: process.env.ALARMFIELDS_PRIO_E || '\\(', // Filter Ende
+    s_TETRA: process.env.ALARMFIELDS_TETRA_S || 'TETRA', // Filter Beginn
+    e_TETRA: process.env.ALARMFIELDS_TETRA_E || 'EINSATZMITTEL', // Filter Ende
+    s_MITTEILER: process.env.ALARMFIELDS_MITTEILER_S || 'MITTEILER.*\nName :', // Filter Beginn
+    e_MITTEILER: process.env.ALARMFIELDS_MITTEILER_E || '\n', // Filter Ende
+    s_RUFNUMMER: process.env.ALARMFIELDS_RUFNUMMER_S || 'Rufnummer :', // Filter Beginn
+    e_RUFNUMMER: process.env.ALARMFIELDS_RUFNUMMER_E || '\n', // Filter Ende
+    s_PATIENT: process.env.ALARMFIELDS_PATIENT_S || 'PATIENT', // Filter Beginn
+    e_PATIENT: process.env.ALARMFIELDS_PATIENT_E || 'EINSATZGRUND', // Filter Ende
+    s_EINSATZPLAN: process.env.ALARMFIELDS_EINSATZPLAN_S || 'Einsatzplan:', // Filter Beginn
+    e_EINSATZPLAN: process.env.ALARMFIELDS_EINSATZPLAN_E || 'EINSATZHINWEIS', // Filter Ende
     EMPTY: '-/-',
-    KOMBIALARM_REGEX: process.env.ALARMFIELDS_KOMBI_FW_NAME
+    KOMBIALARM_REGEX: process.env.ALARMFIELDS_KOMBI_FW_NAME,
+    REPLACE_NEWLINE: process.env.ALARMFIELDS_REPLACE_NEWLINE
+        ? /true/i.test(process.env.ALARMFIELDS_REPLACE_NEWLINE)
+        : true
 };
 
 const ALARM_REPLACE = {

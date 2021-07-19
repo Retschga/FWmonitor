@@ -26,17 +26,36 @@ class AlarmFields {
     public EINSATZMITTEL = '';
     public cars1: string[] = []; // Variable Fahrzeuge eigen
     public cars2: string[] = []; // Variable Fahrzeuge andere
+    public kreuzung = '-/-';
+    public hinweis = '-/-';
+    public prio = '-/-';
+    public tetra = '-/-';
+    public mitteiler = '-/-';
+    public rufnummer = '-/-';
+    public patient = '-/-';
+    public einsatzplan = '-/-';
+
+    private removeTrailingAndLeading(str: string) {
+        str = str.replace(/2{6,}/g, '');
+        return str.replace(/(^[-—\s]+)|([-—\s]+$)/g, '');
+    }
 
     /**
      * Sucht ein Element mit Start und Stop Regex
      */
     private searchElement(start: string, end: string, data: string) {
-        let s = data.search(start);
+        const start_regex = new RegExp(start, 'i');
+        const end_regex = new RegExp(end, 'i');
+        let s = data.search(start_regex);
+        const start_matchdata = (data.match(start_regex) || [''])[0];
+        logging.info(NAMESPACE, 'match', { von: start, bis: end });
         if (s >= 0) {
-            s += start.length;
-            const e = data.slice(s).search(end);
+            s += start_matchdata.length;
+            const e = data.slice(s).search(end_regex);
             const elem = data.slice(s, s + e);
-            return elem.trim();
+            logging.info(NAMESPACE, ' >>', this.removeTrailingAndLeading(elem.trim()));
+            logging.info(NAMESPACE, '++++++++++++++++++++++++++++++++++++');
+            return this.removeTrailingAndLeading(elem.trim());
         }
         return null;
     }
@@ -56,6 +75,14 @@ class AlarmFields {
         this.EINSATZMITTEL = '-/-';
         this.cars1 = [];
         this.cars2 = [];
+        this.kreuzung = '-/-';
+        this.hinweis = '-/-';
+        this.prio = '-/-';
+        this.tetra = '-/-';
+        this.mitteiler = '-/-';
+        this.rufnummer = '-/-';
+        this.patient = '-/-';
+        this.einsatzplan = '-/-';
 
         this.EINSATZSTICHWORT =
             this.searchElement(
@@ -63,6 +90,9 @@ class AlarmFields {
                 config.alarmfields.e_EINSATZSTICHWORT,
                 data
             ) || config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE)
+            this.EINSATZSTICHWORT = this.EINSATZSTICHWORT.replace(/\n/g, ' ');
 
         this.SCHLAGWORT =
             this.searchElement(
@@ -75,9 +105,14 @@ class AlarmFields {
         this.SCHLAGWORT = this.SCHLAGWORT.substr(this.SCHLAGWORT.search('#'));
         this.SCHLAGWORT = this.SCHLAGWORT.replace(/#/g, ' ');
 
+        if (config.alarmfields.REPLACE_NEWLINE)
+            this.SCHLAGWORT = this.SCHLAGWORT.replace(/\n/g, ' ');
+
         this.OBJEKT =
             this.searchElement(config.alarmfields.s_OBJEKT, config.alarmfields.e_OBJEKT, data) ||
             config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.OBJEKT = this.OBJEKT.replace(/\n/g, ' ');
 
         this.BEMERKUNG =
             this.searchElement(
@@ -86,11 +121,15 @@ class AlarmFields {
                 data
             ) || config.alarmfields.EMPTY;
 
-        this.BEMERKUNG = this.BEMERKUNG.replace(/-/g, '');
+        //this.BEMERKUNG = this.BEMERKUNG.replace(/-/g, '');
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.BEMERKUNG = this.BEMERKUNG.replace(/\n/g, ' ');
 
         this.STRASSE =
             this.searchElement(config.alarmfields.s_STRASSE, config.alarmfields.e_STRASSE, data) ||
             config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.STRASSE = this.STRASSE.replace(/\n/g, ' ');
 
         this.ORTSTEIL =
             this.searchElement(
@@ -99,9 +138,13 @@ class AlarmFields {
                 data
             ) || config.alarmfields.EMPTY;
 
+        if (config.alarmfields.REPLACE_NEWLINE) this.ORTSTEIL = this.ORTSTEIL.replace(/\n/g, ' ');
+
         this.ORT =
             this.searchElement(config.alarmfields.s_ORT, config.alarmfields.e_ORT, data) ||
             config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.ORT = this.ORT.replace(/\n/g, ' ');
 
         this.EINSATZMITTEL =
             this.searchElement(
@@ -110,9 +153,9 @@ class AlarmFields {
                 data
             ) || config.alarmfields.EMPTY;
 
-        this.EINSATZMITTEL = this.EINSATZMITTEL.replace(/-/g, '');
+        //this.EINSATZMITTEL = this.EINSATZMITTEL.replace(/-/g, '');
 
-        const cars = this.EINSATZMITTEL.split('\n');
+        const cars = this.EINSATZMITTEL.split(config.alarmfields.split_EINSATZMITTEL);
         for (const i in cars) {
             const c = this.searchElement(
                 config.alarmfields.s_CAR,
@@ -127,6 +170,70 @@ class AlarmFields {
                 else this.cars2.push(c);
             }
         }
+
+        this.kreuzung =
+            this.searchElement(
+                config.alarmfields.s_KREUZUNG,
+                config.alarmfields.e_KREUZUNG,
+                data
+            ) || config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.kreuzung = this.kreuzung.replace(/\n/g, ' ');
+
+        this.hinweis =
+            this.searchElement(config.alarmfields.s_HINWEIS, config.alarmfields.e_HINWEIS, data) ||
+            config.alarmfields.EMPTY;
+
+        //this.hinweis = this.hinweis.replace(/-/g, '');
+        if (config.alarmfields.REPLACE_NEWLINE) this.hinweis = this.hinweis.replace(/\n/g, ' ');
+
+        this.prio =
+            this.searchElement(config.alarmfields.s_PRIO, config.alarmfields.e_PRIO, data) ||
+            config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.prio = this.prio.replace(/\n/g, ' ');
+
+        this.tetra =
+            this.searchElement(config.alarmfields.s_TETRA, config.alarmfields.e_TETRA, data) ||
+            config.alarmfields.EMPTY;
+
+        //this.tetra = this.tetra.replace(/-/g, '');
+        if (config.alarmfields.REPLACE_NEWLINE) this.tetra = this.tetra.replace(/\n/g, ' ');
+
+        this.mitteiler =
+            this.searchElement(
+                config.alarmfields.s_MITTEILER,
+                config.alarmfields.e_MITTEILER,
+                data
+            ) || config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.mitteiler = this.mitteiler.replace(/\n/g, ' ');
+
+        this.rufnummer =
+            this.searchElement(
+                config.alarmfields.s_RUFNUMMER,
+                config.alarmfields.e_RUFNUMMER,
+                data
+            ) || config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE) this.rufnummer = this.rufnummer.replace(/\n/g, ' ');
+
+        this.patient =
+            this.searchElement(config.alarmfields.s_PATIENT, config.alarmfields.e_PATIENT, data) ||
+            config.alarmfields.EMPTY;
+
+        //this.patient = this.patient.replace(/-/g, '');
+        if (config.alarmfields.REPLACE_NEWLINE) this.patient = this.patient.replace(/\n/g, ' ');
+
+        this.einsatzplan =
+            this.searchElement(
+                config.alarmfields.s_EINSATZPLAN,
+                config.alarmfields.e_EINSATZPLAN,
+                data
+            ) || config.alarmfields.EMPTY;
+
+        if (config.alarmfields.REPLACE_NEWLINE)
+            this.einsatzplan = this.einsatzplan.replace(/\n/g, ' ');
     }
 }
 
@@ -144,6 +251,7 @@ class AlarmParserService {
         data = data.replace(/B\?2/g, 'B1');
         data = data.replace(/1NF/g, 'INF');
         data = data.replace(/TH1/g, 'THL');
+        data = data.replace(/\({RD/g, '(RD');
 
         data = data.replace(/5tra/g, 'Stra');
         data = data.replace(/ßrand/g, 'Brand');
@@ -157,6 +265,7 @@ class AlarmParserService {
         data = data.replace(/5tall/g, 'Stall');
         data = data.replace(/SonstigeS/g, 'Sonstiges');
         data = data.replace(/BEinsatzplan/g, 'Einsatzplan');
+        data = data.replace(/kEinsatzplan/g, 'Einsatzplan');
         data = data.replace(/Binsatz/g, 'Einsatz');
 
         if (
@@ -233,6 +342,14 @@ class AlarmParserService {
             cars1: alarmFields.cars1.join('|'),
             cars2: alarmFields.cars2.join('|'),
             isAddress: geoData.isAddress,
+            kreuzung: alarmFields.kreuzung,
+            hinweis: alarmFields.hinweis,
+            prio: alarmFields.prio,
+            tetra: alarmFields.tetra,
+            mitteiler: alarmFields.mitteiler,
+            rufnummer: alarmFields.rufnummer,
+            patient: alarmFields.patient,
+            einsatzplan: alarmFields.einsatzplan,
             date: alarmdate.toISOString(),
             id: undefined
         };

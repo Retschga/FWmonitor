@@ -145,14 +145,19 @@ class GeocodeService {
         }
 
         // OSM Objektsuche
+
         if (config.geocode.osm_objects) {
             if (!ret.isAddress && !isHighway) {
-                const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
+                try {
+                    const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
 
-                if (response_overpass.isAddress) {
-                    logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
-                    ret = response_overpass;
-                    if (ret.lat != '0') return ret;
+                    if (response_overpass.isAddress) {
+                        logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
+                        ret = response_overpass;
+                        if (ret.lat != '0') return ret;
+                    }
+                } catch (error) {
+                    logging.exception(NAMESPACE, error);
                 }
             }
         }

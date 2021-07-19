@@ -14,7 +14,7 @@ import config from '../utils/config';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
-export default class BotApp {
+export default class BotAlarm {
     private bot: TelegramBot | undefined;
 
     public init(bot: TelegramBot): void {
@@ -27,6 +27,8 @@ export default class BotApp {
     }
 
     private async alarm_send(alarm: AlarmRow) {
+        const msg_ids_1 = [];
+        const msg_ids_2: any[][] = [];
         try {
             if (!this.bot) throw new Error('Not initialized');
             if (!config.alarm.telegram) {
@@ -56,6 +58,13 @@ export default class BotApp {
             if (!groups || groups.length < 1) {
                 throw new Error('Error: No Groups found');
             }
+            if (alarm.bemerkung == '' || alarm.bemerkung == '-/-') alarm.bemerkung = 'DONOTSEND';
+            if (alarm.hinweis == '' || alarm.hinweis == '-/-') alarm.hinweis = 'DONOTSEND';
+            if (alarm.einsatzplan == '' || alarm.einsatzplan == '-/-')
+                alarm.einsatzplan = 'DONOTSEND';
+            if (alarm.tetra == '' || alarm.tetra == '-/-') alarm.tetra = 'DONOTSEND';
+            if (alarm.patient == '' || alarm.patient == '-/-') alarm.patient = 'DONOTSEND';
+            if (alarm.mitteiler == '' || alarm.mitteiler == '-/-') alarm.mitteiler = 'DONOTSEND';
 
             for (let i = 0; i < users.length; i++) {
                 try {
@@ -72,14 +81,35 @@ export default class BotApp {
                     text = text.replace(/{{ORTSTEIL}}/g, alarm.ortsteil);
                     text = text.replace(/{{ORT}}/g, alarm.ort);
                     text = text.replace(/{{BEMERKUNG}}/g, alarm.bemerkung);
-                    text = text.replace(
-                        /{{EINSATZMITTEL_EIGEN}}/g,
-                        alarm.cars1.replace(/\|/g, '\n')
-                    );
-                    text = text.replace(
-                        /{{EINSATZMITTEL_ANDERE}}/g,
-                        alarm.cars2.replace(/\|/g, '\n')
-                    );
+
+                    const cars1 = /{{EINSATZMITTEL_EIGEN}}/.test(text);
+                    const cars2 = /{{EINSATZMITTEL_ANDERE}}/.test(text);
+
+                    if (
+                        (cars1 && cars2 && alarm.cars1.length == 0 && alarm.cars2.length == 0) ||
+                        (cars1 && !cars2 && alarm.cars1.length == 0) ||
+                        (!cars1 && cars2 && alarm.cars2.length == 0)
+                    ) {
+                        text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, 'DONOTSEND');
+                        text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, 'DONOTSEND');
+                    } else {
+                        text = text.replace(
+                            /{{EINSATZMITTEL_EIGEN}}/g,
+                            alarm.cars1.replace(/\|/g, '\n')
+                        );
+                        text = text.replace(
+                            /{{EINSATZMITTEL_ANDERE}}/g,
+                            alarm.cars2.replace(/\|/g, '\n')
+                        );
+                    }
+                    text = text.replace(/{{KREUZUNG}}/g, alarm.kreuzung);
+                    text = text.replace(/{{HINWEIS}}/g, alarm.hinweis);
+                    text = text.replace(/{{PRIO}}/g, alarm.prio);
+                    text = text.replace(/{{TETRA}}/g, alarm.tetra);
+                    text = text.replace(/{{MITTEILER}}/g, alarm.mitteiler);
+                    text = text.replace(/{{RUFNUMMER}}/g, alarm.rufnummer);
+                    text = text.replace(/{{PATIENT}}/g, alarm.patient);
+                    text = text.replace(/{{EINSATZPLAN}}/g, alarm.einsatzplan);
 
                     const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
                     text = text.replace(/{{FAX}}/g, '');
@@ -134,7 +164,7 @@ export default class BotApp {
 
                         if (await fileExists(pdfPath)) {
                             const faxPDF = fs.readFileSync(pdfPath);
-                            this.bot.bot.telegram
+                            await this.bot.bot.telegram
                                 .sendDocument(user.telegramid, {
                                     source: faxPDF,
                                     filename: pdfPath.split(/[/\\]/g).pop()
@@ -147,15 +177,16 @@ export default class BotApp {
 
                     // Pattern
                     for (let i = 0; i < lines.length; i++) {
-                        let str = lines[i].trim();
+                        const str = lines[i].trim();
 
-                        if (str == '') str = '----';
+                        if (/DONOTSEND/.test(str)) continue;
 
                         await timeout(4000);
 
-                        this.bot.sendMessage(user.telegramid, str, {
+                        const msg_id = await this.bot.sendMessage(user.telegramid, str, {
                             parse_mode: 'Markdown'
                         });
+                        msg_ids_1.push([user.telegramid, msg_id]);
                     }
 
                     // Karte
@@ -167,19 +198,29 @@ export default class BotApp {
                             alarm.lng != undefined &&
                             alarm.strasse != ''
                         ) {
-                            this.bot.bot.telegram
-                                .sendLocation(user.telegramid, Number(alarm.lat), Number(alarm.lng))
-                                .catch((err) => {
-                                    logging.exception(NAMESPACE, err);
-                                });
+                            try {
+                                const msg_id = (
+                                    await this.bot.bot.telegram.sendLocation(
+                                        user.telegramid,
+                                        Number(alarm.lat),
+                                        Number(alarm.lng)
+                                    )
+                                ).message_id;
+                                msg_ids_1.push([user.telegramid, msg_id]);
+                            } catch (error) {
+                                logging.exception(NAMESPACE, error);
+                            }
                         } else {
-                            this.bot.bot.telegram
-                                .sendPhoto(user.telegramid, {
-                                    source: 'public/images/noMap.png'
-                                })
-                                .catch((err) => {
-                                    logging.exception(NAMESPACE, err);
-                                });
+                            try {
+                                const msg_id = (
+                                    await this.bot.bot.telegram.sendPhoto(user.telegramid, {
+                                        source: 'public/images/noMap.png'
+                                    })
+                                ).message_id;
+                                msg_ids_1.push([user.telegramid, msg_id]);
+                            } catch (error) {
+                                logging.exception(NAMESPACE, error);
+                            }
                         }
                     }
                     if (
@@ -190,27 +231,42 @@ export default class BotApp {
                     ) {
                         await timeout(500);
 
-                        this.bot.sendMessage(
-                            user.telegramid,
-                            `*Hydrantenkarten:*							
+                        try {
+                            const msg_id = await this.bot.sendMessage(
+                                user.telegramid,
+                                `*Hydrantenkarten:*							
 [- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${alarm.lat}&lon=${alarm.lng}&layers=B0000T)`,
-                            {
-                                parse_mode: 'Markdown'
-                            }
-                        );
+                                {
+                                    parse_mode: 'Markdown'
+                                }
+                            );
+                            msg_ids_1.push([user.telegramid, msg_id]);
+                        } catch (error) {
+                            logging.exception(NAMESPACE, error);
+                        }
                     }
 
                     //Alarmmeldung
                     await timeout(4000);
-                    this.bot.sendMessage(user.telegramid, alarmMessage, {
+                    const msg_id = await this.bot.sendMessage(user.telegramid, alarmMessage, {
                         parse_mode: 'Markdown',
                         ...keyboard
                     });
+                    msg_ids_2.push([user.telegramid, msg_id]);
                 } catch (error) {
                     logging.error(NAMESPACE, 'Error at user ID ' + users[i]);
                     logging.exception(NAMESPACE, error);
                 }
             }
+
+            setTimeout(() => {
+                for (let i = 0; i < msg_ids_2.length; i++) {
+                    this.bot?.bot.telegram.deleteMessage(
+                        String(msg_ids_2[i][0]),
+                        Number(msg_ids_2[i][1])
+                    );
+                }
+            }, 3 * 60 * 60 * 1000);
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }

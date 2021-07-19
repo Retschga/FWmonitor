@@ -22,14 +22,15 @@ class PrintingService {
     private async checkPaper() {
         logging.debug(NAMESPACE, 'ckeckPaper()');
 
-        let response;
-        if (!config.paper.printer_path) {
+        let response: boolean | null | undefined = null;
+        if (config.printing.print_ipp_url && !config.paper.printer_path) {
             response = await this.checkPaper_ipp();
         }
         if (config.paper.printer_path && config.paper.printer_regex) {
             response = await this.checkPaper_http();
         }
 
+        if (response == null) return;
         if (response == undefined) {
             if (!this.isPaperStatusError) {
                 // Error

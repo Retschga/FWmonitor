@@ -12,8 +12,8 @@
     "lint": "eslint . --ext .ts",
     
     "prebuild": "rimraf build/",
-    "build:ts": "tsc",
-    "build": "npm run pretty && npm run lint && npm run build:ts",
+    "build_ts": "tsc",
+    "build": "(npm run pretty || true) && (npm run lint || true) && npm run build_ts",
     "postbuild": "copyfiles -u 1 -e src/**/*.ts -s src/**/*.*  build/",
 
     "run": "node build/app.js"

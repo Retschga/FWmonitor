@@ -47,6 +47,15 @@ class AlarmController {
             list[i].cars2 = pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') !== -1 ? list[i].cars2 : '';
             list[i].lat = pattern.indexOf('{{KARTE}}') !== -1 ? list[i].lat : '';
             list[i].lng = pattern.indexOf('{{KARTE}}') !== -1 ? list[i].lng : '';
+            list[i].kreuzung = pattern.indexOf('{{KREUZUNG}}') !== -1 ? list[i].kreuzung : '';
+            list[i].hinweis = pattern.indexOf('{{HINWEIS}}') !== -1 ? list[i].hinweis : '';
+            list[i].prio = pattern.indexOf('{{PRIO}}') !== -1 ? list[i].prio : '';
+            list[i].tetra = pattern.indexOf('{{TETRA}}') !== -1 ? list[i].tetra : '';
+            list[i].mitteiler = pattern.indexOf('{{MITTEILER}}') !== -1 ? list[i].mitteiler : '';
+            list[i].rufnummer = pattern.indexOf('{{RUFNUMMER}}') !== -1 ? list[i].rufnummer : '';
+            list[i].patient = pattern.indexOf('{{PATIENT}}') !== -1 ? list[i].patient : '';
+            list[i].einsatzplan =
+                pattern.indexOf('{{EINSATZPLAN}}') !== -1 ? list[i].einsatzplan : '';
         }
 
         return list;

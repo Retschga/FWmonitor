@@ -22,6 +22,14 @@ interface AlarmRow {
     cars1: string;
     cars2: string;
     isAddress: boolean;
+    kreuzung: string;
+    hinweis: string;
+    prio: string;
+    tetra: string;
+    mitteiler: string;
+    rufnummer: string;
+    patient: string;
+    einsatzplan: string;
 }
 
 interface StatisticRow {
