@@ -18,7 +18,10 @@ class HydrantService {
             );out;%3E;out%20skel%20qt;`.replace(/[\n\s]/g, '');
 
         try {
-            const response = await axios.get(overpassHydrantenUrl);
+            //console.log(overpassHydrantenUrl);
+            const response = await axios.get(overpassHydrantenUrl, {
+                timeout: 1000 * 60
+            });
             const responseJSON = response.data;
 
             // Hydranten ausgeben

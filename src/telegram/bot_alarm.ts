@@ -259,6 +259,7 @@ export default class BotAlarm {
                 }
             }
 
+            // Komme Buttons nach 3h löschen
             setTimeout(() => {
                 for (let i = 0; i < msg_ids_2.length; i++) {
                     this.bot?.bot.telegram.deleteMessage(
