@@ -27,7 +27,7 @@
                     class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
                 >
                         <div class="spinner_rotateplane"></div>
-                        <h2 class="text_align_center">GPS einschalten!</h2>
+                        <h2 class="text_align_center loadertext_map">GPS einschalten!</h2>
                 </div>
 
                 <div id="mapidContainer" class="flex_grow flex_column">
@@ -42,12 +42,7 @@
             
 
             // Laden
-            async function hydrantenkarte_load() {
-                if (!navigator.geolocation){
-                    alert("Geolokation wird von ihrem Browser nicht unterstützt");
-                    goBack();
-                    return;
-                }
+            async function hydrantenkarte_load() {                
 
                 var opts = {
                     enableHighAccuracy: true,
@@ -59,13 +54,7 @@
                 async function success(position) {
                     let latitude  = position.coords.latitude;
                     let longitude = position.coords.longitude;
-                    if(
-                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
-                        $_GET['lng'] != undefined && $_GET['lng'] != ''
-                    ) {
-                        latitude = Number($_GET['lat']);
-                        longitude = Number($_GET['lng']);
-                    }
+
                     const pos = {lat:latitude, lng:longitude};
 
                     const map = createMap(pos, true);
@@ -146,7 +135,25 @@
 
                 };
 
-                navigator.geolocation.getCurrentPosition(success, error, opts);
+                if(
+                    $_GET['lat'] != undefined && $_GET['lat'] != '' &&
+                    $_GET['lng'] != undefined && $_GET['lng'] != ''
+                ) {
+                    let mapLoader_text = document.querySelector(".loadertext_map");
+                    mapLoader_text.innerHTML = 'Lade Karte...';
+
+                    let position = {coords: {latitude: Number($_GET['lat']), longitude: Number($_GET['lng'])}}
+                    success(position);
+                } else {
+                    if (!navigator.geolocation){
+                        alert("Geolokation wird von ihrem Browser nicht unterstützt");
+                        goBack();
+                        return;
+                    }
+
+                    navigator.geolocation.getCurrentPosition(success, error, opts);
+                }
+
 
                 
             }

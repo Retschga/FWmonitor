@@ -1,11 +1,14 @@
-const staticCacheName = 'cache-vers-2021-07-20-001';
+/* eslint-disable no-console */
+/* eslint-disable no-undef */
+'use strict';
+
+const staticCacheName = 'cache-vers-2021-07-21-010';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
 
 const url_map_forstrettpkt = '/rettPunkte.geojson';
 const url_map_hydranten = '/api/v1/hydrant/';
-const url_alarm = '/api/v1/alarm/';
 const url_alarm_isalarm = '/api/v1/alarm/isalarm';
 const url_alarm_list = '/api/v1/alarm/list';
 const url_alarm_last = '/api/v1/alarm/last';
@@ -18,38 +21,23 @@ function wait(ms) {
 
 // FETCH Helper functions
 // https://jasonwatmore.com/post/2020/04/18/fetch-a-lightweight-fetch-wrapper-to-simplify-http-requests
-function fetch_get(url, json = false, timeout = 20000) {
+function fetch_post(url, body, json = false, timeout = 20000) {
     const controller = new AbortController();
     const requestOptions = {
-        method: 'GET',   
-        cache: "no-cache",         
-        signal: controller.signal
-    };
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    if(json)
-        return fetch(url, requestOptions).then(fetch_handleResponse_json);
-    else 
-        return fetch(url, requestOptions).then(fetch_handleResponse_text);
-}
-function fetch_post(url, body, json = false,timeout = 20000) {
-    const controller = new AbortController();
-    const requestOptions = {
-        method: 'POST',            
+        method: 'POST',
         signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        cache: "no-cache"
+        cache: 'no-cache'
     };
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    if(json)
-        return fetch(url, requestOptions).then(fetch_handleResponse_json);
-    else 
-        return fetch(url, requestOptions).then(fetch_handleResponse_text);
+    setTimeout(() => controller.abort(), timeout);
+    if (json) return fetch(url, requestOptions).then(fetch_handleResponse_json);
+    else return fetch(url, requestOptions).then(fetch_handleResponse_text);
 }
 function fetch_handleResponse_json(response) {
-    return response.text().then(text => {
+    return response.text().then((text) => {
         const data = text && JSON.parse(text);
-        
+
         if (!response.ok) {
             const error = (data && data.message) || response.statusText;
             return Promise.reject(error);
@@ -59,8 +47,7 @@ function fetch_handleResponse_json(response) {
     });
 }
 function fetch_handleResponse_text(response) {
-    return response.text().then(text => {
-
+    return response.text().then((text) => {
         if (!response.ok) {
             const error = response.statusText;
             return Promise.reject(error);
@@ -101,10 +88,10 @@ self.addEventListener('push', (ev) => {
         });
     }
 
-    var notificationQueue = new Array();
+    let notificationQueue = [];
 
     for (let i = 0; i < data.alerts; i++) {
-        console.log('Queue notification ' + (i+1) + '/' + data.alerts)
+        console.log('Queue notification ' + (i + 1) + '/' + data.alerts);
         let notification = wait(i * 2000).then(() => notify(data));
         notificationQueue.push(notification);
     }
@@ -160,8 +147,6 @@ self.addEventListener('notificationclick', function (event) {
     let params = action.parameter;
     console.log('notification action', url, params);
     fetch_post(url, params);
-
-    
 });
 
 // -------- Service Worker FETCH --------
@@ -171,49 +156,44 @@ this.addEventListener('fetch', function (event) {
         caches
             .match(event.request)
             .then((response) => {
-
                 // Cache hit - return response
                 if (response) {
                     console.log('Found ', event.request.url, ' in cache');
                     return response;
                 }
 
-
                 // Netzwerk Request
                 console.log('Network request for ', event.request.url);
-                return fetch(event.request).then( async (response) => {
+                return fetch(event.request).then(async (response) => {
                     /*
                     if (response.status === 404) {
                         return caches.match('/app/404.html');
                     }
                     */
                     // Check if we received a valid response
-                    if(!response || response.status !== 200 || response.type !== 'basic') {
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
                         return response;
                     }
-                    if (response.type === "error" || response.type === "opaque") {
+                    if (response.type === 'error' || response.type === 'opaque') {
                         return Promise.resolve(); // do not put in cache network errors
-                      }
-  
-      
+                    }
+
                     if (
                         event.request.url.indexOf(url_alarm_list) == -1 &&
                         event.request.url.indexOf(url_alarm_last) == -1 &&
-                        event.request.url.indexOf(url_alarm_isalarm) == -1 && 
-                        (
-                        event.request.url.indexOf('/app/') != -1 ||
-                        event.request.url.indexOf('.css') != -1 ||
-                        event.request.url.indexOf('.js') != -1 ||
-                        event.request.url.indexOf(url_map_hydranten) != -1 ||
-                        event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
-                        event.request.url.indexOf('tile') != -1
-                        )
+                        event.request.url.indexOf(url_alarm_isalarm) == -1 &&
+                        (event.request.url.indexOf('/app/') != -1 ||
+                            event.request.url.indexOf('.css') != -1 ||
+                            event.request.url.indexOf('.js') != -1 ||
+                            event.request.url.indexOf(url_map_hydranten) != -1 ||
+                            event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
+                            event.request.url.indexOf('tile') != -1)
                     ) {
                         console.log('cached:', event.request.url);
                         const cache = await caches.open(staticCacheName);
                         cache.put(event.request.url, response.clone());
                     }
-                    
+
                     return response;
                 });
             })
@@ -222,8 +202,8 @@ this.addEventListener('fetch', function (event) {
                 if (event.request.mode === 'navigate') {
                     return caches.match('offline.html');
                 }
-                
-                var init = { "status" : 444 , "statusText" : "offline" };
+
+                var init = { status: 444, statusText: 'offline' };
                 return new Response(null, init);
             })
     );

@@ -113,7 +113,7 @@
                         const var_password        = template.content.querySelector(".var_password");          
                         
                         var_header_name.innerHTML = car.name; 
-                        var_name.value            = car.name; 
+                        var_name.value            = htmlDecode(car.name); 
                         var_user.value            = car.appBenutzer; 
                         var_password.value        = car.appPasswort; 
                         

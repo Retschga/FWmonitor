@@ -1,13 +1,11 @@
+/* eslint-disable no-console */
+/* eslint-disable no-undef */
+'use strict';
+
 const staticCacheName = 'cache-vers-2021-05-07-028';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
-
-function wait(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 const url_map_forstrettpkt = '/rettPunkte.geojson';
 const url_map_hydranten = '/api/v1/hydrant/';
@@ -29,7 +27,7 @@ this.addEventListener('fetch', function (event) {
                 }
                 console.log('Network request for ', event.request.url);
 
-                return fetch(event.request).then( async (response) => {
+                return fetch(event.request).then(async (response) => {
                     /*				if (response.status === 404) {
                         return caches.match('/app/404.html');
                     }
@@ -38,24 +36,21 @@ this.addEventListener('fetch', function (event) {
                     if (
                         event.request.url.indexOf(url_alarm_list) == -1 &&
                         event.request.url.indexOf(url_alarm_last) == -1 &&
-                        event.request.url.indexOf(url_alarm_isalarm) == -1 && 
-                        (
-                        event.request.url.indexOf('/car/') != -1 ||
-                        event.request.url.indexOf('.css') != -1 ||
-                        event.request.url.indexOf('.js') != -1 ||
-                        event.request.url.indexOf(url_alarm) != -1 ||
-                        event.request.url.indexOf(url_map_hydranten) != -1 ||
-                        event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
-                        event.request.url.indexOf('tile') != -1
-                        )
+                        event.request.url.indexOf(url_alarm_isalarm) == -1 &&
+                        (event.request.url.indexOf('/car/') != -1 ||
+                            event.request.url.indexOf('.css') != -1 ||
+                            event.request.url.indexOf('.js') != -1 ||
+                            event.request.url.indexOf(url_alarm) != -1 ||
+                            event.request.url.indexOf(url_map_hydranten) != -1 ||
+                            event.request.url.indexOf(url_map_forstrettpkt) != -1 ||
+                            event.request.url.indexOf('tile') != -1)
                     ) {
                         console.log('cached:', event.request.url);
                         const cache = await caches.open(staticCacheName);
                         cache.put(event.request.url, response.clone());
                     }
-                    
+
                     return response;
-                    
                 });
             })
             .catch((error) => {
@@ -63,8 +58,8 @@ this.addEventListener('fetch', function (event) {
                 if (event.request.mode === 'navigate') {
                     return caches.match('offline.html');
                 }
-                
-                var init = { "status" : 444 , "statusText" : "offline" };
+
+                var init = { status: 444, statusText: 'offline' };
                 return new Response(null, init);
             })
     );

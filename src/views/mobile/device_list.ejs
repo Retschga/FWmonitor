@@ -211,8 +211,8 @@
                                     case '9':
                                         button_var_name.innerHTML = 'Position';  
                                         button_var_action.innerHTML = 'Karte';        
-                                        button_var_btn.dataset.deviceid = device.id
-                                        button_var_btn.dataset.action = action.id;                              
+                                        button_var_btn.dataset.coordinates = action.value;
+                                        button_var_btn.dataset.action = -1;                              
                                         clone = document.importNode(template_button.content.firstElementChild, true);                                      
                                         target_elements.append(clone);
                                         break;
@@ -283,6 +283,11 @@
                                 const var_value = anchorElement.parentElement.querySelector(".var_value");
                                 console.log('click', anchorElement.dataset.deviceid, anchorElement.dataset.action, var_value ? escapeHtml(var_value.value) : undefined);
                                 
+                                if(anchorElement.dataset.action == -1) {
+                                    const coordinates = anchorElement.dataset.coordinates.split(',');
+                                    loaderIn(`map?lat=${coordinates[0]}&lng=${coordinates[1]}`)
+                                    return;
+                                }
                                 action(anchorElement.dataset.deviceid, anchorElement.dataset.action, var_value ? escapeHtml(var_value.value) : undefined);
                             };
                         });

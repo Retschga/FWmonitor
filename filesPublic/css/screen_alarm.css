@@ -14,20 +14,20 @@
     background-position: center;
 }
 
-.st_verf, 
+.st_verf,
 .st_nverf {
     font-size: 1.2em;
     padding: 0.2em;
     margin-top: 0.1em;
 }
 
-.st_verf img, 
+.st_verf img,
 .st_nverf img {
     width: 1em;
     height: 1em;
 }
 
-.st_verf p, 
+.st_verf p,
 .st_nverf p {
     margin: 0;
     padding-right: 0.3em;
@@ -36,5 +36,3 @@
 .imgspacer {
     width: 1em;
 }
-
-
