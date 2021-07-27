@@ -189,7 +189,7 @@ Raspberry:
 
 Windows:
 
--   Server:
+-   Server (Win 10 empfohlen):
     -   unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu
         start.bat erstellen
 -   Display:

@@ -22,6 +22,10 @@
 
                 <div class="flex_grow"></div>
 
+                <button class="material-icons visibilityButton" onclick="changeAllVisibility();">visibility</button>
+
+                <div class="spacer" style="width: 1em;"></div>
+
                 <button class="material-icons" onclick="loaderIn('calendar_history', true);">history</button>   
 
                 <div class="spacer" style="width: 1em;"></div>
@@ -83,6 +87,8 @@
 
                     const target = document.querySelector(".calendar_list");
 
+                    const akt_status = localStorage.getItem('calendar_visibility_all');
+
                     for(let i = 0; i < calendarElements.length; i++) {
                         const element = calendarElements[i];
                 
@@ -112,14 +118,17 @@
                         if(includesUsergroup) {
                             clone.classList.remove('stripes');
                         } else {
-                            clone.classList.add('stripes');                        
+                            clone.classList.add('stripes'); 
+                            if(akt_status == 'false') {
+                                clone.classList.add('hidden'); 
+                            }                       
                         }
 
                         target.appendChild(clone);
 
                         if(element.id != -1 && (user_calendar_min || user_calendar_full)) {
                             clone.addEventListener("click", () => {
-                                loaderIn('calendar_entry?id=' + element.id);
+                                loaderIn('calendar_entry?id=' + element.id, true);
                             });
                         }
                     }
@@ -146,12 +155,36 @@
                 loaderOut();
             }
 
+            function changeAllVisibility() {
+                console.log('change visibility all')
+                const akt_status = localStorage.getItem('calendar_visibility_all');
+                if(akt_status == 'true') {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';
+                    localStorage.setItem('calendar_visibility_all', 'false');
+                    const elements = document.querySelectorAll('.stripes');
+                    for(let i = 0; i < elements.length; i++) {
+                        elements[i].classList.add('hidden');
+                    }
+                } else {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility';
+                    localStorage.setItem('calendar_visibility_all', 'true');
+                    const elements = document.querySelectorAll('.stripes');
+                    for(let i = 0; i < elements.length; i++) {
+                        elements[i].classList.remove('hidden');
+                    }
+                }     
+            }
+
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_calendar();
                 if(user_calendar_min || user_calendar_full) {
                     document.querySelector('.btn_add').classList.remove('hidden');
                 }
+                const akt_status = localStorage.getItem('calendar_visibility_all');
+                if(akt_status == 'false') {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';                
+                }  
             };
             
 
