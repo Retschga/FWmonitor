@@ -150,6 +150,7 @@
                
                 } catch (error) {
                     console.error('load_contacts', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 

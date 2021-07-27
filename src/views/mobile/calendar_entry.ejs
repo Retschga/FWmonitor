@@ -33,7 +33,7 @@
                         <div class="item">
                             <span class="left material-icons">emoji_symbols</span>
                             <span class="text">Symbol</span>
-                            <select class="var_symbol" style="">
+                            <select class="var_symbol">
                                 <option value="🚒">🚒</option>
                                 <option value="📖">📖</option>
                                 <option value="🗓️">🗓️</option>
@@ -172,7 +172,8 @@
                         }
                     }
                 } catch (error) {
-                    console.error('load_groups_all', error)
+                    console.error('load_groups_all', error);
+                    if(error.show) alert('Kalendergruppen konnten nicht geladen werden.');
                 }       
             }
 
@@ -193,7 +194,7 @@
                     const var_date         = document.querySelector(".var_date"); 
                     const var_remind       = document.querySelector(".var_remind"); 
 
-                    var_name.value      = text;
+                    var_name.value      =  htmlDecode(text); 
                     setSelectedIndex(var_symbol, icon);  
                     var_date.value      = date.substring(0, (date.indexOf("T")|0) + 6|0);
                     var_remind.value    = remind.substring(0, (remind.indexOf("T")|0) + 6|0);
@@ -206,7 +207,8 @@
 
 
                 } catch (error) {
-                    console.error('load_entry', error)
+                    console.error('load_entry', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }       
             }
 
@@ -241,6 +243,7 @@
                     
                 } catch (error) {
                     console.error('update_entry', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }
@@ -255,6 +258,7 @@
                     goBack();
                 } catch (error) {
                     console.error('delete_entry', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }  
                 goBack();
             }

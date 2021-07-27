@@ -83,6 +83,9 @@ class StartupCheck {
         logging.info(NAMESPACE, '|    Start Check:    |');
         logging.info(NAMESPACE, '----------------------');
 
+        logging.info(NAMESPACE, '');
+        logging.info(NAMESPACE, ' - Node ENV                ' + process.env.NODE_ENV);
+
         // Alarm Eingangsordner - dateien
         logging.info(NAMESPACE, '');
         const stat_folderIn = await checkFolderOrFile(config.folders.fileInput);
@@ -100,31 +103,41 @@ class StartupCheck {
 
         // Gebe Filtereinstellungen aus
         logging.info(NAMESPACE, '');
-        logging.info(NAMESPACE, ' - Fax Filter:             ' + process.env.FAXFILTER);
-        logging.info(NAMESPACE, ' - Einsatzmittel Filter:   ' + process.env.FW_NAME);
+        logging.info(NAMESPACE, ' - Fax Filter:             ' + config.folders.fileInput_filter);
 
         // Prüfe Ausdruckeinstellungen
         logging.info(NAMESPACE, '');
         logging.info(
             NAMESPACE,
-            ' - Ausdruck:              ' + (process.env.ALARMDRUCK == 'true' ? ' Ja' : ' -> Nein')
+            ' - Ausdruck Alarm:        ' + (config.printing.pagecountAlarm > 0 ? ' Ja' : ' -> Nein')
+        );
+        logging.info(
+            NAMESPACE,
+            ' - Ausdruck Orginal:      ' +
+                (config.printing.pagecountOriginal > 0 ? ' Ja' : ' -> Nein')
         );
         if (process.env.ALARMDRUCK == 'true') {
             // Version B
             if (config.raspiversion && process.env.AREADER != '') {
-                const stat_folderReader = await checkFolderOrFile(process.env.AREADER);
+                const stat_folderReader = await checkFolderOrFile(config.programs.foxit);
                 logging.info(
                     NAMESPACE,
                     ' - Programmpfad           ' + (stat_folderReader ? ' OK' : ' -> FEHLER')
                 );
             }
             if (config.raspiversion) {
-                logging.info(NAMESPACE, ' - Druckername:            ' + process.env.DRUCKERNAME);
+                logging.info(
+                    NAMESPACE,
+                    ' - Druckername:            ' + config.printing.print_printername
+                );
             }
 
             // Version A
             if (process.env.DRUCKERURL != '') {
-                logging.info(NAMESPACE, ' - Drucker URL:            ' + process.env.DRUCKERURL);
+                logging.info(
+                    NAMESPACE,
+                    ' - Drucker URL:            ' + config.printing.print_ipp_url
+                );
             }
         }
 
@@ -166,13 +179,11 @@ class StartupCheck {
         logging.info(NAMESPACE, '');
         logging.info(
             NAMESPACE,
-            ' - Telegram Sende Alarme: ' +
-                (process.env.BOT_SENDALARM == 'true' ? ' Ja' : ' ->  Nein')
+            ' - Telegram Sende Alarme: ' + (config.alarm.telegram ? ' Ja' : ' ->  Nein')
         );
         logging.info(
             NAMESPACE,
-            ' - APP Sende Alarme:      ' +
-                (process.env.APP_SENDALARM == 'true' ? ' Ja' : ' ->  Nein')
+            ' - APP Sende Alarme:      ' + (config.alarm.app ? ' Ja' : ' ->  Nein')
         );
 
         logging.info(NAMESPACE, '');

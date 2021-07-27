@@ -139,6 +139,7 @@
                
                 } catch (error) {
                     console.error('load_praes_list', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 
@@ -171,6 +172,7 @@
                
                 } catch (error) {
                     console.error('load_device_list', error);
+                    if(error.show) alert('Geräteliste konnte nicht geladen werden.');
                 } 
                 loaderOut();
             }
@@ -212,6 +214,8 @@
                
                 } catch (error) {
                     console.error('start_praesentation', error);
+                    alert('Präsentation konnte nicht gestartet werden.');
+                    load_device_list();
                 }                 
                 loaderOut();              
 
@@ -230,6 +234,8 @@
 
                 } catch (error) {
                     console.error('start_praesentation', error);
+                    alert('Aktion konnte nicht gesendet werden.');
+                    load_device_list();
                 }                 
                 loaderOut();              
 

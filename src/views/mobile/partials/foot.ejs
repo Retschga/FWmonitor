@@ -158,16 +158,20 @@
     async function load_initial() {
 
         if(window.location.href.indexOf('offline') == -1) {
-            const userrights = await fetch_get('/api/v1/user/rights', true);
-            console.log('userrights', userrights);
+            try {
+                const userrights = await fetch_get('/api/v1/user/rights', true);
+                console.log('userrights', userrights);
 
-            user_id = userrights.userid;    
-            user_telegramid = userrights.telegramid; 
-            user_admin = userrights.admin; 
-            user_calendar_min = userrights.calendar_min; 
-            user_calendar_full = userrights.calendar_full; 
-            user_telefone = userrights.telefone;   
-            user_praes = userrights.praes;    
+                user_id = userrights.userid;    
+                user_telegramid = userrights.telegramid; 
+                user_admin = userrights.admin; 
+                user_calendar_min = userrights.calendar_min; 
+                user_calendar_full = userrights.calendar_full; 
+                user_telefone = userrights.telefone;   
+                user_praes = userrights.praes;    
+            } catch (error) {
+                console.error(error);
+            }            
         }
 
         
@@ -207,11 +211,12 @@
 
     async function load_later() {
         if(window.location.href.indexOf('login') == -1) {
-            const userrights = await fetch_get('/api/v1/user/rights', true)
-            //.catch((err) => {/* location.reload() */});
-            console.log('userrights', userrights);    
-            
-            //if(userrights == undefined) location.reload();
+            try {
+                const userrights = await fetch_get('/api/v1/user/rights', true);
+                console.log('userrights', userrights);    
+            } catch (error) {
+                console.error(error);
+            }            
         }
 
         loaderOut(); 

@@ -212,13 +212,13 @@ async def checkTaster(asyncState):
         if asyncState.lastTasterState == False:
             await asyncio.wait_for(printLog("Display Taster Pressed"), 5)
             if asyncState.dispstat == True:
-                await asyncio.wait_for(printLog("Display OF Taster"), 5)
                 await asyncio.wait_for(dispOFF(asyncState), 20)
+                await asyncio.wait_for(printLog("Display OF Taster"), 5)
                 asyncState.offViaTaster = True
                 await asyncio.wait_for(printLog("dispstat: " + str(asyncState.dispstat)), 5)
             else:
-                await asyncio.wait_for(printLog("Display ON Taster"), 5)
                 await asyncio.wait_for(dispON(asyncState), 20)
+                await asyncio.wait_for(printLog("Display ON Taster"), 5)
                 asyncState.offViaTaster = False
                 await asyncio.wait_for(printLog("dispstat: " + str(asyncState.dispstat)), 5)
         asyncState.lastTasterState = True
@@ -278,7 +278,7 @@ def updateNTP():
 async def mainLoop(asyncState):
     while True:
         try:
-            await asyncio.sleep(1)   
+            await asyncio.sleep(0)   
 
             await checkPIR(asyncState)
             await checkTaster(asyncState)

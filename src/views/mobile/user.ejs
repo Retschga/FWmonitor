@@ -317,6 +317,7 @@
 
                 } catch (error) {
                     console.error('load_user_id', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }   
             }
 
@@ -368,6 +369,7 @@
 
                 } catch (error) {
                     console.error('save_user', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }
                 loaderOut();
             }
@@ -379,6 +381,7 @@
                     console.log('delete_user', response);
                 } catch (error) {
                     console.error('delete_user', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }  
                 goBack();
             }
@@ -390,6 +393,7 @@
                     console.log('approve_user', response);
                 } catch (error) {
                     console.error('approve_user', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }     
                 location.reload(); 
             }

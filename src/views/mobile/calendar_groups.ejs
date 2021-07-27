@@ -95,7 +95,8 @@
                         addFormatter(clone.querySelector(".var_pattern"), regexPrefix(/^{{.+}}$/, '{{}}'));   
                     }
                 } catch (error) {
-                    console.error('load_groups_all', error)
+                    console.error('load_groups_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }       
             }
 
@@ -118,6 +119,7 @@
                     }
                 } catch (error) {
                     console.error('update_groups_all', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }

@@ -18,11 +18,11 @@ TELEGRAM_BOT_TOKEN=
 
 # Geobing API Key (https://docs.microsoft.com/en-us/bingmaps/getting-started/bing-maps-dev-center-help/getting-a-bing-maps-key)
 # Optional
-GEOBING_KEY=
+#GEOBING_KEY=
 
 # OpenRouteService (https://openrouteservice.org/)
 # Optional
-ORS_KEY=
+#ORS_KEY=
 
 
 ######## Programmpfade ########
@@ -131,7 +131,7 @@ ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
 
 # Datei Eingang Verzögerung bis zur Verarbeitung (sek) (evtl bei Hylafax nötig ca. 30 ??)
 # Optional
-#ALARM_FILE_DELAY_IN=0
+ALARM_FILE_DELAY_IN=5
 
 # Regex Textfilter (Groß/Kleinschreibung egal) https://regexr.com/
 # Optional
@@ -174,7 +174,7 @@ SCREEN_CALENDAR_POS=2
 # Für Anzeige bei Standby
 FW_NAME_LONG=Freiwillige Feuerwehr Name
 
-# Für Anzeige bei Bot / APP -> Korzer Name
+# Für Anzeige bei Bot / APP -> Kurzer Name
 FW_NAME_SHORT=FF Name
 
 # Diashow Wechselzeit (Millisekunden)

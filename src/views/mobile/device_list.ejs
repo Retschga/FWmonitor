@@ -301,6 +301,7 @@
                     }
                 } catch (error) {
                     console.error('load_cars_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }   
             }
 
@@ -313,6 +314,7 @@
                     console.log('action', action, value, response);   
                 } catch (error) {
                     console.error('action', error);
+                    alert('Aktion konnte nicht gesendet werden.');
                 }                            
                 location.reload(); 
             }

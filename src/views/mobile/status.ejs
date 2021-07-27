@@ -161,6 +161,7 @@
 
                 } catch (error) {
                     console.error('load_status_id', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }
             }
 
@@ -196,6 +197,7 @@
 
                 } catch (error) {
                     console.error('load_statuslist', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }                
             }
 
@@ -210,6 +212,7 @@
 
                 } catch (error) {
                     console.error('update_status_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }           
                 document.getElementById('modal_until').style.display='none';    
                 loaderOut();

@@ -112,6 +112,19 @@ class TelegramBot {
         globalEvents.on('user-created', this.bot_user_created_info.bind(this));
 
         logging.debug(NAMESPACE, 'Initializing Telegram Bot... DONE');
+
+        globalEvents.on('user-approved', async (id: number) => {
+            const user = await userService.find_by_userid(id);
+            if (user) {
+                this.sendMessage(user[0].telegramid, 'Zugang wurde freigegeben!');
+            }
+        });
+        globalEvents.on('user-deleted', async (id: number) => {
+            const user = await userService.find_by_userid(id);
+            if (user) {
+                this.sendMessage(user[0].telegramid, 'Zugang wurde gelöscht!');
+            }
+        });
     }
 
     /**
@@ -123,7 +136,8 @@ class TelegramBot {
         extra?: ExtraReplyMessage
     ): Promise<number> {
         this.sendtMessages++;
-        const delay = Math.floor(this.sendtMessages / 30) * 1500;
+        //const delay = Math.floor(this.sendtMessages / 30) * 1050;
+        const delay = 1;
         setTimeout(() => {
             this.sendtMessages--;
         }, 1000 + delay);

@@ -195,6 +195,7 @@
 
                 } catch (error) {
                     console.error('load_calendar', error);
+                    if(error.show) alert('Kalender konnte nicht geladen werden.');
                 }                 
             }
 
@@ -241,6 +242,7 @@
 
                 } catch (error) {
                     console.error('load_status_id', error);
+                    if(error.show) alert('Status konnte nicht geladen werden.');
                 }
                 
             }
@@ -281,6 +283,7 @@
 
                 } catch (error) {
                     console.error('load_alarm', error);
+                    if(error.show) alert('Aktuelle Alarme konnten nicht geladen werden.');
                 }
             }
 

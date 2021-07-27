@@ -139,6 +139,7 @@
                     }
                 } catch (error) {
                     console.error('load_cars_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }   
             }
 
@@ -163,6 +164,7 @@
                     }        
                 } catch (error) {
                     console.error('update_cars_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }
@@ -174,6 +176,7 @@
                     console.log('delete_car_id', response);   
                 } catch (error) {
                     console.error('delete_car_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }                            
                 location.reload(); 
             }
@@ -185,6 +188,7 @@
                     console.log('create_car', response); 
                 } catch (error) {
                     console.error('create_car', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }                
                 location.reload();        
             }
@@ -200,7 +204,8 @@
 
                     password.value = response.password;
                 } catch (error) {
-                    console.error('get_password_new_id', error)
+                    console.error('get_password_new_id', error);                    
+                    alert('Daten konnten nicht geladen werden.');
                 }
                 loaderOut();
             }

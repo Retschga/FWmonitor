@@ -54,6 +54,7 @@
                     var_appnotifications.checked = user.appNotifications > 0 ;
                 } catch (error) {
                     console.error('load_settings_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }    
             }
 
@@ -68,6 +69,7 @@
                         {value: status ? 5 : 0, subscription: JSON.stringify(subscription)});
                 } catch (error) {
                     console.error('update_settings_notifications_app', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }
                 loaderOut();
             }

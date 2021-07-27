@@ -123,6 +123,7 @@
 
                 } catch (error) {
                     console.error('load_diashow_list', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 
@@ -137,6 +138,7 @@
                     load_diashow_list();
                 } catch (error) {
                     console.error('disable_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }
@@ -149,6 +151,7 @@
                     load_diashow_list();
                 } catch (error) {
                     console.error('enable_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }
@@ -161,6 +164,7 @@
                     load_diashow_list();
                 } catch (error) {
                     console.error('delete_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();
             }

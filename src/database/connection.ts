@@ -40,8 +40,10 @@ class DatabaseConnection {
     private open() {
         logging.debug(NAMESPACE, 'OPEN...');
 
-        // eslint-disable-next-line no-console
-        this.db = new Database(this.file, { verbose: console.log });
+        if (process.env.NODE_ENV == 'development')
+            // eslint-disable-next-line no-console
+            this.db = new Database(this.file, { verbose: console.log });
+        else this.db = new Database(this.file, {});
         this.db.pragma('journal_mode = WAL');
 
         logging.debug(NAMESPACE, 'OPEN... DONE');

@@ -220,6 +220,7 @@
                
                 } catch (error) {
                     console.error('load_users_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 

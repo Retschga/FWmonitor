@@ -313,6 +313,7 @@
 
                 } catch (error) {
                     console.error('load_groups_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 
@@ -396,6 +397,7 @@
                     console.log('update_group_id', response);  
                 } catch (error) {
                     console.error('update_group_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }                             
                 loaderOut();
             }

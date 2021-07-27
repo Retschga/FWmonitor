@@ -212,7 +212,11 @@ const RATE_LIMITS = {
 
 const LOG = {
     pad_namespace: 20,
-    loglevel: LOGLEVEL.ERROR | LOGLEVEL.INFO | LOGLEVEL.WARNING | LOGLEVEL.DEBUG
+    loglevel:
+        LOGLEVEL.ERROR |
+        LOGLEVEL.INFO |
+        LOGLEVEL.WARNING |
+        (process.env.NODE_ENV == 'development' ? LOGLEVEL.DEBUG : 0)
 };
 
 const config = {

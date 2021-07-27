@@ -356,18 +356,25 @@ function fetch_handleError(error) {
     } else if (error.status == 400) {
         // BAD_REQUEST
         alert(error.statusText);
+        error.show = true;
     } else if (error.status == 429) {
         // RATE_LIMIT
         alert(error.statusText);
+        error.show = true;
     } else if (error.status == 403) {
         // FORBIDDEN
         alert(error.statusText);
+        error.show = true;
     } else if (error.status == 404) {
         // NOT_FOUND
         console.log(error.statusText);
+        error.show = true;
     } else if (error.status == 500) {
         // INTERNAL_SERVER_ERROR
         console.log(error.statusText);
+        error.show = true;
+    } else {
+        error.show = true;
     }
     return Promise.reject(error);
 }

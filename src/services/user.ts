@@ -120,6 +120,12 @@ class UserService {
 
     public async create(telegramid: string, name: string, vorname: string) {
         logging.debug(NAMESPACE, 'create', { telegramid, name, vorname });
+
+        const user = await this.find({ telegramid: telegramid }, false);
+        if (user.length != 0) {
+            return;
+        }
+
         const affectedRows = await UserModel.model.insert({
             telegramid: telegramid,
             name: name,
@@ -130,6 +136,12 @@ class UserService {
             throw new Error(NAMESPACE + ' create - No rows changed');
         }
 
+        const allUsers = await this.find(undefined, false);
+        if (allUsers.length == 1) {
+            this.set_approved(allUsers[0].id);
+            this.update_roles_admin(allUsers[0].id, true);
+            logging.warn(NAMESPACE, 'First User added -> set approve + admin');
+        }
         globalEvents.emit('user-created', { name: name, vorname: vorname });
     }
 
@@ -140,6 +152,8 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' delete - No rows changed');
         }
+
+        globalEvents.emit('user-deleted', id);
     }
 
     public async set_approved(id: number) {
@@ -150,6 +164,8 @@ class UserService {
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_status_hidden - No rows changed');
         }
+
+        globalEvents.emit('user-approved', id);
     }
 
     // STATUS

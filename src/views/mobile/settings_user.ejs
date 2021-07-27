@@ -99,6 +99,7 @@
 
                 } catch (error) {
                     console.error('load_settings_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }    
             }
 
@@ -112,6 +113,8 @@
                     console.log('update_notifications_calendar' , response);
                 } catch (error) {
                     console.error('update_notifications_calendar', error);
+                    alert('Einstellung konnte nicht gesetzt werden.');
+                    load_settings_all();
                 }
                
                 loaderOut();
@@ -126,6 +129,8 @@
                     console.log('update_status_hidden' , response);                    
                 } catch (error) {
                     console.error('update_status_hidden', error);
+                    alert('Einstellung konnte nicht gesetzt werden.');
+                    load_settings_all();
                 }                
                 loaderOut();
             }          
@@ -139,7 +144,9 @@
                     const response = await fetch_post(url_user_notifications_app_update.replace(':id', user_id), 
                         {value: status ? 5 : 0, subscription: JSON.stringify(subscription)});
                 } catch (error) {
+                    alert('Push Notifications konnten nicht aktiviert werden.');
                     console.error('update_settings_notifications_app', error);
+                    load_settings_all();
                 }
                 loaderOut();
             }

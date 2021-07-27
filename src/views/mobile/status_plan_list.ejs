@@ -105,6 +105,7 @@
                
                 } catch (error) {
                     console.error('load_plans_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 } 
             }
 
@@ -122,6 +123,7 @@
                     console.log('update_plans' , response);
                 } catch (error) {
                     console.error('update_plans', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
                 }            
                 loaderOut();
             }

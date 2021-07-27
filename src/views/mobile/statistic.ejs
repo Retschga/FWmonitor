@@ -107,6 +107,7 @@
 
                 } catch (error) {
                     console.error('load_statistic_year', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }   
             }
 
@@ -122,6 +123,7 @@
 
                 } catch (error) {
                     console.error('load_time_year', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }   
                 loaderOut();             
             }

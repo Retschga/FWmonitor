@@ -368,6 +368,7 @@
            
                 } catch (error) {
                     console.error('load_alarms', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
                 }
             }
 
@@ -394,6 +395,7 @@
                     const response = await fetch_post(url_alarm_userstatus.replace(':id', user_id), {alarmid: parseInt(id), value: status});  
                 } catch (error) {
                     console.error('sendStatus', error);
+                    alert('Status konnte nicht gesendet werden.');
                 }                            
                 loaderOut();
             }
