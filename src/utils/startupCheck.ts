@@ -6,33 +6,35 @@ import config from '../utils/config';
 // @ts-ignore
 import mdns from 'mdns-js';
 import { timeout, execShellCommand, checkFolderOrFile } from '../utils/common';
+import path from 'path';
+import fs from 'fs';
 
 const NAMESPACE = 'StartupCheck';
 
 class StartupCheck {
-    public async check_tesseract(): Promise<boolean> {
+    private async check_tesseract(): Promise<boolean> {
         const out = await execShellCommand(`"${config.programs.tesseract}" --version`);
         return out.toLowerCase().indexOf('tesseract v') != -1;
     }
 
-    public async check_ghostscript(): Promise<boolean> {
+    private async check_ghostscript(): Promise<boolean> {
         const out = await execShellCommand(`"${config.programs.ghostscript}" --version`);
         return out.toLowerCase().indexOf('gpl ghostscript') != -1;
     }
 
-    public async check_tiff2ps(): Promise<boolean> {
+    private async check_tiff2ps(): Promise<boolean> {
         if (!config.raspiversion) return false;
         const out = await execShellCommand('which tiff2ps');
         return out.length > 0 && out.toLowerCase().indexOf('no tiff2ps') == -1;
     }
 
-    public async check_lpr(): Promise<boolean> {
+    private async check_lpr(): Promise<boolean> {
         if (!config.raspiversion) return false;
         const out = await execShellCommand('which lpr');
         return out.length > 0 && out.toLowerCase().indexOf('no lpr') == -1;
     }
 
-    public isRoot() {
+    private isRoot() {
         return process.getuid && process.getuid() === 0;
     }
 
@@ -52,7 +54,7 @@ class StartupCheck {
         );
         logging.info(
             NAMESPACE,
-            '    |             (c) 2021 Resch - FF Fischbachau                |'
+            '    |                      (c) 2021 Resch                        |'
         );
         logging.info(
             NAMESPACE,
@@ -76,9 +78,29 @@ class StartupCheck {
         );
     }
 
-    public async check() {
-        this.drawHeader();
+    public async checkEnv() {
+        const exists = await checkFolderOrFile('.env');
+        if (!exists) {
+            logging.error(
+                NAMESPACE,
+                '.env Datei wurde neu erstellt. Bitte Einstellungen bearbeiten! -> Programmende'
+            );
+            await fs.promises.copyFile(
+                path.resolve(process.cwd(), '.env - Leer'),
+                path.resolve(process.cwd(), '.env')
+            );
+            process.exit(0);
+        }
+    }
 
+    public async checkCert() {
+        if (!config.server_https.key || !config.server_https.cert) {
+            logging.error(NAMESPACE, 'Es wurde kei TLS Zertifikat angegeben! -> Programmende');
+            process.exit(1);
+        }
+    }
+
+    public async check() {
         logging.info(NAMESPACE, '----------------------');
         logging.info(NAMESPACE, '|    Start Check:    |');
         logging.info(NAMESPACE, '----------------------');

@@ -125,6 +125,9 @@ function init_https(sessionOptions: SessionOptions) {
 async function init() {
     logging.info(NAMESPACE, 'Starte Software v' + config.version);
     logging.info(NAMESPACE, config.raspiversion ? 'System: Raspberry PI' : 'System: Windows');
+    startupCheck.drawHeader();
+    await startupCheck.checkEnv();
+    await startupCheck.checkCert();
     await startupCheck.check();
 
     // Diashow Thubnnails erstellen, falls noch nicht vorhanden
@@ -197,12 +200,6 @@ async function init() {
 }
 
 // -------- Programmstart --------
-// Prüfe ob SSL Zertifikat vorhanden ist
-if (!config.server_https.key || !config.server_https.cert) {
-    logging.error(NAMESPACE, 'Es wurde kei TLS Zertifikat angegeben! -> Programmende');
-    process.exit(1);
-}
-
 init();
 
 // -------- Programmende --------
