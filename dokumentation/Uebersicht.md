@@ -85,3 +85,9 @@ Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk
              ----| Drucker |
                  -----------
 ```
+
+## Software selber bauen
+
+-   Repository clonen
+-   `npm install`
+-   `npm run build` und `npm run debug`
