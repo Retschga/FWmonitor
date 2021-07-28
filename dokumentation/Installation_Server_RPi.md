@@ -13,7 +13,11 @@
     -   (Test mit: `tesseract -v`)
 -   Ghostscript `sudo apt-get install ghostscript`
 
--   Faxeingang
+## Faxeingang
+
+    -   Faxeingang über Fritzbox:
+        1. Fritzbox Konfiguration Faxweiterleitung zu Email
+        2. Konfiguration Email Alarmeingang
     -   Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405
     -   Faxeingang über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
 

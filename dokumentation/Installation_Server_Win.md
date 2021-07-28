@@ -9,7 +9,18 @@
 -   Git: https://git-scm.com/downloads
 -   Ghostscript: https://www.ghostscript.com/download/gsdnld.html
 -   Tesseract: https://digi.bib.uni-mannheim.de/tesseract/
+
     -   Bei Installation auswählen: Additional Language Data > German
+
+## Faxeingang
+
+-   Faxeingang über Fritzbox:
+    1. Fritzbox Konfiguration Faxweiterleitung zu Email
+    2. Konfiguration Email Alarmeingang
+-   Faxeingang über Fritzbox:
+    1. Frtitzbox Konfiguration Faxempfang 'Intern ablegen'
+    2. Netzwerklaufwerk für `\\Fritzbox\fritzbox\FRITZ\faxbox` einrichten
+    3. Konfiguration Datei Alarmeingang
 
 ## Installation Server
 
