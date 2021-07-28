@@ -271,3 +271,9 @@ PRINT_ALARM_PAGES=0
 # (siehe https://www.selfsignedcertificate.com/ ; Einfach 'localhost' oder die IP des PCs eintragen) 
 #SSL_KEY=zertifikat-key.key
 #SSL_CERT=zertifikat-cert.crt
+
+
+######## UPDATE ########
+
+# Auf Updates prüfen und Benachrichtigung an alle mit Softwareinfo senden (true/false)
+UPDATE_CHECK=true

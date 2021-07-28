@@ -53,16 +53,13 @@ class TelegramBot {
         this.botMore = new BotMore();
         this.botVerfuegbarkeit = new BotVerfuegbarkeit();
         this.botAlarm = new BotAlarm();
-
-        // Bot starten
-        this.init();
     }
 
-    private async init() {
-        logging.debug(NAMESPACE, 'Initializing Telegram Bot...');
+    public async init(): Promise<void> {
+        logging.info(NAMESPACE, 'Initializing Telegram Bot...');
         const botinfo = await this.bot.telegram.getMe();
         this.botName = botinfo.username;
-        logging.debug(NAMESPACE, 'Telegram Botname: ' + this.botName);
+        logging.info(NAMESPACE, 'Telegram Botname: ' + this.botName);
 
         this.botApp.init(this);
         this.botCalendar.init(this);
@@ -359,6 +356,8 @@ class TelegramBot {
     // Softwareinfo
     private async bot_software_info(text: string) {
         try {
+            logging.debug(NAMESPACE, 'Sende Softwareinfo');
+
             const users = await userService.find_all_approved();
             if (!users || users.length < 1) {
                 throw new Error('Error: No User found');

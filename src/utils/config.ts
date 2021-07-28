@@ -236,6 +236,11 @@ const LOG = {
         (process.env.NODE_ENV == 'development' ? LOGLEVEL.DEBUG : 0)
 };
 
+const UPDATE = {
+    updateCheck: process.env.UPDATE_CHECK ? /false/i.test(process.env.UPDATE_CHECK) : true
+    //autoupdate: false
+};
+
 const config = {
     version: '3.0.0',
     raspiversion: process.env.RASPIVERSION ? /true/i.test(process.env.RASPIVERSION) : false,
@@ -258,6 +263,7 @@ const config = {
     paper: PAPER,
     rateLimit: RATE_LIMITS,
     email: EMAIL,
+    update: UPDATE,
     timezone: 'de-DE'
 };
 

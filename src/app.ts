@@ -32,6 +32,7 @@ import userService from './services/user';
 import printingService from './services/printing';
 import database from './database/connection';
 import alarmInputEmailService from './services/alarmInputEmail';
+import softwareupdate from './utils/softwareupdate';
 
 const NAMESPACE = 'APP';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -182,6 +183,7 @@ async function init() {
     // Starte Telegram-Bot
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const telegramBot = new TelegramBot();
+    await telegramBot.init();
 
     // Starte Fax/Email Auswertung
     alarmInputFileService.init();
@@ -199,6 +201,9 @@ async function init() {
     // Starte webpush service
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const webpush = webpushService;
+
+    // Starte Update Checker
+    softwareupdate.init();
 }
 
 // -------- Programmstart --------
