@@ -127,7 +127,7 @@ ALARM_IN_EMAIL_ANHANG=false
 # Email Port
 #ALARM_IN_EMAIL_PORT=993
 
-# TLS Servername (wird anscheinend bei Gmail gebrauch = Emailhost, sonst freilassen)
+# TLS Servername (wird anscheinend bei Gmail gebraucht = Emailhost, sonst freilassen)
 #ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
 
 

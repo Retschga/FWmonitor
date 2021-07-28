@@ -1,4 +1,4 @@
-# Installation
+# 🖥️ Installation
 
 ## Server
 
@@ -10,11 +10,19 @@
 -   [Installation Display Windows 10](Installation_Client_Win.md)
 -   [Installation Display Raspberry Pi](Installation_Client_RPi.md)
 
-# Einrichtung
+# 🖥️ Update
 
-# Einstellungen Server
+-   [Installation Updates](Update_Server.md)
+
+# ⚙️ Einrichtung
+
+## Einstellungen Server
 
 -   [Einstellungen Server](Einstellungen_Server.md)
+
+## Einstellungen Bildschirm, Benutzer, etc.
+
+-   In der App: Menü > Einstellungen
 
 ## Benutzer hinzufügen
 
@@ -26,6 +34,8 @@ automatisch als Andministrator freigegeben.
 
 Falls die Telegram Tastatur nicht mehr angezeigt wird, einfach irgendeinen Text an den Bot senden
 und es sollte wider erscheinen.
+
+# 🔥 Funktionen
 
 ## Hydrantenfunktion
 
@@ -48,7 +58,7 @@ Papierlevel angezeigt wird.
 
 Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk/MonitorActivation
 
-## Hardware Empfehlung
+# 🖥️ Hardware Empfehlung
 
 -   Server:
     -   Windows 10 PC
@@ -57,7 +67,7 @@ Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk
     -   min. Raspberry PI 2
     -   für WLAN min. Raspberry PI 3
 
-## Getestete Aufbauten
+# ✔️ Getestete Aufbauten
 
 ```
 ---       Kabel
@@ -86,7 +96,7 @@ Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk
                  -----------
 ```
 
-## Software selber bauen
+# Software selber bauen
 
 -   Repository clonen
 -   `npm install`

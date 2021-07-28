@@ -22,6 +22,8 @@
 -   Alle relevanten Einstellungen in der bearbeiten
 -   Veränderte Einstellungen erfordern immer einen Software Neustart!
 
+-   [Beschreibung aller Einstellungen](Einstellungen_env.md)
+
 ### Diashowbilder
 
 -   Bilder für Diashow im Standby im Ordner `./filesDiashow` einfügen

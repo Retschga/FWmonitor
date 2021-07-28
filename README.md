@@ -1,4 +1,4 @@
-﻿# FWMonitor
+﻿# ![Logo](./dokumentation/icon.png) FWmonitor
 
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem
 Bildschirm darzustellen. Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort
@@ -7,7 +7,7 @@ auf einer Karte visualisiert wird.
 Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmFax.js
 Datei angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 
-## Funktionsumfang
+## 🔥 Funktionsumfang
 
 -   Standby-Display mit Uhrzeit, Diashow, Kalender/Google Kalender, Verfügbarkeitsanzeige der
     Einsatzkräfte, DWD Warnungen
@@ -47,15 +47,15 @@ Datei angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht 
 -   Alarmdrucker Papierlevel-Warnung
 -   ...
 
-## Installation, Update, Einstellungen
+## 🖥️ Installation, Update, Einstellungen
 
 [Siehe Dokumentation ...](./dokumentation/Uebersicht.md)
 
-## Fragen / Anregungen
+## ❓ Fragen / Anregungen
 
 Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstellen.
 
-## Built With
+## 🔨 Built With
 
 -   nodejs - https://nodejs.org/
 -   npm - https://www.npmjs.com/
@@ -71,19 +71,18 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 -   Bahnübergänge - https://data.deutschebahn.com/dataset/geo-bahnuebergang
 -   Forst Rettungspunkte - https://rettungspunkte-forst.de
 -   Google Noto Font - https://www.google.com/get/noto/help/emoji/
--   Kalender - https://codepen.io/peanav/pen/ulkof
 -   PDF.js - https://mozilla.github.io/pdf.js/
 
-## Authors
+## 📋 Authors
 
 -   _Johannes Resch - Freiwillige Feuerwehr Fischbachau_
 
-## License
+## ©️ License
 
 This project is licensed under the GNU GPLv3 License - see the [LICENSE.md](LICENSE.md) file for
 details
 
-## Haftungsausschluss und Datenschutz
+## ©️ Haftungsausschluss und Datenschutz
 
 Ich übernehme keine Haftung für die Funktion der Software vor Ort. Da über diese Software sensible
 personenbezogene Daten verarbeitet werden, ist der Datenschutz vor Ort insbesondere zu beachten. Vor
@@ -91,8 +90,12 @@ allem sollte ein Augenmerk auf die Datensparsamkeit gelegt werden. Damit verbund
 Entscheidung, wer welche Daten per E-Mail, SMS oder externen Systemen weitergeleitet bekommt. Im
 Zweifel ist der Programmcode entsprechend anzupassen.
 
-## Screenshots
+## 📷 Screenshots
 
-![Bild](./dokumentation/Screenshot1.PNG 'Bild') ![Bild](./dokumentation/Screenshot2.PNG 'Bild')
-![Bild](./dokumentation/Screenshot3.PNG 'Bild') ![Bild](./dokumentation/Screenshot4.PNG 'Bild')
-![Bild](./dokumentation//Auto/pic.png 'Bild')
+| Standby                                         | Alarm                                           |
+| ----------------------------------------------- | ----------------------------------------------- |
+| ![Bild](./dokumentation/Screenshot1.PNG 'Bild') | ![Bild](./dokumentation/Screenshot2.PNG 'Bild') |
+| App                                             | Telegram                                        |
+| ![Bild](./dokumentation/Screenshot4.PNG 'Bild') | ![Bild](./dokumentation/Screenshot3.PNG 'Bild') |
+| Auto Bildschirm                                 | Auto Bildschirm                                 |
+| ![Bild](./dokumentation//Auto/pic_1.png 'Bild') | ![Bild](./dokumentation//Auto/pic_2.png 'Bild') |

@@ -1,6 +1,6 @@
 'use strict';
 
-import Imap, { Box } from 'imap';
+import Imap from 'imap';
 import { AttachmentStream, MailParser, MessageText } from 'mailparser';
 import fs from 'fs';
 import AlarmParserService from './alarmParser';
@@ -35,9 +35,9 @@ class AlarmInputEmailService {
 
     private processMessage(msg: Imap.ImapMessage, seqno: number) {
         const parser = new MailParser();
-        parser.on('headers', function (headers) {
-            //logging.info(namespace, 'HEADER', headers);
-        });
+        /*  parser.on('headers', function (headers) {
+            logging.info(namespace, 'HEADER', headers);
+        }); */
 
         parser.on('data', async (data: AttachmentStream | MessageText) => {
             logging.info(NAMESPACE, 'Email Sequenznummer: ' + seqno);
@@ -97,9 +97,9 @@ class AlarmInputEmailService {
                 data = data + chunk.toString('utf8');
                 parser.write(chunk.toString('utf8'));
             });
-            stream.on('end', (chunk) => {
-                //logging.info(NAMESPACE, 'stream body end');
-            });
+            /* stream.on('end', (chunk) => {
+                logging.info(NAMESPACE, 'stream body end');
+            }); */
         });
 
         msg.once('end', function () {
@@ -110,6 +110,7 @@ class AlarmInputEmailService {
 
     private async fetchMails() {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const mailBox = await this.openInbox();
 
             const searchCriteria: (string | string[])[] = ['UNSEEN'];
@@ -167,6 +168,7 @@ class AlarmInputEmailService {
         this.imap.on('ready', async () => {
             try {
                 logging.info(NAMESPACE, 'IMAP connected');
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const mailBox = await this.openInbox();
             } catch (error) {
                 logging.exception(NAMESPACE, error);
