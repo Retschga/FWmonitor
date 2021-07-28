@@ -39,6 +39,7 @@ class DiashowService {
         for (let i = 0; i < filenames.length; i++) {
             if (
                 filenames[i] != '.gitignore' &&
+                filenames[i] != 'undefined.png' &&
                 filenames[i].indexOf('.') != -1 &&
                 filenames[i].indexOf('.org') == -1 &&
                 filenames[i].indexOf(config.folders.thumbnailPrefix) == -1

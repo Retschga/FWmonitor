@@ -717,7 +717,7 @@ function createMap(dest, center = false, preload = false) {
             crossOrigin: null
         })
     });
-    tileLayer_OpenTopoMap = new ol.layer.Tile({
+    let tileLayer_OpenTopoMap = new ol.layer.Tile({
         source: new ol.source.XYZ({
             url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
             attributions: ['© OpenTopoMap'],

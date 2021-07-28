@@ -380,8 +380,8 @@
                             {"id":"10", "value": ${pos_calendar}},
                             {"id":"11", "value": ${pos_dwd}},
                             {"id":"12", "value": ${diashow_time/1000}},
-                            {"id":"13", "value": ${status_verf}},
-                            {"id":"14", "value": ${status_nverf}},
+                            {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
+                            {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
                             {"id":"15", "value": "${alarm_visible_time}"},
                             {"id":"2"},
 							{"id":"4"},
@@ -479,12 +479,13 @@
 				}	
 
                 if(topic == 'action_13') {
-                    localStorage.setItem("status_verf", !status_verf);
+                    localStorage.setItem("status_verf", !status_verf ? 1 : 0);
+                    console.log(localStorage.getItem('status_verf'))
 					location.reload(); 
 				}	
 
                 if(topic == 'action_14') {
-                    localStorage.setItem("status_nverf", !status_nverf);
+                    localStorage.setItem("status_nverf", !status_nverf ? 1 : 0);
 					location.reload(); 
 				}	
 

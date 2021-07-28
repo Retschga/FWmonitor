@@ -255,12 +255,12 @@
                 try {
                     const response = await fetch_get(url_calendar_delete.replace(':id', id));
                     console.log('delete_entry', response);
-                    goBack();
+                    loaderIn('calendar', true);
                 } catch (error) {
                     console.error('delete_entry', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
                 }  
-                goBack();
+                loaderIn('calendar', true);
             }
 
             // Hilfsfunktionen
