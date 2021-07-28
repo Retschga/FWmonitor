@@ -13,13 +13,19 @@
     ],
     "rules": {
         "no-console": 1,       // Means warning
-        "prettier/prettier": 2, // Means error  
+        "linebreak-style": ["error", "windows"],
         "@typescript-eslint/no-inferrable-types": [
             0,
             {
               "ignoreParameters": true,
               "ignoreProperties": true
             }
-          ]
-    }
+          ],
+        "prettier/prettier": [
+          "error",
+          {
+            "endOfLine": "auto"
+          }
+        ]
+  }
   }

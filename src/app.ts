@@ -31,6 +31,7 @@ import webpushService from './services/webpush';
 import userService from './services/user';
 import printingService from './services/printing';
 import database from './database/connection';
+import alarmInputEmailService from './services/alarmInputEmail';
 
 const NAMESPACE = 'APP';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -184,6 +185,7 @@ async function init() {
 
     // Starte Fax/Email Auswertung
     alarmInputFileService.init();
+    alarmInputEmailService.init();
 
     // Starte Kalender-Terminüberwachung
     calendarService.init();

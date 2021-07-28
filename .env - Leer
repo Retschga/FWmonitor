@@ -101,30 +101,34 @@ ALARMFIELDS_FW_NAME=Feuerwehr Name
 
 ######## EMAIL ALARMEINGANG ########
 
-# Alarmeingang  (true/false)
-ALARM_IN_EMAIL=false
-
 # Betreff-Filter (kann leer bleiben)
-FILTER_EMAIL_BETREFF=
+#FILTER_EMAIL_BETREFF=
 
 # Regex Inhalt-Filter (leer = kein Filter) (Groß/Kleinschreibung egal) https://regexr.com/
-FILTER_EMAIL_INHALT=
+# Zusätzlich zu ALARM_FILE_TEXTFILTER
+#FILTER_EMAIL_INHALT=
+
+# Email-Text auswerten (true/false)
+ALARM_IN_EMAIL_TEXT=true
+
+# Anhänge auswerten (true/false)
+ALARM_IN_EMAIL_ANHANG=false
 
 # Emailadresse
-ALARM_IN_EMAIL_ADRESSE=
+#ALARM_IN_EMAIL_ADRESSE=
 
 # Emailpasswort
-ALARM_IN_EMAIL_PASSWORT=
+#ALARM_IN_EMAIL_PASSWORT=
 
 # Emailhost
 # Bei Gmail muss diese Einstellung getätigt werden: https://www.google.com/settings/security/lesssecureapps
-ALARM_IN_EMAIL_HOST=imap.gmail.com
+#ALARM_IN_EMAIL_HOST=imap.gmail.com
 
 # Email Port
-ALARM_IN_EMAIL_PORT=993
+#ALARM_IN_EMAIL_PORT=993
 
 # TLS Servername (wird anscheinend bei Gmail gebrauch = Emailhost, sonst freilassen)
-ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
+#ALARM_IN_EMAIL_SERVERNAME=imap.gmail.com
 
 
 ######## FAX/Datei ALARM ########

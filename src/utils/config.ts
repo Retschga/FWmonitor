@@ -72,6 +72,23 @@ const FOLDERS = {
     hydranten: './filesHydranten/'
 };
 
+const EMAIL = {
+    alarm_in_active: process.env.ALARM_IN_EMAIL_ADRESSE ? true : false,
+    filter_betreff: process.env.FILTER_EMAIL_BETREFF,
+    filter_inhalt: process.env.FILTER_EMAIL_INHALT,
+    email_address: process.env.ALARM_IN_EMAIL_ADRESSE,
+    email_password: process.env.ALARM_IN_EMAIL_PASSWORT,
+    email_host: process.env.ALARM_IN_EMAIL_HOST,
+    email_port: process.env.ALARM_IN_EMAIL_PORT,
+    email_servername: process.env.ALARM_IN_EMAIL_SERVERNAME,
+    email_use_text: process.env.ALARM_IN_EMAIL_TEXT
+        ? /true/i.test(process.env.ALARM_IN_EMAIL_TEXT)
+        : false,
+    email_use_anhang: process.env.ALARM_IN_EMAIL_ANHANG
+        ? /true/i.test(process.env.ALARM_IN_EMAIL_ANHANG)
+        : false
+};
+
 const FWVV = {
     enabled: process.env.FWVV_DAT_FOLDER ? true : false,
     dat_folder: process.env.FWVV_DAT_FOLDER
@@ -240,6 +257,7 @@ const config = {
     screen: SCREEN,
     paper: PAPER,
     rateLimit: RATE_LIMITS,
+    email: EMAIL,
     timezone: 'de-DE'
 };
 
