@@ -275,7 +275,8 @@ Optionale Einstellungen können durch ein `#` am Zeilenanfang deaktiviert werden
 
 ### Papierüberwachung
 
-    - Ist Druckoption A aktiviert wird versucht über das IPP-Protokoll der Papierstatus auszulesen, dies funktioniert aber nicht bei allen Druckern
+-   Ist Druckoption A aktiviert wird versucht über das IPP-Protokoll der Papierstatus auszulesen,
+    dies funktioniert aber nicht bei allen Druckern
 
 -   `PAPER_PRINTER_PATH: <string> optional`
 

@@ -4,8 +4,8 @@ Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des
 Bildschirm darzustellen. Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort
 auf einer Karte visualisiert wird.
 
-Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber am Anfang der alarmFax.js
-Datei angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
+Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber in den Einstellungen
+angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 
 ## 🔥 Funktionsumfang
 

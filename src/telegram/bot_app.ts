@@ -67,6 +67,12 @@ export default class BotApp {
 
             await timeout(500);
 
+            await this.bot.sendMessage(telegramid, '_' + password + '_', {
+                parse_mode: 'Markdown'
+            });
+
+            await timeout(500);
+
             const keyboard = [];
             if (config.app.enabled) {
                 keyboard.push(
@@ -77,10 +83,18 @@ export default class BotApp {
                 );
             }
 
-            this.bot.sendMessage(telegramid, '_' + password + '_', {
-                parse_mode: 'Markdown',
-                ...Markup.inlineKeyboard(keyboard)
-            });
+            const msgnum = await this.bot.sendMessage(
+                telegramid,
+                '_Automatik-Anmeldelink (60sek)_',
+                {
+                    parse_mode: 'Markdown',
+                    ...Markup.inlineKeyboard(keyboard)
+                }
+            );
+
+            setTimeout(() => {
+                this.bot?.bot.telegram.deleteMessage(telegramid, msgnum);
+            }, 60 * 1000);
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
