@@ -32,6 +32,138 @@
     async function ws_server_connect() {	
         try {
             ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
+       
+            let wsStatusInterval = null;
+            let keepAliveInterval = null;
+
+            const userrights = await fetch_get('/api/v1/user/rights', true);
+            console.log('userrights', userrights);
+
+            car_name = userrights.name;
+            localStorage.setItem('car_name', car_name);
+
+            console.log('Software-connection socket connecting...');
+
+            // Sende Status Datensatz
+            let sendStatus = () => {ws_software.send(
+                `{
+                    "topic": "init",
+                    "type":"AutoClient",
+                    "name":"Auto - ${car_name}",
+                    "info":"Initial",
+                    "actions":[
+                        {"id":"0"},
+                        {"id":"7"},
+                        {"id":"8", "key": "Version", "value": "<%= version %>"},
+                        {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+                        {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
+                ]}`
+            );}   
+            let sendStatusUpdate = () => {ws_software.send(
+                `{
+                    "topic": "update",
+                    "info":"Update",
+                    "actions":[
+                        {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
+                        {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
+                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
+                ]}`
+            );}      
+
+            ws_software.onopen = function() {
+                console.log("Software-connection socket connected!");
+
+                // Sende Status Datensatz
+                sendStatus();
+
+                // Setze Verbindungsstatus auf OK
+                update_server_status(true);
+
+                // Sende alle 30 sek einen Statusdatensatz
+                wsStatusInterval = setInterval( () => {
+                    sendStatusUpdate();
+                }, 30000);
+
+                // Sende KeepAlive Intervall
+                lastKeepAlive = new Date();
+                keepAliveInterval = setInterval(() => {
+                    if((new Date().getTime() - lastKeepAlive.getTime()) > 60000) {		
+                        console.error('Software-connection keep-alive timeout!');
+                        update_server_status(false);				
+                        ws_software.close();
+                    } else {
+                        console.log('Software-connection keep-alive OK!');
+                    }
+                }, 60000)
+            };
+
+            ws_software.onmessage = function(e) {
+                let socket = ws_software;
+                let data = e.data;
+                console.log('Software-connection socket message:', data);
+                
+                data           = JSON.parse(data);
+                const topic    = data.topic;
+                const message  = data.message;
+                
+                // Keep Alive
+                if(topic == 'ping') {
+                    lastKeepAlive = new Date();	
+                    socket.send(JSON.stringify({topic: 'pong', message :message}));			
+                    update_server_status(true);		
+                    loaderOut();
+                }
+
+                // Alarm
+                if(topic == 'alarm') {
+                    // GPS Statistik für Einsatz zurücksetzen
+                    localStorage.setItem('gps.distSum', GPS_dist_sum);
+                    localStorage.setItem('gps.altMax', GPS_alt_max);
+                    localStorage.setItem('gps.altMin', GPS_alt_min);
+
+                    location.reload(); 
+                } 
+                
+                if(topic == 'init') {
+                    // Sende Status Datensatz
+                    sendStatus();
+                }
+
+                if(topic == 'action_0') {
+                    location.reload(); 
+                }
+                
+                if(topic == 'action_7') {
+                    loaderIn(undefined, undefined, 'Neustart');
+                    restart();
+                }
+
+                if(topic == 'action_8') {
+                    loaderIn(undefined, undefined, 'Update');
+                    update();
+                }
+            };
+
+            ws_software.onclose = function(e) {
+                console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
+                update_server_status(false);	
+                clearInterval(wsStatusInterval);
+                clearInterval(keepAliveInterval);
+                setTimeout(function() {
+                    ws_server_connect();
+                }, 15000);
+            };
+
+            ws_software.onerror = function(err) {
+                console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                update_server_status(false);
+                clearInterval(wsStatusInterval);
+                clearInterval(keepAliveInterval);
+                ws_software.close();
+            };
         } catch (error) {
             console.error(error);
             setTimeout(function() {
@@ -39,137 +171,6 @@
             }, 15000);
         }
         
-        let wsStatusInterval = null;
-        let keepAliveInterval = null;
-
-        const userrights = await fetch_get('/api/v1/user/rights', true);
-        console.log('userrights', userrights);
-
-        car_name = userrights.name;
-        localStorage.setItem('car_name', car_name);
-
-        console.log('Software-connection socket connecting...');
-
-        // Sende Status Datensatz
-        let sendStatus = () => {ws_software.send(
-            `{
-                "topic": "init",
-                "type":"AutoClient",
-                "name":"Auto - ${car_name}",
-                "info":"Initial",
-                "actions":[
-                    {"id":"0"},
-                    {"id":"7"},
-                    {"id":"8", "key": "Version", "value": "<%= version %>"},
-                    {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
-                    {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-                    {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
-            ]}`
-        );}   
-        let sendStatusUpdate = () => {ws_software.send(
-            `{
-                "topic": "update",
-                "info":"Update",
-                "actions":[
-                    {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
-                    {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-                    {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                    {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
-            ]}`
-        );}      
-
-        ws_software.onopen = function() {
-            console.log("Software-connection socket connected!");
-
-            // Sende Status Datensatz
-            sendStatus();
-
-            // Setze Verbindungsstatus auf OK
-            update_server_status(true);
-
-            // Sende alle 30 sek einen Statusdatensatz
-            wsStatusInterval = setInterval( () => {
-                sendStatusUpdate();
-            }, 30000);
-
-            // Sende KeepAlive Intervall
-            lastKeepAlive = new Date();
-            keepAliveInterval = setInterval(() => {
-                if((new Date().getTime() - lastKeepAlive.getTime()) > 60000) {		
-                    console.error('Software-connection keep-alive timeout!');
-                    update_server_status(false);				
-                    ws_software.close();
-                } else {
-                    console.log('Software-connection keep-alive OK!');
-                }
-            }, 60000)
-        };
-
-        ws_software.onmessage = function(e) {
-            let socket = ws_software;
-            let data = e.data;
-            console.log('Software-connection socket message:', data);
-			
-            data           = JSON.parse(data);
-            const topic    = data.topic;
-            const message  = data.message;
-            
-            // Keep Alive
-            if(topic == 'ping') {
-                lastKeepAlive = new Date();	
-                socket.send(JSON.stringify({topic: 'pong', message :message}));			
-                update_server_status(true);		
-                loaderOut();
-            }
-
-            // Alarm
-            if(topic == 'alarm') {
-                // GPS Statistik für Einsatz zurücksetzen
-                localStorage.setItem('gps.distSum', GPS_dist_sum);
-                localStorage.setItem('gps.altMax', GPS_alt_max);
-                localStorage.setItem('gps.altMin', GPS_alt_min);
-
-                location.reload(); 
-            } 
-            
-            if(topic == 'init') {
-                // Sende Status Datensatz
-                sendStatus();
-            }
-
-            if(topic == 'action_0') {
-                location.reload(); 
-            }
-            
-            if(topic == 'action_7') {
-                loaderIn(undefined, undefined, 'Neustart');
-                restart();
-            }
-
-            if(topic == 'action_8') {
-                loaderIn(undefined, undefined, 'Update');
-                update();
-            }
-        };
-
-        ws_software.onclose = function(e) {
-            console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
-            update_server_status(false);	
-            clearInterval(wsStatusInterval);
-            clearInterval(keepAliveInterval);
-            setTimeout(function() {
-                ws_server_connect();
-            }, 15000);
-        };
-
-        ws_software.onerror = function(err) {
-            console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
-            update_server_status(false);
-            clearInterval(wsStatusInterval);
-            clearInterval(keepAliveInterval);
-            ws_software.close();
-        };
     }
 
     

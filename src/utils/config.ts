@@ -203,7 +203,7 @@ const ALARMFIELDS = {
     e_PATIENT: process.env.ALARMFIELDS_PATIENT_E || 'EINSATZGRUND', // Filter Ende
     s_EINSATZPLAN: process.env.ALARMFIELDS_EINSATZPLAN_S || 'Einsatzplan:', // Filter Beginn
     e_EINSATZPLAN: process.env.ALARMFIELDS_EINSATZPLAN_E || 'EINSATZHINWEIS', // Filter Ende
-    EMPTY: '-/-',
+    EMPTY: '',
     KOMBIALARM_REGEX: process.env.ALARMFIELDS_KOMBI_FW_NAME,
     REPLACE_NEWLINE: process.env.ALARMFIELDS_REPLACE_NEWLINE
         ? /true/i.test(process.env.ALARMFIELDS_REPLACE_NEWLINE)

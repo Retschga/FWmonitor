@@ -133,8 +133,8 @@ class TelegramBot {
         extra?: ExtraReplyMessage
     ): Promise<number> {
         this.sendtMessages++;
-        //const delay = Math.floor(this.sendtMessages / 30) * 1050;
-        const delay = 1;
+        const delay = Math.floor(this.sendtMessages / 30) * 1150;
+        //const delay = 1;
         setTimeout(() => {
             this.sendtMessages--;
         }, 1000 + delay);

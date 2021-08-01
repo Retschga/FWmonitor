@@ -5,12 +5,14 @@ import { Context, Markup } from 'telegraf';
 import TelegramBot from './bot';
 import GroupService from '../services/group';
 import userService from '../services/user';
+import { UserRow } from '../models/user';
 import { instance as DeviceServiceInstance } from '../services/device';
 import { AlarmRow } from '../models/alarm';
 import { getFormattedAlarmTime, timeout, fileExists } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import config from '../utils/config';
+import { GroupRow } from '../models/group';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -27,8 +29,6 @@ export default class BotAlarm {
     }
 
     private async alarm_send(alarm: AlarmRow) {
-        const msg_ids_1 = [];
-        const msg_ids_2: any[][] = [];
         try {
             if (!this.bot) throw new Error('Not initialized');
             if (!config.alarm.telegram) {
@@ -40,11 +40,6 @@ export default class BotAlarm {
             }
 
             logging.debug(NAMESPACE, 'Sende Alarm');
-
-            const keyboard = Markup.inlineKeyboard([
-                Markup.button.callback('👍 JA!', 'KommenJa:' + alarm.id),
-                Markup.button.callback('👎 NEIN!', 'KommenNein:' + alarm.id)
-            ]);
 
             const pdfPath =
                 config.folders.archive + '/' + getFormattedAlarmTime(new Date(alarm.date)) + '.pdf';
@@ -67,208 +62,204 @@ export default class BotAlarm {
             if (alarm.mitteiler == '' || alarm.mitteiler == '-/-') alarm.mitteiler = 'DONOTSEND';
 
             for (let i = 0; i < users.length; i++) {
-                try {
-                    const user = users[i];
+                this.send_alarm_user(users[i], alarm, groups, pdfPath);
+            }
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+    }
 
-                    // Gruppenpattern
-                    let text = groups.find((e) => e.id == user.group)?.pattern;
-                    if (!text) return;
+    private async send_alarm_user(
+        user: UserRow,
+        alarm: AlarmRow,
+        groups: GroupRow[],
+        pdfPath: string
+    ) {
+        try {
+            // Gruppenpattern
+            let text = groups.find((e) => e.id == user.group)?.pattern;
+            if (!text) return;
 
-                    text = text.replace(/{{EINSATZSTICHWORT}}/g, alarm.einsatzstichwort);
-                    text = text.replace(/{{SCHLAGWORT}}/g, alarm.schlagwort);
-                    text = text.replace(/{{OBJEKT}}/g, alarm.objekt);
-                    text = text.replace(/{{STRASSE}}/g, alarm.strasse);
-                    text = text.replace(/{{ORTSTEIL}}/g, alarm.ortsteil);
-                    text = text.replace(/{{ORT}}/g, alarm.ort);
-                    text = text.replace(/{{BEMERKUNG}}/g, alarm.bemerkung);
+            if (!this.bot) return;
 
-                    const cars1 = /{{EINSATZMITTEL_EIGEN}}/.test(text);
-                    const cars2 = /{{EINSATZMITTEL_ANDERE}}/.test(text);
+            logging.debug(NAMESPACE, 'Sending Alarm to ' + user.telegramid + '...');
+            const keyboard = Markup.inlineKeyboard([
+                Markup.button.callback('👍 JA!', 'KommenJa:' + alarm.id),
+                Markup.button.callback('👎 NEIN!', 'KommenNein:' + alarm.id)
+            ]);
 
-                    if (
-                        (cars1 && cars2 && alarm.cars1.length == 0 && alarm.cars2.length == 0) ||
-                        (cars1 && !cars2 && alarm.cars1.length == 0) ||
-                        (!cars1 && cars2 && alarm.cars2.length == 0)
-                    ) {
-                        text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, 'DONOTSEND');
-                        text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, 'DONOTSEND');
-                    } else {
-                        text = text.replace(
-                            /{{EINSATZMITTEL_EIGEN}}/g,
-                            alarm.cars1.replace(/\|/g, '\n')
-                        );
-                        text = text.replace(
-                            /{{EINSATZMITTEL_ANDERE}}/g,
-                            alarm.cars2.replace(/\|/g, '\n')
-                        );
-                    }
-                    text = text.replace(/{{KREUZUNG}}/g, alarm.kreuzung);
-                    text = text.replace(/{{HINWEIS}}/g, alarm.hinweis);
-                    text = text.replace(/{{PRIO}}/g, alarm.prio);
-                    text = text.replace(/{{TETRA}}/g, alarm.tetra);
-                    text = text.replace(/{{MITTEILER}}/g, alarm.mitteiler);
-                    text = text.replace(/{{RUFNUMMER}}/g, alarm.rufnummer);
-                    text = text.replace(/{{PATIENT}}/g, alarm.patient);
-                    text = text.replace(/{{EINSATZPLAN}}/g, alarm.einsatzplan);
+            text = text.replace(/{{EINSATZSTICHWORT}}/g, alarm.einsatzstichwort);
+            text = text.replace(/{{SCHLAGWORT}}/g, alarm.schlagwort);
+            text = text.replace(/{{OBJEKT}}/g, alarm.objekt);
+            text = text.replace(/{{STRASSE}}/g, alarm.strasse);
+            text = text.replace(/{{ORTSTEIL}}/g, alarm.ortsteil);
+            text = text.replace(/{{ORT}}/g, alarm.ort);
+            text = text.replace(/{{BEMERKUNG}}/g, alarm.bemerkung);
 
-                    const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
-                    text = text.replace(/{{FAX}}/g, '');
+            const cars1 = /{{EINSATZMITTEL_EIGEN}}/.test(text);
+            const cars2 = /{{EINSATZMITTEL_ANDERE}}/.test(text);
 
-                    const sendMap = text.indexOf('{{KARTE}}') != -1 ? true : false;
-                    text = text.replace(/{{KARTE}}/g, '');
+            if (
+                (cars1 && cars2 && alarm.cars1.length == 0 && alarm.cars2.length == 0) ||
+                (cars1 && !cars2 && alarm.cars1.length == 0) ||
+                (!cars1 && cars2 && alarm.cars2.length == 0)
+            ) {
+                text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, 'DONOTSEND');
+                text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, 'DONOTSEND');
+            } else {
+                text = text.replace(/{{EINSATZMITTEL_EIGEN}}/g, alarm.cars1.replace(/\|/g, '\n'));
+                text = text.replace(/{{EINSATZMITTEL_ANDERE}}/g, alarm.cars2.replace(/\|/g, '\n'));
+            }
+            text = text.replace(/{{KREUZUNG}}/g, alarm.kreuzung);
+            text = text.replace(/{{HINWEIS}}/g, alarm.hinweis);
+            text = text.replace(/{{PRIO}}/g, alarm.prio);
+            text = text.replace(/{{TETRA}}/g, alarm.tetra);
+            text = text.replace(/{{MITTEILER}}/g, alarm.mitteiler);
+            text = text.replace(/{{RUFNUMMER}}/g, alarm.rufnummer);
+            text = text.replace(/{{PATIENT}}/g, alarm.patient);
+            text = text.replace(/{{EINSATZPLAN}}/g, alarm.einsatzplan);
 
-                    const sendMapEmg = text.indexOf('{{KARTE_EMG}}') != -1 ? true : false;
-                    text = text.replace(/{{KARTE_EMG}}/g, '');
+            const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
+            text = text.replace(/{{FAX}}/g, '');
 
-                    const lines = text.split('{{newline}}');
+            const sendMap = text.indexOf('{{KARTE}}') != -1 ? true : false;
+            text = text.replace(/{{KARTE}}/g, '');
 
-                    // Alarmmeldung
-                    let alarmMessage = '*⚠️ ⚠️ ⚠️    Alarm   ⚠️ ⚠️ ⚠️*';
+            const sendMapEmg = text.indexOf('{{KARTE_EMG}}') != -1 ? true : false;
+            text = text.replace(/{{KARTE_EMG}}/g, '');
 
-                    // Informationsmeldung
-                    const tmp = alarm.einsatzstichwort.toLowerCase();
-                    if (
-                        tmp == 'inf verkehrssicherung' ||
-                        tmp == '1nf verkehrssicherung' ||
-                        tmp == 'sonstiges verkehrssicherung' ||
-                        tmp == 'inf sicherheitswache' ||
-                        tmp == '1nf sicherheitswache'
-                    )
-                        alarmMessage = '* 🚧   Kein Einsatz   🚧*\n*Verkehrssicherung*';
+            const lines = text.split('{{newline}}');
 
-                    // Beginn Telegramnachricht
-                    this.bot.sendMessage(user.telegramid, '❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗');
+            // Alarmmeldung
+            let alarmMessage = '*⚠️ ⚠️ ⚠️    Alarm   ⚠️ ⚠️ ⚠️*';
 
-                    await timeout(8000);
+            // Informationsmeldung
+            const tmp = alarm.einsatzstichwort.toLowerCase();
+            if (
+                tmp == 'inf verkehrssicherung' ||
+                tmp == '1nf verkehrssicherung' ||
+                tmp == 'sonstiges verkehrssicherung' ||
+                tmp == 'inf sicherheitswache' ||
+                tmp == '1nf sicherheitswache'
+            )
+                alarmMessage = '* 🚧   Kein Einsatz   🚧*\n*Verkehrssicherung*';
 
-                    // Kombialarm
-                    if (config.alarmfields.KOMBIALARM_REGEX) {
-                        const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
-                        if (alarm.cars1 == '' && kombi_regex.test(alarm.cars2)) {
-                            const kombi_name = alarm.cars2.match(kombi_regex);
-                            this.bot.sendMessage(
-                                user.telegramid,
-                                '❗  KOMBIALARM mit ' + kombi_name + '  ❗'
-                            );
-                            await timeout(200);
-                        }
-                    }
+            // Beginn Telegramnachricht
+            this.bot.sendMessage(user.telegramid, '❗  🔻  🔻  🔻  🔻  🔻  🔻  🔻  🔻  ❗');
 
-                    this.bot.sendMessage(user.telegramid, alarmMessage, {
-                        parse_mode: 'Markdown'
-                    });
+            await timeout(8000);
 
-                    // Fax PDF
-                    if (sendFax) {
-                        await timeout(500);
+            // Kombialarm
+            if (config.alarmfields.KOMBIALARM_REGEX) {
+                const kombi_regex = new RegExp(config.alarmfields.KOMBIALARM_REGEX);
+                if (alarm.cars1 == '' && kombi_regex.test(alarm.cars2)) {
+                    const kombi_name = alarm.cars2.match(kombi_regex);
+                    this.bot.sendMessage(
+                        user.telegramid,
+                        '❗  KOMBIALARM mit ' + kombi_name + '  ❗'
+                    );
+                    await timeout(200);
+                }
+            }
 
-                        if (await fileExists(pdfPath)) {
-                            const faxPDF = fs.readFileSync(pdfPath);
-                            await this.bot.bot.telegram
-                                .sendDocument(user.telegramid, {
-                                    source: faxPDF,
-                                    filename: pdfPath.split(/[/\\]/g).pop()
-                                })
-                                .catch((err) => {
-                                    logging.exception(NAMESPACE, err);
-                                });
-                        }
-                    }
+            this.bot.sendMessage(user.telegramid, alarmMessage, {
+                parse_mode: 'Markdown'
+            });
 
-                    // Pattern
-                    for (let i = 0; i < lines.length; i++) {
-                        const str = lines[i].trim();
+            // Fax PDF
+            if (sendFax) {
+                await timeout(500);
 
-                        if (/DONOTSEND/.test(str)) continue;
-
-                        await timeout(4000);
-
-                        const msg_id = await this.bot.sendMessage(user.telegramid, str, {
-                            parse_mode: 'Markdown'
+                if (await fileExists(pdfPath)) {
+                    const faxPDF = fs.readFileSync(pdfPath);
+                    await this.bot.bot.telegram
+                        .sendDocument(user.telegramid, {
+                            source: faxPDF,
+                            filename: pdfPath.split(/[/\\]/g).pop()
+                        })
+                        .catch((err) => {
+                            logging.exception(NAMESPACE, err);
                         });
-                        msg_ids_1.push([user.telegramid, msg_id]);
-                    }
+                }
+            }
 
-                    // Karte
-                    if (sendMap) {
-                        await timeout(4000);
+            // Pattern
+            for (let i = 0; i < lines.length; i++) {
+                const str = lines[i].trim();
 
-                        if (
-                            alarm.lat != undefined &&
-                            alarm.lng != undefined &&
-                            alarm.strasse != ''
-                        ) {
-                            try {
-                                const msg_id = (
-                                    await this.bot.bot.telegram.sendLocation(
-                                        user.telegramid,
-                                        Number(alarm.lat),
-                                        Number(alarm.lng)
-                                    )
-                                ).message_id;
-                                msg_ids_1.push([user.telegramid, msg_id]);
-                            } catch (error) {
-                                logging.exception(NAMESPACE, error);
-                            }
-                        } else {
-                            try {
-                                const msg_id = (
-                                    await this.bot.bot.telegram.sendPhoto(user.telegramid, {
-                                        source: 'public/images/noMap.png'
-                                    })
-                                ).message_id;
-                                msg_ids_1.push([user.telegramid, msg_id]);
-                            } catch (error) {
-                                logging.exception(NAMESPACE, error);
-                            }
-                        }
-                    }
-                    if (
-                        sendMapEmg &&
-                        alarm.lat != undefined &&
-                        alarm.lng != undefined &&
-                        alarm.strasse != ''
-                    ) {
-                        await timeout(500);
+                if (/DONOTSEND/.test(str)) continue;
 
-                        try {
-                            const msg_id = await this.bot.sendMessage(
+                await timeout(4000);
+
+                const msg_id = await this.bot.sendMessage(user.telegramid, str, {
+                    parse_mode: 'Markdown'
+                });
+            }
+
+            // Karte
+            if (sendMap) {
+                await timeout(4000);
+
+                if (alarm.lat != undefined && alarm.lng != undefined && alarm.strasse != '') {
+                    try {
+                        const msg_id = (
+                            await this.bot.bot.telegram.sendLocation(
                                 user.telegramid,
-                                `*Hydrantenkarten:*							
-[- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${alarm.lat}&lon=${alarm.lng}&layers=B0000T)`,
-                                {
-                                    parse_mode: 'Markdown'
-                                }
-                            );
-                            msg_ids_1.push([user.telegramid, msg_id]);
-                        } catch (error) {
-                            logging.exception(NAMESPACE, error);
-                        }
+                                Number(alarm.lat),
+                                Number(alarm.lng)
+                            )
+                        ).message_id;
+                    } catch (error) {
+                        logging.exception(NAMESPACE, error);
                     }
+                } else {
+                    try {
+                        const msg_id = (
+                            await this.bot.bot.telegram.sendPhoto(user.telegramid, {
+                                source: 'public/images/noMap.png'
+                            })
+                        ).message_id;
+                    } catch (error) {
+                        logging.exception(NAMESPACE, error);
+                    }
+                }
+            }
+            if (
+                sendMapEmg &&
+                alarm.lat != undefined &&
+                alarm.lng != undefined &&
+                alarm.strasse != ''
+            ) {
+                await timeout(500);
 
-                    //Alarmmeldung
-                    await timeout(4000);
-                    const msg_id = await this.bot.sendMessage(user.telegramid, alarmMessage, {
-                        parse_mode: 'Markdown',
-                        ...keyboard
-                    });
-                    msg_ids_2.push([user.telegramid, msg_id]);
+                try {
+                    const msg_id = await this.bot.sendMessage(
+                        user.telegramid,
+                        `*Hydrantenkarten:*							
+[- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${alarm.lat}&lon=${alarm.lng}&layers=B0000T)`,
+                        {
+                            parse_mode: 'Markdown'
+                        }
+                    );
                 } catch (error) {
-                    logging.error(NAMESPACE, 'Error at user ID ' + users[i]);
                     logging.exception(NAMESPACE, error);
                 }
             }
 
+            //Alarmmeldung
+            await timeout(4000);
+            const msg_id = await this.bot.sendMessage(user.telegramid, alarmMessage, {
+                parse_mode: 'Markdown',
+                ...keyboard
+            });
+            logging.debug(NAMESPACE, 'Sending Alarm to ' + user.telegramid + ' DONE');
+
             // Komme Buttons nach 3h löschen
             setTimeout(() => {
-                for (let i = 0; i < msg_ids_2.length; i++) {
-                    this.bot?.bot.telegram.deleteMessage(
-                        String(msg_ids_2[i][0]),
-                        Number(msg_ids_2[i][1])
-                    );
-                }
+                this.bot?.bot.telegram.deleteMessage(user.telegramid, msg_id);
             }, 3 * 60 * 60 * 1000);
         } catch (error) {
+            logging.error(NAMESPACE, 'Error at user ID ' + user);
             logging.exception(NAMESPACE, error);
         }
     }

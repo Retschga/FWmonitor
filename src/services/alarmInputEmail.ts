@@ -164,6 +164,14 @@ class AlarmInputEmailService {
     }
 
     public async init() {
+        if (
+            config.email.email_address == '' ||
+            config.email.email_address == undefined ||
+            config.email.email_password == '' ||
+            config.email.email_password == undefined
+        )
+            return;
+
         //this.imap.once('ready', execute);
         this.imap.on('ready', async () => {
             try {

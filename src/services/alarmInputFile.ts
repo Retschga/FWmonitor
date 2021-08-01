@@ -25,7 +25,9 @@ class AlarmInputFileService {
     }
 
     private async tiffToTxt(file: string, targetPath: string) {
-        await execShellCommand(`"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu`);
+        await execShellCommand(
+            `"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu --psm 6`
+        );
         logging.info(NAMESPACE, 'TIFF -> TXT    FERTIG\n');
     }
 
@@ -150,8 +152,8 @@ class AlarmInputFileService {
             interval: 3000,
             binaryInterval: 3000,
             awaitWriteFinish: {
-                stabilityThreshold: 2000,
-                pollInterval: 100
+                stabilityThreshold: 15000,
+                pollInterval: 1000
             }
         });
 

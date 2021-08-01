@@ -121,7 +121,9 @@ ALARM_IN_EMAIL_ANHANG=false
 #ALARM_IN_EMAIL_PASSWORT=
 
 # Emailhost
-# Bei Gmail muss diese Einstellung getätigt werden: https://www.google.com/settings/security/lesssecureapps
+# Bei Gmail muss diese Einstellung getätigt werden:
+# IMAP aktivieren: https://support.google.com/mail/answer/7126229?hl=de
+# Less Secure Apps aktivieren: https://www.google.com/settings/security/lesssecureapps
 #ALARM_IN_EMAIL_HOST=imap.gmail.com
 
 # Email Port
