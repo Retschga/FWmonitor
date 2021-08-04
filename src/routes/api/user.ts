@@ -95,12 +95,12 @@ router.post(
     ValidatorsUser.updateUser,
     awaitHandlerFactory(userController.update_user_id.bind(userController))
 );
-router.get(
+router.post(
     '/approve/:id',
     auth_api(UserRights.admin),
     awaitHandlerFactory(userController.approve_id.bind(userController))
 );
-router.get(
+router.post(
     '/delete/:id',
     auth_api(UserRights.admin),
     awaitHandlerFactory(userController.delete_id.bind(userController))

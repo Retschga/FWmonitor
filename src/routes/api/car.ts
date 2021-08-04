@@ -45,7 +45,7 @@ router.post(
 );
 
 // Auto löschen
-router.get(
+router.post(
     '/delete/:id',
     auth_api(UserRights.admin),
     awaitHandlerFactory(CarController.delete.bind(CarController))

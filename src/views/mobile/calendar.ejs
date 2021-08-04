@@ -144,7 +144,7 @@
                 loaderIn();
                 try {                 
 
-                    const response = await fetch_get('/api/v1/calendar/new');
+                    const response = await fetch_post('/api/v1/calendar/new', {});
                     console.log('create_entry', response);   
                     location.reload();
                     

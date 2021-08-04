@@ -13,7 +13,7 @@
     ],
     "rules": {
         "no-console": 1,       // Means warning
-        "linebreak-style": ["error", "windows"],
+        "linebreak-style": ["error", "unix"],
         "@typescript-eslint/no-inferrable-types": [
             0,
             {

@@ -21,14 +21,14 @@ router.get(
 router.get('/all', awaitHandlerFactory(CalendarController.get_list_all.bind(CalendarController)));
 
 // Neuer Termin
-router.get(
+router.post(
     '/new',
     auth_api(UserRights.admin, UserRights.calendar_min, UserRights.calendar_full),
     awaitHandlerFactory(CalendarController.create.bind(CalendarController))
 );
 
 // Termin löschen
-router.get(
+router.post(
     '/delete/:id',
     auth_api(UserRights.admin, UserRights.calendar_min, UserRights.calendar_full),
     awaitHandlerFactory(CalendarController.delete.bind(CalendarController))

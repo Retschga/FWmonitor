@@ -253,7 +253,7 @@
             async function delete_entry() {
                 loaderIn();    
                 try {
-                    const response = await fetch_get(url_calendar_delete.replace(':id', id));
+                    const response = await fetch_post(url_calendar_delete.replace(':id', id), {});
                     console.log('delete_entry', response);
                     loaderIn('calendar', true);
                 } catch (error) {

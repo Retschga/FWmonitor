@@ -172,7 +172,7 @@
             async function delete_car_id(id) {
                 loaderIn();
                 try {
-                    const response = await fetch_get(url_cars_delete.replace(':id', id));
+                    const response = await fetch_post(url_cars_delete.replace(':id', id), {});
                     console.log('delete_car_id', response);   
                 } catch (error) {
                     console.error('delete_car_id', error);

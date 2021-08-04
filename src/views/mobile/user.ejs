@@ -377,7 +377,7 @@
             async function delete_user() {
                 loaderIn();    
                 try {
-                    const response = await fetch_get(url_user_delete.replace(':id', id));
+                    const response = await fetch_post(url_user_delete.replace(':id', id), {});
                     console.log('delete_user', response);
                 } catch (error) {
                     console.error('delete_user', error);
@@ -389,7 +389,7 @@
             async function approve_user() {
                 loaderIn();  
                 try {
-                    const response = await fetch_get(url_user_approve.replace(':id', id));
+                    const response = await fetch_post(url_user_approve.replace(':id', id), {});
                     console.log('approve_user', response);
                 } catch (error) {
                     console.error('approve_user', error);
