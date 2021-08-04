@@ -118,6 +118,12 @@
 
             <%- include('partials/foot') -%>
 
+            <!--[if IE]>
+                <script>
+                    alert("Internet Explorer wird nicht unterstützt! Verwenden Sie einen anderen Browser!")
+                </script>
+            <![endif]-->
+
             <script>
     
                 function login(useToken = false) {

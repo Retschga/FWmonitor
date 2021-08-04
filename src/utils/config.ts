@@ -18,14 +18,16 @@ const SQLITE = {
 
 const SERVER_HTTP = {
     hostname: process.env.SERVER_LAN_HOSTNAME || '127.0.0.1',
-    port: process.env.SERVER_LAN_PORT || 8080
+    port: process.env.SERVER_LAN_PORT || 8080,
+    cors: process.env.CORS
 };
 
 const SERVER_HTTPS = {
     hostname: process.env.SERVER_SSL_HOSTNAME || '127.0.0.1',
     port: process.env.SERVER_SSL_PORT || 443,
     key: process.env.SSL_KEY,
-    cert: process.env.SSL_CERT
+    cert: process.env.SSL_CERT,
+    cors: process.env.CORS
 };
 
 const APP = {

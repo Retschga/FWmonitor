@@ -1,6 +1,7 @@
 'use strict';
 
 import express from 'express';
+import cors from 'cors';
 import { Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import createMemoryStore from 'memorystore';
@@ -44,6 +45,11 @@ function init__http(sessionOptions: SessionOptions) {
     appHttp.set('view engine', 'ejs');
     appHttp.use(cookieParser());
     appHttp.use(session(sessionOptions));
+    appHttp.use(
+        cors({
+            origin: config.server_http.cors || false
+        })
+    );
     const routerApi_open = new RouterApi(false).router;
     appHttp.use('/api/v1', routerApi_open);
     appHttp.use('/screen', routerScreen);
@@ -73,12 +79,18 @@ function init_https(sessionOptions: SessionOptions) {
     appHttps.set('view engine', 'ejs');
     appHttps.use(cookieParser());
     appHttps.use(compression());
+    appHttps.use(session(sessionOptions));
     appHttps.use(
         helmet({
-            contentSecurityPolicy: false
+            contentSecurityPolicy: false // TODO
         })
     );
-    appHttps.use(session(sessionOptions));
+    appHttps.use(
+        cors({
+            origin: config.server_https.cors || false
+        })
+    );
+
     const routerApi_secure = new RouterApi(true).router;
     appHttps.use('/api/v1', routerApi_secure);
     appHttps.use('/app', routermobile);
