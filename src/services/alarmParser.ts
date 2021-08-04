@@ -16,24 +16,24 @@ const NAMESPACE = 'AlarmParser_Service';
 class AlarmFields {
     // ---------------- Fax Suchworte (RegEx) ----------------
     // Filtert Teil aus dem Fax zwischen Filter Beginn und Filter Ende (\n ist neue Zeile)
-    public EINSATZSTICHWORT = '-/-';
-    public SCHLAGWORT = '-/-';
-    public OBJEKT = '-/-';
-    public BEMERKUNG = '-/-';
-    public STRASSE = '-/-';
-    public ORTSTEIL = '-/-';
-    public ORT = '-/-';
+    public EINSATZSTICHWORT = '';
+    public SCHLAGWORT = '';
+    public OBJEKT = '';
+    public BEMERKUNG = '';
+    public STRASSE = '';
+    public ORTSTEIL = '';
+    public ORT = '';
     public EINSATZMITTEL = '';
     public cars1: string[] = []; // Variable Fahrzeuge eigen
     public cars2: string[] = []; // Variable Fahrzeuge andere
-    public kreuzung = '-/-';
-    public hinweis = '-/-';
-    public prio = '-/-';
-    public tetra = '-/-';
-    public mitteiler = '-/-';
-    public rufnummer = '-/-';
-    public patient = '-/-';
-    public einsatzplan = '-/-';
+    public kreuzung = '';
+    public hinweis = '';
+    public prio = '';
+    public tetra = '';
+    public mitteiler = '';
+    public rufnummer = '';
+    public patient = '';
+    public einsatzplan = '';
 
     private removeTrailingAndLeading(str: string) {
         str = str.replace(/2{6,}/g, '');
@@ -65,24 +65,24 @@ class AlarmFields {
      */
     public parseData(data: string) {
         // Variablen leeren
-        this.EINSATZSTICHWORT = '-/-';
-        this.SCHLAGWORT = '-/-';
-        this.OBJEKT = '-/-';
-        this.BEMERKUNG = '-/-';
-        this.STRASSE = '-/-';
-        this.ORTSTEIL = '-/-';
-        this.ORT = '-/-';
-        this.EINSATZMITTEL = '-/-';
+        this.EINSATZSTICHWORT = '';
+        this.SCHLAGWORT = '';
+        this.OBJEKT = '';
+        this.BEMERKUNG = '';
+        this.STRASSE = '';
+        this.ORTSTEIL = '';
+        this.ORT = '';
+        this.EINSATZMITTEL = '';
         this.cars1 = [];
         this.cars2 = [];
-        this.kreuzung = '-/-';
-        this.hinweis = '-/-';
-        this.prio = '-/-';
-        this.tetra = '-/-';
-        this.mitteiler = '-/-';
-        this.rufnummer = '-/-';
-        this.patient = '-/-';
-        this.einsatzplan = '-/-';
+        this.kreuzung = '';
+        this.hinweis = '';
+        this.prio = '';
+        this.tetra = '';
+        this.mitteiler = '';
+        this.rufnummer = '';
+        this.patient = '';
+        this.einsatzplan = '';
 
         this.EINSATZSTICHWORT =
             this.searchElement(
@@ -239,20 +239,38 @@ class AlarmFields {
 
 class AlarmParserService {
     private replaceErrors(data: string) {
-        data = data.replace(/[—_*`]/g, '-');
+        if (config.alarm_replace.disable_predefReplacements == true) return data;
 
+        data = data.replace(/[—_*`]/g, '-');
         data = data.replace(/2222+/g, '--------');
         data = data.replace(/---([-\s.](?!\n))+/g, '--------');
-        data = data.replace(/Kinsatz/g, 'Einsatz');
 
+        // Stichworte B ...
         data = data.replace(/BI/g, 'B1');
         data = data.replace(/Bl/g, 'B1');
-        data = data.replace(/B\?1/g, 'B1');
-        data = data.replace(/B\?2/g, 'B1');
-        data = data.replace(/1NF/g, 'INF');
-        data = data.replace(/TH1/g, 'THL');
-        data = data.replace(/\({RD/g, '(RD');
+        data = data.replace(/B.(?=[1-8])/g, 'B ');
+        data = data.replace(/B.(?=BMA)/g, 'B ');
+        data = data.replace(/B.(?=ELEKTROANLAGE)/g, 'B ');
+        data = data.replace(/B.(?=WALD)/g, 'B ');
+        data = data.replace(/B.(?=ZUG)/g, 'B ');
 
+        // Stichworte INF
+        data = data.replace(/1NF/g, 'INF');
+
+        // Stichworte THL
+        data = data.replace(/TH1/g, 'THL');
+        data = data.replace(/THL.(?=[1-5])/g, 'THL ');
+        data = data.replace(/THL.(?=P\s)/g, 'THL ');
+
+        // Stichworte RD
+        data = data.replace(/\({RD/g, '(RD');
+        data = data.replace(/RD.(?=[1-9])/g, 'RD ');
+
+        // Klammern ( ... ) zu (...)
+        data = data.replace(/\(\s/g, '(');
+        data = data.replace(/\s\)/g, ')');
+
+        data = data.replace(/Kinsatz/g, 'Einsatz');
         data = data.replace(/5tra/g, 'Stra');
         data = data.replace(/ßrand/g, 'Brand');
         data = data.replace(/1dean/g, 'ldean');
@@ -267,6 +285,9 @@ class AlarmParserService {
         data = data.replace(/BEinsatzplan/g, 'Einsatzplan');
         data = data.replace(/kEinsatzplan/g, 'Einsatzplan');
         data = data.replace(/Binsatz/g, 'Einsatz');
+        data = data.replace(/fBergwald/g, 'Bergwald');
+        data = data.replace(/IndustriefSägewert/g, 'Industrie / Sägewerk');
+        data = data.replace(/7immer/g, 'Zimmer');
 
         if (
             config.alarm_replace.regex &&

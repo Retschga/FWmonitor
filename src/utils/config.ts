@@ -214,7 +214,10 @@ const ALARMFIELDS = {
 
 const ALARM_REPLACE = {
     regex: process.env.ALARM_REPLACE_REGEX ? process.env.ALARM_REPLACE_REGEX.split('|') : [],
-    text: process.env.ALARM_REPLACE_TEXT ? process.env.ALARM_REPLACE_TEXT.split('|') : []
+    text: process.env.ALARM_REPLACE_TEXT ? process.env.ALARM_REPLACE_TEXT.split('|') : [],
+    disable_predefReplacements: process.env.ALARMFIELDS_DISABLE_PREDEFINED_REPLACEMENTS
+        ? /true/i.test(process.env.ALARMFIELDS_DISABLE_PREDEFINED_REPLACEMENTS)
+        : false
 };
 
 const RATE_LIMITS = {
