@@ -4,7 +4,7 @@ import { Context, Markup } from 'telegraf';
 import TelegramBot from './bot';
 import userService from '../services/user';
 import { CalendarElement, calendarService } from '../services/calendar';
-import { addLeadingZero } from '../utils/common';
+import { addLeadingZero, getFormattedDateTime } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import config from '../utils/config';
@@ -174,10 +174,11 @@ export default class BotCalendar {
                 }
 
                 if (send) {
-                    const time = new Date(String(termin.start)).toLocaleTimeString(config.timezone);
                     this.bot.sendMessage(
                         user.telegramid,
-                        `<b>Terminerinnerung:</b>\n<i>${time} - ${termin.summary}</i>`,
+                        `<b>Terminerinnerung:</b>\n<i>${getFormattedDateTime(termin.start)} - ${
+                            termin.summary
+                        }</i>`,
                         {
                             parse_mode: 'HTML'
                         }

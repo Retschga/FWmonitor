@@ -242,3 +242,23 @@ export function getFormattedAlarmTime(date?: Date): string {
 
     return y + '-' + m + '-' + d + ' ' + h + '-' + mi + '-' + s;
 }
+
+/**
+ * Gibt eine Datumsstring Formatiert zurück
+ * @param date
+ * @returns {string}
+ */
+export function getFormattedDateTime(date?: Date): string {
+    let today = new Date();
+    if (date) today = new Date(date);
+
+    const y = today.getFullYear();
+
+    const m = ('0' + (today.getMonth() + 1)).slice(-2);
+    const d = ('0' + today.getDate()).slice(-2);
+    const h = ('0' + today.getHours()).slice(-2);
+    const mi = ('0' + today.getMinutes()).slice(-2);
+    //const s = ('0' + today.getSeconds()).slice(-2);
+
+    return d + '.' + m + '.' + y + ' ' + h + ':' + mi;
+}
