@@ -20,15 +20,15 @@ class GeocodeService {
     private async geocode_bing(alarmFields: AlarmFields): Promise<{ lat: string; lng: string }> {
         if (!config.geocode.bing_apikey) throw new Error('kein GeoBing API Key angegeben');
 
-        const geobingUrl = `dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`;
+        const geobingUrl = `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = await axios.get(geobingUrl).catch((err) => {
             logging.exception(NAMESPACE, err);
         });
 
-        const coordinates = response.resourceSets[0]?.resources[0]?.geocodePoints[0]?.coordinates;
-
+        const coordinates =
+            response.data.resourceSets?.[0]?.resources?.[0]?.geocodePoints?.[0]?.coordinates;
         return { lat: coordinates.lat, lng: coordinates.lng };
     }
 
