@@ -95,7 +95,21 @@ class StartupCheck {
 
     public async checkCert() {
         if (!config.server_https.key || !config.server_https.cert) {
-            logging.error(NAMESPACE, 'Es wurde kei TLS Zertifikat angegeben! -> Programmende');
+            logging.error(NAMESPACE, 'Es wurde kein TLS Zertifikat angegeben! -> Programmende');
+            process.exit(1);
+        }
+    }
+
+    // https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+    private validateEmail(email: string) {
+        const re =
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    public async checkAdminMail() {
+        if (!config.app.vapid_mail || !this.validateEmail(config.app.vapid_mail)) {
+            logging.error(NAMESPACE, 'Es wurde keine Admin Email angegeben! -> Programmende');
             process.exit(1);
         }
     }

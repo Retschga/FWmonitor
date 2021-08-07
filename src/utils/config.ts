@@ -163,7 +163,9 @@ const GEOCODE = {
 
     bahn: true,
 
-    ors_key: process.env.ORS_KEY
+    ors_key: process.env.ORS_KEY,
+
+    iso_country: process.env.ISO_COUNTRY || 'DE'
 };
 
 const ALARMFIELDS = {

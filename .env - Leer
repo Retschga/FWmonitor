@@ -259,8 +259,6 @@ PRINT_ALARM_PAGES=0
 # Optional
 #VAPID_PUBLIC=
 #VAPID_PRIVATE=
-# Admin Email
-#VAPID_EMAIL=
 
 # DynDns Adresse / MyFritz Adresse (Bsp. www.app.feuerwehr.de, einsatzpc.erbivuervhie.myfritz.net, ...)
 # Optional
@@ -273,6 +271,9 @@ PRINT_ALARM_PAGES=0
 # (siehe https://www.selfsignedcertificate.com/ ; Einfach 'localhost' oder die IP des PCs eintragen) 
 #SSL_KEY=zertifikat-key.key
 #SSL_CERT=zertifikat-cert.crt
+
+# Admin Email
+VAPID_EMAIL=
 
 
 ######## UPDATE ########

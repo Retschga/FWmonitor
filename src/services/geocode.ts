@@ -1,34 +1,35 @@
 'use strict';
 
 import axios from 'axios';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
-import geobing from 'geobing';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
-import Nominatim from 'nominatim-geocoder';
+import nominatim from 'nominatim-client';
 import csv from 'csv-parser';
 import fs from 'fs';
 import diffmatch from '../utils/diff_match_patch.utils';
 import logging from '../utils/logging';
 import config from '../utils/config';
+import { AlarmFields } from './alarmParser';
 
 const NAMESPACE = 'Geocode_Service';
-const nominatim = new Nominatim();
+const nominatimClient = nominatim.createClient({
+    useragent: 'FWmonitor', // The name of your application
+    referer: 'https://github.com/Retschga/FWmonitor', // The referer link
+    email: config.app.vapid_mail || '' // The valid email
+});
 
 class GeocodeService {
-    constructor() {
-        geobing.setKey(config.geocode.bing_apikey);
-    }
+    private async geocode_bing(alarmFields: AlarmFields): Promise<{ lat: string; lng: string }> {
+        if (!config.geocode.bing_apikey) throw new Error('kein GeoBing API Key angegeben');
 
-    private geocode_bing(searchString: string): Promise<{ lat: string; lng: string }> {
-        return new Promise((resolve, reject) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            geobing.getCoordinates(searchString, function (err: any, coordinates: any) {
-                if (err) reject(err);
-                resolve({ lat: coordinates.lat, lng: coordinates.lng });
-            });
+        const geobingUrl = `dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response: any = await axios.get(geobingUrl).catch((err) => {
+            logging.exception(NAMESPACE, err);
         });
+
+        const coordinates = response.resourceSets[0]?.resources[0]?.geocodePoints[0]?.coordinates;
+
+        return { lat: coordinates.lat, lng: coordinates.lng };
     }
 
     private async geocode_overpass(ORT: string, OBJEKT: string) {
@@ -119,40 +120,41 @@ class GeocodeService {
         });
     }
 
-    public async geocode(searchString: string, isAddress: boolean, OBJEKT: string, ORT: string) {
+    public async geocode(alarmFields: AlarmFields, isAddress: boolean) {
         let ret = { lat: '0', lng: '0', isAddress: isAddress };
         let isHighway = false;
 
-        // Prüfe Bahnübergänge
+        // Prio 1: Prüfe Bahnübergänge
         if (config.geocode.bahn) {
-            if (OBJEKT.toLowerCase().indexOf('bahn') != -1) {
+            if (alarmFields.OBJEKT.toLowerCase().indexOf('bahn') != -1) {
                 try {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const response_bahn: any = await this.geocode_bahn(OBJEKT);
+                    const response_bahn: any = await this.geocode_bahn(alarmFields.OBJEKT);
 
-                    logging.debug(NAMESPACE, 'Response', response_bahn);
                     if (response_bahn) {
                         ret.lat = response_bahn['GEOGR_BREITE'].replace(',', '.');
                         ret.lng = response_bahn['GEOGR_LAENGE'].replace(',', '.');
                         ret.isAddress = true;
                         logging.debug(NAMESPACE, 'Ergebnis: Bahnübergang ', ret);
+                        if (ret.lat != '0') return ret;
                     }
                 } catch (error) {
                     logging.exception(NAMESPACE, error);
                 }
             }
-            if (ret.lat != '0') return ret;
         }
 
-        // OSM Objektsuche
-
+        // Prio 2: OSM Objektsuche
         if (config.geocode.osm_objects) {
             if (!ret.isAddress && !isHighway) {
                 try {
-                    const response_overpass = await this.geocode_overpass(ORT, OBJEKT);
+                    const response_overpass = await this.geocode_overpass(
+                        alarmFields.ORT,
+                        alarmFields.OBJEKT
+                    );
 
                     if (response_overpass.isAddress) {
-                        logging.debug(NAMESPACE, 'Benutze OSM Objekt Koordinaten');
+                        logging.debug(NAMESPACE, 'Ergebnis: OSM Objekt ', ret);
                         ret = response_overpass;
                         if (ret.lat != '0') return ret;
                     }
@@ -162,10 +164,12 @@ class GeocodeService {
             }
         }
 
-        // OSM Nominatim
+        // Prio 3: OSM Nominatim
         if (config.geocode.osm_nominatim) {
             try {
-                const response_nominatim = await nominatim.search({ q: searchString });
+                const response_nominatim = await nominatimClient.search({
+                    q: `${config.geocode.iso_country}, ${alarmFields.ORT}, ${alarmFields.STRASSE}`
+                });
 
                 logging.debug(NAMESPACE, '[Nominatim] ', response_nominatim);
 
@@ -174,7 +178,8 @@ class GeocodeService {
                     ret.lng = response_nominatim[0].lon;
                     ret.isAddress = true;
 
-                    logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
+                    logging.debug(NAMESPACE, 'Ergebnis: Nominatim Adresse ', ret);
+                    if (ret.lat != '0') return ret;
                 }
 
                 if (
@@ -187,7 +192,7 @@ class GeocodeService {
                     ret.isAddress = false;
                     isHighway = true;
 
-                    logging.debug(NAMESPACE, 'Benutze Nominatim Koordinaten');
+                    logging.debug(NAMESPACE, 'Ergebnis: Nominatim Strasse ', ret);
                     if (ret.lat != '0') return ret;
                 }
             } catch (error) {
@@ -195,13 +200,15 @@ class GeocodeService {
             }
         }
 
-        // Bing Geocode
+        // Prio 4: Bing Geocode
         if (config.geocode.bing) {
             try {
-                const response_bing = await this.geocode_bing(searchString);
+                const response_bing = await this.geocode_bing(alarmFields);
                 logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
                 ret.lat = response_bing.lat;
                 ret.lng = response_bing.lng;
+
+                logging.debug(NAMESPACE, 'Ergebnis: GeoBing Adresse ', ret);
                 if (ret.lat != '0') return ret;
             } catch (error) {
                 logging.exception(NAMESPACE, error);

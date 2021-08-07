@@ -1,5 +1,7 @@
 #!/bin/bash
-# FWmonitor Auto - Atomatischer Wlan-Wechsler sobald Wlan in Reichweite
+# FWmonitor Auto - Automatischer Wlan-Wechsler sobald Wlan in Reichweite ist
+# Achtung: Wlan Zugangsdaten müssen in /etc/wpa_supplicant/wpa_supplicant.conf eingetragen sein
+# Beispielaufruf cron: * * * * * autoSwitchWlan.sh WLAN_SSID
 # Für Raspian/Raspberry OS mit GUI
 # (c) 2020 Johannes Resch
 # Version 1.0
@@ -10,7 +12,7 @@ if [ "$(id -u)" != "0" ]; then
     exit 1
 fi
 
-# Prüfe ob Server IP übergeben wurde
+# Prüfe ob 1. Prio SSID übergeben wurde
 if [[ $# -lt 1 ]] ; then
     echo "# Aufruf: skript.sh WLAN_SSID"
     exit 1

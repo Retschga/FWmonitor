@@ -13,7 +13,7 @@ import { timeout } from '../utils/common';
 
 const NAMESPACE = 'AlarmParser_Service';
 
-class AlarmFields {
+export class AlarmFields {
     // ---------------- Fax Suchworte (RegEx) ----------------
     // Filtert Teil aus dem Fax zwischen Filter Beginn und Filter Ende (\n ist neue Zeile)
     public EINSATZSTICHWORT = '';
@@ -63,7 +63,7 @@ class AlarmFields {
     /**
      * Parst den gesamten Alarmtext
      */
-    public parseData(data: string) {
+    public parseData(data: string): void {
         // Variablen leeren
         this.EINSATZSTICHWORT = '';
         this.SCHLAGWORT = '';
@@ -338,15 +338,8 @@ class AlarmParserService {
     private async processAlarmData(alarmFields: AlarmFields, alarmdate: Date) {
         // Geocoding
         const geoData = await geocodeService.geocode(
-            'Germany, Bayern, ' +
-                alarmFields.ORT +
-                ', ' +
-                alarmFields.ORTSTEIL +
-                ', ' +
-                alarmFields.STRASSE,
-            /\d/.test(alarmFields.STRASSE) ? true : false,
-            alarmFields.OBJEKT,
-            alarmFields.ORT
+            alarmFields,
+            /\d/.test(alarmFields.STRASSE) ? true : false
         );
 
         // Daten in Datenbank schreiben
