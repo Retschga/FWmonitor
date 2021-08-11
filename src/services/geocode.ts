@@ -1,13 +1,14 @@
 'use strict';
 
-import axios from 'axios';
-import nominatim from 'nominatim-client';
-import csv from 'csv-parser';
-import fs from 'fs';
-import diffmatch from '../utils/diff_match_patch.utils';
-import logging from '../utils/logging';
-import config from '../utils/config';
 import { AlarmFields } from './alarmParser';
+import axios from 'axios';
+import config from '../utils/config';
+import csv from 'csv-parser';
+import diffmatch from '../utils/diff_match_patch.utils';
+import fs from 'fs';
+import logging from '../utils/logging';
+import nominatim from 'nominatim-client';
+import { urlencoded } from 'express';
 
 const NAMESPACE = 'Geocode_Service';
 const nominatimClient = nominatim.createClient({
@@ -20,7 +21,9 @@ class GeocodeService {
     private async geocode_bing(alarmFields: AlarmFields): Promise<{ lat: string; lng: string }> {
         if (!config.geocode.bing_apikey) throw new Error('kein GeoBing API Key angegeben');
 
-        const geobingUrl = `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`;
+        const geobingUrl = encodeURI(
+            `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`
+        );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = await axios.get(geobingUrl).catch((err) => {
@@ -46,19 +49,22 @@ class GeocodeService {
 
         // Overpass Objektabfrage
         logging.debug(NAMESPACE, 'Durchsuche OSM Gebaude und Objekte');
-        const overpassObjektUrl =
+        const overpassObjektUrl = encodeURI(
             'http://overpass-api.de/api/interpreter?data=' +
-            '[out:csv(::lat, ::lon, name; false; "|")][timeout:25];' +
-            'area[admin_level][name="' +
-            ORT +
-            '"]->.searchArea; (' +
-            'node["building"]["name"](area.searchArea);' +
-            'way["building"]["name"](area.searchArea);' +
-            'relation["building"]["name"](area.searchArea);' +
-            'node["amenity"]["name"](area.searchArea);' +
-            'way["amenity"]["name"](area.searchArea);' +
-            'relation["amenity"]["name"](area.searchArea);' +
-            ');out body center;';
+                '[out:csv(::lat, ::lon, name; false; "|")][timeout:25];' +
+                'area[admin_level][name="' +
+                ORT +
+                '"]->.searchArea; (' +
+                'node["building"]["name"](area.searchArea);' +
+                'way["building"]["name"](area.searchArea);' +
+                'relation["building"]["name"](area.searchArea);' +
+                'node["amenity"]["name"](area.searchArea);' +
+                'way["amenity"]["name"](area.searchArea);' +
+                'relation["amenity"]["name"](area.searchArea);' +
+                ');out body center;'
+        );
+
+        //console.log(overpassObjektUrl);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const response: any = await axios.get(overpassObjektUrl).catch((err) => {

@@ -58,7 +58,7 @@ class StartupCheck {
         );
         logging.info(
             NAMESPACE,
-            '    |                       VERSION ' + config.version + '                        |'
+            '    |              FWmonitor    VERSION ' + config.version + '                    |'
         );
         logging.info(
             NAMESPACE,
@@ -236,7 +236,9 @@ class StartupCheck {
         browser.on('ready', () => {
             browser.discover();
         });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         browser.on('update', (data: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const txtRecord: any = {};
             for (const i in data.txt) {
                 const e = data.txt[i].split('=');

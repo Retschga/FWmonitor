@@ -127,7 +127,7 @@ function init_https(sessionOptions: SessionOptions) {
     httpsServer.listen(config.server_https.port, () =>
         logging.info(
             NAMESPACE,
-            `HTTPS Server is running ${config.server_http.hostname}:${config.server_http.port}`
+            `HTTPS Server is running ${config.server_http.hostname}:${config.server_https.port}`
         )
     );
 
