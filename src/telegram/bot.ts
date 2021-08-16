@@ -1,24 +1,24 @@
 'use-strict';
 
-import axios from 'axios';
-import fs from 'fs';
-import { Context, Telegraf, Markup } from 'telegraf';
-import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
-import { EventEmitter } from 'events';
-import userService from '../services/user';
-import diashowService from '../services/diashow';
-import { UserStatus, UserApproved } from '../models/user';
-import globalEvents from '../utils/globalEvents';
-import { timeout } from '../utils/common';
-import logging from '../utils/logging';
-import config from '../utils/config';
+import { Context, Markup, Telegraf } from 'telegraf';
+import { UserApproved, UserStatus } from '../models/user';
 
+import BotAlarm from './bot_alarm';
 import BotApp from './bot_app';
 import BotCalendar from './bot_calendar';
 import BotHistory from './bot_history';
 import BotMore from './bot_more';
 import BotVerfuegbarkeit from './bot_verfuegbarkeit';
-import BotAlarm from './bot_alarm';
+import { EventEmitter } from 'events';
+import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
+import axios from 'axios';
+import config from '../utils/config';
+import diashowService from '../services/diashow';
+import fs from 'fs';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
+import { timeout } from '../utils/common';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -314,6 +314,11 @@ class TelegramBot {
             })
                 .then(async (response) => {
                     await response.data.pipe(writer);
+                    await timeout(500);
+                    writer.close();
+                    writer.end();
+                    writer.destroy();
+                    await timeout(500);
                     diashowService.process_new(config.folders.temp, filename);
 
                     ctx.reply(`Bild gespeichert.`);

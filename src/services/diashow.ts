@@ -1,13 +1,15 @@
 'use strict';
 
-import fs from 'fs';
-import moveFile from 'move-file';
-import { createThumbnail, createHd } from '../utils/thumbnail';
-import { fileExists } from '../utils/common';
-import globalEvents from '../utils/globalEvents';
-import config from '../utils/config';
+import { createHd, createThumbnail } from '../utils/thumbnail';
 
-//const NAMESPACE = 'Diashow_Service';
+import config from '../utils/config';
+import { fileExists } from '../utils/common';
+import fs from 'fs';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
+import moveFile from 'move-file';
+
+const NAMESPACE = 'Diashow_Service';
 
 class DiashowService {
     /**
@@ -143,10 +145,14 @@ class DiashowService {
     }
 
     public async process_new(path: string, filename: string) {
-        await moveFile(path + '/' + filename, config.folders.diashow + '/' + filename);
-        await createThumbnail(config.folders.diashow, filename);
-        await createHd(config.folders.diashow, filename);
-        this.disable_pic(filename);
+        try {
+            await moveFile(path + '/' + filename, config.folders.diashow + '/' + filename);
+            await createThumbnail(config.folders.diashow, filename);
+            await createHd(config.folders.diashow, filename);
+            this.disable_pic(filename);
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
     }
 }
 
