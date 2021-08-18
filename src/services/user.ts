@@ -142,7 +142,7 @@ class UserService {
             this.update_roles_admin(allUsers[0].id, true);
             logging.warn(NAMESPACE, 'First User added -> set approve + admin');
         }
-        globalEvents.emit('user-created', { name: name, vorname: vorname });
+        globalEvents.emit('user-created', name, vorname);
     }
 
     public async delete(id: number) {
