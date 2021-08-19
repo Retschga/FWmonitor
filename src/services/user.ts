@@ -1,8 +1,10 @@
 'use strict';
 
 import * as UserModel from '../models/user';
+
+import { addLeadingZero, isJsonString } from '../utils/common';
+
 import { UserStatus } from '../models/user';
-import { isJsonString, addLeadingZero } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 

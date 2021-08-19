@@ -89,6 +89,7 @@ button {
     color: var(--color_navbar);
 
     padding-left: 0.2em;
+    padding-right: 0.2em;
     display: flex;
     vertical-align: middle;
 }
@@ -102,6 +103,7 @@ button {
 .navbar button {
     font-size: 1.6em;
     color: var(--color_navbar);
+    min-width: .5em;
 }
 
 /* -------- Helper -------- */
