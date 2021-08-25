@@ -84,3 +84,15 @@ export async function createHd(path: string, file: string): Promise<void> {
             });
     }); */
 }
+
+export async function rotate(path: string, file: string, deg: number): Promise<void> {
+    const img = await Jimp.read(path + '/' + file).catch((err) => {
+        throw err;
+    });
+    img.rotate(deg).write(path + '/' + file); // save
+
+    const img_thumb = await Jimp.read(path + '/thumbnail-' + file).catch((err) => {
+        throw err;
+    });
+    img_thumb.rotate(deg).write(path + '/thumbnail-' + file); // save
+}

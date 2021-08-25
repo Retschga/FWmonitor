@@ -1,6 +1,6 @@
 'use strict';
 
-import { createHd, createThumbnail } from '../utils/thumbnail';
+import { createHd, createThumbnail, rotate } from '../utils/thumbnail';
 
 import config from '../utils/config';
 import { fileExists } from '../utils/common';
@@ -124,6 +124,26 @@ class DiashowService {
                 ext
         );
 
+        globalEvents.emit('diashow-change');
+
+        return true;
+    }
+
+    /**
+     * Drefht ein Bild um -90°
+     */
+    public async rotate_pic_left(filename: string) {
+        await rotate(config.folders.diashow, filename, 90);
+        globalEvents.emit('diashow-change');
+
+        return true;
+    }
+
+    /**
+     * Drefht ein Bild um -90°
+     */
+    public async rotate_pic_right(filename: string) {
+        await rotate(config.folders.diashow, filename, -90);
         globalEvents.emit('diashow-change');
 
         return true;

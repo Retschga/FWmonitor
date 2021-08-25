@@ -63,6 +63,7 @@
 
             const target_enabled = document.querySelector(".diashow_list_enabled");
             const target_disabled = document.querySelector(".diashow_list_disabled");
+            const changedFiles = [];
             
             // Laden 
             async function load_diashow_list() {     
@@ -83,7 +84,8 @@
 
                     for(let i = 0; i < enabled.length; i++) {
                         const file = enabled[i];
-
+                        const file_withChache = changedFiles.indexOf(enabled[i]) != -1 ? enabled[i] + '?' + new Date().getTime() : enabled[i];
+                        
                         const li = document.createElement("li");
                         li.classList.add('deleteme');
 
@@ -91,8 +93,10 @@
                             `<div>
                                 <div class="button_container">
                                     <div class=" button_hide red" onclick="disable_pic('${file}')"><span class="material-icons">visibility_off</span></div>
+                                    <div class=" button_hide green" onclick="rotate_pic_left('${file}')"><span class="material-icons">rotate_left</span></div>
+                                    <div class=" button_hide green" onclick="rotate_pic_right('${file}')"><span class="material-icons">rotate_right</span></div>
                                 </div>
-                                <img src="/images/load.png" data-src="/api/v1/diashow/files/${file}" alt="image" />
+                                <img src="/images/load.png" data-src="/api/v1/diashow/files/${file_withChache}" alt="image" />
                             </div>`;
                         
                         li.id = "en_" + i;
@@ -164,6 +168,34 @@
                     load_diashow_list();
                 } catch (error) {
                     console.error('delete_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function rotate_pic_left(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_rotate_left, {filename: filename});
+                    console.log('rotate_pic_left', response);    
+                    changedFiles.push(filename);  
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('rotate_pic_left', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function rotate_pic_right(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_rotate_right, {filename: filename});
+                    console.log('rotate_pic_right', response);      
+                    changedFiles.push(filename);  
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('rotate_pic_right', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
                 }       
                 loaderOut();

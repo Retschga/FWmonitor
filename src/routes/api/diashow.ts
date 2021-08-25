@@ -1,13 +1,15 @@
 'use strict';
 
-import express from 'express';
+import * as ValidatorDiashow from '../../middleware/diashowValidator';
+
+import { UserRights, auth_api } from '../../middleware/auth';
+
 import DiashowController from '../../controllers/diashow';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import * as ValidatorDiashow from '../../middleware/diashowValidator';
 import config from '../../utils/config';
-import { auth_api, UserRights } from '../../middleware/auth';
-import multer from 'multer';
 import diashowService from '../../services/diashow';
+import express from 'express';
+import multer from 'multer';
 
 const router = express.Router();
 const upload = multer({
@@ -46,6 +48,20 @@ router.post(
     auth_api(UserRights.admin),
     ValidatorDiashow.delete_pic,
     awaitHandlerFactory(DiashowController.delete_pic.bind(DiashowController))
+);
+
+router.post(
+    '/rotateleft',
+    auth_api(UserRights.admin),
+    ValidatorDiashow.rotate_pic,
+    awaitHandlerFactory(DiashowController.rotate_pic_left.bind(DiashowController))
+);
+
+router.post(
+    '/rotateright',
+    auth_api(UserRights.admin),
+    ValidatorDiashow.rotate_pic,
+    awaitHandlerFactory(DiashowController.rotate_pic_right.bind(DiashowController))
 );
 
 router.get(

@@ -1,10 +1,11 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { checkValidation } from './controller';
+
 import DiashowService from '../services/diashow';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { checkValidation } from './controller';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Diashow_Controller';
@@ -50,6 +51,38 @@ class DiashowController {
         } catch (error) {
             logging.exception(NAMESPACE, error);
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not enabled');
+        }
+
+        res.send('OK');
+    }
+
+    /**
+     * Dreht ein Bild um -90°
+     */
+    public async rotate_pic_left(req: Request, res: Response) {
+        checkValidation(req);
+
+        try {
+            await DiashowService.rotate_pic_left(String(req.body.filename));
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not rotated');
+        }
+
+        res.send('OK');
+    }
+
+    /**
+     * Dreht ein Bild um +90°
+     */
+    public async rotate_pic_right(req: Request, res: Response) {
+        checkValidation(req);
+
+        try {
+            await DiashowService.rotate_pic_right(String(req.body.filename));
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Picture not rotated');
         }
 
         res.send('OK');
