@@ -1,27 +1,25 @@
 'use strict';
 
-import express from 'express';
-import rateLimit from 'express-rate-limit';
-
 import alarmRoutes from './api/alarm';
-import calendarRoutes from './api/calendar';
-import calendarGroupRoutes from './api/calendarGroup';
-import carRoutes from './api/car';
-import userRoutes from './api/user';
-import statisticRoutes from './api/statistic';
-import groupRoutes from './api/group';
-import diashowRoutes from './api/diashow';
 import authRoutes from './api/auth';
-import hydrantRoutes from './api/hydrant';
-import deviceRoutes from './api/device';
-import praesentationRoutes from './api/praesentation';
-import contactRoutes from './api/contact';
-import notificationactionRoutes from './api/notificationaction';
-
-import errorMiddleware from '../middleware/error';
 import { auth_api } from '../middleware/auth';
-import logging from '../utils/logging';
+import calendarGroupRoutes from './api/calendarGroup';
+import calendarRoutes from './api/calendar';
+import carRoutes from './api/car';
 import config from '../utils/config';
+import contactRoutes from './api/contact';
+import deviceRoutes from './api/device';
+import diashowRoutes from './api/diashow';
+import errorMiddleware from '../middleware/error';
+import express from 'express';
+import groupRoutes from './api/group';
+import hydrantRoutes from './api/hydrant';
+import logging from '../utils/logging';
+import notificationactionRoutes from './api/notificationaction';
+import praesentationRoutes from './api/praesentation';
+import rateLimit from 'express-rate-limit';
+import statisticRoutes from './api/statistic';
+import userRoutes from './api/user';
 
 const loginAccountLimiter = rateLimit({
     windowMs: config.rateLimit.api_login_time * 60 * 1000,
@@ -116,6 +114,7 @@ class RouterApi {
             this.router.use('/calendar', calendarRoutes);
             this.router.use('/praesentation', praesentationRoutes);
             this.router.use('/user', userRoutes);
+            this.router.use('/hydrant', apiLimiter, hydrantRoutes);
         }
 
         /** Error handling */

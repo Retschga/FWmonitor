@@ -1,14 +1,14 @@
 'use strict';
 
-import puppeteer from 'puppeteer';
-import moveFile from 'move-file';
-import fs from 'fs';
 import { AlarmRow } from '../models/alarm';
 import alarmService from './alarm';
-import geocodeService from './geocode';
-import printingServoce from './printing';
-import logging from '../utils/logging';
 import config from '../utils/config';
+import fs from 'fs';
+import geocodeService from './geocode';
+import logging from '../utils/logging';
+import moveFile from 'move-file';
+import printingServoce from './printing';
+import puppeteer from 'puppeteer';
 import { timeout } from '../utils/common';
 
 const NAMESPACE = 'AlarmParser_Service';
@@ -375,46 +375,48 @@ class AlarmParserService {
 
     private async createPrint(alarmRow: AlarmRow) {
         try {
+            const url =
+                'http://' +
+                '127.0.0.1' + //config.server_http.hostname +
+                ':' +
+                config.server_http.port +
+                '/print?varEINSATZSTICHWORT=' +
+                alarmRow.einsatzstichwort +
+                '&varSCHLAGWORT=' +
+                alarmRow.schlagwort +
+                '&varOBJEKT=' +
+                alarmRow.objekt +
+                '&varBEMERKUNG=' +
+                alarmRow.bemerkung +
+                '&varSTRASSE=' +
+                alarmRow.strasse +
+                '&varORTSTEIL=' +
+                alarmRow.ortsteil +
+                '&varORT=' +
+                alarmRow.ort +
+                '&lat=' +
+                alarmRow.lat +
+                '&lng=' +
+                alarmRow.lng +
+                '&isAddress=' +
+                (alarmRow.isAddress == true ? 1 : 0) +
+                '&noMap=' +
+                (alarmRow.strasse == '' && alarmRow.isAddress == false ? 1 : 0);
+
             // Alarmusdruck erzeugen
             logging.debug(NAMESPACE, 'Starte Puppeteer');
             const browser = await puppeteer.launch({
                 args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
             });
+            logging.debug(NAMESPACE, 'Erstelle neue Seite');
             const page = await browser.newPage();
 
             // Navigiere puppeteer zu Ausdruck Seite
-            await page.goto(
-                'http://' +
-                    config.server_http.hostname +
-                    ':' +
-                    config.server_http.port +
-                    '/print?varEINSATZSTICHWORT=' +
-                    alarmRow.einsatzstichwort +
-                    '&varSCHLAGWORT=' +
-                    alarmRow.schlagwort +
-                    '&varOBJEKT=' +
-                    alarmRow.objekt +
-                    '&varBEMERKUNG=' +
-                    alarmRow.bemerkung +
-                    '&varSTRASSE=' +
-                    alarmRow.strasse +
-                    '&varORTSTEIL=' +
-                    alarmRow.ortsteil +
-                    '&varORT=' +
-                    alarmRow.ort +
-                    '&lat=' +
-                    alarmRow.lat +
-                    '&lng=' +
-                    alarmRow.lng +
-                    '&isAddress=' +
-                    (alarmRow.isAddress == true ? 1 : 0) +
-                    '&noMap=' +
-                    (alarmRow.strasse == '' && alarmRow.isAddress == false ? 1 : 0),
-                { waitUntil: 'networkidle2' }
-            );
+            logging.debug(NAMESPACE, 'Gehe zu ', url);
+            await page.goto(url, { waitUntil: 'networkidle2' });
 
             // Warten bis gerendert
-            await timeout(5000);
+            await timeout(10000);
 
             logging.debug(NAMESPACE, 'Erstelle PDF und JPG...');
 

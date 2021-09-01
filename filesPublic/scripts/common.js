@@ -620,7 +620,7 @@ let map_moved = false;
 let map_center = () => {};
 let map_position = null;
 
-function createMap(dest, center = false, preload = false) {
+function createMap(dest, center = false, preload = false, hideControls = false) {
     // Karten Controls
     let control_attribution = new ol.control.Attribution({
         collapsible: false
@@ -733,9 +733,16 @@ function createMap(dest, center = false, preload = false) {
     var map = new ol.Map({
         target: 'mapid',
         layers: layers,
-        controls: ol.control
-            .defaults({ attribution: false })
-            .extend([control_attribution, control_fullscreen, new btnCenter(), new btnSwitchMap()]),
+        controls: hideControls
+            ? []
+            : ol.control
+                  .defaults({ attribution: false })
+                  .extend([
+                      control_attribution,
+                      control_fullscreen,
+                      new btnCenter(),
+                      new btnSwitchMap()
+                  ]),
         view: view
     });
     map_instance = map;
