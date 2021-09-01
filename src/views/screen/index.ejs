@@ -354,6 +354,15 @@
                 }                
             }
 
+            async function check_isAlarm() {
+                const isalarm = await fetch_get(url_alarm_isalarm, true);
+                console.log('isalarm', isalarm);
+
+                if(!isalarm.isAlarm) return;
+
+                window.location.href = 'alarm?name=' + clientName;
+            }
+
             function connect_software() {			
 				let keepAliveInterval = null;
                 try {
@@ -524,6 +533,7 @@
                 load_dwd();
                 load_status();
                 connect_software();
+                check_isAlarm();
 
                 setInterval(function() {
 

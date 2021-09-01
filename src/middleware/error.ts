@@ -25,7 +25,7 @@ function errorMiddleware(
     }
 
     error = {
-        txpe: 'error',
+        type: 'error',
         status,
         message,
         ...data
