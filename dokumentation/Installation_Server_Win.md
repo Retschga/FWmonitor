@@ -43,4 +43,8 @@ In Konsole (Rechtsklick - Git Bash here):
 ## Programmstart (automatisch)
 
 -   unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat
-    erstellen
+    erstellen, oder
+-   unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu
+    start_ueberwacht.bat erstellen (vorher `npm install pm2@latest -g`)
+
+-   [Für überwachte Ausführung siehe...](Ueberwachung.md)

@@ -1,0 +1,8 @@
+{
+    "apps": [
+        {
+            "name": "FWmonitorV3",
+            "script": "./build/app.js"
+        }
+    ]
+}

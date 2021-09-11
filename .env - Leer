@@ -280,3 +280,10 @@ VAPID_EMAIL=
 
 # Auf Updates prüfen und Benachrichtigung an alle mit Softwareinfo senden (true/false)
 UPDATE_CHECK=true
+
+######## LOGGING ########
+# Logs in Datei ausgeben (true/false)
+LOG_TO_FILE=true
+
+# Loglevel DEBUG (true/false)
+LOG_DEBUG=false

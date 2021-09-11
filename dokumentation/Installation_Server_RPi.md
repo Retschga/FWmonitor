@@ -39,4 +39,7 @@ In Konsole:
 ## Programmstart (automatisch)
 
 -   `sudo crontab -e`
--   `@reboot PFAD_ZU_FWMONITOR/start.sh # > /home/pi/Desktop/log.txt` hinzufügen
+-   `@reboot PFAD_ZU_FWMONITOR/start.sh` hinzufügen oder
+-   `@reboot PFAD_ZU_FWMONITOR/start_ueberwacht.sh` hinzufügen (vorher `npm install pm2@latest -g`)
+
+-   [Für überwachte Ausführung siehe...](Ueberwachung.md)

@@ -28,3 +28,5 @@ temp/**/*
 
 .history
 .ionide
+
+log.txt

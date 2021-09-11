@@ -333,3 +333,15 @@ Optionale Einstellungen können durch ein `#` am Zeilenanfang deaktiviert werden
         gegebenenfalls eine Info an alle Benutzer, welche die Option Softwareinfo aktiviert haben,
         gesendet
     -   false: Es wird nicht auf Updates geprüft
+
+## Logging
+
+-   `LOG_TO_FILE: <true|false>`
+
+    -   true: Log Ausgaben werden in der Datei log.txt und auf der Konsole ausgegeben
+    -   false: Log Ausgaben werden nur auf der Konsole ausgegeben
+
+-   `LOG_DEBUG: <true|false>`
+
+    -   true: Loglevel DEBUG
+    -   false: Loglevel Normal

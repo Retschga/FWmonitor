@@ -235,12 +235,17 @@ const RATE_LIMITS = {
 };
 
 const LOG = {
-    pad_namespace: 20,
+    pad_namespace: 25,
     loglevel:
         LOGLEVEL.ERROR |
         LOGLEVEL.INFO |
         LOGLEVEL.WARNING |
-        (process.env.NODE_ENV == 'development' ? LOGLEVEL.DEBUG : 0)
+        (process.env.NODE_ENV == 'development' ||
+        (process.env.LOG_DEBUG ? /true/i.test(process.env.LOG_DEBUG) : false)
+            ? LOGLEVEL.DEBUG
+            : 0),
+    toFile: process.env.LOG_TO_FILE ? /true/i.test(process.env.LOG_TO_FILE) : false,
+    logFile: './log.txt'
 };
 
 const UPDATE = {

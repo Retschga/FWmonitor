@@ -2,6 +2,7 @@
 
 import colors from 'colors/safe';
 import config from './config';
+import fs from 'fs';
 
 const PAD_NAMESPACE = config.logging.pad_namespace;
 
@@ -20,21 +21,29 @@ const info = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.INFO)) return;
 
     if (object) {
+        const data = `[${getTimestamp()}] [INFO]  [${namespace.padEnd(
+            PAD_NAMESPACE
+        )}]  ${message} ${JSON.stringify(object)}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.white(
-                `[${getTimestamp()}] [INFO]  [${namespace.padEnd(
-                    PAD_NAMESPACE
-                )}]  ${message} ${JSON.stringify(object)}`
-            )
-        );
+        console.log(colors.white(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     } else {
+        const data = `[${getTimestamp()}] [INFO]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.white(
-                `[${getTimestamp()}] [INFO]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
-            )
-        );
+        console.log(colors.white(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     }
 };
 
@@ -42,21 +51,28 @@ const warn = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.WARNING)) return;
 
     if (object) {
+        const data = `[${getTimestamp()}] [WARN]  [${namespace.padEnd(
+            PAD_NAMESPACE
+        )}]  ${message} ${JSON.stringify(object)}`;
         // eslint-disable-next-line no-console
-        console.log(
-            colors.yellow(
-                `[${getTimestamp()}] [WARN]  [${namespace.padEnd(
-                    PAD_NAMESPACE
-                )}]  ${message} ${JSON.stringify(object)}`
-            )
-        );
+        console.log(colors.yellow(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     } else {
+        const data = `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.yellow(
-                `[${getTimestamp()}] [WARN]  [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
-            )
-        );
+        console.log(colors.yellow(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     }
 };
 
@@ -64,55 +80,73 @@ const error = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.ERROR)) return;
 
     if (object) {
+        const data = `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
+            PAD_NAMESPACE
+        )}]  ${message} ${JSON.stringify(object)}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.red(
-                `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
-                    PAD_NAMESPACE
-                )}]  ${message} ${JSON.stringify(object)}`
-            )
-        );
+        console.log(colors.red(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     } else {
+        const data = `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`;
         // eslint-disable-next-line no-console
-        console.log(
-            colors.red(
-                `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
-            )
-        );
+        console.log(colors.red(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     }
 };
 
 const exception = (namespace: string, err: Error): void => {
+    const data = `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
+        PAD_NAMESPACE
+    )}]  ${JSON.stringify(err)}`;
+
     // eslint-disable-next-line no-console
-    console.log(
-        colors.red(
-            `[${getTimestamp()}] [ERROR] [${namespace.padEnd(PAD_NAMESPACE)}]  ${JSON.stringify(
-                err
-            )}`
-        ),
-        err.stack
-    );
+    console.log(colors.red(data), err.stack);
+
+    if (config.logging.toFile) {
+        fs.appendFile(config.logging.logFile, data + '\n' + err.stack + '\n', function (err) {
+            if (err) throw err;
+        });
+    }
 };
 
 const debug = (namespace: string, message: string, object?: unknown): void => {
     if (!(config.logging.loglevel & LOGLEVEL.DEBUG)) return;
 
     if (object) {
+        const data = `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(
+            PAD_NAMESPACE
+        )}]  ${message} ${JSON.stringify(object)}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.green(
-                `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(
-                    PAD_NAMESPACE
-                )}]  ${message} ${JSON.stringify(object)}`
-            )
-        );
+        console.log(colors.green(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     } else {
+        const data = `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`;
+
         // eslint-disable-next-line no-console
-        console.log(
-            colors.green(
-                `[${getTimestamp()}] [DEBUG] [${namespace.padEnd(PAD_NAMESPACE)}]  ${message}`
-            )
-        );
+        console.log(colors.green(data));
+
+        if (config.logging.toFile) {
+            fs.appendFile(config.logging.logFile, data + '\n', function (err) {
+                if (err) throw err;
+            });
+        }
     }
 };
 
