@@ -171,9 +171,13 @@
                 const onpermission    = document.querySelector('.onpermission'); 
 
                 // set the button to shown or hidden, depending on what the user answers
-                if(Notification.permission === 'denied' || Notification.permission === 'default') {
+                if(Notification.permission === 'denied' || Notification.permission === 'default' || !serviceWorker_registration) {
                     notificationBtn.style.display = 'block';
                     onpermission.classList.add('hidden');
+
+                    if (!serviceWorker_registration) {
+                        notificationBtn.innerHTML = 'Fehler';
+                    }
                 } else {
                     notificationBtn.style.display = 'none';
                     onpermission.classList.remove('hidden');

@@ -34,7 +34,10 @@ class DatabaseConnection {
             logging.exception(NAMESPACE, error);
         }
 
-        process.on('exit', () => this.close());
+        process.on('exit', () => {
+            logging.info(NAMESPACE, `exit => close database`);
+            this.close();
+        });
     }
 
     private open() {

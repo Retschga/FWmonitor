@@ -198,7 +198,8 @@
 
                 // Close all open Notifications
                 navigator.serviceWorker.getRegistration().then(function(registration){
-                    registration.getNotifications().then(function(notifications){
+                    if(!registration) return;
+                    registration.getNotifications().then(function(notifications){                        
                         notifications.forEach(function(notification){
                             notification.close()
                         })

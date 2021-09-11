@@ -396,6 +396,10 @@ function urlBase64ToUint8Array(base64String) {
 
 // -------- Notification Permission --------
 async function getNotificationPermission() {
+    if (!serviceWorker_registration) {
+        throw new Error('No service worker registered!');
+    }
+
     if (Notification.permission === 'granted') {
         serviceWorker_registration.update();
         return;

@@ -366,7 +366,8 @@
             function connect_software() {			
 				let keepAliveInterval = null;
                 try {
-                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));                    
+                    console.log('Software-connection socket connecting...');
+                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));                        
                 } catch (error) {
                     console.error(error);
                     setTimeout(function() { connect_software(); }, 1000);
@@ -408,6 +409,8 @@
 					}, keepAlive_intervall)
 
                     connected = true;
+                    loaderOut();      
+                    console.log('Software-connection socket connecting... DONE');
                 };
 
 				// Event: Daten empfangen
@@ -418,16 +421,16 @@
 				// Event: Socket geschlossen
                 socket_software.onclose = function(e) {
 					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
-                    console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-                    setTimeout(function() { connect_software(); }, 1000);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau... (close)');
+                    console.log('Software-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
+                    setTimeout(function() { connect_software(); }, 5000);
                     connected = false;
                 };
 
 				// Event: Scoket Fehler
                 socket_software.onerror = function(err) {
 					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+					loaderIn(undefined, undefined, 'Verbindungsaufbau... (error)');
                     console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
                     socket_software.close();
                     connected = false;
@@ -538,6 +541,7 @@
                 setInterval(function() {
 
                     if(connected) {
+                        socket_software.close();
                         location.reload(true);                    
                     }
 

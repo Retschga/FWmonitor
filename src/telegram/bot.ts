@@ -56,72 +56,76 @@ class TelegramBot {
     }
 
     public async init(): Promise<void> {
-        logging.info(NAMESPACE, 'Initializing Telegram Bot...');
-        const botinfo = await this.bot.telegram.getMe();
-        this.botName = botinfo.username;
-        logging.info(NAMESPACE, 'Telegram Botname: ' + this.botName);
+        try {
+            logging.info(NAMESPACE, 'Initializing Telegram Bot...');
+            const botinfo = await this.bot.telegram.getMe();
+            this.botName = botinfo.username;
+            logging.info(NAMESPACE, 'Telegram Botname: ' + this.botName);
 
-        this.botApp.init(this);
-        this.botCalendar.init(this);
-        this.botHistory.init(this);
-        this.botMore.init(this);
-        this.botVerfuegbarkeit.init(this);
-        this.botAlarm.init(this);
+            this.botApp.init(this);
+            this.botCalendar.init(this);
+            this.botHistory.init(this);
+            this.botMore.init(this);
+            this.botVerfuegbarkeit.init(this);
+            this.botAlarm.init(this);
 
-        // Fehlerausgabe
-        this.bot.catch((err) => {
-            logging.error(NAMESPACE, 'Telegram Fehler', err);
-        });
+            // Fehlerausgabe
+            this.bot.catch((err) => {
+                logging.error(NAMESPACE, 'Telegram Fehler', err);
+            });
 
-        // Routen
-        this.bot.start(this.bot_start.bind(this));
-        // -- Sicherheits Middleware: alle routen abwärts sind geschützt
-        this.bot.use(this.bot_securityMiddleware.bind(this));
+            // Routen
+            this.bot.start(this.bot_start.bind(this));
+            // -- Sicherheits Middleware: alle routen abwärts sind geschützt
+            this.bot.use(this.bot_securityMiddleware.bind(this));
 
-        // Sichere Routen
-        this.bot.hears('📅 Kalender', this.botCalendar.bot_calendar.bind(this));
-        this.bot.hears('🚒 Verfügbarkeit', this.botVerfuegbarkeit.bot_verf.bind(this));
-        this.bot.hears('▪️ Mehr', this.botMore.bot_more.bind(this));
-        this.bot.hears('🔥 Einsätze', this.botHistory.bot_history.bind(this));
-        this.bot.hears('📱 FWmonitor APP', this.botApp.bot_app_menu.bind(this));
+            // Sichere Routen
+            this.bot.hears('📅 Kalender', this.botCalendar.bot_calendar.bind(this));
+            this.bot.hears('🚒 Verfügbarkeit', this.botVerfuegbarkeit.bot_verf.bind(this));
+            this.bot.hears('▪️ Mehr', this.botMore.bot_more.bind(this));
+            this.bot.hears('🔥 Einsätze', this.botHistory.bot_history.bind(this));
+            this.bot.hears('📱 FWmonitor APP', this.botApp.bot_app_menu.bind(this));
 
-        // Inline Keyboard Callbacks
-        this.bot.on('callback_query', (ctx) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const cbQuerry: any = ctx.callbackQuery;
-            if (!cbQuerry.data) throw new Error('callback_query data not availible!');
-            const cbArray = String(cbQuerry.data).split(':');
-            this.inlineKeyboardEvents.emit(cbArray[0], ctx, cbArray[1]);
-        });
+            // Inline Keyboard Callbacks
+            this.bot.on('callback_query', (ctx) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const cbQuerry: any = ctx.callbackQuery;
+                if (!cbQuerry.data) throw new Error('callback_query data not availible!');
+                const cbArray = String(cbQuerry.data).split(':');
+                this.inlineKeyboardEvents.emit(cbArray[0], ctx, cbArray[1]);
+            });
 
-        this.bot.on('photo', this.bot_photo.bind(this));
-        this.bot.on('text', this.bot_default.bind(this));
+            this.bot.on('photo', this.bot_photo.bind(this));
+            this.bot.on('text', this.bot_default.bind(this));
 
-        // Bot starten
-        this.bot.launch();
+            // Bot starten
+            this.bot.launch();
 
-        // Enable graceful stop
-        process.once('SIGINT', () => this.bot.stop('SIGINT'));
-        process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+            // Enable graceful stop
+            process.once('SIGINT', () => this.bot.stop('SIGINT'));
+            process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
 
-        globalEvents.on('paperstatus-change', this.bot_printer_paper_info.bind(this));
-        globalEvents.on('softwareinfo', this.bot_software_info.bind(this));
-        globalEvents.on('user-created', this.bot_user_created_info.bind(this));
+            globalEvents.on('paperstatus-change', this.bot_printer_paper_info.bind(this));
+            globalEvents.on('softwareinfo', this.bot_software_info.bind(this));
+            globalEvents.on('user-created', this.bot_user_created_info.bind(this));
 
-        logging.debug(NAMESPACE, 'Initializing Telegram Bot... DONE');
+            logging.debug(NAMESPACE, 'Initializing Telegram Bot... DONE');
 
-        globalEvents.on('user-approved', async (id: number) => {
-            const user = await userService.find_by_userid(id);
-            if (user) {
-                this.sendMessage(user[0].telegramid, 'Zugang wurde freigegeben!');
-            }
-        });
-        globalEvents.on('user-deleted', async (id: number) => {
-            const user = await userService.find_by_userid(id);
-            if (user) {
-                this.sendMessage(user[0].telegramid, 'Zugang wurde gelöscht!');
-            }
-        });
+            globalEvents.on('user-approved', async (id: number) => {
+                const user = await userService.find_by_userid(id);
+                if (user) {
+                    this.sendMessage(user[0].telegramid, 'Zugang wurde freigegeben!');
+                }
+            });
+            globalEvents.on('user-deleted', async (id: number) => {
+                const user = await userService.find_by_userid(id);
+                if (user) {
+                    this.sendMessage(user[0].telegramid, 'Zugang wurde gelöscht!');
+                }
+            });
+        } catch (error) {
+            logging.error(NAMESPACE, 'Telegram Fehler', error);
+        }
     }
 
     /**

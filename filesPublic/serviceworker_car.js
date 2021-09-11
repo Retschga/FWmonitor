@@ -2,10 +2,10 @@
 /* eslint-disable no-undef */
 'use strict';
 
-const staticCacheName = 'cache-vers-2021-07-30-001';
+const staticCacheName = 'cache-vers-2021-09-06-001';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
-const filesToCache = ['/app/offline'];
+const filesToCache = ['/car/offline'];
 
 const url_map_forstrettpkt = '/rettPunkte.geojson';
 const url_map_hydranten = '/api/v1/hydrant/';
@@ -56,7 +56,7 @@ this.addEventListener('fetch', function (event) {
             .catch((error) => {
                 console.log('---- SW ERROR ----', error);
                 if (event.request.mode === 'navigate') {
-                    return caches.match('offline.html');
+                    return caches.match('/car/offline');
                 }
 
                 var init = { status: 444, statusText: 'offline' };

@@ -70,7 +70,18 @@ function init__http(sessionOptions: SessionOptions) {
         )
     );
 
-    process.on('exit', () => httpServer.close());
+    process.on('exit', () => {
+        logging.info(NAMESPACE, `exit => stop https`);
+        httpServer.close();
+    });
+
+    httpServer.on('error', (e: any) => {
+        if (e.code === 'EADDRINUSE') {
+            logging.error(NAMESPACE, 'HTTP  Server: Address/Port already in use');
+        } else {
+            logging.exception(NAMESPACE, e);
+        }
+    });
 
     return httpServer;
 }
@@ -133,7 +144,18 @@ function init_https(sessionOptions: SessionOptions) {
         )
     );
 
-    process.on('exit', () => httpsServer.close());
+    process.on('exit', () => {
+        logging.info(NAMESPACE, `exit => stop https`);
+        httpsServer.close();
+    });
+
+    httpsServer.on('error', (e: any) => {
+        if (e.code === 'EADDRINUSE') {
+            logging.error(NAMESPACE, 'HTTPS  Server: Address/Port already in use');
+        } else {
+            logging.exception(NAMESPACE, e);
+        }
+    });
 
     return httpsServer;
 }
@@ -218,6 +240,8 @@ async function init() {
 
     // Starte Update Checker
     softwareupdate.init();
+
+    logging.info(NAMESPACE, `INIT done`);
 }
 
 // -------- Programmstart --------

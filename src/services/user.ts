@@ -313,11 +313,14 @@ class UserService {
     public async update_notifications_app(id: number, value: number, subscription: string) {
         const response = await this.get_notifications_app(id);
 
-        if (!response) throw new Error(NAMESPACE + ' update_notifications_app - No rows changed');
+        if (!response) throw new Error(NAMESPACE + ' update_notifications_app - User not found');
 
         const subscription_new = JSON.parse(subscription);
-        const subscription_old = JSON.parse(response.appNotificationsSubscription);
+        let subscription_old = JSON.parse(response.appNotificationsSubscription);
 
+        if (!Array.isArray(subscription_old)) {
+            subscription_old = [];
+        }
         if (
             subscription_old.findIndex(
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -327,7 +330,7 @@ class UserService {
             subscription_old.push(subscription);
         }
 
-        const affectedRows = await UserModel.model.update(Number(id), {
+        const affectedRows = await UserModel.model.update(id, {
             appNotifications: value,
             appNotificationsSubscription: JSON.stringify(subscription_old)
         });

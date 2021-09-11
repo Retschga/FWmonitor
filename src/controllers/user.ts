@@ -1,11 +1,12 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { UserStatus } from '../models/user';
-import { checkValidation } from './controller';
-import UserService from '../services/user';
+
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import UserService from '../services/user';
+import { UserStatus } from '../models/user';
+import { checkValidation } from './controller';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'User_Controller';
@@ -306,7 +307,11 @@ class UserController {
      * Update App Benachrichtigungen
      */
     public async update_user_notifications_app_id(req: Request, res: Response) {
-        logging.debug(NAMESPACE, 'update_user_appNotifications_id');
+        logging.debug(NAMESPACE, 'update_user_appNotifications_id', {
+            id: req.params.id,
+            value: req.body.value,
+            sub: req.body.subscription
+        });
         checkValidation(req);
 
         try {
