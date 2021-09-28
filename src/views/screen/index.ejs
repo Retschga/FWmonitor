@@ -423,7 +423,7 @@
 					clearInterval(keepAliveInterval);
 					loaderIn(undefined, undefined, 'Verbindungsaufbau... (close)');
                     console.log('Software-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
-                    setTimeout(function() { connect_software(); }, 5000);
+                    setTimeout(function() { connect_software(); }, 2000);
                     connected = false;
                 };
 

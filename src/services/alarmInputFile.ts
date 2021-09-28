@@ -1,18 +1,20 @@
 'use strict';
 
-import chokidar from 'chokidar';
-import moveFile from 'move-file';
-import AlarmParserService from './alarmParser';
-import printService from './printing';
 import {
-    timeout,
-    execShellCommand,
     checkFolderOrFile,
-    getFormattedAlarmTime
+    execShellCommand,
+    getFormattedAlarmTime,
+    timeout
 } from '../utils/common';
+
+import AlarmParserService from './alarmParser';
+import chokidar from 'chokidar';
+import config from '../utils/config';
+import fs from 'fs';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
-import config from '../utils/config';
+import moveFile from 'move-file';
+import printService from './printing';
 
 const NAMESPACE = 'AlarmInputFile_Service';
 
@@ -25,9 +27,38 @@ class AlarmInputFileService {
     }
 
     private async tiffToTxt(file: string, targetPath: string) {
-        await execShellCommand(
-            `"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu --psm 6`
-        );
+        for (let i = 0; i < config.folders.fileInput_retry; i++) {
+            await execShellCommand(
+                `"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu --psm 6`
+            );
+
+            let fileData = '';
+            try {
+                fileData = await fs.promises.readFile(targetPath + '.txt', 'utf8');
+            } catch (error) {
+                if (error instanceof Error) {
+                    logging.exception(NAMESPACE, error);
+                } else {
+                    logging.error(NAMESPACE, 'Unknown error', error);
+                }
+            }
+            if (fileData.length < 5) {
+                logging.info(NAMESPACE, 'TIFF -> TXT    ERROR -> RESTART CONVERTING\n');
+                try {
+                    await fs.promises.unlink(targetPath + '.txt');
+                } catch (error) {
+                    if (error instanceof Error) {
+                        logging.exception(NAMESPACE, error);
+                    } else {
+                        logging.error(NAMESPACE, 'Unknown error', error);
+                    }
+                }
+                await timeout(10000);
+            } else {
+                break;
+            }
+        }
+
         logging.info(NAMESPACE, 'TIFF -> TXT    FERTIG\n');
     }
 
@@ -47,7 +78,11 @@ class AlarmInputFileService {
                 );
                 printService.print(path.substring(0, path.lastIndexOf('.')));
             } catch (error) {
-                logging.exception(NAMESPACE, error);
+                if (error instanceof Error) {
+                    logging.exception(NAMESPACE, error);
+                } else {
+                    logging.error(NAMESPACE, 'Unknown error', error);
+                }
             }
         }
     }

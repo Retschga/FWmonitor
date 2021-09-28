@@ -57,13 +57,23 @@
             console.error(error);            
         }
         await loaderFunction();
-            
-        loaderOut();    
+
+        try {
+            loaderOut();     
+        } catch (error) {
+            console.error(error); 
+            location.reload();           
+        }            
     });
 
     window.addEventListener('onpageshow', (event) => {
         console.log('The page has been shown');
-        loaderOut();  
+        try {
+            loaderOut();     
+        } catch (error) {
+            console.error(error); 
+            location.reload();           
+        }     
     });
    
     window.addEventListener("click", (event) => {

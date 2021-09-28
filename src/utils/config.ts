@@ -64,6 +64,7 @@ const FOLDERS = {
     fileInput: process.env.ALARM_FILE_FOLDER_IN,
     fileInput_delay: Number(process.env.ALARM_FILE_DELAY_IN || 0),
     fileInput_filter: process.env.ALARM_FILE_TEXTFILTER,
+    fileInput_retry: Number(process.env.ALARM_FILE_RETRY || 2),
 
     archive: process.env.FOLDER_ARCHIVE || './filesArchive/',
 

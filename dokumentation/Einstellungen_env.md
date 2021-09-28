@@ -159,6 +159,10 @@ Optionale Einstellungen können durch ein `#` am Zeilenanfang deaktiviert werden
     -   Je höher die Auflösung, desto besser das Ergebnis
     -   Je häher die Auflösung, desto langsamer die Texterkennung bei .pdf und .tif
 
+-   `ALARM_FILE_RETRY: <number> optional`
+
+    -   Anzahl wie oft die Faxerkennung bei einem Fehler wiederholt werden soll
+
 ## STANDBY Bildschirm
 
 -   `DWD_WARCELLID: <number> optional`

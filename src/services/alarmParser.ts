@@ -244,6 +244,7 @@ class AlarmParserService {
         data = data.replace(/[—_*`]/g, '-');
         data = data.replace(/2222+/g, '--------');
         data = data.replace(/---([-\s.](?!\n))+/g, '--------');
+        data = data.replace(/\|\]/g, '1');
 
         // Stichworte B ...
         data = data.replace(/BI/g, 'B1');
@@ -446,7 +447,11 @@ class AlarmParserService {
                 }
             }
         } catch (error) {
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
     }
 }
