@@ -1,18 +1,19 @@
 'use-strict';
 
-import fs from 'fs';
 import { Context, Markup } from 'telegraf';
-import TelegramBot from './bot';
-import GroupService from '../services/group';
-import userService from '../services/user';
-import { UserRow } from '../models/user';
-import { instance as DeviceServiceInstance } from '../services/device';
+import { fileExists, getFormattedAlarmTime, timeout } from '../utils/common';
+
 import { AlarmRow } from '../models/alarm';
-import { getFormattedAlarmTime, timeout, fileExists } from '../utils/common';
+import { instance as DeviceServiceInstance } from '../services/device';
+import { GroupRow } from '../models/group';
+import GroupService from '../services/group';
+import TelegramBot from './bot';
+import { UserRow } from '../models/user';
+import config from '../utils/config';
+import fs from 'fs';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
-import config from '../utils/config';
-import { GroupRow } from '../models/group';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -65,7 +66,11 @@ export default class BotAlarm {
                 this.send_alarm_user(users[i], alarm, groups, pdfPath);
             }
         } catch (error) {
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
     }
 
@@ -210,17 +215,25 @@ export default class BotAlarm {
                             )
                         ).message_id;
                     } catch (error) {
-                        logging.exception(NAMESPACE, error);
+                        if (error instanceof Error) {
+                            logging.exception(NAMESPACE, error);
+                        } else {
+                            logging.error(NAMESPACE, 'Unknown error', error);
+                        }
                     }
                 } else {
                     try {
                         const msg_id = (
                             await this.bot.bot.telegram.sendPhoto(user.telegramid, {
-                                source: 'public/images/noMap.png'
+                                source: 'filesPublic/images/noMap.png'
                             })
                         ).message_id;
                     } catch (error) {
-                        logging.exception(NAMESPACE, error);
+                        if (error instanceof Error) {
+                            logging.exception(NAMESPACE, error);
+                        } else {
+                            logging.error(NAMESPACE, 'Unknown error', error);
+                        }
                     }
                 }
             }
@@ -242,7 +255,11 @@ export default class BotAlarm {
                         }
                     );
                 } catch (error) {
-                    logging.exception(NAMESPACE, error);
+                    if (error instanceof Error) {
+                        logging.exception(NAMESPACE, error);
+                    } else {
+                        logging.error(NAMESPACE, 'Unknown error', error);
+                    }
                 }
             }
 
@@ -260,7 +277,11 @@ export default class BotAlarm {
             }, 3 * 60 * 60 * 1000);
         } catch (error) {
             logging.error(NAMESPACE, 'Error at user ID ' + user);
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
     }
 
@@ -284,8 +305,13 @@ export default class BotAlarm {
             }
 
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), true);
+            ctx.replyWithMarkdown('Rückmeldung: 👍 JA!');
         } catch (error) {
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
         ctx.answerCbQuery();
     }
@@ -310,8 +336,13 @@ export default class BotAlarm {
             }
 
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), false);
+            ctx.replyWithMarkdown('Rückmeldung: 👎 NEIN');
         } catch (error) {
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
         ctx.answerCbQuery();
     }

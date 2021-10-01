@@ -448,7 +448,11 @@ class AlarmParserService {
             }
         } catch (error) {
             if (error instanceof Error) {
-                logging.exception(NAMESPACE, error);
+                if (error instanceof Error) {
+                    logging.exception(NAMESPACE, error);
+                } else {
+                    logging.error(NAMESPACE, 'Unknown error', error);
+                }
             } else {
                 logging.error(NAMESPACE, 'Unknown error', error);
             }
