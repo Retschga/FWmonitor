@@ -14,7 +14,7 @@
 
             <div class="navbar">
 
-                <button class="material-icons">arrow_forward</button>
+                <button class="material-icons" onclick="reconnect()">arrow_forward</button>
 
                 <h1>FWmonitor - Offline</h1>      
 
@@ -37,7 +37,7 @@
         <script>
 
             function reconnect() {
-				window.location.replace('index');
+				window.location.replace('login');
 			}
 
 			setInterval(function(){ reconnect(); }, 5000);

@@ -57,9 +57,16 @@
 
                     const pos = {lat:latitude, lng:longitude};
 
-                    const map = createMap(pos, true);
-                    const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
-                    add_hydranten(hydrantenCache, map);
+                    const map = createMap(pos, true);                    
+                    
+                    try {  
+                        const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
+                        add_hydranten(hydrantenCache, map);
+                    } catch (error) {
+                        console.log(error);
+                        alert('Hydrankten konnten nicht geladen werden!');
+                    }
+
                     add_forstRettPkt(map);
 
                     if(

@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 'use strict';
 
-const staticCacheName = 'cache-vers-2021-10-01-002';
+const staticCacheName = 'cache-vers-2021-10-31-001';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -199,12 +199,12 @@ this.addEventListener('fetch', function (event) {
             })
             .catch((error) => {
                 console.log('---- SW ERROR ----', error);
-                if (event.request.mode === 'navigate') {
-                    return caches.match('/app/offline');
-                }
+               // if (event.request.mode === 'navigate') {
+               //     return caches.match('/app/offline);
+               // }
 
                 var init = { status: 444, statusText: 'offline' };
-                return new Response(null, init);
+                return new Response(error, init);
             })
     );
 });

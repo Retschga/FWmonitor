@@ -11,7 +11,7 @@ class HydrantService {
         // URL Overpass-API für Hydranten    siehe Ovepass turbo
         const overpassHydrantenUrl = `https://overpass-api.de/api/interpreter?data=
             [out:json][timeout:25];(
-            node[%22emergency%22=%22fire_hydrant%22](around:3000,${lat},${lng}); F
+            node[%22emergency%22=%22fire_hydrant%22](around:3000,${lat},${lng});
             node[%22emergency%22=%22water_tank%22](around:3000,${lat},${lng});
             node[%22emergency%22=%22suction_point%22](around:3000,${lat},${lng});
             );out;%3E;out%20skel%20qt;`.replace(/[\n\s]/g, '');
@@ -54,6 +54,7 @@ class HydrantService {
 
             return features;
         } catch (error) {
+            console.log(overpassHydrantenUrl);
             if (error instanceof Error) {
                 logging.exception(NAMESPACE, error);
             } else {
