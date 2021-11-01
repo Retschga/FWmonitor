@@ -1,12 +1,12 @@
 'use strict';
 
-import webpush from 'web-push';
 import { AlarmRow } from '../models/alarm';
-import userService from './user';
-import groupService from './group';
-import globalEvents from '../utils/globalEvents';
-import logging from '../utils/logging';
 import config from '../utils/config';
+import globalEvents from '../utils/globalEvents';
+import groupService from './group';
+import logging from '../utils/logging';
+import userService from './user';
+import webpush from 'web-push';
 
 const NAMESPACE = 'Webpush_Service';
 
@@ -45,6 +45,8 @@ class WebpushService {
                     '>appNotifications': 0
                 });
 
+                if (!users) return;
+
                 for (let i = 0; i < users.length; i++) {
                     const user = users[i];
 
@@ -80,6 +82,8 @@ class WebpushService {
 
                 const users = await userService.find_all_approved();
                 const groups = await groupService.find_all();
+
+                if (!users) return;
 
                 for (let i = 0; i < users.length; i++) {
                     const user = users[i];
@@ -154,6 +158,8 @@ class WebpushService {
                     drucker: true
                 });
 
+                if (!users) return;
+
                 for (let i = 0; i < users.length; i++) {
                     const user = users[i];
 
@@ -193,6 +199,7 @@ class WebpushService {
         if (!this.enabled) throw new Error(NAMESPACE + ' Not Enabled');
 
         logging.debug(NAMESPACE, 'Notify', { userid, dataToSend, subscription });
+        if (!subscription) return;
         logging.debug(NAMESPACE, 'Subscriptions:', subscription.length);
 
         for (let i = 0; i < subscription.length; i++) {

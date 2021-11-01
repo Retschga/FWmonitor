@@ -1,13 +1,14 @@
 'use strict';
 
-import axios from 'axios';
 import * as AlarmModel from '../models/alarm';
+
+import axios from 'axios';
+import config from '../utils/config';
+import globalEvents from '../utils/globalEvents';
+import logging from '../utils/logging';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import openrouteservice from 'openrouteservice-js';
-import globalEvents from '../utils/globalEvents';
-import logging from '../utils/logging';
-import config from '../utils/config';
 
 const NAMESPACE = 'Alarm_Service';
 
@@ -28,7 +29,15 @@ class AlarmService {
         if (stichwort.includes('thl')) return 2;
 
         // Brand - Red
-        if (stichwort.includes('b ')) return 0;
+        if (stichwort.match(/b\s?[0-9]/g)) return 0;
+        if (stichwort.match(/b\s?bma/g)) return 0;
+        if (stichwort.match(/b\s?boot]/g)) return 0;
+        if (stichwort.match(/b\s?elektroanlage]/g)) return 0;
+        if (stichwort.match(/b\s?schienentunnel]/g)) return 0;
+        if (stichwort.match(/b\s?schiff]/g)) return 0;
+        if (stichwort.match(/b\s?straßentunnel]/g)) return 0;
+        if (stichwort.match(/b\s?wald]/g)) return 0;
+        if (stichwort.match(/b\s?zug]/g)) return 0;
 
         // Rettungsdienst - Orange
         if (stichwort.includes('rd')) return 1;
@@ -170,7 +179,11 @@ class AlarmService {
             });
             return JSON.stringify(direct);
         } catch (error) {
-            logging.exception(NAMESPACE, error);
+            if (error instanceof Error) {
+                logging.exception(NAMESPACE, error);
+            } else {
+                logging.error(NAMESPACE, 'Unknown error', error);
+            }
         }
         return;
     }
