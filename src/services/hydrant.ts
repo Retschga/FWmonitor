@@ -54,7 +54,7 @@ class HydrantService {
 
             return features;
         } catch (error) {
-            console.log(overpassHydrantenUrl);
+            logging.error(NAMESPACE, overpassHydrantenUrl);
             if (error instanceof Error) {
                 logging.exception(NAMESPACE, error);
             } else {

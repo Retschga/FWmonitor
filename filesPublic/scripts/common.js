@@ -58,6 +58,7 @@ function getCookie(cname) {
  */
 function loaderIn(url, noHistroy, text) {
     let loader = document.querySelector('#pageloader');
+    if (!loader) return;
     loader.classList.remove('loader_out');
     loader.classList.add('loader_in');
 
@@ -85,6 +86,7 @@ function loaderIn(url, noHistroy, text) {
  */
 function loaderOut() {
     let loader = document.querySelector('#pageloader');
+    if (!loader) return;
     loader.classList.remove('loader_in');
     loader.classList.add('loader_out');
 }

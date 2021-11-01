@@ -406,6 +406,8 @@ class AlarmParserService {
 
             // Alarmusdruck erzeugen
             logging.debug(NAMESPACE, 'Starte Puppeteer');
+            logging.debug(NAMESPACE, url);
+
             const browser = await puppeteer.launch({
                 args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
             });

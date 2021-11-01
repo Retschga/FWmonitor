@@ -133,7 +133,7 @@
                     const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
                     add_hydranten(hydrantenCache, map);
                 }
-                add_forstRettPkt(ret.map);
+                add_forstRettPkt(map);
 
 
                 map.setView(
@@ -143,8 +143,6 @@
                     })
                 );
 
-                let mapLoader = document.querySelector('#mapLoader');
-                mapLoader.classList.add('hidden');
             }
 
             async function load_clock() {
