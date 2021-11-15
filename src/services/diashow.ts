@@ -13,6 +13,8 @@ import moveFile from 'move-file';
 const NAMESPACE = 'Diashow_Service';
 
 class DiashowService {
+    private exifCache: any = {};
+
     /**
      * Liste der Dateien im Diashow Verzeichnis
      * @returns { enabled, disabled }
@@ -47,13 +49,19 @@ class DiashowService {
                 files[i].name.indexOf('.org') == -1 &&
                 files[i].name.indexOf(config.folders.thumbnailPrefix) == -1
             ) {
-                const exifInfo = await exifr.parse(config.folders.diashow + '/' + files[i].name, [
-                    'DateTimeOriginal'
-                ]);
-                if (exifInfo != undefined && exifInfo['DateTimeOriginal'] != undefined) {
-                    files[i].time = new Date(exifInfo['DateTimeOriginal']).getTime();
+                if (this.exifCache[files[i].name] != undefined) {
+                    files[i].time = this.exifCache[files[i].name];
                 } else {
-                    // files[i].time = 0;
+                    const exifInfo = await exifr.parse(
+                        config.folders.diashow + '/' + files[i].name,
+                        ['DateTimeOriginal']
+                    );
+                    if (exifInfo != undefined && exifInfo['DateTimeOriginal'] != undefined) {
+                        files[i].time = new Date(exifInfo['DateTimeOriginal']).getTime();
+                    } else {
+                        // files[i].time = 0;
+                    }
+                    this.exifCache[files[i].name] = files[i].time;
                 }
 
                 if (files[i].name.indexOf('.disabled') == -1) {

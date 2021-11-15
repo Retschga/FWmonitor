@@ -63,17 +63,17 @@
             const target_disabled = document.querySelector(".diashow_list_disabled");
             const changedFiles = [];
             
-            function createAccordionIfotExisting(id, title, target) {
+            function createAccordionIfotExisting(id, year, target) {
                 let element = document.getElementById(id);
                 if(element != undefined) return;
 
                 target.innerHTML = target.innerHTML +
-                `<button class="accordion var_header_name deleteme" onclick="accordion_switch(this); start_observer();">${title}</button>
+                `<div id="cont_${year}"><button class="accordion var_header_name deleteme" onclick="accordion_switch(this); start_observer();">${year}</button>
                 <div class="accordion_panel deleteme" id="${id}">  
                     <ul class="c">
                        
                     </ul>  
-                </div>`;
+                </div></div>`;
             }
 
             // Laden 
@@ -116,6 +116,12 @@
                         createAccordionIfotExisting('enabled' + year, year, target_enabled);
                         document.getElementById('enabled' + year).getElementsByClassName("c")[0].append(li);       
                     }
+
+                    const list1 = target_enabled;
+                    [...list1.children]
+                        .sort((a,b)=>a.id<b.id?1:-1)
+                        .forEach(node=>list1.appendChild(node));
+
                     for(let i = 0; i < disabled.length; i++) {
                         const file = disabled[i].name;
 
@@ -137,6 +143,11 @@
                         createAccordionIfotExisting('disabled' + year, year, target_disabled);
                         document.getElementById('disabled' + year).getElementsByClassName("c")[0].append(li);                     
                     }
+
+                    const list2 = target_disabled;
+                    [...list2.children]
+                        .sort((a,b)=>a.id<b.id?1:-1)
+                        .forEach(node=>list2.appendChild(node));
 
                     start_observer();
 
