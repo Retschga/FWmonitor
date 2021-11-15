@@ -1,11 +1,12 @@
 'use strict';
 
-import WebSocket from 'ws';
+import { DecodeResult, checkToken } from './utils/security';
+
 import { Socket } from 'net';
+import WebSocket from 'ws';
+import { getUniqueID } from './utils/common';
 import http from 'http';
 import https from 'https';
-import { checkToken, DecodeResult } from './utils/security';
-import { getUniqueID } from './utils/common';
 import logging from './utils/logging';
 
 const NAMESPACE = 'WEBSOCKET';
@@ -143,6 +144,8 @@ class Websocket {
                     // {"id":"13", "value": ${status}}      Eingabefeld Anzeige Verfügbar
                     // {"id":"14", "value": ${status}}      Eingabefeld Anzeige Nicht Verfügbar
                     // {"id":"14", "value": ${min}}         Eingabefeld Anzeigezeit Alarm
+                    // {"id":"15", "value": ${data}}        WebRtc Data
+                    // {"id":"16", "value": ${data}}        Eingabefeld Diashow Bilddatum anzeigen
 
                     const data_json = JSON.parse(String(data));
                     const topic = data_json.topic;

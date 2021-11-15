@@ -264,6 +264,14 @@
                                         clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
                                         target_elements.append(clone);
                                         break;
+                                    case '16':
+                                        button_var_name.innerHTML = 'Diashow Bilderdatum: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
                                 }
 
                                 if (parseInt(action.id) < 0) {

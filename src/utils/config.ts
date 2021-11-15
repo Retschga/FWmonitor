@@ -152,7 +152,10 @@ const SCREEN = {
     screen_pos_calendar: Number(process.env.SCREEN_CALENDAR_POS) || 2,
     screen_verf: process.env.SCREEN_VERF ? /true/i.test(process.env.SCREEN_VERF) : false,
     screen_nverf: process.env.SCREEN_NVERF ? /true/i.test(process.env.SCREEN_NVERF) : false,
-    screen_time_diashow: Number(process.env.DIASHOW_DELAY) || 15000
+    screen_time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
+    screen_imagedate_diashow: process.env.DIASHOW_SHOW_IMAGEDATE
+        ? /true/i.test(process.env.DIASHOW_SHOW_IMAGEDATE)
+        : false
 };
 
 const GEOCODE = {

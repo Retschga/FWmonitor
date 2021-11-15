@@ -11,7 +11,6 @@ import logging from '../utils/logging';
 import openrouteservice from 'openrouteservice-js';
 
 const NAMESPACE = 'Alarm_Service';
-
 class AlarmService {
     /**
      * Gibt die Alarmfarbe zu einem Einsatzstichwort zurück
@@ -179,11 +178,7 @@ class AlarmService {
             });
             return JSON.stringify(direct);
         } catch (error) {
-            if (error instanceof Error) {
-                logging.exception(NAMESPACE, error);
-            } else {
-                logging.error(NAMESPACE, 'Unknown error', error);
-            }
+            logging.exception(NAMESPACE, error);
         }
         return;
     }

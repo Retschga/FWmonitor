@@ -3,6 +3,7 @@
 import { createHd, createThumbnail, rotate } from '../utils/thumbnail';
 
 import config from '../utils/config';
+import exifr from 'exifr';
 import { fileExists } from '../utils/common';
 import fs from 'fs';
 import globalEvents from '../utils/globalEvents';
@@ -45,12 +46,22 @@ class DiashowService {
                 files[i].name.indexOf('.') != -1 &&
                 files[i].name.indexOf('.org') == -1 &&
                 files[i].name.indexOf(config.folders.thumbnailPrefix) == -1
-            )
+            ) {
+                const exifInfo = await exifr.parse(config.folders.diashow + '/' + files[i].name, [
+                    'DateTimeOriginal'
+                ]);
+                if (exifInfo != undefined && exifInfo['DateTimeOriginal'] != undefined) {
+                    files[i].time = new Date(exifInfo['DateTimeOriginal']).getTime();
+                } else {
+                    // files[i].time = 0;
+                }
+
                 if (files[i].name.indexOf('.disabled') == -1) {
                     enabled.push(files[i]);
                 } else {
                     disabled.push(files[i]);
                 }
+            }
         }
 
         return { enabled, disabled };

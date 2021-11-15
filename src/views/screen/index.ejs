@@ -54,17 +54,17 @@
                             <span>?</span>
                         </div>    
 
-                        <div class="flex_column flex_grow">                        
+                        <div class="flex_column flex_grow content_container">                        
 
                             <div class="flex_row">  
                                                       
-                                <div class="flex_grow">
+                                <div class="flex_grow text_container">
                                     <span class="var_text">
                                         Text
                                     </span>
                                 </div>
 
-                                <div class="text_align_right">
+                                <div class="text_align_right date_container">
                                     <span class="var_date">##.##.</span>
                                     <span class="var_time">##:##&nbsp;</span>
                                 </div>  
@@ -84,13 +84,13 @@
 
                 <template id="template-dwdelement">
 
-                    <div class="calendar_element flex_row deleteme_dwd">
+                    <div class="calendar_element dwd_element flex_row deleteme_dwd">
 
                         <div class="var_emoji">
                             <span>⚠️</span>
                         </div>    
 
-                        <div class="flex_column flex_grow">         
+                        <div class="flex_column flex_grow content_container">         
                             
                             <div class="flex_grow">
                                 <span class="var_name">
@@ -104,7 +104,7 @@
                                 </span>
                             </div>
 
-                            <div class="text_align_right">
+                            <div class="text_align_right dwd_date">
                                 <span class="var_date">##.##.#### ##:## - ##.##.#### ##:##</span>
                             </div>  
 
@@ -114,10 +114,9 @@
 
                 </template>
 
-
-
             </div>
 
+            <div class="var_imagedate hidden">####-##-##</div>
 
         <%- include('partials/foot') -%>
 
@@ -128,11 +127,12 @@
             const col_right       = document.querySelector('.col_right');
 
             let diashow_time       = parseInt(localStorage.getItem("diashow_time")       || <%= time_diashow %>);
+            let diashow_imagedate  = parseInt(localStorage.getItem("diashow_imagedate")  || <%= imagedate_diashow %>);
             let pos_dwd            = parseInt(localStorage.getItem("pos_dwd")            || <%= dwd_position %>);
             let pos_calendar       = parseInt(localStorage.getItem("pos_calendar")       || <%= calendar_position %>);
             let calendar_elements  = parseInt(localStorage.getItem("calendar_elements")  || 8);     
-            let status_verf        = parseInt(localStorage.getItem("status_verf"))        || <%= show_verf %>; 
-            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))       || <%= show_nverf %>;      
+            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || <%= show_verf %>; 
+            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || <%= show_nverf %>;      
             let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);  
 
 
@@ -159,12 +159,23 @@
                     const images = files.enabled;
 
                     const target = document.querySelector(".content");
+                    const target_date = document.querySelector(".var_imagedate");
 
                     const count = images.length;
                     let nextImage = Math.floor(Math.random() * count);
                     let   img;
                     function slideshow() {
-                        target.style.backgroundImage = `url("${url_diashow_file.replace(':filename', images[nextImage])}")`;
+                        target.style.backgroundImage = `url("${url_diashow_file.replace(':filename', images[nextImage].name)}")`;
+         
+                        if(diashow_imagedate > 0 && images[nextImage].time > 0) {
+                            const imgdate = new Date(images[nextImage].time)
+                            target_date.innerHTML = imgdate.toISOString().split('T')[0];
+                            target_date.classList.remove('hidden');
+                        } else {
+                            target_date.classList.add('hidden');
+                        }
+
+
                         setTimeout(slideshow, diashow_time);
                         nextImage++;
                         if(nextImage >= count){
@@ -173,7 +184,7 @@
                         // Nächstes Bild preload
                         img = null;
                         img = new Image();
-                        img.src = url_diashow_file.replace(':filename', images[nextImage]);
+                        img.src = url_diashow_file.replace(':filename', images[nextImage].name);
                     }
                     slideshow();
 
@@ -283,21 +294,14 @@
                         const prop_end         = element.properties.EXPIRES.replace(/[TZ]/g, ' ');
                         const prop_description = element.properties.DESCRIPTION;						
 
-                        const date = new Date(element.start);   
-                        const {text, icon} = parseKalenderSummary(element.summary);
-                        let badge = "";
-                        for(let j = 0; j < element.group.length; j++) {
-                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
-                        }
-
-                        const template   = document.querySelector('#template-calendarelement');  
+                        const template   = document.querySelector('#template-dwdelement');  
                         const var_name   = template.content.querySelector(".var_name");              
                         const var_text   = template.content.querySelector(".var_text");
                         const var_date   = template.content.querySelector(".var_date");
 
                         var_name.innerHTML   = prop_name;
                         var_text.innerHTML   = prop_headline;
-                        var_date.innerHTML   = prop_begin + ' - ' + prop_end;
+                        var_date.innerHTML   = prop_begin + '<br />' + prop_end;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.appendChild(clone);
@@ -393,6 +397,7 @@
                             {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
                             {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
                             {"id":"15", "value": "${alarm_visible_time}"},
+                            {"id":"16", "value": "${diashow_imagedate ? 'sichtbar' : 'versteckt'}"},
                             {"id":"2"},
 							{"id":"4"},
                             {"id":"6"}
@@ -403,8 +408,11 @@
 					
 					lastKeepAlive = new Date();					
 					keepAliveInterval = setInterval(() => {
-						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
-							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {		
+                            console.log('Software-connection socket is closed (watchdog). Reconnect will be attempted in 5 second.');
+							loaderIn(undefined, undefined, 'Verbindungsaufbau... (watchdog)');
+                            socket_software.close();
+                            setTimeout(function() { connect_software(); }, 2000);
 						}
 					}, keepAlive_intervall)
 
@@ -503,6 +511,11 @@
 
                 if(topic == 'action_15') {
                     localStorage.setItem("alarm_visible_time", parseInt(message));
+					location.reload(); 
+				}	
+
+                if(topic == 'action_16') {
+                    localStorage.setItem("diashow_imagedate", !diashow_imagedate ? 1 : 0);
 					location.reload(); 
 				}	
 

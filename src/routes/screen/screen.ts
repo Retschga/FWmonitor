@@ -1,8 +1,9 @@
 'use strict';
 
-import express from 'express';
 import { Request, Response } from 'express';
+
 import config from '../../utils/config';
+import express from 'express';
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ function generateParams() {
         fwname: config.common.fwName,
 
         time_diashow: config.screen.screen_time_diashow,
+        imagedate_diashow: config.screen.screen_imagedate_diashow,
 
         dwd_warncellid: config.common.dwd_warncellid,
         dwd_position: config.screen.screen_pos_dwd,

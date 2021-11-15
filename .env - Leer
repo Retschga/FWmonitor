@@ -186,6 +186,9 @@ FW_NAME_SHORT=FF Name
 # Diashow Wechselzeit (Millisekunden)
 DIASHOW_DELAY=15000
 
+# Diashow Bilddatum anzeigen (true/false)
+#DIASHOW_SHOW_IMAGEDATE=false
+
 # Zeige Verfügbarkeit im Standby
 SCREEN_VERF=false
 SCREEN_NVERF=true
