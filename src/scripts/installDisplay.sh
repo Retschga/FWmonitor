@@ -85,7 +85,7 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-features=TranslateUI \
 --fast \
 --fast-start \
---app=http://${1}/index?name=${2}
+--app=http://${1}/screen/index?name=${2}
 EOF
 
 # Installation watchdog
