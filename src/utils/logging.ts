@@ -105,7 +105,15 @@ const error = (namespace: string, message: string, object?: unknown): void => {
     }
 };
 
-const exception = (namespace: string, err: Error): void => {
+const exception = (namespace: string, err: unknown): void => {
+    if (error instanceof Error) {
+        printException(namespace, <Error>err);
+    } else {
+        error(namespace, 'Unknown error', err);
+    }
+};
+
+const printException = (namespace: string, err: Error): void => {
     const data = `[${getTimestamp()}] [ERROR] [${namespace.padEnd(
         PAD_NAMESPACE
     )}]  ${JSON.stringify(err)}`;
