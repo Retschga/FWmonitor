@@ -23,7 +23,7 @@ class DiashowService {
         //const filenames = await fs.promises.readdir(config.folders.diashow);
 
         // https://stackoverflow.com/questions/10559685/using-node-js-how-do-you-get-a-list-of-files-in-chronological-order
-        const filenames = fs
+        const files = fs
             .readdirSync(config.folders.diashow)
             .map(function (v) {
                 return {
@@ -35,21 +35,21 @@ class DiashowService {
                 return b.time - a.time;
             })
             .map(function (v) {
-                return v.name;
+                return v;
             });
 
-        for (let i = 0; i < filenames.length; i++) {
+        for (let i = 0; i < files.length; i++) {
             if (
-                filenames[i] != '.gitignore' &&
-                filenames[i] != 'undefined.png' &&
-                filenames[i].indexOf('.') != -1 &&
-                filenames[i].indexOf('.org') == -1 &&
-                filenames[i].indexOf(config.folders.thumbnailPrefix) == -1
+                files[i].name != '.gitignore' &&
+                files[i].name != 'undefined.png' &&
+                files[i].name.indexOf('.') != -1 &&
+                files[i].name.indexOf('.org') == -1 &&
+                files[i].name.indexOf(config.folders.thumbnailPrefix) == -1
             )
-                if (filenames[i].indexOf('.disabled') == -1) {
-                    enabled.push(filenames[i]);
+                if (files[i].name.indexOf('.disabled') == -1) {
+                    enabled.push(files[i]);
                 } else {
-                    disabled.push(filenames[i]);
+                    disabled.push(files[i]);
                 }
         }
 
@@ -68,7 +68,7 @@ class DiashowService {
                     config.folders.diashow + '/' + config.folders.thumbnailPrefix + enabled[i]
                 ))
             ) {
-                await createThumbnail(config.folders.diashow, enabled[i]);
+                await createThumbnail(config.folders.diashow, enabled[i].name);
             }
         }
         for (let i = 0; i < disabled.length; i++) {
@@ -77,7 +77,7 @@ class DiashowService {
                     config.folders.diashow + '/' + config.folders.thumbnailPrefix + disabled[i]
                 ))
             ) {
-                await createThumbnail(config.folders.diashow, disabled[i]);
+                await createThumbnail(config.folders.diashow, disabled[i].name);
             }
         }
     }

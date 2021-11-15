@@ -28,10 +28,8 @@
 
             <div class="content" style="overflow-x: hidden; overflow-y: auto;">
                 
-                <div id="tab_active" class="tabcontent" style="display: block;">
-                    <ul class="diashow_list_enabled">
-
-                    </ul>
+                <div id="tab_active" class="tabcontent diashow_list_enabled" style="display: block;">
+                    
                 </div>                
                 <div id="tab_inactive" class="tabcontent">
                    <ul class="diashow_list_disabled">
@@ -65,6 +63,19 @@
             const target_disabled = document.querySelector(".diashow_list_disabled");
             const changedFiles = [];
             
+            function createAccordionIfotExisting(id, title, target) {
+                let element = document.getElementById(id);
+                if(element != undefined) return;
+
+                target.innerHTML = target.innerHTML +
+                `<button class="accordion var_header_name deleteme" onclick="accordion_switch(this); start_observer();">${title}</button>
+                <div class="accordion_panel deleteme" id="${id}">  
+                    <ul class="c">
+                       
+                    </ul>  
+                </div>`;
+            }
+
             // Laden 
             async function load_diashow_list() {     
                 try {
@@ -83,8 +94,8 @@
 
 
                     for(let i = 0; i < enabled.length; i++) {
-                        const file = enabled[i];
-                        const file_withChache = changedFiles.indexOf(enabled[i]) != -1 ? enabled[i] + '?' + new Date().getTime() : enabled[i];
+                        const file = enabled[i].name;
+                        const file_withChache = changedFiles.indexOf(enabled[i].name) != -1 ? enabled[i].name + '?' + new Date().getTime() : enabled[i].name;
                         
                         const li = document.createElement("li");
                         li.classList.add('deleteme');
@@ -101,10 +112,12 @@
                         
                         li.id = "en_" + i;
 
-                        target_enabled.append(li);                    
+                        const year = new Date(enabled[i].time).getFullYear();
+                        createAccordionIfotExisting('enabled' + year, year, target_enabled);
+                        document.getElementById('enabled' + year).getElementsByClassName("c")[0].append(li);       
                     }
                     for(let i = 0; i < disabled.length; i++) {
-                        const file = disabled[i];
+                        const file = disabled[i].name;
 
                         const li = document.createElement("li");
                         li.classList.add('deleteme');
@@ -120,7 +133,9 @@
                         
                         li.id = "dis_" + i;
 
-                        target_disabled.append(li);                    
+                         const year = new Date(enabled[i].time).getFullYear();
+                        createAccordionIfotExisting('disabled' + year, year, target_disabled);
+                        document.getElementById('disabled' + year).getElementsByClassName("c")[0].append(li);                     
                     }
 
                     start_observer();
@@ -215,6 +230,7 @@
                             if(change.isIntersecting) {
                                 change.target.setAttribute("src", change.target.dataset.src);
                                 observer.unobserve(change.target);
+                                // delete change.target.dataset.src;
                             }
                         });
                     });
