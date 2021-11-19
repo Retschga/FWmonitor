@@ -15,10 +15,12 @@
 
 ## Faxeingang
 
-    -   Faxeingang über Fritzbox:
+    -   Faxeingang über Fritzbox - Email:
         1. Fritzbox Konfiguration Faxweiterleitung zu Email
         2. Konfiguration Email Alarmeingang
-    -   Faxeingang über Fritzbox: siehe https://strobelstefan.org/?p=5405
+    -   Faxeingang über Fritzbox - Datei:
+        - siehe https://strobelstefan.org/?p=5405
+        - siehe: https://forum-raspberrypi.de/forum/thread/40061-netzwerkfreigabe-mounten-mit-systemd-mount-unit/
     -   Faxeingang über USB Faxmodem: siehe https://wiki.ubuntuusers.de/HylaFAX/
 
 ## Installation Server

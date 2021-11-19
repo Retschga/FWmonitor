@@ -84,7 +84,7 @@ class DiashowService {
         for (let i = 0; i < enabled.length; i++) {
             if (
                 !(await fileExists(
-                    config.folders.diashow + '/' + config.folders.thumbnailPrefix + enabled[i]
+                    config.folders.diashow + '/' + config.folders.thumbnailPrefix + enabled[i].name
                 ))
             ) {
                 await createThumbnail(config.folders.diashow, enabled[i].name);
@@ -93,7 +93,7 @@ class DiashowService {
         for (let i = 0; i < disabled.length; i++) {
             if (
                 !(await fileExists(
-                    config.folders.diashow + '/' + config.folders.thumbnailPrefix + disabled[i]
+                    config.folders.diashow + '/' + config.folders.thumbnailPrefix + disabled[i].name
                 ))
             ) {
                 await createThumbnail(config.folders.diashow, disabled[i].name);

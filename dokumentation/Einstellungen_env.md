@@ -204,6 +204,10 @@ Optionale Einstellungen können durch ein `#` am Zeilenanfang deaktiviert werden
     -   Option kann für jeden Bildschirm einzeln über die App > Verbundene Geräte überschrieben
         werden
 
+-   `DIASHOW_SHOW_IMAGEDATE: <true|false>`
+
+    -   Bei Diashowbildern im Standby-Bildschirm standardmäsig das Aufnahme/Erstelldatum anzeigen
+
 -   `SCREEN_VERF: <true|false>`
 
     -   Standardeinstellung ob verfügbare Mitglieder auf dem Standby-Bildschirm angezeigt werden
