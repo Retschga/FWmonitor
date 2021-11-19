@@ -17,6 +17,7 @@ import createMemoryStore from 'memorystore';
 import database from './database/connection';
 import diashowService from './services/diashow';
 import express from 'express';
+import favicon from 'serve-favicon';
 import fs from 'fs';
 import globalEvents from './utils/globalEvents';
 import helmet from 'helmet';
@@ -45,6 +46,7 @@ function init__http(sessionOptions: SessionOptions) {
     appHttp.set('views', path.join(__dirname, 'views'));
     appHttp.set('view engine', 'ejs');
     appHttp.use(cookieParser());
+    appHttp.use(favicon(path.join('./filesPublic/', 'favicon.ico')));
     appHttp.use(session(sessionOptions));
     appHttp.use(
         cors({
@@ -92,6 +94,7 @@ function init_https(sessionOptions: SessionOptions) {
     appHttps.set('view engine', 'ejs');
     appHttps.use(cookieParser());
     appHttps.use(compression());
+    appHttps.use(favicon(path.join('./filesPublic/', 'favicon.ico')));
     appHttps.use(session(sessionOptions));
     appHttps.use(
         helmet({

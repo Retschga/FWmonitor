@@ -1,15 +1,14 @@
 'use strict';
 
-import express from 'express';
 import { Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
 
-import mobileRoutes from './mobile/mobile';
-
-import errorMiddleware from '../middleware/error';
 import { auth_page } from '../middleware/auth';
-import logging from '../utils/logging';
 import config from '../utils/config';
+import errorMiddleware from '../middleware/error';
+import express from 'express';
+import logging from '../utils/logging';
+import mobileRoutes from './mobile/mobile';
+import rateLimit from 'express-rate-limit';
 
 const NAMESPACE = 'ROUTER_MOBILE';
 
@@ -76,6 +75,7 @@ class RouterMobile {
             res.render('mobile/redirect');
         });
 
+        // TODO: / -> redirect when logged in
         this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);
 
         /** Error handling */
