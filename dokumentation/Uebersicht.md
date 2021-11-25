@@ -64,7 +64,7 @@ Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk
     -   Windows 10 PC
     -   min. Raspberry PI 3
 -   Client:
-    -   min. Raspberry PI 2
+    -   min. Raspberry PI 3
     -   für WLAN min. Raspberry PI 3
 
 # ✔️ Getestete Aufbauten
