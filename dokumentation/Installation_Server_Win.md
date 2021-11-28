@@ -1,13 +1,13 @@
 # Installation Server
 
-## Windows 10
+## Windows 10 (64 bit)
 
 ### Vorraussetzungen
 
--   NodeJS 14: https://nodejs.org/de/
+-   NodeJS 14: https://nodejs.org/download/release/v14.18.1/
 -   FoxitReader: https://www.foxitsoftware.com/de/pdf-reader/
 -   Git: https://git-scm.com/downloads
--   Ghostscript: https://www.ghostscript.com/download/gsdnld.html
+-   Ghostscript: https://www.ghostscript.com/releases/gsdnld.html
 -   Tesseract: https://digi.bib.uni-mannheim.de/tesseract/
 
     -   Bei Installation auswählen: Additional Language Data > German
@@ -29,6 +29,8 @@
     - `cd "FWmonitor"`
     - `npm install --production`
     - `npm i puppeteer`
+3. Wenn bei der Installation von better-sqlite ein fehler auftritt, muss Python installiert werden
+   und bei der Installation von Node der Haken mit den Buildtools gesetzt werden.
 
 ## Einstellungen bearbeiten
 

@@ -21,8 +21,7 @@
             </div>
 
             <div class="content padding_1">
-                
-
+            
                 <form id="myForm" method="post" action="" enctype="multipart/form-data">
                     <label class="margin_bottom_1">Wählen Sie eine Bilddatei aus.
                         <input type="file"
@@ -39,7 +38,6 @@
 
 
         <%- include('partials/foot') -%>
-
        
         <script>
 
@@ -47,8 +45,8 @@
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "/api/v1/diashow/upload"); 
                 xhr.onload = function(event){ 
-                    alert("Bild gespeichert"); // raw response
-                    goBack();
+                    alert("Bild gespeichert");
+                    window.location.reload();
                 }; 
                 // or onerror, onabort
                 var formData = new FormData(document.getElementById("myForm")); 

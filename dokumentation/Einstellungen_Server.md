@@ -71,7 +71,7 @@
 #### Let´s Encrypt
 
 -   Windows:
-    1.  https://certbot.eff.org/lets-encrypt/windows-other befolgen
+    1.  https://certbot.eff.org/instructions?ws=other&os=windows befolgen
     2.  Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
     3.  Auto Renew:
         1. Aufgabenplanung öffnen

@@ -111,7 +111,7 @@ else
 fi
 
 # Autostart Demoeinträge für Steuerskripte
-cronentry="# @reboot /usr/bin/python3 /home/pi/steuerRELAIS.py ${1} ${2} PIR_PIN UART_PORT"
+cronentry="# @reboot /usr/bin/python3 /home/pi/steuerRELAIS.py ${1} ${2} PIR_PIN RELAIS_PIN"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
 cronentry="# @reboot /usr/bin/python3 /home/pi/steuerUART.py ${1} ${2} PIR_PIN UART_PORT"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
