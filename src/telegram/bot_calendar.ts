@@ -1,13 +1,14 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
-import TelegramBot from './bot';
-import userService from '../services/user';
 import { CalendarElement, calendarService } from '../services/calendar';
+import { Context, Markup } from 'telegraf';
 import { addLeadingZero, getFormattedDateTime } from '../utils/common';
+
+import TelegramBot from './bot';
+import config from '../utils/config';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
-import config from '../utils/config';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -32,13 +33,18 @@ export default class BotCalendar {
 
             const list = await calendarService.find_all_upcoming();
             if (!list || list.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('<b>Deine Termine:</b>\n' + 'Keine anstehenden Termine vorhanden.', {
+                    parse_mode: 'HTML',
+                    ...Markup.inlineKeyboard([
+                        Markup.button.callback('Gesamter Kalender', 'KalenderGes')
+                    ])
+                });
                 return;
             }
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.replyWithMarkdown('Error: User not found');
                 return;
             }
 
@@ -89,7 +95,7 @@ export default class BotCalendar {
 
             const list = await calendarService.find_all_upcoming();
             if (!list || list.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.replyWithMarkdown('Keine Termine vorhanden.');
                 return;
             }
 
