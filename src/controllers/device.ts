@@ -1,10 +1,13 @@
 'use strict';
 
-import { Request, Response } from 'express';
-import { checkValidation } from './controller';
+import { Request, Response, response } from 'express';
+
 import { instance as DeviceServiceInstance } from '../services/device';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { SocketInfo } from '../websocket';
+import { checkValidation } from './controller';
+import config from '../utils/config';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Alarm_Controller';
@@ -20,9 +23,25 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        const reponse = DeviceServiceInstance.get_all();
+        const sw: SocketInfo = {
+            type: 'Version',
+            id: '0',
+            name: 'FWmonitor',
+            info: config.version,
+            actions: [
+                {
+                    id: -1,
+                    key: 'Neue Version',
+                    value: config.version_new
+                }
+            ]
+        };
 
-        res.send(reponse);
+        // eslint-disable-next-line prefer-const
+        let response = DeviceServiceInstance.get_all();
+        response.unshift(sw);
+
+        res.send(response);
     }
 
     /**
@@ -35,9 +54,9 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        const reponse = DeviceServiceInstance.get_praesentation();
+        const response = DeviceServiceInstance.get_praesentation();
 
-        res.send(reponse);
+        res.send(response);
     }
 
     /**
@@ -51,13 +70,13 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        const reponse = DeviceServiceInstance.send_action(
+        const response = DeviceServiceInstance.send_action(
             String(req.params.id),
             Number(req.body.action),
             String(req.body.value)
         );
 
-        res.send(reponse);
+        res.send(response);
     }
 
     /**
@@ -71,13 +90,13 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        const reponse = DeviceServiceInstance.send_action(
+        const response = DeviceServiceInstance.send_action(
             String(req.params.id),
             4,
             JSON.stringify({ action: 'start', file: String(req.body.file) })
         );
 
-        res.send(reponse);
+        res.send(response);
     }
 
     /**
@@ -110,13 +129,13 @@ class AlarmController {
                 break;
         }
 
-        const reponse = DeviceServiceInstance.send_action(
+        const response = DeviceServiceInstance.send_action(
             String(req.params.id),
             4,
             JSON.stringify({ action: action })
         );
 
-        res.send(reponse);
+        res.send(response);
     }
 }
 

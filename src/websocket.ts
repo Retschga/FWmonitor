@@ -13,6 +13,7 @@ const NAMESPACE = 'WEBSOCKET';
 
 type Action = {
     id: number;
+    key?: string;
     value?: string;
 };
 

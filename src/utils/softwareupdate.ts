@@ -69,6 +69,7 @@ class Softwareupdate {
                 Number(local_version_nr_parts[0]) < Number(remote_version_nr_parts[0]) // Major
             ) {
                 logging.warn(NAMESPACE, 'Neue Software-Version verfügbar! (Major Release)');
+                config.version_new = remote_version.version;
                 if (remoteChanged) {
                     globalEvents.emit(
                         'softwareinfo',
@@ -90,6 +91,7 @@ class Softwareupdate {
                 Number(local_version_nr_parts[1]) < Number(remote_version_nr_parts[1]) // Minor
             ) {
                 logging.warn(NAMESPACE, 'Neue Software-Version verfügbar! (Minor Release)');
+                config.version_new = remote_version.version;
                 if (remoteChanged) {
                     globalEvents.emit(
                         'softwareinfo',
@@ -119,6 +121,7 @@ class Softwareupdate {
                 Number(local_version_nr_parts[2]) < Number(remote_version_nr_parts[2]) // Bugfix
             ) {
                 logging.warn(NAMESPACE, 'Neue Software-Version verfügbar! (Bugfix Release)');
+                config.version_new = remote_version.version;
                 if (remoteChanged) {
                     globalEvents.emit(
                         'softwareinfo',
