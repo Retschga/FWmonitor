@@ -37,12 +37,12 @@
             let keepAliveInterval = null;
 
             const userrights = await fetch_get('/api/v1/user/rights', true);
-            console.log('userrights', userrights);
+            if(DEBUG > 0) console.log('userrights', userrights);
 
             car_name = userrights.name;
             localStorage.setItem('car_name', car_name);
 
-            console.log('Software-connection socket connecting...');
+            if(DEBUG > 0) console.log('Software-connection socket connecting...');
 
             // Sende Status Datensatz
             let sendStatus = () => {ws_software.send(
@@ -58,7 +58,8 @@
                         {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                         {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
+                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
+                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"}
                 ]}`
             );}   
             let sendStatusUpdate = () => {ws_software.send(
@@ -69,12 +70,14 @@
                         {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                         {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
-                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"}
+                        {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
+                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"},
+                        ${updateInProgress ? '{"id":"8", "key": "Version", "value": "update...""}' : ''}
                 ]}`
             );}      
 
             ws_software.onopen = function() {
-                console.log("Software-connection socket connected!");
+                if(DEBUG > 0) console.log("Software-connection socket connected!");
 
                 // Sende Status Datensatz
                 sendStatus();
@@ -91,11 +94,11 @@
                 lastKeepAlive = new Date();
                 keepAliveInterval = setInterval(() => {
                     if((new Date().getTime() - lastKeepAlive.getTime()) > 60000) {		
-                        console.error('Software-connection keep-alive timeout!');
+                        if(DEBUG > 0) console.error('Software-connection keep-alive timeout!');
                         update_server_status(false);				
                         ws_software.close();
                     } else {
-                        console.log('Software-connection keep-alive OK!');
+                        if(DEBUG > 0) console.log('Software-connection keep-alive OK!');
                     }
                 }, 60000)
             };
@@ -103,7 +106,7 @@
             ws_software.onmessage = function(e) {
                 let socket = ws_software;
                 let data = e.data;
-                console.log('Software-connection socket message:', data);
+                if(DEBUG > 1) console.log('Software-connection socket message:', data);
                 
                 data           = JSON.parse(data);
                 const topic    = data.topic;
@@ -148,7 +151,7 @@
             };
 
             ws_software.onclose = function(e) {
-                console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
+                if(DEBUG > 0) console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
                 update_server_status(false);	
                 clearInterval(wsStatusInterval);
                 clearInterval(keepAliveInterval);
@@ -158,7 +161,7 @@
             };
 
             ws_software.onerror = function(err) {
-                console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                if(DEBUG > 0) console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
                 update_server_status(false);
                 clearInterval(wsStatusInterval);
                 clearInterval(keepAliveInterval);

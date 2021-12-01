@@ -137,7 +137,7 @@
 
                 try {
                     const alarm = (await fetch_get(url_alarm.replace(':id', id), true))[0];
-                    console.log('alarm', alarm);
+                    if(DEBUG > 0) console.log('alarm', alarm);
 
                     const target_eigen   = document.querySelector(".einsatzmittel_eigen_list");
                     const target_andere  = document.querySelector(".einsatzmittel_andere_list");

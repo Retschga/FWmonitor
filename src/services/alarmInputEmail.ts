@@ -1,14 +1,15 @@
 'use strict';
 
-import Imap from 'imap';
 import { AttachmentStream, MailParser, MessageText } from 'mailparser';
-import fs from 'fs';
+
 import AlarmParserService from './alarmParser';
+import Imap from 'imap';
+import alarmInputFileService from './alarmInputFile';
+import config from '../utils/config';
+import fs from 'fs';
 import { getFormattedAlarmTime } from '../utils/common';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
-import config from '../utils/config';
-import alarmInputFileService from './alarmInputFile';
 
 const NAMESPACE = 'AlarmInputEmail_Service';
 

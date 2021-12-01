@@ -35,7 +35,7 @@ pirpin = int(sys.argv[3])
 uartport = sys.argv[4]
 
 starttime = str(datetime.datetime.now())
-version = "3.0.0"
+version = "3.0.1"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = b'\xAA\x11\xFE\x01\x01\x11'
@@ -151,7 +151,7 @@ class WebSocketRetry:
                     self._websocket_connection = ws
                     self.connected = True
                     await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
-                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}"
+                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}"
 
                     while self.connected:               
                         # Senden         
@@ -177,7 +177,7 @@ class WebSocketRetry:
                                 os.system('sudo shutdown -r now')
                             if parsedData["topic"] == 'action_8':    
                                 ws.close()                            
-                                os.system("sudo bash /home/pi/steuerUpdate.sh \"" + targetserver + "\" >> update.log")
+                                os.system("sudo bash /home/pi/steuerUpdate.sh \"" + targetserver + "\" >> /home/pi/update.log")
                                 
                         except (asyncio.TimeoutError):
                             #await asyncio.wait_for(printLog("No IN Data"), 5)
@@ -227,7 +227,7 @@ async def endProgram(asyncState):
 
 async def keepAlive(asyncState):    
     await asyncState.client.sendPing("TESTPING")
-    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-1\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-2\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-3\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
+    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
 
 async def mainLoop(asyncState):
     while True:

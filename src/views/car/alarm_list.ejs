@@ -124,7 +124,7 @@
 
                 try {
                     const alarmList = await fetch_get(url_alarm_list.replace(':offset', offset).replace(':limit', limit), true);
-                    console.log('alarmList', alarmList);
+                    if(DEBUG > 0) console.log('alarmList', alarmList);
 
                     const target        = document.querySelector(".alarm_list");
                     const target_before = document.querySelector(".alarm_list_loadmore");

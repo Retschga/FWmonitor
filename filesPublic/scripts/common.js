@@ -439,6 +439,14 @@ async function getNotificationPermission() {
     });
 }
 
+function wsStateToText(state) {
+    if (state == 0) return 'CONNECTING';
+    if (state == 1) return 'OPEN';
+    if (state == 2) return 'CLOSING';
+    if (state == 3) return 'CLOSED';
+    return state;
+}
+
 // Icons Karte
 var styleCache = {
     pipe: new ol.style.Style({

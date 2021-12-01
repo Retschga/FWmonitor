@@ -36,7 +36,7 @@ if len(sys.argv) < 4:
     print("Aufruf: auto.py UBLOX_API_KEY SERVER_IP:PORT GPS_DEVICE")
     sys.exit()
 
-VERSION = "3.0.0"
+VERSION = "3.0.1"
 
 TOOGLE_USB_ON_NO_TETHER = True
 TIME_TILL_OFF = 60 # sekunden
@@ -185,7 +185,8 @@ async def echo(websocket, path):
                 await websocket.send("usbtether:true")
             else:
                 await websocket.send("usbtether:false")                
-        if message == "update":  
+        if message == "update": 
+            await websocket.send("beginUpdate") 
             websocket.close()                            
             os.system("sudo bash /home/pi/autoUpdate.sh \"" + targetserver + "\" >> update.log")
 

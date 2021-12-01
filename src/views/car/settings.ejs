@@ -165,17 +165,17 @@
                     let line = lineArray[i];
                     if(line.indexOf('ssid') != -1) {
                         let tmp = line.split('=').pop();
-                        console.log(tmp);
+                        if(DEBUG > 1) console.log(tmp);
                         einstellungen_networks.push({'ssid': String(tmp).replace(/\"/g, '')});
                     }
                     if(line.indexOf('psk') != -1) {
                         let tmp = line.split('=').pop();
-                        console.log(tmp);
+                        if(DEBUG > 1) console.log(tmp);
                         einstellungen_networks[einstellungen_networks.length -1]['psk'] =  String(tmp).replace(/\"/g, '');
                     }
                     if(line.indexOf('priority') != -1) {
                         let tmp = line.split('=').pop();
-                        console.log(tmp);
+                        if(DEBUG > 1) console.log(tmp);
                         einstellungen_networks[einstellungen_networks.length -1]['priority'] = parseInt( String(tmp).replace(/\"/g, '') );
                     }
                 }
@@ -243,7 +243,7 @@
                 try {
                     loaderIn();
                     let data = `setWpaSupp:network={\nssid=\"${document.querySelector(".var_ssid1").value}\"\npsk=\"${document.querySelector(".var_password1").value}\"\npriority=20\n}\nnetwork={\nssid=\"${document.querySelector(".var_ssid2").value}\"\npsk=\"${document.querySelector(".var_password2").value}\"\npriority=10\n}`;
-                    console.log("sende Daten...", data);
+                    if(DEBUG > 1) console.log("sende Daten...", data);
                     ws_hardware.send(data);
                 } catch (error) {
                     loaderOut();

@@ -8,27 +8,30 @@
 <!-- SCRIPT LOADER -->
 <script>    
 
+    let DEBUG = parseInt(localStorage.getItem('DEBUG') || 1);
+    let updateInProgress = false;
+
     let firststart = true;
-    var ws_hardware = null;
+    let ws_hardware = null;
 
-    var GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
-    var GPS_now = JSON.parse(localStorage.getItem('gps.now') || JSON.stringify(GPS_last));
-    var GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
-    var GPS_meanNum = 0;
-    var GPS_hasChanged = () => {};
-    var GPS_hasFIX = false;
-    var GPS_alt_max = parseInt(localStorage.getItem('gps.altMax') || 0);
-    var GPS_alt_min = parseInt(localStorage.getItem('gps.altMin') || 0);
-    var GPS_dist_sum = parseInt(localStorage.getItem('gps.distSum') || 0);				
+    let GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
+    let GPS_now = JSON.parse(localStorage.getItem('gps.now') || JSON.stringify(GPS_last));
+    let GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
+    let GPS_meanNum = 0;
+    let GPS_hasChanged = () => {};
+    let GPS_hasFIX = false;
+    let GPS_alt_max = parseInt(localStorage.getItem('gps.altMax') || 0);
+    let GPS_alt_min = parseInt(localStorage.getItem('gps.altMin') || 0);
+    let GPS_dist_sum = parseInt(localStorage.getItem('gps.distSum') || 0);				
 
-    var status_memFree = 0;
-    var status_memTotal = 0;
-    var status_cpuTemp = 0;
-    var status_wpaSupp = localStorage.getItem('status.wpasupp') || "";
-    var status_connWlan = "";
-    var status_cpuIdle = 0;
-    var status_hostname = localStorage.getItem('status.hostname') || "";
-    var status_usbtether = false;
+    let status_memFree = 0;
+    let status_memTotal = 0;
+    let status_cpuTemp = 0;
+    let status_wpaSupp = localStorage.getItem('status.wpasupp') || "";
+    let status_connWlan = "";
+    let status_cpuIdle = 0;
+    let status_hostname = localStorage.getItem('status.hostname') || "";
+    let status_usbtether = false;
 
     let loaderFunction = () => {};
     let serviceWorker_registration = null;
@@ -53,7 +56,7 @@
     async function serviceWorker_run() {
 
         // Registriere Service Worker
-        console.log('Registering service worker');	
+        if(DEBUG > 0) console.log('Registering service worker');	
         serviceWorker_registration = await navigator.serviceWorker.
             register('/serviceworker_car.js', { scope: "/car/" });            
 
@@ -69,7 +72,7 @@
                             // have been added to the cache.
                             // It's the perfect time to display a "New content is available; please refresh."
                             // message in the page's interface.
-                            console.log('New or updated content is available.');
+                            if(DEBUG > 0) console.log('New or updated content is available.');
                             loaderIn(undefined, undefined, 'Update');
                             setTimeout(() => {
                                 window.location.reload();
@@ -77,7 +80,7 @@
                         } else {
                             // At this point, everything has been precached.
                             // It's the perfect time to display a "Content is cached for offline use." message.
-                            console.log('Content is now available offline!');
+                            if(DEBUG > 0) console.log('Content is now available offline!');
                         }
                         break;
 
@@ -88,7 +91,7 @@
             };
         };     
 
-        console.log('Registered service worker');
+        if(DEBUG > 0) console.log('Registered service worker');
 
         // ensure the case when the updatefound event was missed is also handled
         // by re-invoking the prompt when there's a waiting Service Worker
@@ -96,13 +99,12 @@
             serviceWorker_invokeUpdateFlow(serviceWorker_registration)
         }
 
-        console.log('waiting for ready...');
+        if(DEBUG > 0) console.log('waiting for ready...');
 
         await navigator.serviceWorker.ready;
 
-        console.log('Registered service worker is now ready');
+        if(DEBUG > 0) console.log('Registered service worker is now ready');
     }
-
 
 
     /**
@@ -115,7 +117,7 @@
     function _getCoordsDistance(coords1, coords2)
     {
         // earth
-        var R = 6371, // km
+        let R = 6371, // km
             lat1 = parseFloat(coords1.lat),
             lat2 = parseFloat(coords2.lat),
             lon1 = parseFloat(coords1.lng),
@@ -129,26 +131,26 @@
             
         // Equirectangular approximation
         // lower accuracy, higher performance
-        var x = (lon2-lon1) * Math.cos((lat1+lat2)/2);
-        var y = (lat2-lat1);
-        var d = Math.sqrt(x*x + y*y) * R;
+        const x = (lon2-lon1) * Math.cos((lat1+lat2)/2);
+        const y = (lat2-lat1);
+        const d = Math.sqrt(x*x + y*y) * R;
         return Math.round(d * 1000);
     }
 
     function _getCoordsDistance_accurate(coords1, coords2) {
-        let lat1 = coords1.lat;
-        let lon1 = coords1.lng;
-        let lat2 = coords2.lat;
-        let lon2 = coords2.lng;
+        const lat1 = coords1.lat;
+        const lon1 = coords1.lng;
+        const lat2 = coords2.lat;
+        const lon2 = coords2.lng;
 
-        var R = 6371; // km
-        var dLat = (lat2 - lat1) * Math.PI / 180;
-        var dLon = (lon2 - lon1) * Math.PI / 180; 
-        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180; 
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
                 Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-        var d = R * c;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+        const d = R * c;
         return d * 1000;
     }
     Number.prototype.toRad = function() {
@@ -161,8 +163,8 @@
      * @param _POS_now {lat: xx, lng: yy}
     */
     function updateDistance(_POS_last, _POS_now) {
-        let dist = _getCoordsDistance_accurate(_POS_last, _POS_now);
-        GPS_dist_sum += _getCoordsDistance_accurate(_POS_last, _POS_now);				
+        const dist = _getCoordsDistance_accurate(_POS_last, _POS_now);
+        GPS_dist_sum += dist;				
     }			
 
     function update_gps_status(val) {
@@ -200,7 +202,7 @@
         let wsGPSInterval = null;				
         
         ws_hardware.onopen = function() {
-            console.log("Hardware-connection socket connected:");
+            if(DEBUG > 0) console.log("Hardware-connection socket connected:");
 
             // Setze GPS Status auf kein FIX
             update_gps_status(1);
@@ -220,7 +222,7 @@
         };
 
         ws_hardware.onmessage = function(e) {
-        //    console.log("Hardware-connection socket data received: " + e.data);
+        //    if(DEBUG > 1) console.log("Hardware-connection socket data received: " + e.data);
 
             // Kein FIX
             if(e.data == "-1") {
@@ -256,6 +258,9 @@
             } else if (e.data.indexOf('usbtether') != -1) {
                 status_usbtether = e.data.split(':')[1] == "true";
 
+            } else if (e.data.indexOf('beginUpdate') != -1) {
+                updateInProgress = true;
+
                 
 
             } else {
@@ -288,10 +293,10 @@
                     // Abweichung von letzter Position berechnen
                     if(GPS_now) {
                         let d = _getCoordsDistance({lng: GPS_meanSum.lng, lat: GPS_meanSum.lat}, {lng: GPS_now.lng, lat: GPS_now.lat});
-								console.log("Distanz", d);
+                        if(DEBUG > 1) console.log("Distanz", d);
                         if(d >= 2) {
                             if(GPS_last.lat != 0 && GPS_last.speed > 5) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
-                            console.log("GPS Change", GPS_meanSum);
+                            if(DEBUG > 1) console.log("GPS Change", GPS_meanSum);
                             GPS_hasChanged();									
                         }
                     }
@@ -334,7 +339,7 @@
         };
 
         ws_hardware.onclose = function(e) {
-            console.log('Hardware-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+            if(DEBUG > 0) console.log('Hardware-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
             // Setze GPS Status auf Fehler
             update_gps_status(-1);	
             // Lösche GPS Abfrageintervall
@@ -347,7 +352,7 @@
         };
 
         ws_hardware.onerror = function(err) {
-            console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
+            if(DEBUG > 0) console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
             // Setze GPS Status auf Fehler
             update_gps_status(-1);
             // Lösche GPS Abfrageintervall
@@ -362,7 +367,7 @@
 
         ws_hardware_connect();          
         
-        console.log('Initiate Service Worker');
+        if(DEBUG > 0) console.log('Initiate Service Worker');
         await serviceWorker_run().catch(error => console.error(error));
 
         let refreshing = false;
@@ -385,7 +390,7 @@
 
         firststart = false;
 
-        console.log('initialLoad .. DONE');
+        if(DEBUG > 0) console.log('initialLoad .. DONE');
         
     }
 
@@ -393,7 +398,7 @@
         if(window.location.href.indexOf('login') == -1) {
             const userrights = await fetch_get('/api/v1/user/rights', true)
             //.catch((err) => {/* location.reload() */});
-            console.log('userrights', userrights);    
+            if(DEBUG > 0) console.log('userrights', userrights);    
             
             //if(userrights == undefined) location.reload();
         }
@@ -404,7 +409,7 @@
 
     // **** Events ****
     document.addEventListener('readystatechange', event => { 
-        console.log('readyState --> ' + event.target.readyState);
+        if(DEBUG > 0) console.log('readyState --> ' + event.target.readyState);
 
         // When HTML/DOM elements are ready:
         if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
@@ -418,7 +423,7 @@
     });
 
     window.addEventListener('load', async (event) => {
-        console.log('The page has fully loaded');
+        if(DEBUG > 0) console.log('The page has fully loaded');
         try {
             await load_initial();  
         } catch (error) {
@@ -426,12 +431,12 @@
         }
         await loaderFunction();
          
-        console.log('Loader function done');
+        if(DEBUG > 0) console.log('Loader function done');
         loaderOut();    
     });
 
     window.addEventListener('pageshow', (event) => {
-        console.log('The page has been shown');
+        if(DEBUG > 0) console.log('The page has been shown');
         load_later();
     });
    
@@ -445,19 +450,19 @@
     }, false);
 /*
     window.onunload = function(){
-        console.log('The page is unloading');
+        if(DEBUG > 0) console.log('The page is unloading');
     };   
 */    
     window.addEventListener("visibilitychange", async () => {
-        console.log(document.visibilityState, firststart);
+        if(DEBUG > 0) console.log(document.visibilityState, firststart);
 
         if (document.visibilityState === 'visible' && !firststart) {
-            console.log("open");
+            if(DEBUG > 0) console.log("open");
 
             load_later();
 
         } else {
-            console.log("close");
+            if(DEBUG > 0) console.log("close");
         }
     });
   

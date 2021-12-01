@@ -109,14 +109,14 @@
             async function load_alarm() {
                 try {
                     isalarm = await fetch_get(url_alarm_isalarm, true);
-                    console.log('isalarm', isalarm);
+                    if(DEBUG > 0) console.log('isalarm', isalarm);
 
                     if(!isalarm.isAlarm) return;
 
                     preloadMap = true;
 
                     alarm = (await fetch_get(url_alarm_last, true))[0];
-                    console.log('alarm', alarm);
+                    if(DEBUG > 0) console.log('alarm', alarm);
 
                 } catch (error) {
                     console.error('load_alarm', error);
@@ -125,7 +125,7 @@
                 try {
 
                     streetCache = await fetch_get(url_alarm_streetCache.replace(':id', alarm.id), true);
-                    console.log('streetCache', streetCache);
+                    if(DEBUG > 0) console.log('streetCache', streetCache);
 
 
                 } catch (error) {
@@ -135,7 +135,7 @@
                 try {
 
                     routeData = await fetch_get(url_alarm_route.replace(':id', alarm.id), true);
-                    console.log('route data', routeData);            
+                    if(DEBUG > 0) console.log('route data', routeData);            
 
                 } catch (error) {
                     console.error('load_alarm', error);
@@ -143,20 +143,24 @@
 
                 const alert_alarm = document.querySelector('.alert_alarm'); 
                 alert_alarm.classList.remove('hidden');  
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1000 * 60 * 60 * 1);
             }
 
             async function hydrantenkarte_load() { 
 
                 // Prüfe ob GPS Position vorhanden
                 if (GPS_now.lng == 0 && fwHausPos == "") {
-                    console.log("GPS Position nicht gefunden!");
+                    if(DEBUG > 0) console.log("GPS Position nicht gefunden!");
                 }	
 
                 let pos = {lat:GPS_now.lat, lng:GPS_now.lng};
                 if (GPS_now.lng == 0 && fwHausPos != "") {
                     let p = fwHausPos.split(',');
                     pos = {lat:p[1], lng:p[0]};
-                    console.log("Keine GPS Position > verwende FW Haus", pos)
+                    if(DEBUG > 0) console.log("Keine GPS Position > verwende FW Haus", pos)
                 }
                 if(isalarm.isAlarm && alarm.lat != '' && alarm.lat != 0) {
                     map_position = [alarm.lng, alarm.lat];
@@ -197,7 +201,7 @@
                     geometry: new ol.geom.Point(ol.proj.fromLonLat([GPS_now.lng, GPS_now.lat])),
                 });
                 if(polylinePoints) {
-                    console.log('Route vorhanden --> Anzeigen');
+                    if(DEBUG > 0) console.log('Route vorhanden --> Anzeigen');
                     // OpenLayers uses [lon, lat], not [lat, lon] for coordinates
                     polylinePoints.map(function(l) {
                         return l.reverse();
@@ -260,17 +264,17 @@
                         setTimeout(function(){ 
                             map_moved = false;
                         }, 50);
-                        console.log("MAP CENTER (Alarm)", posiswitch ? map_position_alarm : map_position, map_moved);
+                        if(DEBUG > 0) console.log("MAP CENTER (Alarm)", posiswitch ? map_position_alarm : map_position, map_moved);
                     }
                 }                
                 
                 // Callback bei Positionsänderung
                 GPS_hasChanged = () => {	
-                    console.log(GPS_now);	
+                    if(DEBUG > 0) console.log(GPS_now);	
                     let pos = {lat:GPS_now.lat, lng:GPS_now.lng};				
                     map_position = [pos.lng, pos.lat];
 
-                    console.log('Map neupositionieren', map_position, map_moved);	
+                    if(DEBUG > 0) console.log('Map neupositionieren', map_position, map_moved);	
                     if(posMarker){			
                         posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(map_position)) : null);
                     }                    
@@ -285,9 +289,9 @@
                         if(nextInstruction) {
                             tPos = {lat:polylinePoints[nextInstruction.way_points[1]][0], lng: polylinePoints[nextInstruction.way_points[1]][1]}
                             tDist = nav_geo_distance(tPos, pos);
-                            console.log("near", near);
-                            console.log("Next Instruction", nextInstruction);
-                            console.log("Abstand Next Instruction", nav_geo_distance(tPos, pos))			
+                            if(DEBUG > 0) console.log("near", near);
+                            if(DEBUG > 0) console.log("Next Instruction", nextInstruction);
+                            if(DEBUG > 0) console.log("Abstand Next Instruction", nav_geo_distance(tPos, pos))			
                             nextMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(polylinePoints[nextInstruction.way_points[1]].reverse())) : null);
                         }
                     }
@@ -323,6 +327,10 @@
                 load_clock();
 
                 ws_server_connect();
+
+                setTimeout(() => {
+                    if(!isalarm) location.reload();
+                }, 1000 * 60 * 60 * 3);
             };            
             
             
