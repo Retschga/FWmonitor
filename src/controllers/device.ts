@@ -9,6 +9,7 @@ import { SocketInfo } from '../websocket';
 import { checkValidation } from './controller';
 import config from '../utils/config';
 import logging from '../utils/logging';
+import { timeout } from '../utils/common';
 
 const NAMESPACE = 'Alarm_Controller';
 
@@ -136,6 +137,39 @@ class AlarmController {
         );
 
         res.send(response);
+    }
+
+    public async send_action_webrtc(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'send_action_webrtc');
+        checkValidation(req);
+
+        if (!DeviceServiceInstance) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
+        }
+
+        let action = '';
+        switch (String(req.body.action)) {
+            case 'signal':
+                action = 'signal';
+                break;
+        }
+
+        const response1 = DeviceServiceInstance.send_action(
+            String(req.params.id),
+            15,
+            JSON.stringify({ action: action, data: String(req.body.data) })
+        );
+
+        if (response1 != true) {
+            res.send(response1);
+            return;
+        }
+
+        await timeout(500);
+
+        const response2 = DeviceServiceInstance.get_backchannel(String(req.params.id));
+
+        res.send(response2);
     }
 }
 

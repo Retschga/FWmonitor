@@ -13,8 +13,7 @@ import { urlencoded } from 'express';
 const NAMESPACE = 'Geocode_Service';
 const nominatimClient = nominatim.createClient({
     useragent: 'FWmonitor', // The name of your application
-    referer: 'https://github.com/Retschga/FWmonitor', // The referer link
-    email: config.app.vapid_mail || '' // The valid email
+    referer: 'https://github.com/Retschga/FWmonitor' // The referer link
 });
 
 class GeocodeService {

@@ -1,9 +1,9 @@
 'use strict';
 
-import passwordGenerator from 'generate-password';
 import bcrypt from 'bcryptjs';
-import jsonwebtoken from 'jsonwebtoken';
 import config from '../utils/config';
+import jsonwebtoken from 'jsonwebtoken';
+import passwordGenerator from 'generate-password';
 
 // https://nozzlegear.com/blog/implementing-a-jwt-auth-system-with-typescript-and-node
 
@@ -136,6 +136,7 @@ export function checkToken(token: string): DecodeResult {
         // or if the signature does not match
         result = jsonwebtoken.verify(token, config.app.jwt_key) as TokenSession;
     } catch (_e) {
+        if (!(_e instanceof Error)) throw _e;
         const e: Error = _e;
 
         // https://www.npmjs.com/package/jsonwebtoken

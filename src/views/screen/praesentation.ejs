@@ -34,9 +34,12 @@
             </div>
             <div class="content">
 	
-				<div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items:center;" id="canvas-container">
+				<div id="pdfContainer" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items:center;" id="canvas-container">
 					<canvas id="the-canvas" style="margin: 0 auto"></canvas>
-				</div>			
+				</div>		
+				
+				<video autoplay style="width: 100%; height: 100%;"></video>                    
+
 
             </div>
 
@@ -44,6 +47,9 @@
         <%- include('partials/foot') -%>
 
         <script src="/vendor/pdf.js"></script>
+		<script src="/vendor/simplepeer.min.js"></script>
+
+		
 
         <script>
 
@@ -70,6 +76,13 @@
             let canvas = document.getElementById('the-canvas');
             let ctx = canvas.getContext('2d');
 
+			var peer2 = new SimplePeer({ 
+                            config: {
+                                iceServers: []
+                            }
+                         });
+
+
             // Laden            
             async function load_clock() {
                 setInterval(() => {
@@ -95,66 +108,119 @@
 				});
             }
 
-            function connect_software() {			
-				let keepAliveInterval = null;
+			async function load_webrtc() {
+				peer2.on('stream', stream => {
+					console.log('########## RECEIVED STREAM ###############')
+					// got remote video stream, now let's show it in a video tag
+					var video = document.querySelector('video');
+					try {
+						if ('srcObject' in video) {
+						video.srcObject = stream
+						} else {
+							video.src = window.URL.createObjectURL(stream) // for older browsers
+						}
+					} catch (error) {
+						console.log(error);
+					}
+
+					try {
+						video.play();
+						document.getElementById('pdfContainer').classList.add('hidden');
+						document.getElementById('page_num').classList.add('hidden');
+						document.getElementById('page_count').classList.add('hidden');
+					} catch (error) {
+						console.log(error);
+					}
+									
+				})
+
+				peer2.on('signal', data => {
+					console.log('SimplePeer sending ===>');
+					socket_software.send(`{
+                        "topic": "backchannel",
+						"data":${JSON.stringify(data)}}`);
+				})
+				peer2.on('error', (err) => {console.error(err)});
+				peer2.on('close', () => {
+					console.error("############ closed #########"); 
+					loaderIn('index?name=' + clientName);
+				});
+				peer2.on('connect', () => {console.error("########### CONNECT #############")});
+				peer2.on('data', () => {console.error("########### DATA #############")});
+			}
+
+            async function connect_software() {			
+				let keepAliveInterval = null;               
+
                 try {
-                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));                    
+                    console.log('Software-connection socket connecting...');
+                    socket_software = await initWebsocket(
+                        'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
+                        socket_software, 
+                        30000, 
+                        -1
+                    );                      
                 } catch (error) {
                     console.error(error);
-                    setTimeout(function() { connect_software(); }, 1000);
+                    setTimeout(function() { connect_software(); }, 1000 * 30);
+                }
+
+                if(socket_software.readyState != 1) {
+                    console.error("Error: Connection not open");
+                    setTimeout(function() { connect_software(); }, 1000 * 5);
                 }
 				
 				// Event: Socket geöffnet
-                socket_software.onopen = function() {
-                    console.log("Software-connection socket connected.");
+                console.log("Software-connection socket connected.");
 
-					this.send(`{
-                        "topic": "init",
-						"type":"WebClient",
-						"name":"Alarmdisplay ${clientName}",
-						"info":"Praesentation",
-						"actions":[
-							{"id":"0"},	
-							{"id":"4"}
-						]}`);
+                socket_software.send(`{
+					"topic": "init",
+					"type":"WebClient",
+					"name":"Alarmdisplay ${clientName}",
+					"info":"Praesentation",
+					"actions":[
+						{"id":"0"},	
+						{"id":"4"}
+					]}`);
 
-                        // siehe websockets.ts
-					
-					
-					lastKeepAlive = new Date();					
-					keepAliveInterval = setInterval(() => {
-						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
-							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
-						}
-					}, keepAlive_intervall)
+					// siehe websockets.ts
+				
+				
+				lastKeepAlive = new Date();					
+				keepAliveInterval = setInterval(() => {
+					if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+						loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+					}
+				}, keepAlive_intervall)
 
-                    connected = true;
-                };
+				connected = true;
 
 				// Event: Daten empfangen
-                socket_software.onmessage = function(e) {
-                    processMessage(e.data, socket_software);
-                };
+				socket_software.onmessage = function(e) {
+					processMessage(e.data, socket_software);
+				};
 
 				// Event: Socket geschlossen
-                socket_software.onclose = function(e) {
+				socket_software.onclose = function(e) {
 					clearInterval(keepAliveInterval);
 					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
-                    console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-                    setTimeout(function() { connect_software(); }, 1000);
-                    connected = false;
-                };
+					console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+					setTimeout(function() { connect_software(); }, 1000);
+					connected = false;
+				};
 
 				// Event: Scoket Fehler
-                socket_software.onerror = function(err) {
+				socket_software.onerror = function(err) {
 					clearInterval(keepAliveInterval);
 					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
-                    console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
-                    socket_software.close();
-                    connected = false;
-                };
-            }
+					console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+					socket_software.close();
+					connected = false;
+				};            
 
+			};
+
+			
             // Hilfsfunktionen
             function processMessage(data, socket) {
 				console.log('Software-connection socket message:', data);
@@ -201,6 +267,10 @@
                     
                     }
                 }
+
+				if(topic == 'action_15') {
+					peer2.signal(JSON.parse(message).data);
+                }
                 
 			}
             
@@ -210,7 +280,7 @@
 			 */
 			function renderPage(num) {
 				// Loader öffnen
-				loaderIn(undefined, undefined, 'Laden...');
+				loaderIn(undefined, undefined, 'Lade Seite ' + num);
 			 	pageRendering = true;
 			  	// Using promise to fetch the page
 			 	pdfDoc.getPage(num).then(function(page) {			  
@@ -287,7 +357,11 @@
             loaderFunction = () => {
 
                 load_clock();
-                load_pdf();
+				if ( filename != 'screenshare') {
+                	load_pdf();
+				} else {
+					load_webrtc();
+				}
 
                 connect_software();                
 

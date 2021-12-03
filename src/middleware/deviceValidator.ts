@@ -11,6 +11,15 @@ export const send_action = [
     body('value').optional().exists().withMessage('offset is required').escape().trim()
 ];
 
+export const send_action_webrtc = [
+    body('action')
+        .exists()
+        .withMessage('action is required')
+        .isInt()
+        .withMessage('action must be a int'),
+    body('value').optional().exists().withMessage('offset is required').escape().trim()
+];
+
 export const start_praesentation = [
     body('filename')
         .exists()

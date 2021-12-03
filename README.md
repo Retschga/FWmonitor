@@ -15,7 +15,7 @@ angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht garant
     -   Alle relevanten Infos aus dem Alarmfax
     -   Kartenanzeige
     -   Rückmeldungen der Einsatzkräfte
--   PDF-Display für Schulungspräsentationen etc.
+-   PDF-Display/Bildschirm-Teilen für Schulungspräsentationen etc.
 -   Telegram Messenger
     -   Alarminfo (Einstellbar für verschiedene Personengruppen: Fax, Schlagwort, ...)
     -   Rückmeldungen zum Alarm

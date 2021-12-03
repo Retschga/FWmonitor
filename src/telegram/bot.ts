@@ -151,6 +151,8 @@ class TelegramBot {
             logging.error(NAMESPACE, 'telegramid: ' + telegramid, error);
             logging.error(NAMESPACE, 'sendMessage', error);
 
+            if (!(error instanceof Error)) return -1;
+
             if (error.message.indexOf('blocked') != -1) {
                 const user = await userService.find_by_telegramid(telegramid);
                 if (user) {

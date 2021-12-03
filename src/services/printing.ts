@@ -1,12 +1,13 @@
 'use strict';
 
-import puppeteer from 'puppeteer';
-import fs from 'fs';
-import ipp from 'ipp';
 import { execShellCommand, fileExists } from '../utils/common';
-import globalEvents from '../utils/globalEvents';
-import logging from '../utils/logging';
+
 import config from '../utils/config';
+import fs from 'fs';
+import globalEvents from '../utils/globalEvents';
+import ipp from 'ipp';
+import logging from '../utils/logging';
+import puppeteer from 'puppeteer';
 
 const NAMESPACE = 'Printing_Service';
 
@@ -157,7 +158,7 @@ class PrintingService {
 
     private async print_raspberry(file_without_extension: string) {
         // PDF
-        if (fileExists(file_without_extension + '.pdf')) {
+        if (await fileExists(file_without_extension + '.pdf')) {
             logging.debug(NAMESPACE, 'print_raspberry > pdf');
             const out = await execShellCommand(
                 `lp -d ${config.printing.print_printername} "${file_without_extension}.pdf"`
@@ -167,7 +168,7 @@ class PrintingService {
         }
 
         // TIFF
-        if (fileExists(file_without_extension + '.tif')) {
+        if (await fileExists(file_without_extension + '.tif')) {
             logging.debug(NAMESPACE, 'print_raspberry > tif');
             const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.tif" |lpr -P ${config.printing.print_printername}`
@@ -175,7 +176,7 @@ class PrintingService {
             logging.debug(NAMESPACE, 'print_raspberry stdout:', out);
             return true;
         }
-        if (fileExists(file_without_extension + '.tiff')) {
+        if (await fileExists(file_without_extension + '.tiff')) {
             logging.debug(NAMESPACE, 'print_raspberry > tiff');
             const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.tiff" |lpr -P ${config.printing.print_printername}`
@@ -185,7 +186,7 @@ class PrintingService {
         }
 
         // TXT
-        if (fileExists(file_without_extension + '.txt')) {
+        if (await fileExists(file_without_extension + '.txt')) {
             logging.debug(NAMESPACE, 'print_raspberry > txt');
             const out = await execShellCommand(
                 `sudo /usr/bin/tiff2ps -a -p "${file_without_extension}.txt" |lpr -P ${config.printing.print_printername}`
@@ -200,7 +201,7 @@ class PrintingService {
 
     private async print_windows(file_without_extension: string) {
         // PDF
-        if (fileExists(file_without_extension + '.pdf')) {
+        if (await fileExists(file_without_extension + '.pdf')) {
             logging.debug(NAMESPACE, 'print_windows > pdf');
             const out = await execShellCommand(
                 `"${config.programs.foxit}" /p "${file_without_extension}.pdf"`
@@ -210,7 +211,7 @@ class PrintingService {
         }
 
         // TXT
-        if (fileExists(file_without_extension + '.txt')) {
+        if (await fileExists(file_without_extension + '.txt')) {
             logging.debug(NAMESPACE, 'print_windows > txt');
             const out = await execShellCommand(`notepad /p "${file_without_extension}.txt"`);
             logging.debug(NAMESPACE, 'print_windows stdout:', out);
@@ -221,14 +222,14 @@ class PrintingService {
         return false;
     }
 
-    private print_ipp(file_without_extension: string) {
+    private async print_ipp(file_without_extension: string) {
         if (!config.printing.print_ipp_url) return false;
         const printer = new ipp.Printer(config.printing.print_ipp_url);
 
         let extension: string | undefined;
-        if (fileExists(file_without_extension + '.tif')) extension = '.tif';
-        if (fileExists(file_without_extension + '.tiff')) extension = '.tiff';
-        if (fileExists(file_without_extension + '.txt')) extension = '.txt';
+        if (await fileExists(file_without_extension + '.tif')) extension = '.tif';
+        if (await fileExists(file_without_extension + '.tiff')) extension = '.tiff';
+        if (await fileExists(file_without_extension + '.txt')) extension = '.txt';
 
         if (!extension) return false;
 

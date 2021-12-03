@@ -27,6 +27,7 @@ declare module 'ws' {
         info: string;
         actions: Action[];
         interval_keepAlive: NodeJS.Timeout;
+        backchanneldata?: any[];
     }
 }
 
@@ -170,12 +171,18 @@ class Websocket {
                             const found = client.actions.findIndex(
                                 (element) => element.id == data_json.actions[i].id
                             );
+
                             if (found != -1) {
                                 client.actions[found] = data_json.actions[i];
                             } else {
                                 client.actions.push(data_json.actions[i]);
                             }
                         }
+                    }
+
+                    if (topic == 'backchannel') {
+                        if (!client.backchanneldata) client.backchanneldata = [];
+                        client.backchanneldata.push(data_json.data);
                     }
                 } catch (error) {
                     logging.exception(NAMESPACE, error);
@@ -227,6 +234,19 @@ class Websocket {
             }
         });
         return socks;
+    }
+
+    public getBackchannel(id: string): any[] | undefined {
+        for (const client of Array.from(this.socket.clients)) {
+            if (client.readyState === WebSocket.OPEN) {
+                if (client.backchanneldata && client.id == id) {
+                    const ret = client.backchanneldata;
+                    client.backchanneldata = [];
+                    return ret;
+                }
+            }
+        }
+        return;
     }
 }
 

@@ -1,18 +1,21 @@
-import { Request, Response, NextFunction } from 'express';
+'use strict';
+
+import {
+    DecodeResult,
+    PartialTokenSession,
+    checkPassword,
+    checkToken,
+    createToken
+} from '../utils/security';
+import { NextFunction, Request, Response } from 'express';
+
 import { CalendarRight } from '../models/user';
-import UserService from '../services/user';
+import CarService from '../services/car';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
-import CarService from '../services/car';
-import {
-    checkPassword,
-    createToken,
-    checkToken,
-    DecodeResult,
-    PartialTokenSession
-} from '../utils/security';
-import logging from '../utils/logging';
+import UserService from '../services/user';
 import config from '../utils/config';
+import logging from '../utils/logging';
 
 const NAMESPACE = 'AUTH_MIDDLEWARE';
 
@@ -188,6 +191,10 @@ export async function login_app(
         });
 
         // Fehler absetzen
+        if (!(e instanceof HttpException)) {
+            next(new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, ''));
+            return;
+        }
         if (e.status != HttpStatusCodes.UNAUTHORIZED) {
             e.status = HttpStatusCodes.INTERNAL_SERVER_ERROR;
         }
@@ -270,6 +277,10 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
             throw new HttpException(HttpStatusCodes.UNAUTHORIZED, 'Access denied.');
         } catch (e) {
             // Fehler absetzen
+            if (!(e instanceof HttpException)) {
+                next(new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, ''));
+                return;
+            }
             if (e.status != HttpStatusCodes.UNAUTHORIZED) {
                 e.status = HttpStatusCodes.INTERNAL_SERVER_ERROR;
             }

@@ -1,13 +1,14 @@
 'use strict';
 
-import logging from '../utils/logging';
+import { checkFolderOrFile, execShellCommand, timeout } from '../utils/common';
+
 import config from '../utils/config';
+import fs from 'fs';
+import logging from '../utils/logging';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import mdns from 'mdns-js';
-import { timeout, execShellCommand, checkFolderOrFile } from '../utils/common';
 import path from 'path';
-import fs from 'fs';
 
 const NAMESPACE = 'StartupCheck';
 
@@ -181,26 +182,26 @@ class StartupCheck {
         logging.info(NAMESPACE, '');
         logging.info(
             NAMESPACE,
-            ' - Tesseract              ' + (this.check_tesseract() ? ' OK' : ' -> FEHLER')
+            ' - Tesseract              ' + ((await this.check_tesseract()) ? ' OK' : ' -> FEHLER')
         );
 
         // Ghostscript
         logging.info(
             NAMESPACE,
-            ' - Ghostscript            ' + (this.check_ghostscript() ? ' OK' : ' -> FEHLER')
+            ' - Ghostscript            ' + ((await this.check_ghostscript()) ? ' OK' : ' -> FEHLER')
         );
 
         if (config.raspiversion) {
             // tiff2ps
             logging.info(
                 NAMESPACE,
-                ' - tiff2ps                ' + (this.check_tiff2ps() ? ' OK' : ' -> FEHLER')
+                ' - tiff2ps                ' + ((await this.check_tiff2ps()) ? ' OK' : ' -> FEHLER')
             );
 
             // lpr
             logging.info(
                 NAMESPACE,
-                ' - lpr                    ' + (this.check_lpr() ? ' OK' : ' -> FEHLER')
+                ' - lpr                    ' + ((await this.check_lpr()) ? ' OK' : ' -> FEHLER')
             );
 
             // is root

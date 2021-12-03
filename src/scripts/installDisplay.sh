@@ -85,6 +85,7 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-features=TranslateUI \
 --fast \
 --fast-start \
+--autoplay-policy=no-user-gesture-required \
 --app=http://${1}/screen/index?name=${2}
 EOF
 

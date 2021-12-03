@@ -139,7 +139,7 @@
             let alarmNr               = $_GET['id'] || '';	
             const keepAlive_intervall = 10000;
             const keepAlive_timeout   = 60000;
-            let alarm_visible_time    = parseInt(localStorage.getItem("alarm_visible_time")       || <%= time_alarm %>);
+            let alarm_visible_time    = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);
 
 			console.log("Client-Name: ", clientName);
             console.log("alarmNr: ", alarmNr);
@@ -360,70 +360,82 @@
             }
 
 
-            function connect_software() {			
-				let keepAliveInterval = null;
+            async function connect_software() {			
+				let keepAliveInterval = null;               
+
                 try {
                     console.log('Software-connection socket connecting...');
-                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));    
+                    socket_software = await initWebsocket(
+                        'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
+                        socket_software, 
+                        30000, 
+                        -1
+                    );                      
                 } catch (error) {
                     console.error(error);
-                    setTimeout(function() { connect_software(); }, 1000);
+                    setTimeout(function() { connect_software(); }, 1000 * 30);
+                }
+
+                if(socket_software.readyState != 1) {
+                    console.error("Error: Connection not open");
+                    setTimeout(function() { connect_software(); }, 1000 * 5);
                 }
 				
 				// Event: Socket geöffnet
-                socket_software.onopen = function() {
-                    console.log("Software-connection socket connected.");
+                console.log("Software-connection socket connected.");
 
-					this.send(`{
-                        "topic": "init",
-						"type":"WebClient",
-						"name":"Alarmdisplay ${clientName}",
-						"info":"Alarm",
-						"actions":[
-							{"id":"0"},		
-                            {"id":"5"},
-                            {"id":"15", "value": "${alarm_visible_time}"},
-                            {"id":"4"}
-						]}`);
+                socket_software.send(`{
+                    "topic": "init",
+                    "type":"WebClient",
+                    "name":"Alarmdisplay ${clientName}",
+                    "info":"Alarm",
+                    "actions":[
+                        {"id":"0"},		
+                        {"id":"5"},
+                        {"id":"15", "value": "${alarm_visible_time}"},
+                        {"id":"4"}
+                    ]}`);
 
-                        // siehe websockets.ts
-					
-					
-					lastKeepAlive = new Date();					
-					keepAliveInterval = setInterval(() => {
-						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
-							loaderIn(undefined, undefined, 'Verbindungsaufbau...');
-						}
-					}, keepAlive_intervall)
+                    // siehe websockets.ts
+                
+                
+                lastKeepAlive = new Date();					
+                keepAliveInterval = setInterval(() => {
+                    if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+                        loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    }
+                }, keepAlive_intervall)
 
-                    connected = true;
-                    loaderOut();      
-                    console.log('Software-connection socket connecting... DONE');
-                };
+                connected = true;
+                loaderOut();      
+                console.log('Software-connection socket connecting... DONE');
 
-				// Event: Daten empfangen
+                // Event: Daten empfangen
                 socket_software.onmessage = function(e) {
                     processMessage(e.data, socket_software);
                 };
 
-				// Event: Socket geschlossen
+                // Event: Socket geschlossen
                 socket_software.onclose = function(e) {
-					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    clearInterval(keepAliveInterval);
+                    loaderIn(undefined, undefined, 'Verbindungsaufbau...');
                     console.log('Software-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
                     setTimeout(function() { connect_software(); }, 5000);
                     connected = false;
                 };
 
-				// Event: Scoket Fehler
+                // Event: Scoket Fehler
                 socket_software.onerror = function(err) {
-					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+                    clearInterval(keepAliveInterval);
+                    loaderIn(undefined, undefined, 'Verbindungsaufbau...');
                     console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
                     socket_software.close();
                     connected = false;
                 };
-            }
+            };
+
+            
+            
 
             // Hilfsfunktionen
             function processMessage(data, socket) {

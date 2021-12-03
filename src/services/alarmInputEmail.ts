@@ -165,47 +165,51 @@ class AlarmInputEmailService {
     }
 
     public async init() {
-        if (
-            config.email.email_address == '' ||
-            config.email.email_address == undefined ||
-            config.email.email_password == '' ||
-            config.email.email_password == undefined
-        )
-            return;
+        try {
+            if (
+                config.email.email_address == '' ||
+                config.email.email_address == undefined ||
+                config.email.email_password == '' ||
+                config.email.email_password == undefined
+            )
+                return;
 
-        //this.imap.once('ready', execute);
-        this.imap.on('ready', async () => {
-            try {
-                logging.info(NAMESPACE, 'IMAP connected');
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const mailBox = await this.openInbox();
-            } catch (error) {
+            //this.imap.once('ready', execute);
+            this.imap.on('ready', async () => {
+                try {
+                    logging.info(NAMESPACE, 'IMAP connected');
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const mailBox = await this.openInbox();
+                } catch (error) {
+                    logging.exception(NAMESPACE, error);
+                }
+            });
+            this.imap.on('error', (error: Error) => {
                 logging.exception(NAMESPACE, error);
-            }
-        });
-        this.imap.on('error', (error: Error) => {
-            logging.exception(NAMESPACE, error);
-            globalEvents.emit('softwareinfo', 'Email-Postfach: Verbindung getrennt');
-            setTimeout(() => {
-                this.connectImap();
-            }, 5000);
-        });
-        this.imap.on('close', () => {
-            logging.error(NAMESPACE, 'IMAP Connection closed');
-            globalEvents.emit('softwareinfo', 'Email-Postfach: Verbindung getrennt');
-            setTimeout(() => {
-                this.connectImap();
-            }, 5000);
-        });
-        this.imap.on('mail', (newMessageCount: number) => {
-            logging.info(NAMESPACE, 'Neue Emails: ' + newMessageCount);
-            this.fetchMails();
-        });
+                globalEvents.emit('softwareinfo', 'Email-Postfach: Verbindung getrennt');
+                setTimeout(() => {
+                    this.connectImap();
+                }, 5000);
+            });
+            this.imap.on('close', () => {
+                logging.error(NAMESPACE, 'IMAP Connection closed');
+                globalEvents.emit('softwareinfo', 'Email-Postfach: Verbindung getrennt');
+                setTimeout(() => {
+                    this.connectImap();
+                }, 5000);
+            });
+            this.imap.on('mail', (newMessageCount: number) => {
+                logging.info(NAMESPACE, 'Neue Emails: ' + newMessageCount);
+                this.fetchMails();
+            });
 
-        this.connectImap();
-        /* setInterval(() => {
+            this.connectImap();
+            /* setInterval(() => {
             console.log(this.imap.state);
         }, 1000); */
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
     }
 }
 

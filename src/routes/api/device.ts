@@ -1,10 +1,12 @@
 'use strict';
 
-import express from 'express';
-import deviceController from '../../controllers/device';
-import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
 import * as deviceValidator from '../../middleware/deviceValidator';
-import { auth_api, UserRights } from '../../middleware/auth';
+
+import { UserRights, auth_api } from '../../middleware/auth';
+
+import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
+import deviceController from '../../controllers/device';
+import express from 'express';
 
 const router = express.Router();
 
@@ -36,6 +38,13 @@ router.post(
     auth_api(UserRights.admin, UserRights.praesentation),
     deviceValidator.send_action_praesentation,
     awaitHandlerFactory(deviceController.send_action_praesentation.bind(deviceController))
+);
+
+router.post(
+    '/:id/praesentation/webrtc',
+    auth_api(UserRights.admin, UserRights.praesentation),
+    deviceValidator.send_action_webrtc,
+    awaitHandlerFactory(deviceController.send_action_webrtc.bind(deviceController))
 );
 
 export = router;

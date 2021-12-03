@@ -367,59 +367,66 @@
                 window.location.href = 'alarm?name=' + clientName;
             }
 
-            function connect_software() {			
-				let keepAliveInterval = null;
+            async function connect_software() {			
+				let keepAliveInterval = null;               
+
                 try {
                     console.log('Software-connection socket connecting...');
-                    socket_software = new WebSocket('ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''));                        
+                    socket_software = await initWebsocket(
+                        'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
+                        socket_software, 
+                        30000, 
+                        -1
+                    );                      
                 } catch (error) {
                     console.error(error);
-                    setTimeout(function() { connect_software(); }, 1000);
+                    setTimeout(function() { connect_software(); }, 1000 * 30);
+                }
+
+                if(socket_software.readyState != 1) {
+                    console.error("Error: Connection not open");
+                    setTimeout(function() { connect_software(); }, 1000 * 5);
                 }
 				
 				// Event: Socket geöffnet
-                socket_software.onopen = function() {
-                    console.log("Software-connection socket connected.");
+                console.log("Software-connection socket connected.");
 
-					this.send(`{
-                        "topic": "init",
-						"type":"WebClient",
-						"name":"Alarmdisplay ${clientName}",
-						"info":"Index",
-						"actions":[
-							{"id":"0"},
-							{"id":"1"},		
-                            {"id":"8", "value": "<%= version %>"},							
-							{"id":"3", "value": ${calendar_elements}},                            
-                            {"id":"10", "value": ${pos_calendar}},
-                            {"id":"11", "value": ${pos_dwd}},
-                            {"id":"12", "value": ${diashow_time/1000}},
-                            {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
-                            {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
-                            {"id":"15", "value": "${alarm_visible_time}"},
-                            {"id":"16", "value": "${diashow_imagedate ? 'sichtbar' : 'versteckt'}"},
-                            {"id":"2"},
-							{"id":"4"},
-                            {"id":"6"}
-						]}`);
+                socket_software.send(`{
+                    "topic": "init",
+                    "type":"WebClient",
+                    "name":"Alarmdisplay ${clientName}",
+                    "info":"Index",
+                    "actions":[
+                        {"id":"0"},
+                        {"id":"1"},		
+                        {"id":"8", "value": "<%= version %>"},							
+                        {"id":"3", "value": ${calendar_elements}},                            
+                        {"id":"10", "value": ${pos_calendar}},
+                        {"id":"11", "value": ${pos_dwd}},
+                        {"id":"12", "value": ${diashow_time/1000}},
+                        {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
+                        {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
+                        {"id":"15", "value": "${alarm_visible_time}"},
+                        {"id":"16", "value": "${diashow_imagedate ? 'sichtbar' : 'versteckt'}"},
+                        {"id":"2"},
+                        {"id":"4"},
+                        {"id":"6"}
+                    ]}`
+                ); // siehe websockets.ts                
+                
+                lastKeepAlive = new Date();					
+                keepAliveInterval = setInterval(() => {
+                    if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {		
+                        console.log('Software-connection socket is closed (watchdog). Reconnect will be attempted in 5 second.');
+                        loaderIn(undefined, undefined, 'Verbindungsaufbau... (watchdog)');
+                        socket_software.close();
+                        setTimeout(function() { connect_software(); }, 5000);
+                    }
+                }, keepAlive_intervall)
 
-                        // siehe websockets.ts
-					
-					
-					lastKeepAlive = new Date();					
-					keepAliveInterval = setInterval(() => {
-						if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {		
-                            console.log('Software-connection socket is closed (watchdog). Reconnect will be attempted in 5 second.');
-							loaderIn(undefined, undefined, 'Verbindungsaufbau... (watchdog)');
-                            socket_software.close();
-                            setTimeout(function() { connect_software(); }, 2000);
-						}
-					}, keepAlive_intervall)
-
-                    connected = true;
-                    loaderOut();      
-                    console.log('Software-connection socket connecting... DONE');
-                };
+                connected = true;
+                loaderOut();      
+                console.log('Software-connection socket connecting... DONE');
 
 				// Event: Daten empfangen
                 socket_software.onmessage = function(e) {

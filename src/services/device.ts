@@ -1,7 +1,9 @@
 'use strict';
 
-import { Websocket as _Websocket, SocketInfo } from '../websocket';
 import * as AlarmModel from '../models/alarm';
+
+import { SocketInfo, Websocket as _Websocket } from '../websocket';
+
 import globalEvents from '../utils/globalEvents';
 
 //const NAMESPACE = 'Device_Service';
@@ -49,6 +51,14 @@ class DeviceService {
         }
 
         return devices;
+    }
+
+    public get_backchannel(id: string): any[] | undefined {
+        for (let i = 0; i < this.sockets.length; i++) {
+            const response = this.sockets[i].getBackchannel(id);
+            return response;
+        }
+        return;
     }
 
     public get_praesentation(): SocketInfo[] {
