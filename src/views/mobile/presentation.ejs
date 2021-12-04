@@ -20,7 +20,7 @@
 
                 <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="openModal_device(undefined);">refresh</button> 
+                <button id="btn_reconnect" class="material-icons" onclick="openModal_device(undefined);">refresh</button> 
 
                 <div class="spacer" style="width: 0.5em;"></div>
 
@@ -30,9 +30,9 @@
 
                 <div class="flex_column">
 
-                    <div class="list controls_start">
+                    <div id="controls_start" class="list controls_start">
 
-                        <div id="start_pdf" class="item" onclick="openModal_device(undefined);">
+                        <div class="item" onclick="openModal_device(undefined);">
                             <span class="right material-icons">devices</span>
                             <span class="text text_align_center">Steuerung starten</span>
                             <span class="right material-icons">chevron_right</span>
@@ -100,11 +100,11 @@
 
                         <video id="controlsVideo_video" autoplay style="width: 100%; padding: 0;"></video> 
 
-                        <div class="item" id="controlsVideo_loading" >
+                        <div class="item hidden" id="controlsVideo_loading" >
                             <span class="text text_align_center">Verbinden ...</span>
                         </div>
 
-                        <div class="item">
+                        <div class="item" id="controlsVideo_stop">
                             <span class="text text_align_center" onclick="stopWebrtc();">Teilen beenden</span>
                         </div>
 
@@ -138,6 +138,7 @@
             let targetdevice_id;
             let targetfile;
             let peer1 = undefined;
+            let peerPollInterval = undefined;
 
             // Laden
             async function load_praes_list() {  
@@ -202,9 +203,16 @@
                 } 
                 loaderOut();
             }
-
+            
             async function load_webrtc(device) {
-                try {                   
+                try {          
+                    
+                    document.getElementById('file_list').classList.add('hidden');
+                    document.getElementById('btn_reconnect').classList.add('hidden');
+                    document.getElementById('controlsVideo').classList.remove('hidden');
+                    document.getElementById('controls_start').classList.add('hidden');
+                    document.getElementById('controlsVideo_loading').classList.remove('hidden');
+
 
                     var displayMediaOptions = {
                             video: {
@@ -215,50 +223,47 @@
                     const videoElement = document.querySelector('video');
                     const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
                     videoElement.srcObject = stream;
+                  
+                    // Warte bis Bildschirm umgeschalten hat
+                    await timeout(3000);
 
-                    document.getElementById('start_pdf').classList.add('hidden');
-                    document.getElementById('file_list').classList.add('hidden');
-                    document.getElementById('controlsVideo').classList.remove('hidden');
-
-                //    setTimeout(() => {
-                        console.log("Start SimplePeer...");
-                        peer1 = new SimplePeer({ 
-                            initiator: true, 
-                            stream: stream,
-                            config: {
-                                iceServers: []
-                            }
-                         })
-                        peer1.on('signal', data => {
-                            send_webrtcData(15, data);
+                    console.log("Start SimplePeer...");
+                    peer1 = new SimplePeer({ 
+                        initiator: true, 
+                        stream: stream,
+                        config: {
+                            iceServers: []
+                        }
                         })
-                        peer1.on('error', (err) => {console.error(err)});                    
-                        peer1.on('close', () => {
-                            console.error("############ closed #########"); 
-                            videoElement.pause();
-                            document.getElementById('controlsVideo').classList.add('hidden');
-                        });
-                        peer1.on('connect', () => {
-                            console.error("########### CONNECT #############")
-                            document.getElementById('controlsVideo_loading').classList.add('hidden');
-                            document.getElementById('controlsVideo_video').classList.remove('hidden');
-                            document.getElementById('controlsVideo').classList.remove('hidden');
-                        });
-                        peer1.on('data', () => {console.error("########### DATA #############")});
+                    peer1.on('signal', data => {
+                        send_webrtcData(data);
+                    })
+                    peer1.on('error', (err) => {
+                        console.error(err);
+                    });                    
+                    peer1.on('close', () => {
+                        console.error("############ closed #########"); 
+                        stopWebrtc();
+                    });
+                    peer1.on('connect', () => {
+                        console.error("########### CONNECT #############")
+                        document.getElementById('controlsVideo_loading').classList.add('hidden');
+                        document.getElementById('controlsVideo_video').classList.remove('hidden');
+                        document.getElementById('controlsVideo').classList.remove('hidden');
+                        setWebrtcPollInterval(5000);
+                    });
+                    peer1.on('data', () => {
+                        console.error("########### DATA #############");
+                    });
 
-                //    }, 500);
-                    
+                    setWebrtcPollInterval();
+
                 } catch (error) {
                     console.error("screenshare error", error);
                 }
                 
 			}
 
-            function stopWebrtc() {
-                if(!peer1) location.reload();
-                else peer1.destroy();
-            }
-           
             // Hilfsfunktionen
             async function openModal_device(filename) {   
                 targetfile = filename;
@@ -326,17 +331,45 @@
                 loaderOut();  
             }
             
-            async function send_webrtcData(action, data) {
-                loaderIn();
-                try {              
-                    console.log('=======> send webrtc data', data);    
-                    const response = await fetch_post(url_praesentation_webrtc.replace(':id', targetdevice_id), 
-                        {action: action, data: JSON.stringify(data)});
+            function setWebrtcPollInterval(time) {
+                if(peerPollInterval != undefined) {
+                    clearInterval(peerPollInterval);
+                    peerPollInterval = undefined;
+                }
+                peerPollInterval = setInterval(() => {
+                    send_webrtcData();
+                }, time || 1000);
+            }
+            
+            function clearWebrtcPollInterval(time) {
+                if(peerPollInterval != undefined) {
+                    clearInterval(peerPollInterval);
+                    peerPollInterval = undefined;
+                }
+            }
 
-                        console.log('<====== webrtc receive', response);
+            function stopWebrtc() {
+                if(!peer1) {
+                    location.reload();
+                } else {                    
+                    peer1.destroy();
+                    const videoElement = document.querySelector('video');
+                    videoElement.pause();
+                    clearWebrtcPollInterval();
+                    location.reload();
+                }
+            }         
+
+            async function send_webrtcData(data) {
+                try {              
+                    //console.log('=======> send webrtc data', data);    
+                    const response = await fetch_post(url_praesentation_webrtc.replace(':id', targetdevice_id), 
+                        {action: (data ? 1 : 0), data: JSON.stringify(data)});
+
+                    console.log('<====== webrtc receive', response);
 
                     if(response === false) { 
-                        openModal_device('screenshare');
+                        throw new Error('ScreenShare konnte nicht gestartet werden');
                     
                     } else if(response && response.length > 0) {
                         for(let i = 0; i < response.length; i++) {
@@ -345,16 +378,16 @@
                     }
 
                 } catch (error) {
-                    console.error('send_webrtcData', error);
-                    //alert('Aktion konnte nicht gesendet werden.');
-                    document.getElementById('controlsVideo').classList.add('hidden');
-                    document.getElementById('controlsVideo_loading').classList.remove('hidden');
-                    document.getElementById('controlsVideo_video').classList.add('hidden');
-                    load_device_list();
+                    console.error('ERROR: send_webrtcData', error);
+                    //stopWebrtc();
+                    //load_device_list();
+                    //openModal_device('screenshare');
                 }                 
-                loaderOut();  
             }
 
+            function timeout(ms) {
+                return new Promise((resolve) => setTimeout(resolve, ms));
+            }
 
             // Funktionsaufrufe
             loaderFunction = () => {

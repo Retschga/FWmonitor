@@ -156,11 +156,13 @@ class Websocket {
                     if (topic == 'init') {
                         if (data_json.type) {
                             client.type = data_json.type;
-                            client.id = getUniqueID();
+                            client.id = data_json.id || getUniqueID();
                             client.name = data_json.name;
                             client.info = data_json.info;
                             client.actions = data_json.actions;
                         }
+
+                        client.send(JSON.stringify({ topic: 'setId', message: client.id }));
                     }
 
                     if (topic == 'update') {

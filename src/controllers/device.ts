@@ -147,29 +147,22 @@ class AlarmController {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Error');
         }
 
-        let action = '';
-        switch (String(req.body.action)) {
-            case 'signal':
-                action = 'signal';
-                break;
+        if (Number(req.body.action) == 1) {
+            const response1 = DeviceServiceInstance.send_action(
+                String(req.params.id),
+                15,
+                JSON.stringify({ data: String(req.body.data) })
+            );
+
+            if (response1 != true) {
+                res.send(response1);
+                return;
+            }
         }
-
-        const response1 = DeviceServiceInstance.send_action(
-            String(req.params.id),
-            15,
-            JSON.stringify({ action: action, data: String(req.body.data) })
-        );
-
-        if (response1 != true) {
-            res.send(response1);
-            return;
-        }
-
-        await timeout(500);
 
         const response2 = DeviceServiceInstance.get_backchannel(String(req.params.id));
 
-        res.send(response2);
+        res.send(response2 || []);
     }
 }
 

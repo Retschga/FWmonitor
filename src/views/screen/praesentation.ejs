@@ -57,6 +57,7 @@
             const filename            = $_GET['file'];	
             const keepAlive_intervall = 10000;
             const keepAlive_timeout   = 60000;
+            let clientId              = localStorage.getItem("clientId") || undefined; 
 
 			console.log("Client-Name: ", clientName);
             console.log("Datei-Name:  ", filename);
@@ -178,6 +179,7 @@
 					"type":"WebClient",
 					"name":"Alarmdisplay ${clientName}",
 					"info":"Praesentation",
+					${clientId ? '"id":"' + clientId + '",' : ''}
 					"actions":[
 						{"id":"0"},	
 						{"id":"4"}
@@ -235,6 +237,13 @@
                     socket.send(JSON.stringify({topic: 'pong', message :message}));				
 					loaderOut();
 				}
+
+				// Client ID
+				if(topic == 'setId') {	
+                    console.log('CLIENT_ID is ' + message);
+                    clientId = message;		
+                    localStorage.setItem("clientId", message);
+                }
 	
 				// Alarm
 				if(topic == 'alarm') {			

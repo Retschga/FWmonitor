@@ -134,6 +134,7 @@
             let status_verf        = parseInt(localStorage.getItem("status_verf"))       || <%= show_verf %>; 
             let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || <%= show_nverf %>;      
             let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);  
+            let clientId           = localStorage.getItem("clientId") || undefined; 
 
 
             const clientName          = $_GET['name'];	
@@ -396,6 +397,7 @@
                     "type":"WebClient",
                     "name":"Alarmdisplay ${clientName}",
                     "info":"Index",
+                    ${clientId ? '"id":"' + clientId + '",' : ''}
                     "actions":[
                         {"id":"0"},
                         {"id":"1"},		
@@ -466,6 +468,13 @@
                     socket.send(JSON.stringify({topic: 'pong', message :message}));				
 					loaderOut();
 				}
+
+                // Client ID
+                if(topic == 'setId') {	
+                    console.log('CLIENT_ID is ' + message);
+                    clientId = message;		
+                    localStorage.setItem("clientId", message);
+                }
 	
 				// Alarm
 				if(topic == 'alarm') {			

@@ -49,6 +49,11 @@ Es wird eine Warnung an ausgewählte Personen gesendet, falls das Druckerpapier 
 Internetseite des Alarm-Netzwerkdruckers und das zu suchende Pattern eintragen, auf der der
 Papierlevel angezeigt wird.
 
+## Display Bildschirm-Teilen
+
+Das teilen des Bildschirms mit einem Alarmdisplay ist von PCs, im selben Netzwerk, über die App
+möglich.
+
 ## Bewegungsmelder Steuerskript (Raspberry PI)
 
 -   Anschluss des PIR siehe anschlussplan.PNG (Bei Verwendung eines Relais an 230V: Anschluss nur
