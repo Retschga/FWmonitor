@@ -166,7 +166,7 @@
                     pos = {lat:p[1], lng:p[0]};
                     if(DEBUG > 0) console.log("Keine GPS Position > verwende FW Haus", pos)
                 }
-                if(isalarm.isAlarm && alarm.lat != '' && alarm.lat != 0) {
+                if(isalarm.isAlarm && alarm.lat && alarm.lng && alarm.lat != '' && alarm.lat != 0) {
                     map_position = [alarm.lng, alarm.lat];
                     map_position_alarm = map_position;
                 } else {

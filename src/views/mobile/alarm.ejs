@@ -354,7 +354,7 @@
                     if(alarm.cars2.length < 1) target_andere.classList.add('hidden');
 
 
-                    if(alarm.lat == '' || alarm.lng == '') {
+                    if(!alarm.lat || !alarm.lng || alarm.lat == '' || alarm.lng == '') {
                         const var_color   = document.querySelectorAll(".hide_on_no_map");
                         for (let i = 0; i < var_color.length; i++){
                             var_color[i].classList.add('hidden');
