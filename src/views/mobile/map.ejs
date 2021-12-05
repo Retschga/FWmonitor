@@ -1,66 +1,61 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <h1>Karte</h1>
+        </div>
 
-            <div class="navbar">                
-
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-                <h1>Karte</h1>    
-
+        <div class="content flex_column" style="overflow: hidden">
+            <!-- LOADER KARTE -->
+            <div
+                id="mapLoader"
+                class="flex_grow flex_column flex_center_horizontal flex_center_vertical"
+            >
+                <div class="spinner_rotateplane"></div>
+                <h2 class="text_align_center loadertext_map">GPS einschalten!</h2>
             </div>
 
-            <div class="content flex_column" style="overflow: hidden;">
-
-                <!-- LOADER KARTE -->
-                <div 
-                    id="mapLoader"
-                    class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
-                >
-                        <div class="spinner_rotateplane"></div>
-                        <h2 class="text_align_center loadertext_map">GPS einschalten!</h2>
+            <div id="mapidContainer" class="flex_grow flex_column">
+                <div id="mapid" class="flex_grow"></div>
+                <div id="map-popup" class="ol-popup">
+                    <a href="#" id="map-popup-closer" class="ol-popup-closer"></a>
+                    <div id="map-popup-content"></div>
                 </div>
-
-                <div id="mapidContainer" class="flex_grow flex_column">
-                    <div id="mapid" class="flex_grow"></div>   
-                </div>		
-
             </div>
+        </div>
 
         <%- include('partials/foot') -%>
 
-        <script>           
-            
-
+        <script>
             // Laden
-            async function hydrantenkarte_load() {                
-
+            async function hydrantenkarte_load() {
                 var opts = {
                     enableHighAccuracy: true,
                     timeout: 5000,
                     maximumAge: 4000
-                };	
-
+                };
 
                 async function success(position) {
-                    let latitude  = position.coords.latitude;
+                    let latitude = position.coords.latitude;
                     let longitude = position.coords.longitude;
 
-                    const pos = {lat:latitude, lng:longitude};
+                    const pos = { lat: latitude, lng: longitude };
 
-                    const map = createMap(pos, true);                    
-                    
-                    try {  
-                        const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
+                    const map = createMap(pos, true);
+
+                    try {
+                        const hydrantenCache = await fetch_get(
+                            url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude),
+                            true
+                        );
                         add_hydranten(hydrantenCache, map);
                     } catch (error) {
                         console.log(error);
@@ -69,40 +64,46 @@
 
                     add_forstRettPkt(map);
 
-                    if(
-                        $_GET['lat'] != undefined && $_GET['lat'] != '' &&
-                        $_GET['lng'] != undefined && $_GET['lng'] != ''
+                    if (
+                        $_GET['lat'] != undefined &&
+                        $_GET['lat'] != '' &&
+                        $_GET['lng'] != undefined &&
+                        $_GET['lng'] != ''
                     ) {
                         console.log('target', $_GET['lat'], $_GET['lng']);
                         add_circle($_GET['lat'], $_GET['lng'], map);
                     }
 
+                    Number.prototype.toRad = function () {
+                        return (this * Math.PI) / 180;
+                    };
 
-                    Number.prototype.toRad = function() {
-                        return this * Math.PI / 180;
-                    }
-                    
-                    Number.prototype.toDeg = function() {
-                        return this * 180 / Math.PI;
-                    }
+                    Number.prototype.toDeg = function () {
+                        return (this * 180) / Math.PI;
+                    };
 
                     function moveCoord(coord, brng, dist) {
-                        dist = dist / 6371;  
-                        brng = brng.toRad();  
-                    
-                        var lat1 = coord.lat.toRad(), lon1 = coord.lng.toRad();
-                    
-                        var lat2 = Math.asin(Math.sin(lat1) * Math.cos(dist) + 
-                                            Math.cos(lat1) * Math.sin(dist) * Math.cos(brng));
-                    
-                        var lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dist) *
-                                                    Math.cos(lat1), 
-                                                    Math.cos(dist) - Math.sin(lat1) *
-                                                    Math.sin(lat2));
-                    
+                        dist = dist / 6371;
+                        brng = brng.toRad();
+
+                        var lat1 = coord.lat.toRad(),
+                            lon1 = coord.lng.toRad();
+
+                        var lat2 = Math.asin(
+                            Math.sin(lat1) * Math.cos(dist) +
+                                Math.cos(lat1) * Math.sin(dist) * Math.cos(brng)
+                        );
+
+                        var lon2 =
+                            lon1 +
+                            Math.atan2(
+                                Math.sin(brng) * Math.sin(dist) * Math.cos(lat1),
+                                Math.cos(dist) - Math.sin(lat1) * Math.sin(lat2)
+                            );
+
                         if (isNaN(lat2) || isNaN(lon2)) return null;
 
-                        return {lat:lat2.toDeg(), lng:lon2.toDeg()};		
+                        return { lat: lat2.toDeg(), lng: lon2.toDeg() };
                     }
 
                     let radius = 3.1;
@@ -111,69 +112,80 @@
                     let p3 = moveCoord(pos, 180, radius);
                     let p4 = moveCoord(pos, 270, radius);
 
-                    let boundingExtent  = new ol.extent.boundingExtent([[p1.lng, p1.lat], [p2.lng, p2.lat], [p3.lng, p3.lat], [p4.lng, p4.lat]]);
-                    boundingExtent = ol.proj.transformExtent(boundingExtent, ol.proj.get('EPSG:4326'), ol.proj.get('EPSG:3857'));
+                    let boundingExtent = new ol.extent.boundingExtent([
+                        [p1.lng, p1.lat],
+                        [p2.lng, p2.lat],
+                        [p3.lng, p3.lat],
+                        [p4.lng, p4.lat]
+                    ]);
+                    boundingExtent = ol.proj.transformExtent(
+                        boundingExtent,
+                        ol.proj.get('EPSG:4326'),
+                        ol.proj.get('EPSG:3857')
+                    );
 
                     map.setView(
                         new ol.View({
                             center: ol.proj.fromLonLat([pos.lng, pos.lat]),
-                            extent: boundingExtent ,   
+                            extent: boundingExtent,
                             zoom: map.getView().getZoom()
                         })
                     );
 
-                    let mapLoader = document.querySelector("#mapLoader");
-                    mapLoader.classList.add("hidden")
-                   
-                };
+                    let mapLoader = document.querySelector('#mapLoader');
+                    mapLoader.classList.add('hidden');
+                }
 
                 function error(error) {
-                    let str = "?;"
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED: str = "Keine Freigabe! -> Siehe System Einstellungen"; break;
-                        case error.POSITION_UNAVAILABLE: str = "Pos. nicht gefunden!"; break;
-                        case error.TIMEOUT: str = "Timeout"; break;
-                        default: str = "FEHLER"; break;
+                    let str = '?;';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            str = 'Keine Freigabe! -> Siehe System Einstellungen';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            str = 'Pos. nicht gefunden!';
+                            break;
+                        case error.TIMEOUT:
+                            str = 'Timeout';
+                            break;
+                        default:
+                            str = 'FEHLER';
+                            break;
                     }
                     alert(`Es war nicht möglich Sie zu lokalisieren (${str})`);
 
-                    let mapLoader = document.querySelector("#mapLoader");
-                    mapLoader.classList.add("hidden")
+                    let mapLoader = document.querySelector('#mapLoader');
+                    mapLoader.classList.add('hidden');
+                }
 
-                };
-
-                if(
-                    $_GET['lat'] != undefined && $_GET['lat'] != '' &&
-                    $_GET['lng'] != undefined && $_GET['lng'] != ''
+                if (
+                    $_GET['lat'] != undefined &&
+                    $_GET['lat'] != '' &&
+                    $_GET['lng'] != undefined &&
+                    $_GET['lng'] != ''
                 ) {
-                    let mapLoader_text = document.querySelector(".loadertext_map");
+                    let mapLoader_text = document.querySelector('.loadertext_map');
                     mapLoader_text.innerHTML = 'Lade Karte...';
 
-                    let position = {coords: {latitude: Number($_GET['lat']), longitude: Number($_GET['lng'])}}
+                    let position = {
+                        coords: { latitude: Number($_GET['lat']), longitude: Number($_GET['lng']) }
+                    };
                     success(position);
                 } else {
-                    if (!navigator.geolocation){
-                        alert("Geolokation wird von ihrem Browser nicht unterstützt");
+                    if (!navigator.geolocation) {
+                        alert('Geolokation wird von ihrem Browser nicht unterstützt');
                         goBack();
                         return;
                     }
 
                     navigator.geolocation.getCurrentPosition(success, error, opts);
                 }
-
-
-                
             }
 
             // Funktionsaufrufe
             loaderFunction = () => {
                 hydrantenkarte_load();
             };
-            
-            
-
         </script>
-       
     </body>
-	
 </html>

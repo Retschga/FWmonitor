@@ -526,6 +526,9 @@ function initWebsocket(url, existingWebsocket, timeoutMs, numberOfRetries) {
 
 // Icons Karte
 var styleCache = {
+    undefined: new ol.style.Style({
+        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_undefined.png' })
+    }),
     pipe: new ol.style.Style({
         image: new ol.style.Icon({ src: '/images/map_marker_hydrant_pipe.png' })
     }),
@@ -704,6 +707,61 @@ function add_posmarker(lat, lng, map) {
     return posMarker;
 }
 
+// Klickbare Marker
+function add_markerPopup(map) {
+    const container = document.getElementById('map-popup');
+    const content = document.getElementById('map-popup-content');
+    const closer = document.getElementById('map-popup-closer');
+
+    if (!container) return;
+
+    const overlay = new ol.Overlay({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
+    });
+    map.addOverlay(overlay);
+    closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
+
+    // display popup on click
+    map.addEventListener('click', function (evt) {
+        const feature = map.forEachFeatureAtPixel(
+            evt.pixel,
+            function (feature, layer) {
+                return feature;
+            },
+            {
+                hitTolerance: 20
+            }
+        );
+        if (feature) {
+            const attr = feature.getProperties();
+            const geometry = feature.getGeometry();
+            let coord = geometry.getCoordinates();
+
+            if (attr.FIELD1) {
+                content.innerHTML =
+                    `<p>Typ: Forst Rettungspunkt</p>` + `<p>Nummer: ${attr.FIELD1 || 'k.A.'}</p>`;
+            } else {
+                content.innerHTML =
+                    `<p>Typ: ${attr.title || 'k.A.'}</p>` +
+                    `<p>Leitung: ${attr.diameter || 'k.A.'}</p>` +
+                    `<p>Wasserquelle: ${attr.watersource || 'k.A.'}</p>` +
+                    `<p>Position: ${attr.positiondesc || 'k.A.'}</p>`;
+            }
+            overlay.setPosition(coord);
+        } else {
+            overlay.setPosition(undefined);
+        }
+    });
+}
+
 // Karte
 let map_instance = null;
 let map_moved = false;
@@ -861,6 +919,8 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
         map_moved = false;
         tileLayer_OpenTopoMap.setVisible(false);
     }, 1500);
+
+    add_markerPopup(map);
 
     return map;
 }

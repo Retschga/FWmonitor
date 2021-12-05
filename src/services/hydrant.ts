@@ -47,7 +47,10 @@ class HydrantService {
                     },
                     properties: {
                         title: name,
-                        iconcategory: 'icons'
+                        iconcategory: 'icons',
+                        diameter: dataElement['tags']['fire_hydrant:diameter'],
+                        watersource: dataElement['tags']['water_source'],
+                        positiondesc: dataElement['tags']['fire_hydrant:position']
                     }
                 });
             }

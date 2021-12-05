@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 'use strict';
 
-const staticCacheName = 'cache-vers-2021-12-01-003';
+const staticCacheName = 'cache-vers-2021-12-05-001';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/car/offline'];

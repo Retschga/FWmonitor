@@ -393,7 +393,7 @@
             loaderFunction = () => {
                 load_praes_list();
 
-                if (navigator.mediaDevices) {
+                if ('getDisplayMedia' in navigator.mediaDevices) {
                     const elem     = document.querySelector('.var_screenshare');   
                     elem.classList.remove('hidden')
                 }
