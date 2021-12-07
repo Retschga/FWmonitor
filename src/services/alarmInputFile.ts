@@ -64,7 +64,7 @@ class AlarmInputFileService {
 
     private async tiffToPdf(file: string, targetPath: string) {
         await execShellCommand(
-            `"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu PDF`
+            `"${config.programs.tesseract}" "${file}" "${targetPath}" -l deu pdf`
         );
         logging.info(NAMESPACE, 'TIFF -> PDF    FERTIG\n');
     }
@@ -126,7 +126,7 @@ class AlarmInputFileService {
             moveFile(
                 config.folders.temp + file + '.tiff',
                 config.folders.archive + '/' + file + '.tiff'
-            );
+            ).catch((e) => logging.exception(NAMESPACE, e));
             path = config.folders.archive + '/' + file + '.tiff';
 
             // TIFF -> TXT
@@ -143,13 +143,15 @@ class AlarmInputFileService {
             await this.tiffToTxt(path, config.folders.temp + file);
 
             // TIFF -> PDF
-            await this.tiffToPdf(path, config.folders.temp + file);
+            await this.tiffToPdf(path, config.folders.temp + file).catch((e) =>
+                logging.exception(NAMESPACE, e)
+            );
 
             // Move -> Archiv
             await moveFile(
                 config.folders.temp + file + '.pdf',
                 config.folders.archive + '/' + file + '.pdf'
-            );
+            ).catch((e) => logging.exception(NAMESPACE, e));
 
             /// Drucken
             if (config.printing.printFile_fax)

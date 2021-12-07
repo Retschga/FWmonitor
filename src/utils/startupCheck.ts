@@ -15,12 +15,20 @@ const NAMESPACE = 'StartupCheck';
 class StartupCheck {
     private async check_tesseract(): Promise<boolean> {
         const out = await execShellCommand(`"${config.programs.tesseract}" --version`);
-        return out.toLowerCase().indexOf('tesseract v') != -1;
+        return (
+            out.toLowerCase().indexOf('tesseract v') != -1 ||
+            out.toLowerCase().indexOf('tesseract 3.') != -1 ||
+            out.toLowerCase().indexOf('tesseract 4.') != -1 ||
+            out.toLowerCase().indexOf('tesseract 5.') != -1
+        );
     }
 
     private async check_ghostscript(): Promise<boolean> {
         const out = await execShellCommand(`"${config.programs.ghostscript}" --version`);
-        return out.toLowerCase().indexOf('gpl ghostscript') != -1;
+        return (
+            out.toLowerCase().indexOf('gpl ghostscript') != -1 ||
+            out.toLowerCase().indexOf('9.') != -1
+        );
     }
 
     private async check_tiff2ps(): Promise<boolean> {
