@@ -188,6 +188,7 @@ class Websocket {
                     }
                 } catch (error) {
                     logging.exception(NAMESPACE, error);
+                    logging.error(NAMESPACE, String(data));
                 }
             });
 

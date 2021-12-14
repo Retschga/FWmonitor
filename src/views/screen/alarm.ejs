@@ -574,6 +574,13 @@
                 load_clock();              
                 load_status();                
                 connect_software();  
+
+                setTimeout(() => {
+                    const navb = document.querySelector(".navbar");
+                    if (navb.offsetHeight <= 10) {
+                        navb.style.minHeight = "2.9em";
+                    }
+                }, 5000);
             };      
             
             
