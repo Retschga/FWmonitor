@@ -215,8 +215,10 @@
                     const scrolltarget = document.querySelector('#scroll_' + localStorage.getItem('user_list-scrollid'));    
                     if(scrolltarget) scrolltarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
 
-                    if(localStorage.getItem('user_list-filter'))
+                    if(localStorage.getItem('user_list-filter')) {
                         setSelectedIndex(document.getElementById("benutzer_filter"), localStorage.getItem('user_list-filter'));
+                        filter_users(localStorage.getItem('user_list-filter'));
+                    }
                
                 } catch (error) {
                     console.error('load_users_all', error);
@@ -246,6 +248,9 @@
 
             // Funktionsaufrufe
             loaderFunction = () => {
+                load_users_all();
+            };
+            updateFunction = () => {
                 load_users_all();
             };
             

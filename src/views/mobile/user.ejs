@@ -24,6 +24,23 @@
 
                 <div class="flex_column list">
 
+                    <button class="accordion element9" onclick="accordion_switch(this)">Name</button>
+                    <div class="accordion_panel element10">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">person</span>
+                            <span class="text">Nachname</span>
+                            <input class="var_nachname" type="text" style="min-width: 30%; margin-right: 10px;">
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">person</span>
+                            <span class="text">Vorname</span>
+                            <input class="var_vorname" type="text" style="min-width: 30%; margin-right: 10px;">
+                        </div>
+
+                    </div>
+
                     <button class="accordion element1" onclick="accordion_switch(this)">Alarmgruppe / Berechtigungen</button>
                     <div class="accordion_panel element2">
 
@@ -244,6 +261,8 @@
                         document.querySelector(".element6").classList.add('hidden');
                         document.querySelector(".element7").classList.add('hidden');
                         document.querySelector(".element8").classList.add('hidden');
+                        document.querySelector(".element9").classList.add('hidden');
+                        document.querySelector(".element10").classList.add('hidden');
                         return;
                     }
 
@@ -258,7 +277,11 @@
                     console.log('alarmGroups', alarmGroups);     
 
                     const var_name       = document.querySelector(".var_name");
+                    const var_nachname   = document.querySelector(".var_nachname");
+                    const var_vorname    = document.querySelector(".var_vorname");
                     var_name.innerHTML   = user.name + ' ' + user.vorname;
+                    var_nachname.value   = user.name;
+                    var_vorname.value    = user.vorname;
 
                     const var_alarmgroup = document.querySelector(".var_alarmgroup");
                     let tempStr = '';
@@ -326,6 +349,8 @@
                 loaderIn();
                 try {
                     const var_alarmgroup      = document.querySelector(".var_alarmgroup").value;
+                    const var_vorname         = document.querySelector(".var_vorname").value;
+                    const var_nachname        = document.querySelector(".var_nachname").value;
 
                     const var_admin            = document.querySelector(".var_admin").checked ? 1 : 0; 
                     const var_calendar         = document.querySelector(".var_calendar").value; 
@@ -364,13 +389,17 @@
                         stMA: var_MMA,
                         stGRF: var_GRF,
                         stZUGF: var_ZUGF,
-                        praes: var_praes
+                        praes: var_praes,
+                        name: var_nachname,
+                        vorname: var_vorname,
                     });
 
                 } catch (error) {
                     console.error('save_user', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
                 }
+
+                load_user();
                 loaderOut();
             }
 

@@ -25,6 +25,7 @@
     let user_praes = false;  
 
     let loaderFunction = () => {};
+    let updateFunction = () => {};
     let serviceWorker_registration = null;
 
     const url_user_status_plans_update = '/api/v1/user/status/plans/update/:id';
@@ -220,7 +221,12 @@
                 console.log('userrights', userrights);    
             } catch (error) {
                 console.error(error);
-            }            
+            }          
+            try {
+                updateFunction();
+            } catch (error) {
+                console.error(error);
+            }  
         }
 
         loaderOut(); 

@@ -1,7 +1,7 @@
 'use strict';
 
-import { body } from 'express-validator';
 import { UserStatus } from '../models/user';
+import { body } from 'express-validator';
 
 export const updateUserStatus = [
     body('value')
@@ -93,7 +93,9 @@ export const updateUser = [
         .exists()
         .withMessage('praes is required')
         .isBoolean()
-        .withMessage('praes must be boolean')
+        .withMessage('praes must be boolean'),
+    body('name').isString().withMessage('name must be string'),
+    body('vorname').isString().withMessage('vorname must be string')
 ];
 
 export const updateNotificationsApp = [

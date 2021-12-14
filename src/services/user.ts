@@ -170,6 +170,26 @@ class UserService {
         globalEvents.emit('user-approved', id);
     }
 
+    public async update_name(id: number, name: string) {
+        const affectedRows = await UserModel.model.update(Number(id), {
+            name: name
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update_name - No rows changed');
+        }
+    }
+
+    public async update_vorname(id: number, vorname: string) {
+        const affectedRows = await UserModel.model.update(Number(id), {
+            vorname: vorname
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update_vorname - No rows changed');
+        }
+    }
+
     // STATUS
     public async get_status(id: number) {
         const result = await this.find({ id: id });

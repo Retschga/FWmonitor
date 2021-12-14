@@ -106,6 +106,13 @@ class UserController {
                 Number(req.params.id),
                 Number(req.body.praes) == 1
             );
+            console.log(req.body.name, req.body.vorname);
+            if (req.body.name) {
+                await UserService.update_name(Number(req.params.id), String(req.body.name));
+            }
+            if (req.body.vorname) {
+                await UserService.update_vorname(Number(req.params.id), String(req.body.vorname));
+            }
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
         }
