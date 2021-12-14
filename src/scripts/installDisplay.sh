@@ -44,8 +44,7 @@ sudo apt -y install --no-install-recommends unclutter xscreensaver
 
 # Herunterladen der Skripte
 echo "Lade Skripte herunter"
-/usr/bin/wget -O /home/pi/steuerUART.py "$1/scripts/steuerUART.py"
-/usr/bin/wget -O /home/pi/steuerRELAIS.py "$1/scripts/steuerRELAIS.py"
+/usr/bin/wget -O /home/pi/steuerUART.py "$1/scripts/steuer.py"
 /usr/bin/wget -O /home/pi/steuerUpdate.sh "$1/scripts/steuerUpdate.sh"
 sudo chmod +x /home/pi/steuerUpdate.sh
 
@@ -112,9 +111,11 @@ else
 fi
 
 # Autostart Demoeinträge für Steuerskripte
-cronentry="# @reboot /usr/bin/python3 /home/pi/steuerRELAIS.py ${1} ${2} PIR_PIN RELAIS_PIN"
+cronentry="# @reboot /usr/bin/python3 /home/pi/steuer.py ${1} ${2} #PIR_PIN# #RELAIS_PIN# RELAIS"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
-cronentry="# @reboot /usr/bin/python3 /home/pi/steuerUART.py ${1} ${2} PIR_PIN UART_PORT"
+cronentry="# @reboot /usr/bin/python3 /home/pi/steuer.py ${1} ${2} #PIR_PIN# #UART_PORT# UART"
+sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
+cronentry="# @reboot /usr/bin/python3 /home/pi/steuer.py ${1} ${2} #PIR_PIN# HDMI HDMI"
 sudo crontab -l | grep -q "${cronentry}"  && echo 'entry already exists' || ( (sudo crontab -l ; echo "${cronentry}")| sudo crontab - )
 
 pip3 install asyncio

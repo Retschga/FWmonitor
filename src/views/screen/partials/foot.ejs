@@ -29,10 +29,55 @@
     
     const url_praesentation_file = '/api/v1/praesentation/files/:filename'
 
-    async function initialLoad() {
+    let socket_hardware;
+    let watchdogInterval;
+
+    async function connect_hardware() {			
+        let keepAliveInterval = null;               
+
+        try {
+            console.log('Hardware-connection socket connecting...');
+            socket_hardware = await initWebsocket(
+                'ws://127.0.0.1:8765', 
+                socket_hardware, 
+                30000, 
+                30
+            );                      
+        } catch (error) {
+            console.error(error);
+            setTimeout(function() { connect_hardware(); }, 1000 * 30);
+        }
+
+        if(socket_hardware.readyState != 1) {
+            console.error("Error: Hardware-Connection not open");
+            setTimeout(function() { connect_hardware(); }, 1000 * 5);
+        }
         
+        // Event: Socket geöffnet
+        console.log("Hardware-connection socket connected.");
+
+        socket_hardware.send(`watchdog`);        
+        watchdogInterval = setInterval(() => {
+            socket_hardware.send(`watchdog`); 
+        }, 10000)
+
+        // Event: Socket geschlossen
+        socket_hardware.onclose = function(e) {
+            console.log('Hardware-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
+            setTimeout(function() { connect_hardware(); }, 5000);
+        };
+
+        // Event: Scoket Fehler
+        socket_hardware.onerror = function(err) {
+            clearInterval(watchdogInterval);
+            console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
+            socket_hardware.close();
+        };
     }
 
+    async function initialLoad() {
+        connect_hardware();
+    }
 
     // **** Events ****
     document.addEventListener('readystatechange', event => { 

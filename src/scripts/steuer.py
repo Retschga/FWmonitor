@@ -9,6 +9,7 @@
 # -------------- Includes --------------
 import asyncio
 import websockets
+import subprocess
 from websockets.exceptions import ConnectionClosedError, ConnectionClosedOK
 import sys, time, datetime
 import RPi.GPIO as GPIO
@@ -19,7 +20,7 @@ import json
 
 # -------------- Einstellungen --------------
 if len(sys.argv) < 4:
-    print("Aufruf: python3 "+sys.argv[0]+" SERVER_IP:SERVER_PORT CLIENT_NAME PIR_PIN UART_PORT")
+    print("Aufruf: python3 "+sys.argv[0]+" SERVER_IP:SERVER_PORT CLIENT_NAME PIR_PIN UART_PORT/RELAIS_PIN RELAIS/UART/HDMI")
     sys.exit()
 
 # IP Adresse des FWmonitor servers
@@ -31,16 +32,29 @@ name = sys.argv[2]
 # GPIO PIN Bewegungsmelder
 pirpin = int(sys.argv[3])
 
-# COM Port (Fernseher)
+# COM Port / Relais PIN (Fernseher)
 uartport = sys.argv[4]
+relaispin = uartport
+
+# Skripttyp RELAIS/UART
+if len(sys.argv) < 4:
+    skripttype = "HDMI"
+else:
+    skripttype = sys.argv[5]
 
 starttime = str(datetime.datetime.now())
 version = "3.0.1"
+
+bashCommand_reboot     = "sudo /sbin/shutdown -r now"
+bashCommand_screen_on  = "vcgencmd display_power 1"
+bashCommand_screen_off = "vcgencmd display_power 0"
 
 # Befehl "Bildschirm AN"  siehe Anleitung Fersneher
 poweron = b'\xAA\x11\xFE\x01\x01\x11'
 # Befehl "Bildschirm AUS" siehe Anleitung Fersneher
 poweroff = b'\xAA\x11\xFE\x01\x00\x10'
+
+asyncState = type('', (), {})()
 
 # ------- GPIO Setup -------
 # RPi.GPIO Layout verwenden (wie Pin-Nummern)
@@ -73,25 +87,44 @@ def openSerial():
 
 # ------- Bildschirm AUS -------
 async def schirmaus(asyncState):
-    # Öffne Seriellen Port
-    ser = openSerial()
-    # Sende Daten
-    ser.write(poweroff)
-    # Schließe Seriellen Port
-    ser.close()
+    if skripttype == "UART":
+        # Öffne Seriellen Port
+        ser = openSerial()
+        # Sende Daten
+        ser.write(poweroff)
+        # Schließe Seriellen Port
+        ser.close()       
+    elif skripttype == "RELAIS":
+        GPIO.output(relaispin, GPIO.LOW)
+    else:
+        try:
+            output = subprocess.call(bashCommand_screen_on, shell=True)
+        except Exception as e:
+            await asyncio.wait_for(printLog("Disp ON Fehler", e), 5)
+
     if asyncState.schirmstatus != "AUS":
         asyncState.schirmstatus = "AUS"
         asyncState.schirmstatusTime = str(datetime.datetime.now())
     await asyncio.wait_for(printLog(" ---> Schirm AUS"), 5)
 
+
 # ------- Bildschirm AN -------
 async def schirman(asyncState):
-    # Öffne Seriellen Port
-    ser = openSerial()
-    # Sende Daten
-    ser.write(poweron)
-    # Schließe Seriellen Port
-    ser.close()
+    if skripttype == "UART":
+        # Öffne Seriellen Port
+        ser = openSerial()
+        # Sende Daten
+        ser.write(poweron)
+        # Schließe Seriellen Port
+        ser.close()
+    elif skripttype == "RELAIS":
+        GPIO.output(relaispin, GPIO.HIGH)
+    else:
+        try:
+            output = subprocess.call(bashCommand_screen_off, shell=True)
+        except Exception as e:
+            await asyncio.wait_for(printLog("Disp OFF Fehler", e), 5)
+
     # Konsolenausgabe
     if asyncState.schirmstatus != "AN":
         asyncState.schirmstatus = "AN"
@@ -118,7 +151,7 @@ async def checkPIR(asyncState):
 
     await asyncio.wait_for(printLog("TimerOFF: " + str(asyncState.timeToSleep)), 5)
 
-# ------- Websocket -------
+# ------- Websocket Software -------
 class WebSocketRetry:
     def __init__(self, uri, timeout=1):
         """
@@ -151,7 +184,7 @@ class WebSocketRetry:
                     self._websocket_connection = ws
                     self.connected = True
                     await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
-                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}"
+                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog)+"\"}]}"
 
                     while self.connected:               
                         # Senden         
@@ -214,20 +247,29 @@ class WebSocketRetry:
             self._flag_closed = True
             await self._websocket_connection.close()
 
-
 async def connectWebsocket(asyncState):
     asyncState.client = await WebSocketRetry.create("ws://" + targetserver)
 
 async def closeWebsocket(asyncState):
     await asyncState.client.close()
 
+async def keepAlive(asyncState):    
+    await asyncState.client.sendPing("TESTPING")
+    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog)+"\"}]}")
+
+# ------- Websocket Hardware -------
+async def WebSocketHardware(websocket, path):
+    global asyncState
+    async for message in websocket:
+        await printLog("Msg IN: " + str(message))
+        if message == "watchdog":
+            await printLog("Watchdog OK")
+            asyncState.timerWatchdog = 0
+
 async def endProgram(asyncState):
     await asyncio.wait_for(printLog("Steuerskript UART", "Version " + version, "ENDE"), 5)
     await asyncio.wait_for(closeWebsocket(asyncState), 5)
 
-async def keepAlive(asyncState):    
-    await asyncState.client.sendPing("TESTPING")
-    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"}]}")
 
 async def mainLoop(asyncState):
     while True:
@@ -248,6 +290,13 @@ async def mainLoop(asyncState):
             if asyncState.timer300 >= 300:
                 asyncState.timer300 = 0
                 await create3hLog(asyncState)
+
+            asyncState.timerWatchdog += 1
+            if asyncState.timer300 >= 300:
+                await printLog("---- watchdog reboot ----")
+                output = subprocess.call(bashCommand_reboot, shell=True)
+                await printLog("Reboot OUT: " + output)
+
         except Exception:
             await asyncio.wait_for(printLog("MAIN LOOP error"), 5)
 
@@ -266,18 +315,20 @@ if __name__ == '__main__':
     asyncState.timer5 = 0
     asyncState.timer15 = 0
     asyncState.timer300 = 0
+    asyncState.timerWatchdog = 0
 
     try:
 
         # Programmstart Ausgabe auf Konsole
         asyncio.ensure_future(printLog("FWmonitor (c) 2021 Resch"))
-        asyncio.ensure_future(printLog("Steuerskript UART", "Version " + version, "START"))
+        asyncio.ensure_future(printLog("Steuerskript", "Version " + version, "START"))
         asyncio.ensure_future(printLog("Steuerskript Server", targetserver))
         asyncio.ensure_future(printLog("Steuerskript Client-Name", name))
         asyncio.ensure_future(printLog("#"))
         
         # WebSocket
         asyncio.ensure_future(connectWebsocket(asyncState))
+        asyncio.ensure_future(websockets.serve(WebSocketHardware, "localhost", 8765))
         asyncio.ensure_future(mainLoop(asyncState))
 
         # Starte AsyncIO Eventloop
