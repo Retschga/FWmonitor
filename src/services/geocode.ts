@@ -7,14 +7,8 @@ import csv from 'csv-parser';
 import diffmatch from '../utils/diff_match_patch.utils';
 import fs from 'fs';
 import logging from '../utils/logging';
-import nominatim from 'nominatim-client';
-import { urlencoded } from 'express';
 
 const NAMESPACE = 'Geocode_Service';
-const nominatimClient = nominatim.createClient({
-    useragent: 'FWmonitor', // The name of your application
-    referer: 'https://github.com/Retschga/FWmonitor' // The referer link
-});
 
 class GeocodeService {
     private async geocode_bing(alarmFields: AlarmFields): Promise<{ lat: string; lng: string }> {
@@ -24,14 +18,15 @@ class GeocodeService {
             `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response: any = await axios.get(geobingUrl).catch((err) => {
-            logging.exception(NAMESPACE, err);
-        });
+        logging.debug(NAMESPACE + ' geocode_bing', geobingUrl);
 
-        const coordinates =
-            response.data.resourceSets?.[0]?.resources?.[0]?.geocodePoints?.[0]?.coordinates;
-        return { lat: coordinates.lat, lng: coordinates.lng };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response: any = await axios.get(geobingUrl);
+
+        logging.debug(NAMESPACE + ' geocode_bing', JSON.stringify(response.data));
+
+        const coordinates = response.data.resourceSets[0]?.resources[0]?.point?.coordinates;
+        return { lat: coordinates[0], lng: coordinates[1] };
     }
 
     private async geocode_overpass(ORT: string, OBJEKT: string) {
@@ -63,12 +58,10 @@ class GeocodeService {
                 ');out body center;'
         );
 
-        //console.log(overpassObjektUrl);
+        logging.debug(NAMESPACE + ' geocode_overpass', overpassObjektUrl);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response: any = await axios.get(overpassObjektUrl).catch((err) => {
-            logging.exception(NAMESPACE, err);
-        });
+        const response: any = await axios.get(overpassObjektUrl);
 
         const csvDat = response.data.split('\n');
 
@@ -95,6 +88,8 @@ class GeocodeService {
                 }
             }
         }
+
+        logging.debug(NAMESPACE + ' geocode_overpass', JSON.stringify(ret));
 
         return ret;
     }
@@ -125,6 +120,31 @@ class GeocodeService {
         });
     }
 
+    private async geocode_nominatim(alarmFields: AlarmFields) {
+        //nominatim.openstreetmap.org/?useragent=FWmonitor&referer=https%3A%2F%2Fgithub.com%2FRetschga%2FFWmonitor&format=json&q=DE%2C%20Bayr%C4%B1schzell%2C%20Tannerhofstra%C3%9Fe%2032
+
+        const url = encodeURI(
+            'https://nominatim.openstreetmap.org/search' +
+                '?useragent=FWmonitor' +
+                '&referer=https://github.com/Retschga/FWmonitor' +
+                '&format=json' +
+                '&country=DE' +
+                '&city=' +
+                alarmFields.ORT +
+                '&street=' +
+                alarmFields.STRASSE
+        );
+
+        logging.debug(NAMESPACE + ' geocode_nominatim', url);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const response: any = await axios.get(url);
+
+        logging.debug(NAMESPACE + ' geocode_nominatim', JSON.stringify(response.data));
+
+        return response;
+    }
+
     public async geocode(alarmFields: AlarmFields, isAddress: boolean) {
         let ret = { lat: '0', lng: '0', isAddress: isAddress };
         let isHighway = false;
@@ -140,11 +160,11 @@ class GeocodeService {
                         ret.lat = response_bahn['GEOGR_BREITE'].replace(',', '.');
                         ret.lng = response_bahn['GEOGR_LAENGE'].replace(',', '.');
                         ret.isAddress = true;
-                        logging.debug(NAMESPACE, 'Ergebnis: Bahnübergang ', ret);
+                        logging.debug(NAMESPACE + 'BAHN', 'Ergebnis: Bahnübergang ', ret);
                         if (ret.lat != '0') return ret;
                     }
                 } catch (error) {
-                    logging.exception(NAMESPACE, error);
+                    logging.exception(NAMESPACE + 'BAHN', error);
                 }
             }
         }
@@ -159,12 +179,12 @@ class GeocodeService {
                     );
 
                     if (response_overpass.isAddress) {
-                        logging.debug(NAMESPACE, 'Ergebnis: OSM Objekt ', ret);
+                        logging.debug(NAMESPACE + ' OSM', 'Ergebnis: OSM Objekt ', ret);
                         ret = response_overpass;
                         if (ret.lat != '0') return ret;
                     }
                 } catch (error) {
-                    logging.exception(NAMESPACE, error);
+                    logging.exception(NAMESPACE + ' OSM', error);
                 }
             }
         }
@@ -172,24 +192,29 @@ class GeocodeService {
         // Prio 3: OSM Nominatim
         if (config.geocode.osm_nominatim) {
             try {
-                const response_nominatim = await nominatimClient.search({
-                    q: `${config.geocode.iso_country}, ${alarmFields.ORT}, ${alarmFields.STRASSE}`
-                });
+                const response_nominatim = await this.geocode_nominatim(alarmFields);
 
-                logging.debug(NAMESPACE, '[Nominatim] ', response_nominatim);
+                logging.debug(NAMESPACE + ' Nominatim', response_nominatim);
 
-                if (response_nominatim.length > 0 && response_nominatim[0].class == 'place') {
+                /*if (
+                    response_nominatim.length > 0 &&
+                    (response_nominatim[0].class == 'place' ||
+                        response_nominatim[0].class == 'tourism')
+                ) {
                     ret.lat = response_nominatim[0].lat;
                     ret.lng = response_nominatim[0].lon;
                     ret.isAddress = true;
 
-                    logging.debug(NAMESPACE, 'Ergebnis: Nominatim Adresse ', ret);
+                    logging.debug(NAMESPACE + ' Nominatim', 'Ergebnis: Nominatim Adresse ', ret);
                     if (ret.lat != '0') return ret;
-                }
+                }*/
 
                 if (
                     response_nominatim.length > 0 &&
-                    response_nominatim[0].class == 'highway' &&
+                    (response_nominatim[0].class == 'highway' ||
+                        response_nominatim[0].class == 'footway' ||
+                        response_nominatim[0].class == 'sidewalk' ||
+                        response_nominatim[0].class == 'cycleway') &&
                     !isAddress
                 ) {
                     ret.lat = response_nominatim[0].lat;
@@ -197,11 +222,18 @@ class GeocodeService {
                     ret.isAddress = false;
                     isHighway = true;
 
-                    logging.debug(NAMESPACE, 'Ergebnis: Nominatim Strasse ', ret);
+                    logging.debug(NAMESPACE + ' Nominatim', 'Ergebnis: Strasse ', ret);
+                    if (ret.lat != '0') return ret;
+                } else {
+                    ret.lat = response_nominatim[0].lat;
+                    ret.lng = response_nominatim[0].lon;
+                    ret.isAddress = true;
+
+                    logging.debug(NAMESPACE + ' Nominatim', 'Ergebnis: Nominatim Adresse ', ret);
                     if (ret.lat != '0') return ret;
                 }
             } catch (error) {
-                logging.exception(NAMESPACE, error);
+                logging.exception(NAMESPACE + ' Nominatim', error);
             }
         }
 
@@ -209,7 +241,10 @@ class GeocodeService {
         if (config.geocode.bing) {
             try {
                 const response_bing = await this.geocode_bing(alarmFields);
-                logging.debug(NAMESPACE, 'lat: ' + response_bing.lat + 'lng: ' + response_bing.lng);
+                logging.debug(
+                    NAMESPACE + ' BING',
+                    'lat: ' + response_bing.lat + '  lng: ' + response_bing.lng
+                );
                 ret.lat = response_bing.lat;
                 ret.lng = response_bing.lng;
 

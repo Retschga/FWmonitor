@@ -338,10 +338,15 @@ class AlarmParserService {
 
     private async processAlarmData(alarmFields: AlarmFields, alarmdate: Date) {
         // Geocoding
-        const geoData = await geocodeService.geocode(
-            alarmFields,
-            /\d/.test(alarmFields.STRASSE) ? true : false
-        );
+        let geoData = { lat: '0', lng: '0', isAddress: false };
+        try {
+            geoData = await geocodeService.geocode(
+                alarmFields,
+                /\d/.test(alarmFields.STRASSE) ? true : false
+            );
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
 
         // Daten in Datenbank schreiben
         const alarmRow: AlarmRow = {

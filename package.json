@@ -80,7 +80,6 @@
     "move-file": "^2.0.0",
     "multer": "^1.4.3",
     "node-ical": "^0.13.0",
-    "nominatim-client": "^2.0.2",
     "openrouteservice-js": "^0.1.30",
     "puppeteer": "^9.1.1",
     "serve-favicon": "^2.5.0",
