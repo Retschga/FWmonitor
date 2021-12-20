@@ -17,18 +17,15 @@ type Action = {
     value?: string;
 };
 
-declare module 'ws' {
-    class _WS extends WebSocket {}
-    export interface WebSocket extends _WS {
-        allowed: boolean;
-        type: string;
-        id: string;
-        name: string;
-        info: string;
-        actions: Action[];
-        interval_keepAlive: NodeJS.Timeout;
-        backchanneldata?: any[];
-    }
+interface WebSocketExt extends WebSocket {
+    allowed: boolean;
+    type: string;
+    id: string;
+    name: string;
+    info: string;
+    actions: Action[];
+    interval_keepAlive: NodeJS.Timeout;
+    backchanneldata?: any[];
 }
 
 interface SocketInfo {
@@ -90,7 +87,7 @@ class Websocket {
             );
         }
 
-        this.socket.on('connection', (client) => {
+        this.socket.on('connection', (client: WebSocketExt) => {
             logging.debug(NAMESPACE, 'event connection');
             client.allowed = true;
 
@@ -202,7 +199,8 @@ class Websocket {
     }
 
     public broadcast(topic: string, message: string): void {
-        this.socket.clients.forEach((client) => {
+        this.socket.clients.forEach((c) => {
+            const client = c as WebSocketExt;
             if (client.readyState === WebSocket.OPEN && client.allowed == true) {
                 client.send(JSON.stringify({ topic: topic, message: message }));
             }
@@ -211,7 +209,8 @@ class Websocket {
 
     public sendToID(id: string, topic: string, message: string): boolean {
         let response = false;
-        this.socket.clients.forEach((client) => {
+        this.socket.clients.forEach((c) => {
+            const client = c as WebSocketExt;
             if (client.readyState === WebSocket.OPEN && client.allowed == true && client.id == id) {
                 client.send(JSON.stringify({ topic: topic, message: message }));
                 response = true;
@@ -222,7 +221,8 @@ class Websocket {
 
     public getOpenSockets(): SocketInfo[] {
         const socks: SocketInfo[] = [];
-        this.socket.clients.forEach(function each(client) {
+        this.socket.clients.forEach((c) => {
+            const client = c as WebSocketExt;
             if (client.readyState === WebSocket.OPEN) {
                 if (!client.id) {
                     client.send(JSON.stringify({ topic: 'init', message: '' }));
@@ -240,7 +240,8 @@ class Websocket {
     }
 
     public getBackchannel(id: string): any[] | undefined {
-        for (const client of Array.from(this.socket.clients)) {
+        for (const c of Array.from(this.socket.clients)) {
+            const client = c as WebSocketExt;
             if (client.readyState === WebSocket.OPEN) {
                 if (client.backchanneldata && client.id == id) {
                     const ret = client.backchanneldata;

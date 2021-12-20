@@ -1,12 +1,13 @@
 'use strict';
 
-import express from 'express';
-import apicache from 'apicache';
+import * as ValidatorAlarm from '../../middleware/alarmValidator';
+
+import { UserRights, auth_api } from '../../middleware/auth';
 
 import alarmController from '../../controllers/alarm';
+import apicache from 'apicache';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import * as ValidatorAlarm from '../../middleware/alarmValidator';
-import { auth_api, UserRights } from '../../middleware/auth';
+import express from 'express';
 
 const router = express.Router();
 const cache = apicache.middleware;
@@ -21,18 +22,18 @@ router.get(
 
 // Sende Alarm Einstellungen
 router.get(
-    '/alarmsettings',
+    '/settings',
     auth_api(UserRights.admin),
     awaitHandlerFactory(alarmController.get_alarmsettings.bind(alarmController))
 );
 router.post(
-    '/alarmsettings/telegram',
+    '/settings/telegram',
     auth_api(UserRights.admin),
     ValidatorAlarm.updateAlarmTelegram,
     awaitHandlerFactory(alarmController.update_alarmsettings_telegram.bind(alarmController))
 );
 router.post(
-    '/alarmsettings/app',
+    '/settings/app',
     ValidatorAlarm.updateAlarmApp,
     auth_api(UserRights.admin),
     awaitHandlerFactory(alarmController.update_alarmsettings_app.bind(alarmController))
@@ -60,6 +61,19 @@ router.get(
     '/route/:id',
     cache('60 minutes'),
     awaitHandlerFactory(alarmController.get_route.bind(alarmController))
+);
+
+// Alarmstille
+router.get(
+    '/silence',
+    auth_api(UserRights.admin),
+    awaitHandlerFactory(alarmController.get_alarm_silence.bind(alarmController))
+);
+router.post(
+    '/silence',
+    auth_api(UserRights.admin),
+    ValidatorAlarm.updateAlarmSilence,
+    awaitHandlerFactory(alarmController.update_alarm_silence.bind(alarmController))
 );
 
 // Alarm Details

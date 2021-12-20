@@ -1,11 +1,12 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
+import { Context, InlineKeyboard } from 'grammy';
+
 import TelegramBot from './bot';
-import userService from '../services/user';
 import { UserStatus } from '../models/user';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -36,7 +37,7 @@ export default class BotVerfuegbarkeit {
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
@@ -58,15 +59,13 @@ export default class BotVerfuegbarkeit {
                 stat = '🟥' + '  ' + bis;
             }
 
-            ctx.replyWithMarkdown('*🚒 Verfügbarkeit: *' + stat, {
-                ...Markup.inlineKeyboard(
-                    [
-                        Markup.button.callback('🟩  Verfügbar', 'VerfuegbarJA'),
-                        Markup.button.callback('🟥  Nicht Verfügbar', 'VerfuegbarNEINOptionen'),
-                        Markup.button.callback('📜 Anzeigen', 'VerfuegbarZeige')
-                    ],
-                    { columns: 2 }
-                )
+            ctx.reply('*🚒 Verfügbarkeit: *' + stat, {
+                parse_mode: 'Markdown',
+                reply_markup: new InlineKeyboard()
+                    .text('🟩  Verfügbar', 'VerfuegbarJA')
+                    .text('🟥  Nicht Verfügbar', 'VerfuegbarNEINOptionen')
+                    .row()
+                    .text('📜 Anzeigen', 'VerfuegbarZeige')
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -83,7 +82,7 @@ export default class BotVerfuegbarkeit {
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
@@ -91,7 +90,7 @@ export default class BotVerfuegbarkeit {
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_verf_no(ctx: Context, value: string) {
@@ -104,7 +103,7 @@ export default class BotVerfuegbarkeit {
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
@@ -120,7 +119,7 @@ export default class BotVerfuegbarkeit {
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async send_verf_status(userid: number) {
@@ -172,25 +171,23 @@ export default class BotVerfuegbarkeit {
 
             ctx.editMessageText('*🟥 Dauer (Tage):*', {
                 parse_mode: 'Markdown',
-                ...Markup.inlineKeyboard(
-                    [
-                        Markup.button.callback('1', 'VerfuegbarNEIN:1'),
-                        Markup.button.callback('2', 'VerfuegbarNEIN:2'),
-                        Markup.button.callback('3', 'VerfuegbarNEIN:3'),
-                        Markup.button.callback('4', 'VerfuegbarNEIN:4'),
-                        Markup.button.callback('5', 'VerfuegbarNEIN:5'),
-                        Markup.button.callback('6', 'VerfuegbarNEIN:6'),
-                        Markup.button.callback('7', 'VerfuegbarNEIN:7'),
-                        Markup.button.callback('14', 'VerfuegbarNEIN:14'),
-                        Markup.button.callback('🔁 Unbegrenzt', 'VerfuegbarNEIN:-1')
-                    ],
-                    { columns: 4 }
-                )
+                reply_markup: new InlineKeyboard()
+                    .text('1', 'VerfuegbarNEIN:1')
+                    .text('2', 'VerfuegbarNEIN:2')
+                    .text('3', 'VerfuegbarNEIN:3')
+                    .text('4', 'VerfuegbarNEIN:4')
+                    .row()
+                    .text('5', 'VerfuegbarNEIN:5')
+                    .text('6', 'VerfuegbarNEIN:6')
+                    .text('7', 'VerfuegbarNEIN:7')
+                    .text('14', 'VerfuegbarNEIN:14')
+                    .row()
+                    .text('🔁 Unbegrenzt', 'VerfuegbarNEIN:-1')
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_verf_show(ctx: Context) {
@@ -231,6 +228,6 @@ _${st_nichtverf}_`,
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 }

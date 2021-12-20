@@ -1,12 +1,14 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
-import TelegramBot from './bot';
-import userService from '../services/user';
 import * as Security from '../utils/security';
-import { timeout } from '../utils/common';
-import logging from '../utils/logging';
+
+import { Context, InlineKeyboard } from 'grammy';
+
+import TelegramBot from './bot';
 import config from '../utils/config';
+import logging from '../utils/logging';
+import { timeout } from '../utils/common';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -27,14 +29,14 @@ export default class BotApp {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_app_menu', { telegramid });
 
-            const keyboard = [];
-            keyboard.push(Markup.button.callback('🔑 APP Zugang', 'einstell_appLogin'));
+            const keyboard = new InlineKeyboard().text('🔑 APP Zugang', 'einstell_appLogin');
             if (config.app.enabled) {
-                keyboard.push(Markup.button.url('📱 APP - Link', config.app.url + 'app'));
+                keyboard.text('📱 APP - Link', config.app.url + 'app');
             }
 
-            ctx.replyWithMarkdown('*📱 FWmonitor APP*', {
-                ...Markup.inlineKeyboard(keyboard)
+            ctx.reply('*📱 FWmonitor APP*', {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -73,13 +75,11 @@ export default class BotApp {
 
             await timeout(500);
 
-            const keyboard = [];
+            const keyboard = new InlineKeyboard();
             if (config.app.enabled) {
-                keyboard.push(
-                    Markup.button.url(
-                        '📱 Auto - Login',
-                        config.app.url + 'app/login?token=' + loginToken.token
-                    )
+                keyboard.url(
+                    '📱 Auto - Login',
+                    config.app.url + 'app/login?token=' + loginToken.token
                 );
             }
 
@@ -88,16 +88,16 @@ export default class BotApp {
                 '_Automatik-Anmeldelink (60sek)_',
                 {
                     parse_mode: 'Markdown',
-                    ...Markup.inlineKeyboard(keyboard)
+                    reply_markup: keyboard
                 }
             );
 
             setTimeout(() => {
-                this.bot?.bot.telegram.deleteMessage(telegramid, msgnum);
+                this.bot?.bot.api.deleteMessage(telegramid, msgnum);
             }, 60 * 1000);
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 }

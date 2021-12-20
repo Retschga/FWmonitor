@@ -99,7 +99,8 @@ const FWVV = {
 
 const ALARM = {
     telegram: process.env.SENDALARM_TELEGRAM ? /true/i.test(process.env.SENDALARM_TELEGRAM) : false,
-    app: process.env.SENDALARM_APP ? /true/i.test(process.env.SENDALARM_APP) : false
+    app: process.env.SENDALARM_APP ? /true/i.test(process.env.SENDALARM_APP) : false,
+    silence: 0
 };
 
 const PROGRAMS = {
@@ -258,7 +259,7 @@ const UPDATE = {
 };
 
 const config = {
-    version: '3.0.1',
+    version: '3.1.0',
     version_new: '---',
     raspiversion: process.env.RASPIVERSION ? /true/i.test(process.env.RASPIVERSION) : false,
     sqlite: SQLITE,

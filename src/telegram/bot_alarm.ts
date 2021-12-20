@@ -1,9 +1,10 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
+import { Context, InlineKeyboard, InputFile } from 'grammy';
 import { fileExists, getFormattedAlarmTime, timeout } from '../utils/common';
 
 import { AlarmRow } from '../models/alarm';
+import AlarmService from '../services/alarm';
 import { instance as DeviceServiceInstance } from '../services/device';
 import { GroupRow } from '../models/group';
 import GroupService from '../services/group';
@@ -32,7 +33,7 @@ export default class BotAlarm {
     private async alarm_send(alarm: AlarmRow) {
         try {
             if (!this.bot) throw new Error('Not initialized');
-            if (!config.alarm.telegram) {
+            if (!config.alarm.telegram || AlarmService.is_alarm_silence()) {
                 logging.warn(
                     NAMESPACE,
                     'Telegrammalarmierung deaktiviert! --> Keine Benachrichtigung'
@@ -88,10 +89,9 @@ export default class BotAlarm {
             if (!this.bot) return;
 
             logging.debug(NAMESPACE, 'Sending Alarm to ' + user.telegramid + '...');
-            const keyboard = Markup.inlineKeyboard([
-                Markup.button.callback('👍 JA!', 'KommenJa:' + alarm.id),
-                Markup.button.callback('👎 NEIN!', 'KommenNein:' + alarm.id)
-            ]);
+            const keyboard = new InlineKeyboard()
+                .text('👍 JA!', 'KommenJa:' + alarm.id)
+                .text('👎 NEIN!', 'KommenNein:' + alarm.id);
 
             text = text.replace(/{{EINSATZSTICHWORT}}/g, alarm.einsatzstichwort);
             text = text.replace(/{{SCHLAGWORT}}/g, alarm.schlagwort);
@@ -177,14 +177,12 @@ export default class BotAlarm {
 
                 if (await fileExists(pdfPath)) {
                     const faxPDF = fs.readFileSync(pdfPath);
-                    await this.bot.bot.telegram
-                        .sendDocument(user.telegramid, {
-                            source: faxPDF,
-                            filename: pdfPath.split(/[/\\]/g).pop()
-                        })
-                        .catch((err) => {
-                            logging.exception(NAMESPACE, err);
-                        });
+                    await this.bot.bot.api
+                        .sendDocument(
+                            user.telegramid,
+                            new InputFile(faxPDF, pdfPath.split(/[/\\]/g).pop())
+                        )
+                        .catch((e) => logging.exception(NAMESPACE, e));
                 }
             }
 
@@ -196,7 +194,7 @@ export default class BotAlarm {
 
                 await timeout(4000);
 
-                const msg_id = await this.bot.sendMessage(user.telegramid, str, {
+                await this.bot.sendMessage(user.telegramid, str, {
                     parse_mode: 'Markdown'
                 });
             }
@@ -207,34 +205,18 @@ export default class BotAlarm {
 
                 if (alarm.lat != undefined && alarm.lng != undefined && alarm.strasse != '') {
                     try {
-                        const msg_id = (
-                            await this.bot.bot.telegram.sendLocation(
-                                user.telegramid,
-                                Number(alarm.lat),
-                                Number(alarm.lng)
-                            )
-                        ).message_id;
+                        await this.bot.bot.api.sendLocation(
+                            user.telegramid,
+                            Number(alarm.lat),
+                            Number(alarm.lng)
+                        );
                     } catch (error) {
-                        if (error instanceof Error) {
-                            logging.exception(NAMESPACE, error);
-                        } else {
-                            logging.error(NAMESPACE, 'Unknown error', error);
-                        }
+                        logging.exception(NAMESPACE, error);
                     }
                 } else {
-                    try {
-                        const msg_id = (
-                            await this.bot.bot.telegram.sendPhoto(user.telegramid, {
-                                source: 'filesPublic/images/noMap.png'
-                            })
-                        ).message_id;
-                    } catch (error) {
-                        if (error instanceof Error) {
-                            logging.exception(NAMESPACE, error);
-                        } else {
-                            logging.error(NAMESPACE, 'Unknown error', error);
-                        }
-                    }
+                    await this.bot.bot.api
+                        .sendPhoto(user.telegramid, new InputFile('filesPublic/images/noMap.png'))
+                        .catch((e) => logging.exception(NAMESPACE, e));
                 }
             }
             if (
@@ -246,7 +228,7 @@ export default class BotAlarm {
                 await timeout(500);
 
                 try {
-                    const msg_id = await this.bot.sendMessage(
+                    await this.bot.sendMessage(
                         user.telegramid,
                         `*Hydrantenkarten:*							
 [- Link Karte](http://www.openfiremap.org/?zoom=17&lat=${alarm.lat}&lon=${alarm.lng}&layers=B0000T)`,
@@ -255,11 +237,7 @@ export default class BotAlarm {
                         }
                     );
                 } catch (error) {
-                    if (error instanceof Error) {
-                        logging.exception(NAMESPACE, error);
-                    } else {
-                        logging.error(NAMESPACE, 'Unknown error', error);
-                    }
+                    logging.exception(NAMESPACE, error);
                 }
             }
 
@@ -267,21 +245,17 @@ export default class BotAlarm {
             await timeout(4000);
             const msg_id = await this.bot.sendMessage(user.telegramid, alarmMessage, {
                 parse_mode: 'Markdown',
-                ...keyboard
+                reply_markup: keyboard
             });
             logging.debug(NAMESPACE, 'Sending Alarm to ' + user.telegramid + ' DONE');
 
             // Komme Buttons nach 3h löschen
             setTimeout(() => {
-                this.bot?.bot.telegram.deleteMessage(user.telegramid, msg_id);
+                this.bot?.bot.api.deleteMessage(user.telegramid, msg_id);
             }, 3 * 60 * 60 * 1000);
         } catch (error) {
             logging.error(NAMESPACE, 'Error at user ID ' + user);
-            if (error instanceof Error) {
-                logging.exception(NAMESPACE, error);
-            } else {
-                logging.error(NAMESPACE, 'Unknown error', error);
-            }
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -294,18 +268,18 @@ export default class BotAlarm {
             logging.debug(NAMESPACE, 'bot_alarm_yes', { telegramid });
 
             if (!DeviceServiceInstance) {
-                ctx.replyWithMarkdown('Error');
+                ctx.reply('Error');
                 return;
             }
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), true);
-            ctx.replyWithMarkdown('Rückmeldung: 👍 JA!');
+            ctx.reply('Rückmeldung: 👍 JA!');
         } catch (error) {
             if (error instanceof Error) {
                 logging.exception(NAMESPACE, error);
@@ -313,7 +287,7 @@ export default class BotAlarm {
                 logging.error(NAMESPACE, 'Unknown error', error);
             }
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_alarm_no(ctx: Context, alarmid: string) {
@@ -325,18 +299,18 @@ export default class BotAlarm {
             logging.debug(NAMESPACE, 'bot_alarm_no', { telegramid });
 
             if (!DeviceServiceInstance) {
-                ctx.replyWithMarkdown('Error');
+                ctx.reply('Error');
                 return;
             }
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), false);
-            ctx.replyWithMarkdown('Rückmeldung: 👎 NEIN');
+            ctx.reply('Rückmeldung: 👎 NEIN');
         } catch (error) {
             if (error instanceof Error) {
                 logging.exception(NAMESPACE, error);
@@ -344,6 +318,6 @@ export default class BotAlarm {
                 logging.error(NAMESPACE, 'Unknown error', error);
             }
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 }

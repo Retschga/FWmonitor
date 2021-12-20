@@ -43,7 +43,7 @@ else:
     skripttype = sys.argv[5]
 
 starttime = str(datetime.datetime.now())
-version = "3.0.1"
+version = "3.1.0"
 
 bashCommand_reboot     = "sudo /sbin/shutdown -r now"
 bashCommand_screen_on  = "vcgencmd display_power 1"
@@ -292,7 +292,7 @@ async def mainLoop(asyncState):
                 await create3hLog(asyncState)
 
             asyncState.timerWatchdog += 1
-            if asyncState.timer300 >= 300:
+            if asyncState.timerWatchdog >= 120:
                 await printLog("---- watchdog reboot ----")
                 output = subprocess.call(bashCommand_reboot, shell=True)
                 await printLog("Reboot OUT: " + output)

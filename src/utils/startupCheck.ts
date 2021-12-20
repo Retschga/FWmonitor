@@ -14,21 +14,11 @@ const NAMESPACE = 'StartupCheck';
 
 class StartupCheck {
     private async check_tesseract(): Promise<boolean> {
-        const out = await execShellCommand(`"${config.programs.tesseract}" --version`);
-        return (
-            out.toLowerCase().indexOf('tesseract v') != -1 ||
-            out.toLowerCase().indexOf('tesseract 3.') != -1 ||
-            out.toLowerCase().indexOf('tesseract 4.') != -1 ||
-            out.toLowerCase().indexOf('tesseract 5.') != -1
-        );
+        return await checkFolderOrFile(config.programs.tesseract);
     }
 
     private async check_ghostscript(): Promise<boolean> {
-        const out = await execShellCommand(`"${config.programs.ghostscript}" --version`);
-        return (
-            out.toLowerCase().indexOf('gpl ghostscript') != -1 ||
-            out.toLowerCase().indexOf('9.') != -1
-        );
+        return await checkFolderOrFile(config.programs.ghostscript);
     }
 
     private async check_tiff2ps(): Promise<boolean> {
@@ -49,42 +39,18 @@ class StartupCheck {
 
     public drawHeader() {
         logging.info(NAMESPACE, '');
+        logging.info(NAMESPACE, '--------------------------------------------------------------');
+        logging.info(NAMESPACE, '|            Feuerwehr Einsatzmonitor Software               |');
+        logging.info(NAMESPACE, '|                                                            |');
+        logging.info(NAMESPACE, '|                     (c) 2021 Resch                         |');
         logging.info(
             NAMESPACE,
-            '    --------------------------------------------------------------'
+            '|               FWmonitor    VERSION ' + config.version + '                   |'
         );
-        logging.info(
-            NAMESPACE,
-            '    |            Feuerwehr Einsatzmonitor Software               |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |                                                            |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |                      (c) 2021 Resch                        |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |              FWmonitor    VERSION ' + config.version + '                    |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |                                                            |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |               weitere Infos: siehe Readme                  |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    |                                                            |'
-        );
-        logging.info(
-            NAMESPACE,
-            '    --------------------------------------------------------------'
-        );
+        logging.info(NAMESPACE, '|                                                            |');
+        logging.info(NAMESPACE, '|               weitere Infos: siehe Readme                  |');
+        logging.info(NAMESPACE, '|                                                            |');
+        logging.info(NAMESPACE, '--------------------------------------------------------------');
     }
 
     public async checkEnv() {
@@ -124,9 +90,9 @@ class StartupCheck {
     }
 
     public async check() {
-        logging.info(NAMESPACE, '----------------------');
-        logging.info(NAMESPACE, '|    Start Check:    |');
-        logging.info(NAMESPACE, '----------------------');
+        logging.info(NAMESPACE, '--------------------------------------------');
+        logging.info(NAMESPACE, '|               Start Check:               |');
+        logging.info(NAMESPACE, '--------------------------------------------');
 
         logging.info(NAMESPACE, '');
         logging.info(NAMESPACE, ' - Node ENV                ' + process.env.NODE_ENV);
@@ -136,19 +102,23 @@ class StartupCheck {
         const stat_folderIn = await checkFolderOrFile(config.folders.fileInput);
         logging.info(
             NAMESPACE,
-            ' - Eingangsordner         ' + (stat_folderIn ? ' OK' : ' -> FEHLER')
+            ' - Eingangsordner         ' + (stat_folderIn ? ' OK' : ' --> FEHLER <--')
         );
 
         // Archivordner
-        const stat_folderArchive = await checkFolderOrFile(process.env.FOLDER_ARCHIVE);
+        const stat_folderArchive = await checkFolderOrFile(config.folders.archive);
         logging.info(
             NAMESPACE,
-            ' - Archivordner           ' + (stat_folderArchive ? ' OK' : ' -> FEHLER')
+            ' - Archivordner           ' + (stat_folderArchive ? ' OK' : ' --> FEHLER <--')
         );
 
         // Gebe Filtereinstellungen aus
         logging.info(NAMESPACE, '');
-        logging.info(NAMESPACE, ' - Fax Filter:             ' + config.folders.fileInput_filter);
+        logging.info(
+            NAMESPACE,
+            ' - Fax Filter:             ' +
+                (config.folders.fileInput_filter ? config.folders.fileInput_filter : '')
+        );
 
         // Prüfe Ausdruckeinstellungen
         logging.info(NAMESPACE, '');
@@ -161,62 +131,62 @@ class StartupCheck {
             ' - Ausdruck Orginal:      ' +
                 (config.printing.pagecountOriginal > 0 ? ' Ja' : ' -> Nein')
         );
-        if (process.env.ALARMDRUCK == 'true') {
-            // Version B
-            if (config.raspiversion && process.env.AREADER != '') {
-                const stat_folderReader = await checkFolderOrFile(config.programs.foxit);
-                logging.info(
-                    NAMESPACE,
-                    ' - Programmpfad           ' + (stat_folderReader ? ' OK' : ' -> FEHLER')
-                );
-            }
-            if (config.raspiversion) {
-                logging.info(
-                    NAMESPACE,
-                    ' - Druckername:            ' + config.printing.print_printername
-                );
-            }
 
-            // Version A
-            if (process.env.DRUCKERURL != '') {
-                logging.info(
-                    NAMESPACE,
-                    ' - Drucker URL:            ' + config.printing.print_ipp_url
-                );
-            }
+        // Drucken Version B
+        if (config.programs.foxit) {
+            const stat_folderReader = await checkFolderOrFile(config.programs.foxit);
+            logging.info(
+                NAMESPACE,
+                ' - Programmpfad           ' + (stat_folderReader ? ' OK' : ' --> FEHLER <--')
+            );
+        }
+        if (config.raspiversion && config.programs.foxit) {
+            logging.info(
+                NAMESPACE,
+                ' - Druckername:            ' + config.printing.print_printername
+            );
+        }
+
+        // Drucken Version A
+        if (config.printing.print_ipp_url) {
+            logging.info(NAMESPACE, ' - Drucker URL:            ' + config.printing.print_ipp_url);
         }
 
         // Tesseract
         logging.info(NAMESPACE, '');
         logging.info(
             NAMESPACE,
-            ' - Tesseract              ' + ((await this.check_tesseract()) ? ' OK' : ' -> FEHLER')
+            ' - Tesseract              ' +
+                ((await this.check_tesseract()) ? ' OK' : ' --> FEHLER <--')
         );
 
         // Ghostscript
         logging.info(
             NAMESPACE,
-            ' - Ghostscript            ' + ((await this.check_ghostscript()) ? ' OK' : ' -> FEHLER')
+            ' - Ghostscript            ' +
+                ((await this.check_ghostscript()) ? ' OK' : ' --> FEHLER <--')
         );
 
         if (config.raspiversion) {
             // tiff2ps
             logging.info(
                 NAMESPACE,
-                ' - tiff2ps                ' + ((await this.check_tiff2ps()) ? ' OK' : ' -> FEHLER')
+                ' - tiff2ps                ' +
+                    ((await this.check_tiff2ps()) ? ' OK' : ' --> FEHLER <--')
             );
 
             // lpr
             logging.info(
                 NAMESPACE,
-                ' - lpr                    ' + ((await this.check_lpr()) ? ' OK' : ' -> FEHLER')
+                ' - lpr                    ' +
+                    ((await this.check_lpr()) ? ' OK' : ' --> FEHLER <--')
             );
 
             // is root
             logging.info(NAMESPACE, '');
             logging.info(
                 NAMESPACE,
-                ' - Program ist root       ' + (this.isRoot() ? ' OK' : ' -> FEHLER')
+                ' - Program ist root       ' + (this.isRoot() ? ' OK' : ' --> FEHLER <--')
             );
         }
 
@@ -232,9 +202,9 @@ class StartupCheck {
         );
 
         logging.info(NAMESPACE, '');
-        logging.info(NAMESPACE, '----------------------');
-        logging.info(NAMESPACE, '|   IPP   Drucker:   |');
-        logging.info(NAMESPACE, '----------------------');
+        logging.info(NAMESPACE, '--------------------------------------------');
+        logging.info(NAMESPACE, '|          Gefundene  IPP-Drucker          |');
+        logging.info(NAMESPACE, '--------------------------------------------');
 
         logging.info(NAMESPACE, '');
 
@@ -273,6 +243,10 @@ class StartupCheck {
 
         logging.info(NAMESPACE, '');
         logging.info(NAMESPACE, '');
+        logging.info(NAMESPACE, '');
+        logging.info(NAMESPACE, '--------------------------------------------');
+        logging.info(NAMESPACE, '|              Programmstart               |');
+        logging.info(NAMESPACE, '--------------------------------------------');
         logging.info(NAMESPACE, '');
     }
 }

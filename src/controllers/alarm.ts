@@ -205,6 +205,32 @@ class AlarmController {
     }
 
     /**
+     * Alarmstille
+     */
+    public async update_alarm_silence(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'update_alarm_silent', {
+            value: req.body.value
+        });
+        checkValidation(req);
+
+        AlarmService.set_alarm_silence(Number(req.body.value));
+
+        res.send('OK');
+    }
+
+    /**
+     * Alarmstille
+     */
+    public async get_alarm_silence(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'get_alarm_silence');
+        res.send({
+            seconds: config.alarm.silence,
+            minutes: Math.round(config.alarm.silence / 60),
+            enabled: config.alarm.silence > 0
+        });
+    }
+
+    /**
      * Alarm Sendeinstellungen auslesen
      */
     public async get_alarmsettings(req: Request, res: Response) {

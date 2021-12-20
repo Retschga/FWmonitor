@@ -1,6 +1,6 @@
 'use-strict';
 
-import { Context, Markup, Telegraf } from 'telegraf';
+import { Bot, Context, GrammyError, HttpError, Keyboard, RawApi } from 'grammy';
 import { UserApproved, UserStatus } from '../models/user';
 
 import BotAlarm from './bot_alarm';
@@ -10,7 +10,7 @@ import BotHistory from './bot_history';
 import BotMore from './bot_more';
 import BotVerfuegbarkeit from './bot_verfuegbarkeit';
 import { EventEmitter } from 'events';
-import { ExtraReplyMessage } from 'telegraf/typings/telegram-types';
+import { Other } from 'grammy/out/core/api';
 import axios from 'axios';
 import config from '../utils/config';
 import diashowService from '../services/diashow';
@@ -22,17 +22,25 @@ import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
+type position = {
+    lat: number;
+    lng: number;
+    accuracy: number;
+};
 class TelegramBot {
-    public bot: Telegraf;
+    public bot: Bot;
     private botName: string = '';
 
     private sendtMessages: number = 0;
 
-    private mainKeyboard = [
-        ['📅 Kalender', '🚒 Verfügbarkeit'],
-        ['▪️ Mehr', '🔥 Einsätze'],
-        ['📱 FWmonitor APP']
-    ];
+    private mainKeyboard = new Keyboard()
+        .text('📅 Kalender')
+        .text('🚒 Verfügbarkeit')
+        .row()
+        .text('▪️ Mehr')
+        .text('🔥 Einsätze')
+        .row()
+        .text('📱 FWmonitor APP');
 
     public inlineKeyboardEvents: EventEmitter = new EventEmitter();
 
@@ -43,9 +51,12 @@ class TelegramBot {
     private botVerfuegbarkeit: BotVerfuegbarkeit;
     private botAlarm: BotAlarm;
 
+    public user_hydrantPicRequested: { [key: number]: number } = {};
+    public user_location: { [key: number]: position } = {};
+
     constructor() {
         // Bot erstellen
-        this.bot = new Telegraf(config.telegram.bot_token);
+        this.bot = new Bot(config.telegram.bot_token);
 
         this.botApp = new BotApp();
         this.botCalendar = new BotCalendar();
@@ -58,9 +69,6 @@ class TelegramBot {
     public async init(): Promise<void> {
         try {
             logging.info(NAMESPACE, 'Initializing Telegram Bot...');
-            const botinfo = await this.bot.telegram.getMe();
-            this.botName = botinfo.username;
-            logging.info(NAMESPACE, 'Telegram Botname: ' + this.botName);
 
             this.botApp.init(this);
             this.botCalendar.init(this);
@@ -71,11 +79,23 @@ class TelegramBot {
 
             // Fehlerausgabe
             this.bot.catch((err) => {
-                logging.error(NAMESPACE, 'Telegram Fehler', err);
+                const ctx = err.ctx;
+                logging.error(
+                    NAMESPACE,
+                    `Telegram Fehler: Error while handling update ${ctx.update.update_id}:`
+                );
+                const e = err.error;
+                if (e instanceof GrammyError) {
+                    logging.error(NAMESPACE, 'Error in request:', e.description);
+                } else if (e instanceof HttpError) {
+                    logging.error(NAMESPACE, 'Could not contact Telegram:', e);
+                } else {
+                    logging.error(NAMESPACE, 'Unknown error:', e);
+                }
             });
 
             // Routen
-            this.bot.start(this.bot_start.bind(this));
+            this.bot.command('start', this.bot_start.bind(this));
             // -- Sicherheits Middleware: alle routen abwärts sind geschützt
             this.bot.use(this.bot_securityMiddleware.bind(this));
 
@@ -95,15 +115,95 @@ class TelegramBot {
                 this.inlineKeyboardEvents.emit(cbArray[0], ctx, cbArray[1]);
             });
 
-            this.bot.on('photo', this.bot_photo.bind(this));
-            this.bot.on('text', this.bot_default.bind(this));
+            this.bot.on('message:photo', async (ctx) => {
+                try {
+                    if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
+
+                    const telegramid: string = String(ctx.from?.id);
+                    logging.debug(NAMESPACE, 'savePicture', { telegramid });
+
+                    ctx.replyWithChatAction('typing');
+
+                    const imageData = await ctx.getFile();
+
+                    if (!imageData.file_path) return;
+
+                    const d = new Date();
+                    const time = d.toLocaleTimeString().replace(/[:]/g, '-');
+                    const date = d.toLocaleDateString('de-DE', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    });
+
+                    // Normales Bild
+                    let filepath = config.folders.temp;
+                    let filename = time + ' - ' + date + ' - ' + imageData.file_path.substr(7);
+
+                    let hydrantenbild = false;
+                    // Hydrantenbild
+                    if (this.user_hydrantPicRequested[ctx.from.id] == 1) {
+                        filepath = config.folders.hydranten;
+                        filename =
+                            this.user_location[ctx.from.id].lat +
+                            ', ' +
+                            this.user_location[ctx.from.id].lng +
+                            '   ' +
+                            time +
+                            ' - ' +
+                            date +
+                            ' - ' +
+                            imageData.file_path.substr(7);
+
+                        ctx.reply(
+                            'Bitte ein oder mehrere Bilder des Hydranten mit Umgebung senden (  über 📎 Büroklammer Symbol unten ).',
+                            { reply_markup: new Keyboard().text('⬅️ Fertig') }
+                        );
+
+                        this.user_hydrantPicRequested[ctx.from.id] == 2;
+                        hydrantenbild = true;
+                    }
+
+                    const writer = fs.createWriteStream(filepath + '/' + filename);
+
+                    axios({
+                        method: 'get',
+                        url: `https://api.telegram.org/file/bot${config.telegram.bot_token}/${imageData.file_path}`,
+                        responseType: 'stream'
+                    })
+                        .then(async (response) => {
+                            await response.data.pipe(writer);
+                            await timeout(500);
+                            writer.close();
+                            writer.end();
+                            writer.destroy();
+                            await timeout(500);
+                            if (!hydrantenbild)
+                                diashowService.process_new(config.folders.temp, filename);
+
+                            ctx.reply(`Bild gespeichert.`);
+                        })
+                        .catch((err) => {
+                            logging.exception(NAMESPACE, err);
+                            ctx.reply('Bild speichern: Fehler.');
+                        });
+                } catch (error) {
+                    logging.exception(NAMESPACE, error);
+                }
+            });
+            this.bot.on('message:text', this.bot_default.bind(this));
 
             // Bot starten
-            this.bot.launch();
+            this.bot.start();
+
+            await this.bot.init();
+            const botinfo = this.bot.botInfo;
+            this.botName = botinfo.username;
+            logging.info(NAMESPACE, 'Telegram Botname: ' + this.botName);
 
             // Enable graceful stop
-            process.once('SIGINT', () => this.bot.stop('SIGINT'));
-            process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+            process.once('SIGINT', () => this.bot.stop());
+            process.once('SIGTERM', () => this.bot.stop());
 
             globalEvents.on('paperstatus-change', this.bot_printer_paper_info.bind(this));
             globalEvents.on('softwareinfo', this.bot_software_info.bind(this));
@@ -134,7 +234,7 @@ class TelegramBot {
     public async sendMessage(
         telegramid: string,
         msg: string,
-        extra?: ExtraReplyMessage
+        extra?: Other<RawApi, 'sendMessage', 'text'>
     ): Promise<number> {
         this.sendtMessages++;
         const delay = Math.floor(this.sendtMessages / 30) * 1150;
@@ -146,7 +246,7 @@ class TelegramBot {
         await timeout(delay);
 
         try {
-            return (await this.bot.telegram.sendMessage(telegramid, msg, extra)).message_id;
+            return (await this.bot.api.sendMessage(telegramid, msg, extra)).message_id;
         } catch (error) {
             logging.error(NAMESPACE, 'telegramid: ' + telegramid, error);
             logging.error(NAMESPACE, 'sendMessage', error);
@@ -184,13 +284,17 @@ class TelegramBot {
                 // Prüfen ob User bereits freigegeben
                 if (user[0].approved == UserApproved.APPROVED) {
                     // User bereits freigegeben
-                    ctx.replyWithMarkdown(
+                    ctx.reply(
                         `Anmeldung erfolgreich: ${user[0].name} ${user[0].vorname}
-    *Funktionen:*
-    _ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
-    _ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
+*Funktionen:*
+_ - Tastatur unten: Falls diese nicht angezeigt wird, einfach ein ? an den Bot schreiben. _
+_ - Bilder für den Monitor können direkt an den Bot gesendet werden. _`,
                         {
-                            ...Markup.keyboard(this.mainKeyboard).resize()
+                            parse_mode: 'Markdown',
+                            reply_markup: {
+                                resize_keyboard: true,
+                                keyboard: this.mainKeyboard.build()
+                            }
                         }
                     );
 
@@ -198,8 +302,11 @@ class TelegramBot {
                     userService.update_status(user[0].id, UserStatus.VERFUEGBAR);
                 } else {
                     // User noch nicht freigegeben
-                    ctx.replyWithHTML('Warte auf Freigabe (bitte bescheidgeben)', {
-                        ...Markup.keyboard([['/start']]).resize()
+                    ctx.reply('Warte auf Freigabe (bitte bescheidgeben)', {
+                        reply_markup: {
+                            resize_keyboard: true,
+                            keyboard: new Keyboard().text('/start').build()
+                        }
                     });
                 }
             } else {
@@ -211,10 +318,13 @@ class TelegramBot {
                 // Prüfe ob in Telegram Vor- und Nachname eingetragen ist
                 if (ctx.from.last_name == undefined || ctx.from.first_name == undefined) {
                     // Antwort senden
-                    ctx.replyWithHTML(
+                    ctx.reply(
                         'Bitte zuerst Vor- und Nachnamen in Telegram eintragen (Unter Einstellungen, ..., Name bearbeiten), dann erneut Start drücken.',
                         {
-                            ...Markup.keyboard([['/start']]).resize()
+                            reply_markup: {
+                                resize_keyboard: true,
+                                keyboard: new Keyboard().text('/start').build()
+                            }
                         }
                     );
                     return;
@@ -224,8 +334,11 @@ class TelegramBot {
                 userService.create(telegramid, ctx.from.last_name, ctx.from.first_name);
 
                 // Antwort senden
-                ctx.replyWithHTML('Warte auf Freigabe (bitte bescheidgeben)', {
-                    ...Markup.keyboard([['/start']]).resize()
+                ctx.reply('Warte auf Freigabe (bitte bescheidgeben)', {
+                    reply_markup: {
+                        resize_keyboard: true,
+                        keyboard: new Keyboard().text('/start').build()
+                    }
                 });
             }
         } catch (error) {
@@ -274,65 +387,12 @@ class TelegramBot {
             logging.debug(NAMESPACE, 'bot_unknown', { telegramid });
 
             ctx.reply('Telegram Bot der ' + config.common.fwName_short, {
-                ...Markup.keyboard([['/start']]).resize()
+                reply_markup: {
+                    resize_keyboard: true,
+                    keyboard: new Keyboard().text('/start').build()
+                }
             });
-        } catch (error) {
-            logging.exception(NAMESPACE, error);
-        }
-    }
-
-    // Bilder
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async bot_photo(ctx: any) {
-        try {
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'savePicture', { telegramid });
-
-            ctx.replyWithChatAction('typing');
-
-            // Normales Bild
-            const filepath = config.folders.temp;
-
-            const d = new Date();
-            const time = d.toLocaleTimeString().replace(/[:]/g, '-');
-            const date = d.toLocaleDateString('de-DE', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-
-            const imageData = await this.bot.telegram.getFile(
-                ctx.message.photo[ctx.message.photo.length - 1].file_id
-            );
-
-            if (!imageData.file_path) return;
-
-            const filename = time + ' - ' + date + ' - ' + imageData.file_path.substr(7);
-
-            const writer = fs.createWriteStream(filepath + '/' + filename);
-
-            axios({
-                method: 'get',
-                url: `https://api.telegram.org/file/bot${config.telegram.bot_token}/${imageData.file_path}`,
-                responseType: 'stream'
-            })
-                .then(async (response) => {
-                    await response.data.pipe(writer);
-                    await timeout(500);
-                    writer.close();
-                    writer.end();
-                    writer.destroy();
-                    await timeout(500);
-                    diashowService.process_new(config.folders.temp, filename);
-
-                    ctx.reply(`Bild gespeichert.`);
-                })
-                .catch((err) => {
-                    logging.exception(NAMESPACE, err);
-                    ctx.reply('Bild speichern: Fehler.');
-                });
+            this.user_hydrantPicRequested[ctx.from.id] == 0;
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }

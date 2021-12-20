@@ -1,10 +1,12 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
+import { Context, InlineKeyboard, Keyboard } from 'grammy';
+
 import TelegramBot from './bot';
-import userService from '../services/user';
-import logging from '../utils/logging';
 import config from '../utils/config';
+import fs from 'fs';
+import logging from '../utils/logging';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -24,6 +26,31 @@ export default class BotMore {
         );
         this.bot.inlineKeyboardEvents.on('einstell_picture', this.bot_more_picture.bind(this));
         this.bot.inlineKeyboardEvents.on('einstell_Hydrant', this.bot_more_hydrant.bind(this));
+        this.bot.bot.on(':location', (ctx) => {
+            try {
+                if (!this.bot) throw new Error('Not initialized');
+                if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
+
+                const telegramid: string = String(ctx.from?.id);
+                logging.debug(NAMESPACE, 'bot_more_hydrant', { telegramid });
+
+                this.bot.user_location[ctx.from?.id || -1] = { lat: 0, lng: 0, accuracy: 9999 };
+                this.bot.user_location[ctx.from?.id || -1].lat = ctx.message?.location.latitude;
+                this.bot.user_location[ctx.from?.id || -1].lng = ctx.message?.location.longitude;
+                this.bot.user_location[ctx.from?.id || -1].accuracy =
+                    ctx.message?.location.horizontal_accuracy || 9999;
+
+                ctx.reply('Position OK? ', {
+                    reply_markup: new InlineKeyboard()
+                        .text('Ja', 'hydrPosOK:' + ctx.message?.message_id)
+                        .text('Nein', 'einstell_Hydrant')
+                });
+            } catch (error) {
+                logging.exception(NAMESPACE, error);
+            }
+        });
+        this.bot.inlineKeyboardEvents.on('hydrPosOK', this.bot_more_hydrant_location_ok.bind(this));
+        this.bot.inlineKeyboardEvents.on('hydrTyp', this.bot_more_hydrant_type.bind(this));
     }
 
     public async bot_more(ctx: Context): Promise<void> {
@@ -34,22 +61,23 @@ export default class BotMore {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more', { telegramid });
 
-            const keyboard = [
-                Markup.button.callback('📅 Erinnerungen', 'einstell_Kalender'),
-                Markup.button.callback('🧯 Hydrant eintragen', 'einstell_Hydrant'),
-                Markup.button.callback('🖼️ Bild für Diashow', 'einstell_picture')
-            ];
+            const keyboard = new InlineKeyboard()
+                .text('📅 Erinnerungen', 'einstell_Kalender')
+                .text('🧯 Hydrant eintragen', 'einstell_Hydrant')
+                .row()
+                .text('🖼️ Bild für Diashow', 'einstell_picture');
 
             if (config.common.fw_position) {
-                Markup.button.url(
+                keyboard.url(
                     '🗺️ Karte',
                     `http://www.openfiremap.org/?zoom=13&lat=${config.common.fw_position.lat}&lon=${config.common.fw_position.lng}&layers=B0000T`
                 );
             }
 
             // Antwort senden
-            ctx.replyWithMarkdown('*️▪️ Mehr:*', {
-                ...Markup.inlineKeyboard(keyboard, { columns: 2 })
+            ctx.reply('*️▪️ Mehr:*', {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -66,15 +94,14 @@ export default class BotMore {
 
             ctx.editMessageText('📅 Kalender Erinnerungen', {
                 parse_mode: 'Markdown',
-                ...Markup.inlineKeyboard([
-                    Markup.button.callback('An', 'einstell_Kalender_set:1'),
-                    Markup.button.callback('Aus', 'einstell_Kalender_set:0')
-                ])
+                reply_markup: new InlineKeyboard()
+                    .text('An', 'einstell_Kalender_set:1')
+                    .text('Aus', 'einstell_Kalender_set:0')
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_more_calendarNotifications_set(ctx: Context, value: string) {
@@ -87,27 +114,23 @@ export default class BotMore {
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
             if (value == '1') {
                 userService.update_notifications_calendar(user[0].id, true);
-                ctx.answerCbQuery('📅 Kalender Erinnerungen -> Ein', {
-                    show_alert: false
-                });
+                ctx.answerCallbackQuery('📅 Kalender Erinnerungen -> Ein');
                 ctx.editMessageText('📅 Kalender Erinnerungen -> Ein');
             } else {
                 userService.update_notifications_calendar(user[0].id, false);
-                ctx.answerCbQuery('📅 Kalender Erinnerungen -> Aus', {
-                    show_alert: false
-                });
+                ctx.answerCallbackQuery('📅 Kalender Erinnerungen -> Aus');
                 ctx.editMessageText('📅 Kalender Erinnerungen -> Aus');
             }
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_more_hydrant(ctx: Context) {
@@ -117,23 +140,17 @@ export default class BotMore {
 
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant', { telegramid });
+
+            await this.bot.sendMessage(telegramid, 'Position über GPS senden.', {
+                parse_mode: 'Markdown',
+                reply_markup: new Keyboard()
+                    .requestLocation('📍 Position senden')
+                    .text('⬅️ Abbrechen')
+            });
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
-    }
-
-    private async bot_more_hydrant_location(ctx: Context) {
-        try {
-            if (!this.bot) throw new Error('Not initialized');
-            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
-
-            const telegramid: string = String(ctx.from?.id);
-            logging.debug(NAMESPACE, 'bot_more_hydrant_location', { telegramid });
-        } catch (error) {
-            logging.exception(NAMESPACE, error);
-        }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_more_hydrant_location_ok(ctx: Context) {
@@ -143,23 +160,119 @@ export default class BotMore {
 
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_location_ok', { telegramid });
+
+            this.bot.sendMessage(telegramid, 'OK', {
+                reply_markup: { remove_keyboard: true }
+            });
+
+            ctx.editMessageText('Art des Hydranten?: ', {
+                reply_markup: new InlineKeyboard()
+                    .text('📍 U-Flur', 'hydrTyp:Unterflur')
+                    .text('📍 O-Flur', 'hydrTyp:Oberflur')
+                    .text('📍 Saugstelle', 'hydrTyp:Saugstelle')
+                    .text('📍 Becken', 'hydrTyp:Becken')
+            });
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
-    private async bot_more_hydrant_type(ctx: Context) {
+    private async bot_more_hydrant_type(ctx: Context, typ: any) {
         try {
             if (!this.bot) throw new Error('Not initialized');
             if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
 
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_hydrant_type', { telegramid });
+            console.log(ctx);
+
+            ctx.editMessageText('Typ: ' + typ);
+
+            ctx.reply(
+                'Bitte ein Bild mit dem Daten-Schild des Hydranten senden (  über 📎 Büroklammer Symbol unten ).'
+            );
+            this.bot.user_hydrantPicRequested[ctx.from.id] = 1;
+
+            const d = new Date();
+            const time = d.toLocaleTimeString();
+            const date = d.toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+
+            const feature = {
+                type: 'Feature',
+                properties: {
+                    art: typ,
+                    erfassung: time + ' - ' + date,
+                    melder: ctx.from.last_name + ' ' + ctx.from.first_name
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [
+                        this.bot.user_location[ctx.from.id].lat,
+                        this.bot.user_location[ctx.from.id].lng
+                    ]
+                }
+            };
+
+            const geoHeader = { type: 'FeatureCollection', features: [feature] };
+            try {
+                fs.writeFile(
+                    config.folders.hydranten +
+                        '/' +
+                        this.bot.user_location[ctx.from.id].lat.toString() +
+                        ', ' +
+                        this.bot.user_location[ctx.from.id].lng.toString() +
+                        '.geojson',
+                    JSON.stringify(geoHeader),
+                    (err) => {
+                        if (err) throw err;
+                    }
+                );
+            } catch (error) {
+                logging.exception(NAMESPACE, error);
+            }
+
+            try {
+                fs.appendFile(
+                    config.folders.hydranten + '/' + 'Hydrantenpositionen.txt',
+                    '\n' +
+                        time +
+                        ' - ' +
+                        date +
+                        '    ' +
+                        ctx.from.last_name +
+                        ' ' +
+                        ctx.from.first_name +
+                        ' - ' +
+                        this.bot.user_location[ctx.from.id].lat +
+                        ', ' +
+                        this.bot.user_location[ctx.from.id].lng +
+                        ' - ' +
+                        typ,
+                    function (err) {
+                        if (err) throw err;
+                    }
+                );
+            } catch (error) {
+                logging.exception(NAMESPACE, error);
+            }
+            logging.debug(
+                NAMESPACE,
+                '[Hydrant] ' +
+                    ctx.from +
+                    ' ' +
+                    JSON.stringify(this.bot.user_location[ctx.from.id]) +
+                    ' ' +
+                    typ
+            );
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_more_picture(ctx: Context) {
@@ -176,6 +289,6 @@ export default class BotMore {
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 }

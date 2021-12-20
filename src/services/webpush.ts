@@ -1,6 +1,7 @@
 'use strict';
 
 import { AlarmRow } from '../models/alarm';
+import AlarmService from '../services/alarm';
 import config from '../utils/config';
 import globalEvents from '../utils/globalEvents';
 import groupService from './group';
@@ -70,7 +71,7 @@ class WebpushService {
 
             // Alarm Notification
             globalEvents.on('alarm', async (alarm: AlarmRow) => {
-                if (!config.alarm.app) {
+                if (!config.alarm.app || AlarmService.is_alarm_silence()) {
                     logging.warn(
                         NAMESPACE,
                         'App-Alarmierung deaktiviert! --> Keine Benachrichtigung'

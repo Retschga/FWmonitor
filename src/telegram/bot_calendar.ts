@@ -1,7 +1,7 @@
 'use-strict';
 
 import { CalendarElement, calendarService } from '../services/calendar';
-import { Context, Markup } from 'telegraf';
+import { Context, InlineKeyboard } from 'grammy';
 import { addLeadingZero, getFormattedDateTime } from '../utils/common';
 
 import TelegramBot from './bot';
@@ -35,16 +35,14 @@ export default class BotCalendar {
             if (!list || list.length < 1) {
                 ctx.reply('<b>Deine Termine:</b>\n' + 'Keine anstehenden Termine vorhanden.', {
                     parse_mode: 'HTML',
-                    ...Markup.inlineKeyboard([
-                        Markup.button.callback('Gesamter Kalender', 'KalenderGes')
-                    ])
+                    reply_markup: new InlineKeyboard().text('Gesamter Kalender', 'KalenderGes')
                 });
                 return;
             }
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: User not found');
+                ctx.reply('Error: User not found');
                 return;
             }
 
@@ -76,9 +74,7 @@ export default class BotCalendar {
 
             ctx.reply('<b>Deine Termine:</b>\n' + str, {
                 parse_mode: 'HTML',
-                ...Markup.inlineKeyboard([
-                    Markup.button.callback('Gesamter Kalender', 'KalenderGes')
-                ])
+                reply_markup: new InlineKeyboard().text('Gesamter Kalender', 'KalenderGes')
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -95,13 +91,13 @@ export default class BotCalendar {
 
             const list = await calendarService.find_all_upcoming();
             if (!list || list.length < 1) {
-                ctx.replyWithMarkdown('Keine Termine vorhanden.');
+                ctx.reply('Keine Termine vorhanden.');
                 return;
             }
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
@@ -153,7 +149,7 @@ export default class BotCalendar {
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async calendar_terminerinnerung(termin: CalendarElement) {

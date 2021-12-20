@@ -1,80 +1,148 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>Alarmierung</h1>
+              
+            <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <button class="material-icons" onclick="location.reload()">refresh</button>   
+        </div>
 
-                <h1>Alarmierung</h1>      
-
-            </div>
-
-            <div class="content">
-
-                <div class="flex_column">
-
-                    
-                    <div class="list">
-
-                        <div class="item">
-                            <span class="">Achtung Funktionn noch nicht implementiert!</span>
-                            <span class="">Achtung Einstellungen sind nur temporär!</span>
-                        </div>
-
-                        <span style="visibility: hidden;">&nbsp;</span>
-
-                        <div class="item">
-                            <span class="left material-icons">notifications_active</span>
-                            <span class="text">Telegram</span>
-                            <label class="switch right">
-                                <input type="checkbox">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item">
-                            <span class="left material-icons">notifications_active</span>
-                            <span class="text">App</span>
-                            <label class="switch right">
-                                <input type="checkbox">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
+        <div class="content">
+            <div class="flex_column">
+                <div class="list">
+                    <div class="item">
+                        <span class="text">Einstellungen aus .env</span>
                     </div>
-                    
-                    
+
+                    <div class="item">
+                        <span class="left material-icons">notifications_active</span>
+                        <span class="text">Telegram</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_telegram" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item">
+                        <span class="left material-icons">notifications_active</span>
+                        <span class="text">App</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_app" disabled />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
 
-            </div>
+                <div class="list">
+                    <div class="item">
+                        <span class="text">Alarmstille</span>
+                    </div>
 
+                    <div class="item">
+                        <span class="left material-icons">notifications_off</span>
+                        <span class="text">Aktiv</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_silence_status" disabled onchange="update_silence_seconds(0)" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item">
+                        <span class="left material-icons">notifications_off</span>
+                        <span class="text">Minuten</span>
+                        <input type="number" class="var_silence_min" min="0" max="60" />
+                    </div> 
+
+                    <div class="item">
+                        <span class="left material-icons">notifications_off</span>
+                        <span class="text">= Sekunden</span>
+                        <input type="number" class="var_silence_seconds" disabled/>
+                    </div>                                       
+
+                    <div class="item">
+                        <div class="flex_grow"></div>
+                        <div
+                            class="green right item rounded savebutton"
+                            onclick="update_silence_seconds()"
+                        >
+                            <span class="text text_align_right">Speichern</span>
+                            <span class="right material-icons">save</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
             // Laden
+            async function load_settings_all() {
+                try {
+                    const settings = await fetch_get(url_alarm_settings, true);
+                    console.log('settings', settings);
+
+                    const silence = await fetch_get(url_alarm_silence, true);
+                    console.log('silence', silence);
+
+                    const var_telegram = document.querySelector('.var_telegram');
+                    var_telegram.checked = settings.telegram == true;
+
+                    const var_app = document.querySelector('.var_app');
+                    var_app.checked = settings.app == true;
+
+                    const var_seconds = document.querySelector('.var_silence_seconds');
+                    var_seconds.value = silence.seconds;
+
+                    const var_minutes = document.querySelector('.var_silence_min');
+                    var_minutes.value = silence.minutes;
+
+                    const var_status = document.querySelector('.var_silence_status');
+                    var_status.checked = silence.enabled == true;
+                    var_status.disabled = silence.enabled != true;
+                } catch (error) {
+                    console.error('load_settings_all', error);
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
+            }
 
             // Speichern
+            async function update_silence_seconds(seconds) {
+                loaderIn();
+                try {
+                    const var_seconds = document.querySelector('.var_silence_min');
+
+                    let sec = seconds;
+                    if(seconds == undefined) {
+                        sec = var_seconds.value *60;
+                    }
+
+                    const response = await fetch_post(url_alarm_silence, {
+                        value: sec
+                    });
+                } catch (error) {
+                    console.error('update_silence_seconds', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }
+                load_settings_all();
+                loaderOut();
+            }
 
             // Funktionsaufrufe
             loaderFunction = () => {
-                
+                load_settings_all();
             };
-
         </script>
-       
     </body>
-	
 </html>

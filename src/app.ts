@@ -3,6 +3,7 @@
 import { Request, Response } from 'express';
 import session, { SessionOptions } from 'express-session';
 
+import AlarmService from './services/alarm';
 import RouterApi from './routes/routerApi';
 import TelegramBot from './telegram/bot';
 import { Websocket } from './websocket';
@@ -236,6 +237,9 @@ async function init() {
 
     // Starte Drucker-Papierüberwachung
     printingService.init();
+
+    // Starte Alarmservice
+    AlarmService.init();
 
     // Starte webpush service
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

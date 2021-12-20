@@ -1,13 +1,14 @@
 'use-strict';
 
-import { Context, Markup } from 'telegraf';
+import { Context, InlineKeyboard } from 'grammy';
+
 import TelegramBot from './bot';
-import userService from '../services/user';
 import alarmService from '../services/alarm';
+import config from '../utils/config';
+import logging from '../utils/logging';
 import statisticServise from '../services/statistic';
 import { timeout } from '../utils/common';
-import logging from '../utils/logging';
-import config from '../utils/config';
+import userService from '../services/user';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -33,16 +34,17 @@ export default class BotHistory {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_history', { telegramid });
 
-            const keyboard = [
-                Markup.button.callback('📜 Letzte Alarme', 'showAlarm:0'),
-                Markup.button.callback('📈 Statistik', 'showStatistik')
-            ];
+            const keyboard = new InlineKeyboard()
+                .text('📜 Letzte Alarme', 'showAlarm:0')
+                .text('📈 Statistik', 'showStatistik');
+
             if (config.fwvv.enabled) {
-                keyboard.push(Markup.button.callback('⏱️ Einsatzzeit', 'showEinsatzZeit'));
+                keyboard.text('⏱️ Einsatzzeit', 'showEinsatzZeit');
             }
 
-            ctx.replyWithMarkdown('*🔥 Einsätze*', {
-                ...Markup.inlineKeyboard(keyboard)
+            ctx.reply('*🔥 Einsätze*', {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard
             });
         } catch (error) {
             logging.exception(NAMESPACE, error);
@@ -60,7 +62,7 @@ export default class BotHistory {
 
             const list = await alarmService.find({}, 1, Number(data), 'ORDER BY id DESC');
             if (!list || list.length < 1) {
-                ctx.replyWithMarkdown('Error: No Alarm found');
+                ctx.reply('Error: No Alarm found');
                 return;
             }
 
@@ -80,16 +82,15 @@ ${list[0].schlagwort}
 ${list[0].ort}_`,
                 {
                     parse_mode: 'Markdown',
-                    ...Markup.inlineKeyboard([
-                        Markup.button.callback('<', 'showAlarm:' + (Number(data) - 1)),
-                        Markup.button.callback('>', 'showAlarm:' + (Number(data) + 1))
-                    ])
+                    reply_markup: new InlineKeyboard()
+                        .text('<', 'showAlarm:' + (Number(data) - 1))
+                        .text('>', 'showAlarm:' + (Number(data) + 1))
                 }
             );
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_history_showStatistic(ctx: Context) {
@@ -105,7 +106,7 @@ ${list[0].ort}_`,
 
             const list = await statisticServise.get(year);
             if (!list || list.length < 1) {
-                ctx.replyWithMarkdown('Error: No Statistik found');
+                ctx.reply('Error: No Statistik found');
                 return;
             }
 
@@ -132,7 +133,7 @@ ${list[0].ort}_`,
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 
     private async bot_hostory_time(ctx: Context) {
@@ -150,7 +151,7 @@ ${list[0].ort}_`,
 
             const user = await userService.find_by_telegramid(telegramid);
             if (!user || user.length < 1) {
-                ctx.replyWithMarkdown('Error: No User found');
+                ctx.reply('Error: No User found');
                 return;
             }
 
@@ -159,7 +160,7 @@ ${list[0].ort}_`,
             const time: any = await statisticServise.einsatzzeit(user[0].id, year);
 
             if (!time) {
-                ctx.replyWithMarkdown('Error: No Time found');
+                ctx.reply('Error: No Time found');
                 return;
             }
 
@@ -172,6 +173,6 @@ ${list[0].ort}_`,
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
-        ctx.answerCbQuery();
+        ctx.answerCallbackQuery();
     }
 }

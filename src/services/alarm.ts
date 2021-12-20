@@ -12,6 +12,14 @@ import openrouteservice from 'openrouteservice-js';
 
 const NAMESPACE = 'Alarm_Service';
 class AlarmService {
+    public init() {
+        setInterval(() => {
+            if (config.alarm.silence > 0) {
+                config.alarm.silence--;
+            }
+        }, 1000);
+    }
+
     /**
      * Gibt die Alarmfarbe zu einem Einsatzstichwort zurück
      */
@@ -88,6 +96,14 @@ class AlarmService {
 
     public get_alarmsettings() {
         return { telegram: config.alarm.telegram, app: config.alarm.app };
+    }
+
+    public set_alarm_silence(seconds: number) {
+        config.alarm.silence = seconds;
+    }
+
+    public is_alarm_silence() {
+        return config.alarm.silence > 0;
     }
 
     /**

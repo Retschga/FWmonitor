@@ -31,6 +31,10 @@ export const updateAlarmApp = [
         .withMessage('value must be boolean')
 ];
 
+export const updateAlarmSilence = [
+    body('value').exists().withMessage('value is required').isInt().withMessage('value must be int')
+];
+
 export const updateUserstatus = [
     body('alarmid')
         .exists()
