@@ -164,7 +164,7 @@
 
                     const count = images.length;
                     let nextImage = Math.floor(Math.random() * count);
-                    let   img;
+                    let img;
                     function slideshow() {
                         target.style.backgroundImage = `url("${url_diashow_file.replace(':filename', images[nextImage].name)}")`;
          
@@ -175,9 +175,7 @@
                         } else {
                             target_date.classList.add('hidden');
                         }
-
-
-                        setTimeout(slideshow, diashow_time);
+                        
                         nextImage++;
                         if(nextImage >= count){
                             nextImage = 0;
@@ -188,6 +186,7 @@
                         img.src = url_diashow_file.replace(':filename', images[nextImage].name);
                     }
                     slideshow();
+                    setInterval(slideshow, diashow_time);
 
                 } catch (error) {
                     console.error('load_diashow', error);
