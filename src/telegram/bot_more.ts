@@ -2,6 +2,7 @@
 
 import { Context, InlineKeyboard, Keyboard } from 'grammy';
 
+import AlarmService from '../services/alarm';
 import TelegramBot from './bot';
 import config from '../utils/config';
 import fs from 'fs';
@@ -51,6 +52,15 @@ export default class BotMore {
         });
         this.bot.inlineKeyboardEvents.on('hydrPosOK', this.bot_more_hydrant_location_ok.bind(this));
         this.bot.inlineKeyboardEvents.on('hydrTyp', this.bot_more_hydrant_type.bind(this));
+        this.bot.inlineKeyboardEvents.on(
+            'einstell_alarmsilence',
+            this.bot_more_alarmsilence.bind(this)
+        );
+
+        this.bot.inlineKeyboardEvents.on(
+            'einstell_alarmsilence_set',
+            this.bot_more_alarmsilence_set.bind(this)
+        );
     }
 
     public async bot_more(ctx: Context): Promise<void> {
@@ -72,6 +82,16 @@ export default class BotMore {
                     '🗺️ Karte',
                     `http://www.openfiremap.org/?zoom=13&lat=${config.common.fw_position.lat}&lon=${config.common.fw_position.lng}&layers=B0000T`
                 );
+            }
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.reply('Error: No User found');
+                return;
+            }
+
+            if (user[0].admin == true) {
+                keyboard.row().text('🔕 Alarmstille', 'einstell_alarmsilence');
             }
 
             // Antwort senden
@@ -283,9 +303,94 @@ export default class BotMore {
             const telegramid: string = String(ctx.from?.id);
             logging.debug(NAMESPACE, 'bot_more_picture', { telegramid });
 
-            ctx.editMessageText('Bild über Büroklammer-Symbol unten senden.', {
-                parse_mode: 'Markdown'
-            });
+            ctx.editMessageText(
+                'Bild über Büroklammer-Symbol unten senden. (Wenn möglich ohne Kompression wählen)',
+                {
+                    parse_mode: 'Markdown'
+                }
+            );
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+        ctx.answerCallbackQuery();
+    }
+
+    private async bot_more_alarmsilence(ctx: Context) {
+        try {
+            if (!this.bot) throw new Error('Not initialized');
+            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
+
+            const telegramid: string = String(ctx.from?.id);
+            logging.debug(NAMESPACE, 'bot_more_alarmsilence', { telegramid });
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.reply('Error: No User found');
+                return;
+            }
+
+            if (user[0].admin != true) return;
+
+            ctx.editMessageText(
+                `*${AlarmService.is_alarm_silence() ? '🔕' : '🔔'} Alarmstille: _${
+                    AlarmService.is_alarm_silence()
+                        ? 'Aktiv ' + (config.alarm.silence / 60).toFixed(0) + 'min'
+                        : 'AUS'
+                }_*`,
+                {
+                    parse_mode: 'MarkdownV2',
+                    reply_markup: new InlineKeyboard()
+                        .text('5m', 'einstell_alarmsilence_set:5')
+                        .text('10m', 'einstell_alarmsilence_set:10')
+                        .text('15m', 'einstell_alarmsilence_set:15')
+                        .text('30m', 'einstell_alarmsilence_set:30')
+                        .row()
+                        .text('Deaktivieren', 'einstell_alarmsilence_set:-1')
+                }
+            );
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+        ctx.answerCallbackQuery();
+    }
+
+    private async bot_more_alarmsilence_set(ctx: Context, value: string) {
+        try {
+            if (!this.bot) throw new Error('Not initialized');
+            if (!ctx.from?.id) throw new Error('Telegram ID nicht definiert!');
+
+            const telegramid: string = String(ctx.from?.id);
+            logging.debug(NAMESPACE, 'einstell_alarmsilence_set', { telegramid });
+
+            const user = await userService.find_by_telegramid(telegramid);
+            if (!user || user.length < 1) {
+                ctx.reply('Error: No User found');
+                return;
+            }
+
+            if (user[0].admin != true) return;
+
+            const minutes = parseInt(value, 10);
+            AlarmService.set_alarm_silence(minutes * 60);
+
+            ctx.editMessageText(
+                `*🔕 Alarmstille: _Aktiv ${(config.alarm.silence / 60).toFixed(0)}min _*`,
+                {
+                    parse_mode: 'MarkdownV2'
+                }
+            );
+
+            setTimeout(() => {
+                this.bot?.sendMessage(
+                    telegramid,
+                    `*${AlarmService.is_alarm_silence() ? '🔕' : '🔔'} Alarmstille: _${
+                        AlarmService.is_alarm_silence() ? 'Aktiv' : 'AUS'
+                    }_*`,
+                    {
+                        parse_mode: 'MarkdownV2'
+                    }
+                );
+            }, minutes * 60000 + 30000);
         } catch (error) {
             logging.exception(NAMESPACE, error);
         }
