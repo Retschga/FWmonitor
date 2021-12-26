@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# RASPBERRY PI Bewegungsmelder-Skript Updateskript
+# RASPBERRY PI Updateskript
 # (c) 2021 Johannes Resch
 
-echo "RASPBERRY PI Bewegungsmelder-Skript Updateskript v1.1"
+echo "RASPBERRY PI Updateskript v1.1"
 
 cd /home/pi/
 
@@ -16,15 +16,15 @@ pkill -9 -f steuer.py
 ## Python Skript herunterladen
 echo "Lade Skripte herunter"
 /usr/bin/wget -O /home/pi/steuer.py.1 "$1/scripts/steuer.py"
-/usr/bin/wget -O /home/pi/steuer.py.2 "$1/scripts/steuer.py"
-/usr/bin/wget -O /home/pi/steuer.py.3 "$1/scripts/steuer.py"
+/usr/bin/wget -O /home/pi/steuerUART.py.1 "$1/scripts/steuerUART.py"
+/usr/bin/wget -O /home/pi/steuerRELAIS.py.1 "$1/scripts/steuerRELAIS.py"
 /usr/bin/wget -O /home/pi/steuerUpdate.sh.1 "$1/scripts/steuerUpdate.sh"
 
 ## Alte Skripte überschreiben
 echo "Alte Skripte ersetzen"
 /bin/mv -f /home/pi/steuer.py.1 /home/pi/steuer.py
-/bin/mv -f /home/pi/steuer.py.2 /home/pi/steuerUART.py
-/bin/mv -f /home/pi/steuer.py.3 /home/pi/steuerRELAIS.py
+/bin/mv -f /home/pi/steuerUART.py.1 /home/pi/steuerUART.py
+/bin/mv -f /home/pi/steuerRELAIS.py.1 /home/pi/steuerRELAIS.py
 /bin/mv -f /home/pi/steuerUpdate.sh.1 /home/pi/steuerUpdate.sh
 
 sudo chmod +x /home/pi/steuerUpdate.sh

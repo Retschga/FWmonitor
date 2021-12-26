@@ -4,8 +4,7 @@ Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des
 Bildschirm darzustellen. Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort
 auf einer Karte visualisiert wird.
 
-Die Faxauswertung ist derzeit auf die ILS Rosenheim abgestimmt (kann aber in den Einstellungen
-angepasst werden). E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
+E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 
 ## 🔥 Funktionsumfang
 
@@ -59,7 +58,7 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 
 -   nodejs - https://nodejs.org/
 -   npm - https://www.npmjs.com/
--   OpenLayers 3 - https://openlayers.org/
+-   OpenLayers - https://openlayers.org/
 -   Bing Geocode - https://www.bing.com/api/maps/sdk/mapcontrol/isdk/searchbyaddress
 -   openstreetmap - https://www.openstreetmap.org/fixthemap
 -   Hillshading - https://klokantech.github.io/dare-raster-tiles/hillshade/
@@ -72,6 +71,7 @@ Bei Fragen oder Anregungen einfach in GitHub oben unter Issues ein Issue erstell
 -   Forst Rettungspunkte - https://rettungspunkte-forst.de
 -   Google Noto Font - https://www.google.com/get/noto/help/emoji/
 -   PDF.js - https://mozilla.github.io/pdf.js/
+-   Taktische-Zeichen - https://github.com/jonas-koeritz/Taktische-Zeichen
 
 ## 📋 Authors
 

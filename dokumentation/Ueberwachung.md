@@ -15,10 +15,9 @@ npm install pm2@latest -g
 
 -   pm2 stop FWmonitorV3
 -   pm2 start FWmonitorV3
--   pm2 restart FWmonitorV3
--   pm2 status
 -   pm2 delete FWmonitorV3
 -   pm2 logs FWmonitorV3
+-   pm2 status
 
 ### Info
 

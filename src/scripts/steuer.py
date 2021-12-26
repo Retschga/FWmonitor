@@ -2,7 +2,11 @@
 # -*- coding: utf-8 -*-
 
 
-# RASPBERRY PI Bewegungsmelder (HC-SR501 PIR) Bildschirmsteuerung (Samsung Smart Signage Display ED65E LED)
+# RASPBERRY PI Steuerskript 
+# Bewegungsmelder (HC-SR501 PIR); Bildschirmsteuerung 
+# UART: Samsung Smart Signage Display ED65E LED
+# RELAIS: siehe dokumentation/anschlussplan.png
+# HDMI: Bildschirm nur schwarz schalten
 # (c) 2020 Johannes Resch
 # benötigt Python > 3.6
 

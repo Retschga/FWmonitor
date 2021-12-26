@@ -71,8 +71,8 @@
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                         {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
                         {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
-                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"},
-                        ${updateInProgress ? '{"id":"8", "key": "Version", "value": "update...""}' : ''}
+                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"}
+                        ${updateInProgress ? ',{"id":"8", "key": "Version", "value": "update...""}' : ''}
                 ]}`
             );}      
 
