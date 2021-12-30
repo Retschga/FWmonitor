@@ -20,7 +20,7 @@
 
 -   .env Datei mit einem Texteditor öffnen (z.B. Notepad++)
 -   Alle relevanten Einstellungen in der bearbeiten
--   Veränderte Einstellungen erfordern immer einen Software Neustart!
+-   Veränderte Einstellungen erfordern immer einen Software Neustart! (`pm2 restart FWmonitorV3`)
 
 -   [Beschreibung aller Einstellungen](Einstellungen_env.md)
 
@@ -75,7 +75,7 @@
     2.  Cert und Key von C:\Certbot\live\ unter .env als "HTTPS_KEY" und "HTTPS_CERT" eintragen
     3.  Auto Renew:
         1. Aufgabenplanung öffnen
-        2. Einfache aufgabe erstellen (rechts)
+        2. Einfache Aufgabe erstellen (rechts)
             - Name: certbot
             - Wöchentlich
             - Sonntag

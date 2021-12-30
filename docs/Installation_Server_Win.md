@@ -41,13 +41,16 @@
 
 In Konsole (Rechtsklick - Git Bash here):
 
--   Windows: `start.bat` oder `./start.bat`
+-   `start_ueberwacht.bat` oder `./start_ueberwacht.bat`
 
 ## Programmstart (automatisch)
 
--   unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu start.bat
-    erstellen, oder
 -   unter `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp` Verknüpfung zu
-    start_ueberwacht.bat erstellen (vorher `npm install pm2@latest -g`)
+    start_ueberwacht.bat erstellen
 
--   [Für überwachte Ausführung siehe...](Ueberwachung.md)
+### Befehle
+
+-   pm2 stop FWmonitorV3
+-   pm2 start FWmonitorV3
+-   pm2 delete FWmonitorV3
+-   pm2 status

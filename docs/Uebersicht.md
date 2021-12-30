@@ -59,7 +59,7 @@ möglich.
 -   Anschluss des PIR siehe anschlussplan.PNG (Bei Verwendung eines Relais an 230V: Anschluss nur
     durch berechtigte Personen. Verwenden auf eigene Gefahr!)
 -   Autostart: `sudo crontab -e`
--   darin die Zeile `@reboot python "/home/pi/steuer####.py"` auskommentieren
+-   darin die Zeile `@reboot python "/home/pi/steuer.py"` auskommentieren
 
 Alternativ siehe auch: https://github.com/t08094a/alarmDisplay/tree/master/kiosk/MonitorActivation
 

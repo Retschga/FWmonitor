@@ -1,4 +1,4 @@
-﻿# ![Logo](./dokumentation/icon.png) FWmonitor
+﻿# ![Logo](./docs/icon.png) FWmonitor
 
 Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem
 Bildschirm darzustellen. Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort
