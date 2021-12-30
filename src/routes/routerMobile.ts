@@ -74,6 +74,9 @@ class RouterMobile {
         this.router.get('/redirect', (req: Request, res: Response) => {
             res.render('mobile/redirect');
         });
+        this.router.get('/offline', (req: Request, res: Response) => {
+            res.render('mobile/offline');
+        });
 
         // TODO: / -> redirect when logged in
         this.router.use('/', auth_page('/app/redirect?target=login'), mobileRoutes);

@@ -259,7 +259,7 @@ const UPDATE = {
 };
 
 const config = {
-    version: '3.1.0',
+    version: '3.1.1',
     version_new: '---',
     raspiversion: process.env.RASPIVERSION ? /true/i.test(process.env.RASPIVERSION) : false,
     sqlite: SQLITE,

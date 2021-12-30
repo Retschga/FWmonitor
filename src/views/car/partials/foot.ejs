@@ -10,6 +10,7 @@
 
     let DEBUG = parseInt(localStorage.getItem('DEBUG') || 1);
     let updateInProgress = false;
+    let hwVersion = '#.#.#';
 
     let firststart = true;
     let ws_hardware = null;
@@ -219,6 +220,7 @@
             }, 1500);
             ws_hardware.send('getWpaSupp'); 
             ws_hardware.send('getHostname'); 
+            ws_hardware.send('getVersion'); 
         };
 
         ws_hardware.onmessage = function(e) {
@@ -260,6 +262,9 @@
 
             } else if (e.data.indexOf('beginUpdate') != -1) {
                 updateInProgress = true;
+
+            } else if (e.data.indexOf('version') != -1) {
+                hwVersion = e.data.split(':')[1];
 
                 
 

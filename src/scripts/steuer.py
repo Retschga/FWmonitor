@@ -47,7 +47,7 @@ else:
     skripttype = sys.argv[5]
 
 starttime = str(datetime.datetime.now())
-version = "3.1.0"
+version = "3.1.1"
 
 bashCommand_reboot     = "sudo /sbin/shutdown -r now"
 bashCommand_screen_on  = "vcgencmd display_power 1"
@@ -179,6 +179,7 @@ class WebSocketRetry:
         return self
 
     async def get_websocket_connection(self, uri):
+        global asyncState
         while not self.closed:
             await asyncio.sleep(2)
             try:
@@ -188,7 +189,7 @@ class WebSocketRetry:
                     self._websocket_connection = ws
                     self.connected = True
                     await asyncio.wait_for(printLog("Websocket: Verbindung aufbauen... OK"), 5)
-                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog)+"\"}]}"
+                    self._dataToSend = "{\"topic\":\"init\", \"type\":\"Steuerskript\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\""+skripttype+"\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog1)+"\"}]}"
 
                     while self.connected:               
                         # Senden         
@@ -203,6 +204,7 @@ class WebSocketRetry:
                             asyncState.log = data
                             await asyncio.wait_for(printLog(data), 5)
                             parsedData = json.loads(data)
+                            asyncState.timerWatchdog2 = 0
                             if parsedData["topic"] == "ping":
                                 self._dataToSend = "{\"topic\":\"pong\", \"value\":\""+parsedData["message"]+"\"}"
                             if parsedData["topic"] == 'alarm':
@@ -259,7 +261,7 @@ async def closeWebsocket(asyncState):
 
 async def keepAlive(asyncState):    
     await asyncState.client.sendPing("TESTPING")
-    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog)+"\"}]}")
+    await asyncState.client.send("{\"topic\":\"update\", \"type\":\"UART\",\"name\":\"Alarmdisplay "+name+"\",\"info\":\"Steuerskript\",\"actions\":[{\"id\":\"-1\",\"key\":\"Bootzeit\",\"value\":\""+starttime+"\"},{\"id\":\"7\"},{\"id\":\"8\",\"key\":\"Version\",\"value\":\""+version+"\"},{\"id\":\"-2\",\"key\":\"SCHIRM\",\"value\":\""+asyncState.schirmstatus + " " + asyncState.schirmstatusTime+"\"},{\"id\":\"-3\",\"key\":\"3h\",\"value\":\""+asyncState.logbuff+"\"},{\"id\":\"-4\",\"key\":\"Sek bis Aus\",\"value\":\""+str(asyncState.timeToSleep)+"\"},{\"id\":\"-5\",\"key\":\"Watchdog\",\"value\":\""+str(asyncState.timerWatchdog1)+"\"}]}")
 
 # ------- Websocket Hardware -------
 async def WebSocketHardware(websocket, path):
@@ -268,7 +270,7 @@ async def WebSocketHardware(websocket, path):
         await printLog("Msg IN: " + str(message))
         if message == "watchdog":
             await printLog("Watchdog OK")
-            asyncState.timerWatchdog = 0
+            asyncState.timerWatchdog1 = 0
 
 async def endProgram(asyncState):
     await asyncio.wait_for(printLog("Steuerskript UART", "Version " + version, "ENDE"), 5)
@@ -295,9 +297,15 @@ async def mainLoop(asyncState):
                 asyncState.timer300 = 0
                 await create3hLog(asyncState)
 
-            asyncState.timerWatchdog += 1
-            if asyncState.timerWatchdog >= 120:
-                await printLog("---- watchdog reboot ----")
+            asyncState.timerWatchdog1 += 1
+            if asyncState.timerWatchdog1 >= 120:
+                await printLog("---- watchdog1 reboot ----")
+                output = subprocess.call(bashCommand_reboot, shell=True)
+                await printLog("Reboot OUT: " + output)
+
+            asyncState.timerWatchdog2 += 1
+            if asyncState.timerWatchdog2 >= 120:
+                await printLog("---- watchdog2 reboot ----")
                 output = subprocess.call(bashCommand_reboot, shell=True)
                 await printLog("Reboot OUT: " + output)
 
@@ -319,7 +327,8 @@ if __name__ == '__main__':
     asyncState.timer5 = 0
     asyncState.timer15 = 0
     asyncState.timer300 = 0
-    asyncState.timerWatchdog = 0
+    asyncState.timerWatchdog1 = 0
+    asyncState.timerWatchdog2 = 0
 
     try:
 

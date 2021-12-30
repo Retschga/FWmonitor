@@ -54,7 +54,7 @@
                     "actions":[
                         {"id":"0"},
                         {"id":"7"},
-                        {"id":"8", "key": "Version", "value": "<%= version %>"},
+                        {"id":"8", "key": "Version", "value": "<%= version %> / ${hwVersion}"},
                         {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
                         {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
@@ -72,7 +72,7 @@
                         {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
                         {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
                         {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"}
-                        ${updateInProgress ? ',{"id":"8", "key": "Version", "value": "update...""}' : ''}
+                        ${updateInProgress ? ',{"id":"-5", "key": "Update", "value": "läuft"}' : ''}
                 ]}`
             );}      
 

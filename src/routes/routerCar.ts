@@ -1,15 +1,14 @@
 'use strict';
 
-import express from 'express';
-import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
 
-import carRoutes from './car/car';
-
-import errorMiddleware from '../middleware/error';
 import { auth_page } from '../middleware/auth';
-import logging from '../utils/logging';
+import carRoutes from './car/car';
 import config from '../utils/config';
+import errorMiddleware from '../middleware/error';
+import express from 'express';
+import logging from '../utils/logging';
+import rateLimit from 'express-rate-limit';
 
 const NAMESPACE = 'ROUTER_CAR';
 
@@ -77,6 +76,9 @@ class RouterCar {
         });
         this.router.get('/settings', (req: Request, res: Response) => {
             res.render('car/settings');
+        });
+        this.router.get('/offline', (req: Request, res: Response) => {
+            res.render('car/offline');
         });
 
         this.router.use('/', auth_page('/car/redirect?target=login'), carRoutes);

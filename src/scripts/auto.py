@@ -36,7 +36,7 @@ if len(sys.argv) < 4:
     print("Aufruf: auto.py UBLOX_API_KEY SERVER_IP:PORT GPS_DEVICE")
     sys.exit()
 
-VERSION = "3.1.0"
+VERSION = "3.1.1"
 
 TOOGLE_USB_ON_NO_TETHER = True
 TIME_TILL_OFF = 60 # sekunden
@@ -62,7 +62,7 @@ async def dispON(asyncState):
     try:
         output = subprocess.call(bashCommand_screen_on, shell=True)
         await asyncio.wait_for(printLog("SCREEN ON OUT: " + str(output)), 5) 
-        await asyncio.sleep(5)   
+        await asyncio.sleep(20)   
         await asyncio.wait_for(printLog("Disp ON OK"), 5)
         asyncState.dispstat = True
 
@@ -73,7 +73,7 @@ async def dispOFF(asyncState):
     try:
         output = subprocess.call(bashCommand_screen_off, shell=True)
         await asyncio.wait_for(printLog("SCREEN OFF OUT: " + str(output)), 5)  
-        await asyncio.sleep(5)
+        await asyncio.sleep(20)
         await asyncio.wait_for(printLog("Disp OFF OK"), 5)
         asyncState.dispstat = False
         
@@ -185,6 +185,8 @@ async def echo(websocket, path):
                 await websocket.send("usbtether:true")
             else:
                 await websocket.send("usbtether:false")                
+        if message == "getVersion":
+            await websocket.send("version:" + VERSION)           
         if message == "update": 
             await websocket.send("beginUpdate") 
             websocket.close()                            
