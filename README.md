@@ -48,7 +48,7 @@ E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 
 ## 🖥️ Installation, Update, Einstellungen
 
-[Siehe Dokumentation ...](./dokumentation/Uebersicht.md)
+[Siehe Dokumentation ...](./docs/Uebersicht.md)
 
 ## ❓ Fragen / Anregungen
 

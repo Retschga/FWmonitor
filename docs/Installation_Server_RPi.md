@@ -26,7 +26,8 @@
 
 ## Installation Server
 
-1. Aktuelle Version Datei unter Releases herunterladen, extrahieren
+1. Aktuelle Versions Datei unter Releases herunterladen, extrahieren
+   (https://github.com/Retschga/FWmonitor/releases)
 2. In Konsole
 
 -   `cd "FWmonitor"`
