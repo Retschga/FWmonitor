@@ -245,6 +245,8 @@ class AlarmParserService {
         data = data.replace(/2222+/g, '--------');
         data = data.replace(/---([-\s.](?!\n))+/g, '--------');
         data = data.replace(/\|\]/g, '1');
+        data = data.replace(/]l/g, '1');
+        data = data.replace(/]1/g, '1');
 
         // Stichworte B ...
         data = data.replace(/BI/g, 'B1');
@@ -265,6 +267,7 @@ class AlarmParserService {
 
         // Stichworte RD
         data = data.replace(/\({RD/g, '(RD');
+        data = data.replace(/{RD/g, '(RD');
         data = data.replace(/RD.(?=[1-9])/g, 'RD ');
 
         // Klammern ( ... ) zu (...)

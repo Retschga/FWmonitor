@@ -44,7 +44,7 @@ sudo apt -y install --no-install-recommends unclutter xscreensaver
 
 # Herunterladen der Skripte
 echo "Lade Skripte herunter"
-/usr/bin/wget -O /home/pi/steuerUART.py "$1/scripts/steuer.py"
+/usr/bin/wget -O /home/pi/steuer.py "$1/scripts/steuer.py"
 /usr/bin/wget -O /home/pi/steuerUpdate.sh "$1/scripts/steuerUpdate.sh"
 sudo chmod +x /home/pi/steuerUpdate.sh
 

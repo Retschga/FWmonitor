@@ -92,10 +92,10 @@ Zweifel ist der Programmcode entsprechend anzupassen.
 
 ## 📷 Screenshots
 
-| Standby                                         | Alarm                                           |
-| ----------------------------------------------- | ----------------------------------------------- |
-| ![Bild](./dokumentation/Screenshot1.PNG 'Bild') | ![Bild](./dokumentation/Screenshot2.PNG 'Bild') |
-| App                                             | Telegram                                        |
-| ![Bild](./dokumentation/Screenshot4.PNG 'Bild') | ![Bild](./dokumentation/Screenshot3.PNG 'Bild') |
-| Auto Bildschirm                                 | Auto Bildschirm                                 |
-| ![Bild](./dokumentation//Auto/pic_1.png 'Bild') | ![Bild](./dokumentation//Auto/pic_2.png 'Bild') |
+| Standby                                | Alarm                                  |
+| -------------------------------------- | -------------------------------------- |
+| ![Bild](./docs/Screenshot1.PNG 'Bild') | ![Bild](./docs/Screenshot2.PNG 'Bild') |
+| App                                    | Telegram                               |
+| ![Bild](./docs/Screenshot4.PNG 'Bild') | ![Bild](./docs/Screenshot3.PNG 'Bild') |
+| Auto Bildschirm                        | Auto Bildschirm                        |
+| ![Bild](./docs//Auto/pic_1.png 'Bild') | ![Bild](./docs//Auto/pic_2.png 'Bild') |
