@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link rel="stylesheet" href="/vendor/keyboard.css" />
+        <script src="/vendor/keyboard.js"></script>
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <style>
+
+            .highlight {
+                border: 2px solid red;
+            }
+
+        </style>        
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Einstellungen</h1>      
+
+            </div>
+
+            <div class="content flex_row">
+
+                <div class="flex_grow padding_right_1">
+
+                    <div class="list" id="sett_nw1">
+
+                        <div class="item">
+                            <span class="left material-icons">wifi</span>
+                            <span class="text">Wlan Gerätehaus</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">SSID</span>
+                            <input type="text" class="var_ssid1 use-keyboard-input" placeholder="Wert...">
+                            <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em" onclick="einstellungen_save()">
+                                <span class="right material-icons" style="line-height: 0.7; margin: 0;">save</span>
+                            </div> 
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Passwort</span>
+                            <input type="text" class="var_password1 use-keyboard-input" placeholder="Wert...">
+                            <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em" onclick="einstellungen_save()">
+                                <span class="right material-icons" style="line-height: 0.7; margin: 0;">save</span>
+                            </div> 
+                        </div>
+
+                    </div>
+
+                    <div class="list" id="sett_nw2">
+
+                        <div class="item">
+                            <span class="left material-icons">wifi</span>
+                            <span class="text">Wlan Mobil</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">SSID</span>
+                            <input type="text" class="var_ssid2 use-keyboard-input" placeholder="Wert...">
+                            <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em" onclick="einstellungen_save()">
+                                <span class="right material-icons" style="line-height: 0.7; margin: 0;">save</span>
+                            </div> 
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text">Passwort</span>
+                            <input type="text" class="var_password2 use-keyboard-input" placeholder="Wert...">
+                            <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em" onclick="einstellungen_save()">
+                                <span class="right material-icons" style="line-height: 0.7; margin: 0;">save</span>
+                            </div> 
+                        </div>
+
+                    </div>
+
+                    <div class="list" id="sett_usbtether">
+
+                        <div class="item">
+                            <span class="left material-icons">wifi</span>
+                            <span class="text">USB Tethering</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Status</span>
+                            <span class="var_usbtether">####</span>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                <div class="flex_grow">
+
+                    <div class="list">
+
+                        <div class="item">
+                            <span class="left material-icons">info</span>
+                            <span class="text">CPU</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Temperatur</span>
+                            <span class="var_temp">##.# °C</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Auslastung</span>
+                            <span class="var_cpu">##.# °%</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Arbeitsspeicher Belegt/Gesamt</span>
+                            <span class="var_mem">###kB / ###kB</span>
+                        </div>
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">chevron_right</span>
+                            <span class="text var_name">Hostname</span>
+                            <span class="var_hostname">####</span>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            function load_settings() {
+
+                const var_hostname = document.querySelector('.var_hostname'); 
+                var_hostname.innerHTML = status_hostname;
+
+                // Auswertung der eingestellten Netzwerke aus der wpa_supplicant.conf
+                einstellungen_networks = [];
+                let lineArray = status_wpaSupp.split('\n');
+                for(let i = 0;i < lineArray.length;i++){
+                    let line = lineArray[i];
+                    if(line.indexOf('ssid') != -1) {
+                        let tmp = line.split('=').pop();
+                        if(DEBUG > 1) console.log(tmp);
+                        einstellungen_networks.push({'ssid': String(tmp).replace(/\"/g, '')});
+                    }
+                    if(line.indexOf('psk') != -1) {
+                        let tmp = line.split('=').pop();
+                        if(DEBUG > 1) console.log(tmp);
+                        einstellungen_networks[einstellungen_networks.length -1]['psk'] =  String(tmp).replace(/\"/g, '');
+                    }
+                    if(line.indexOf('priority') != -1) {
+                        let tmp = line.split('=').pop();
+                        if(DEBUG > 1) console.log(tmp);
+                        einstellungen_networks[einstellungen_networks.length -1]['priority'] = parseInt( String(tmp).replace(/\"/g, '') );
+                    }
+                }
+
+                // Gefundene Netzwerke anzeigen
+                if(einstellungen_networks.length != 2) {
+                    alert("Fehler: Mehr als 2 oder weniger als 2 konfigurierte Netzwerke gefunden");
+                    return;
+                }
+                if(einstellungen_networks.length == 2) {
+                    // Netzwerke anhand Priorität sortieren
+                    if(einstellungen_networks[0]['priority'] < einstellungen_networks[1]['priority']) {
+                        let tmp = einstellungen_networks[0];
+                        einstellungen_networks[0] = einstellungen_networks[1];
+                        einstellungen_networks[1] = tmp;
+                    }
+                    // Input-Felder ausfüllen
+                    document.querySelector(".var_ssid1").value = String(einstellungen_networks[0]['ssid']);
+                    document.querySelector(".var_password1").value = String(einstellungen_networks[0]['psk']);
+                    document.querySelector(".var_ssid2").value = String(einstellungen_networks[1]['ssid']);
+                    document.querySelector(".var_password2").value = String(einstellungen_networks[1]['psk']);		
+                } 		
+            }
+
+            function load_info() {
+
+                const var_temp      = document.querySelector('.var_temp'); 
+                const var_cpu       = document.querySelector('.var_cpu'); 
+                const var_mem       = document.querySelector('.var_mem'); 
+                const var_usbtether = document.querySelector('.var_usbtether'); 
+
+
+                // CPU Status
+                var_temp.innerHTML = status_cpuTemp + '°C';
+                var_mem.innerHTML  = status_memFree + "MB / " + status_memTotal + "MB";
+                var_cpu.innerHTML  = (100 - parseInt(status_cpuIdle)) + '%';
+
+                // Verbundenes Netzwerk
+                if(einstellungen_networks.length == 2) {
+                    status_connWlan = String(status_connWlan).replace(/\"/g, '');
+                    if( einstellungen_networks[0]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+                        document.getElementById("sett_nw1").classList.add('highlight');
+                        document.getElementById("sett_nw2").classList.remove('highlight');
+                    } else if( einstellungen_networks[1]['ssid'].valueOf().trim() == status_connWlan.valueOf().trim() ) {
+                        document.getElementById("sett_nw1").classList.remove('highlight');
+                        document.getElementById("sett_nw2").classList.add('highlight');
+                    } else {
+                        document.getElementById("sett_nw1").classList.remove('highlight');
+                        document.getElementById("sett_nw2").classList.remove('highlight');
+                    }
+                }
+
+                var_usbtether.innerHTML = status_usbtether == true ? "verbunden" : "getrennt";
+                if(status_usbtether == true) {
+                    document.getElementById("sett_usbtether").classList.add('highlight');
+                } else {
+                    document.getElementById("sett_usbtether").classList.remove('highlight');			
+                }
+
+            }
+          			
+
+            // Speichern
+            async function einstellungen_save() {
+                try {
+                    loaderIn();
+                    let data = `setWpaSupp:network={\nssid=\"${document.querySelector(".var_ssid1").value}\"\npsk=\"${document.querySelector(".var_password1").value}\"\npriority=20\n}\nnetwork={\nssid=\"${document.querySelector(".var_ssid2").value}\"\npsk=\"${document.querySelector(".var_password2").value}\"\npriority=10\n}`;
+                    if(DEBUG > 1) console.log("sende Daten...", data);
+                    ws_hardware.send(data);
+                } catch (error) {
+                    loaderOut();
+                    alert('Daten konnten nicht gespeichert werden!');
+                }
+                loaderOut();
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_settings();
+
+                setInterval(() => {
+                    load_info();
+                }, 2000);
+                load_info()
+
+                setTimeout(() => {
+                    goBack();
+                }, 60000 * 5);
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

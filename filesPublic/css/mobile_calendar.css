@@ -1,0 +1,12 @@
+.calendar_list {
+    padding: 0.5em;
+}
+
+.calendar_element {
+    border: 1px solid var(--color_border);
+    padding: 0.5em;
+}
+
+.stripes {
+    background: repeating-linear-gradient(45deg, #f7f8ff, #f7f8ff 10px, #cfcfcf 10px, #cfcfcf 20px);
+}

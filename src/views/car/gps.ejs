@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/car_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>GPS</h1>      
+
+            </div>
+
+            <div class="content">
+
+
+
+            </div>
+
+        <%- include('partials/foot') -%>
+        <%- include('partials/foot_loggedin') -%>
+
+        <script>
+          			
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                redirect_if_logged_out(); 
+                ws_server_connect();
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

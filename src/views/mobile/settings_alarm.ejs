@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Alarm - Benachrichtigungen</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    
+                    <div class="list">
+
+                        
+                        
+
+                    </div>
+                    
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            
+
+            // Laden
+            async function load_settings_all(id) {
+                try {
+                    const user = (await fetch_get(url_user.replace(':id', id), true))[0];
+                    console.log('user' , user);
+
+                    const var_appnotifications = document.querySelector('.var_appnotifications');      
+                    var_appnotifications.checked = user.appNotifications > 0 ;
+                } catch (error) {
+                    console.error('load_settings_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }    
+            }
+
+            // Speichern
+            async function update_settings_notifications_app(status) {
+                loaderIn()
+                try {
+                    const var_appnotifications = document.querySelector('.var_appnotifications');
+                    const subscription = await notifications_createSubscription();
+                    
+                    const response = await fetch_post(url_user_notifications_app_update.replace(':id', user_id), 
+                        {value: status ? 5 : 0, subscription: JSON.stringify(subscription)});
+                } catch (error) {
+                    console.error('update_settings_notifications_app', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }
+                loaderOut();
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_settings_all(user_id);
+                notifications_checkForPermission();
+            };
+            
+
+        </script>
+       
+    </body>
+	
+</html>

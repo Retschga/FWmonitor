@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/car_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">local_fire_department</button>
+
+                <h1>FWmonitor</h1>  
+                
+                <div class="spacer" style="width: 1em;"></div>
+
+                <button class="material-icons var_gps_fixed hidden">gps_fixed</button>
+                <button class="material-icons var_gps_not_fixed hidden">gps_not_fixed</button>
+                <button class="material-icons var_gps_error">gps_off</button>
+
+                <button class="material-icons var_server_ok hidden">leak_add</button>
+                <button class="material-icons var_server_error">leak_remove</button>
+                
+                <div class="flex_grow"></div>
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+
+            <div class="content" style="overflow: hidden;">
+
+                 <!-- LOADER KARTE -->
+                <div 
+                    id="mapLoader"
+                    class="flex_grow flex_column flex_center_horizontal flex_center_vertical" 
+                >
+                        <div class="spinner_rotateplane"></div>
+                        <h2 class="text_align_center">Lade Karte...</h2>
+                </div>
+
+                <div id="mapidContainer" class="flex_grow flex_column">
+                    <div id="mapid" class="flex_grow"></div>   
+                    <div id="map-popup" class="ol-popup">
+                        <a href="#" id="map-popup-closer" class="ol-popup-closer"></a>
+                        <div id="map-popup-content"></div>
+                    </div>
+                </div>
+
+                <!-- ALARM TEMPLATE -->  
+                <template id="template-alarm">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon red">
+                                <span class="material-icons">
+                                    notification_important
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content red">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Alarm: </span><span class="var_stichwort"></span><br>
+                                    <span class="var_text">
+                                        Stichwort
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>
+
+                <%- include('partials/footer_nav') -%>
+
+            </div>
+
+            <span class="material-icons alert_alarm hidden" onclick="loaderIn('alarm?id=last')">notifications_active</span>
+     
+
+
+        <%- include('partials/foot') -%>
+        <%- include('partials/foot_loggedin') -%>
+
+        <script>
+
+            let preloadMap = false;
+            const fwHausPos = '<%= fw_position %>';
+            let isalarm;
+            let alarm;
+            let map_position_alarm;
+            let streetCache;
+            let routeData;
+
+            // Laden
+            async function load_alarm() {
+                try {
+                    isalarm = await fetch_get(url_alarm_isalarm, true);
+                    if(DEBUG > 0) console.log('isalarm', isalarm);
+
+                    if(!isalarm.isAlarm) return;
+
+                    preloadMap = true;
+
+                    alarm = (await fetch_get(url_alarm_last, true))[0];
+                    if(DEBUG > 0) console.log('alarm', alarm);
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+
+                try {
+
+                    streetCache = await fetch_get(url_alarm_streetCache.replace(':id', alarm.id), true);
+                    if(DEBUG > 0) console.log('streetCache', streetCache);
+
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+
+                try {
+
+                    routeData = await fetch_get(url_alarm_route.replace(':id', alarm.id), true);
+                    if(DEBUG > 0) console.log('route data', routeData);            
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                }
+
+                const alert_alarm = document.querySelector('.alert_alarm'); 
+                alert_alarm.classList.remove('hidden');  
+
+                setTimeout(() => {
+                    location.reload();
+                }, 1000 * 60 * 60 * 1);
+            }
+
+            async function hydrantenkarte_load() { 
+
+                // Prüfe ob GPS Position vorhanden
+                if (GPS_now.lng == 0 && fwHausPos == "") {
+                    if(DEBUG > 0) console.log("GPS Position nicht gefunden!");
+                }	
+
+                let pos = {lat:GPS_now.lat, lng:GPS_now.lng};
+                if (GPS_now.lng == 0 && fwHausPos != "") {
+                    let p = fwHausPos.split(',');
+                    pos = {lat:p[1], lng:p[0]};
+                    if(DEBUG > 0) console.log("Keine GPS Position > verwende FW Haus", pos)
+                }
+                if(isalarm.isAlarm && alarm.lat && alarm.lng && alarm.lat != '' && alarm.lat != 0) {
+                    map_position = [alarm.lng, alarm.lat];
+                    map_position_alarm = map_position;
+                } else {
+                    map_position = [pos.lng, pos.lat];
+                }
+
+                // Karte erstellen
+                const map = createMap({lat:map_position[1], lng: map_position[0]}, true, preloadMap);
+                try {
+                    const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', map_position[1]).replace(':lng', map_position[0]), true);
+                    add_hydranten(hydrantenCache, map);
+                } catch (error) {
+                    console.error('ERROR: could not load hydranten', error);
+                }              
+                try {
+                    add_forstRettPkt(map);
+                } catch (error) {
+                    console.error('ERROR: could not load forst rettungspunkte', error);
+                }       
+                
+                // GPS Position
+                let posMarker = add_posmarker(pos.lat, pos.lng, map);
+                
+                // Route laden
+                polylinePoints = null;
+                instructions = null;
+                if(routeData != undefined) {                    
+                    nav_parseJSON(JSON.parse(routeData));
+	            }
+                var helpline = new ol.Feature({
+                    'title': 'circleOnRoute',
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([GPS_now.lng, GPS_now.lat])),
+                });
+                var nextMarker = new ol.Feature({
+                    'title': 'circleNextInstr',
+                    geometry: new ol.geom.Point(ol.proj.fromLonLat([GPS_now.lng, GPS_now.lat])),
+                });
+                if(polylinePoints) {
+                    if(DEBUG > 0) console.log('Route vorhanden --> Anzeigen');
+                    // OpenLayers uses [lon, lat], not [lat, lon] for coordinates
+                    polylinePoints.map(function(l) {
+                        return l.reverse();
+                    });
+                    var routePoints = new ol.geom.LineString(polylinePoints)
+                        .transform('EPSG:4326', 'EPSG:3857');
+                        polylinePoints.map(function(l) {
+                            return l.reverse();
+                        });
+                    
+                    var routeFeature = new ol.Feature({
+                        'title': 'route',
+                        geometry: routePoints
+                    });
+                    
+
+                    let layer = new ol.layer.Vector({
+                        source: new ol.source.Vector({
+                            features: [routeFeature, helpline, nextMarker]
+                        }),
+                        style: styleFunction,
+                    });
+                    map.addLayer(layer);	
+                }
+
+                // Alarm Zielmarker
+                let posiswitch = true;
+                if(streetCache && isalarm.isAlarm && alarm.lat != '' && alarm.lat != 0) {
+                    // Strassenmarker zur Karte hinzufügen 
+                    if(streetCache[0]) {
+                        streetCache = streetCache[0].map(function(l) {
+                            return l.reverse();
+                        }); 
+
+                        var polyline = new ol.geom.LineString(streetCache);
+                        polyline.transform('EPSG:4326', 'EPSG:3857');
+
+                        let layerStreet = new ol.layer.Vector({
+                            source: new ol.source.Vector({
+                                features: [
+                                    new ol.Feature({
+                                        'title': 'streetDest',
+                                        geometry: polyline
+                                    })				
+                                ]
+                            }),
+                            style: styleFunction,
+                        });
+                        map.addLayer(layerStreet);	
+                    } 
+
+                    // Zielmarker
+                    add_circle(alarm.lat, alarm.lng, map);
+                    
+                    map_center = () => {
+                        posiswitch = !posiswitch;	
+                        //view.setZoom(15);
+                        map.getView().setCenter(ol.proj.transform(posiswitch ? map_position_alarm : map_position, 'EPSG:4326', 'EPSG:3857'));
+                        map_moved = false;
+                        setTimeout(function(){ 
+                            map_moved = false;
+                        }, 50);
+                        if(DEBUG > 0) console.log("MAP CENTER (Alarm)", posiswitch ? map_position_alarm : map_position, map_moved);
+                    }
+                }                
+                
+                // Callback bei Positionsänderung
+                GPS_hasChanged = () => {	
+                    if(DEBUG > 0) console.log(GPS_now);	
+                    let pos = {lat:GPS_now.lat, lng:GPS_now.lng};				
+                    map_position = [pos.lng, pos.lat];
+
+                    if(DEBUG > 0) console.log('Map neupositionieren', map_position, map_moved);	
+                    if(posMarker){			
+                        posMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(map_position)) : null);
+                    }                    
+
+                    if(polylinePoints) {
+                        let near = nav_nearestTo(pos, 0, 5000);
+			            helpline.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat([near.point.lng, near.point.lat])) : null);
+
+                        let nextInstruction = instructions[near.instructionsIndex];
+                        let tPos = {lat:0, lng:0}
+                        let tDist = 9999999999999999;
+                        if(nextInstruction) {
+                            tPos = {lat:polylinePoints[nextInstruction.way_points[1]][0], lng: polylinePoints[nextInstruction.way_points[1]][1]}
+                            tDist = nav_geo_distance(tPos, pos);
+                            if(DEBUG > 0) console.log("near", near);
+                            if(DEBUG > 0) console.log("Next Instruction", nextInstruction);
+                            if(DEBUG > 0) console.log("Abstand Next Instruction", nav_geo_distance(tPos, pos))			
+                            nextMarker.setGeometry(pos.lat != 0 ? new ol.geom.Point(ol.proj.fromLonLat(polylinePoints[nextInstruction.way_points[1]].reverse())) : null);
+                        }
+                    }
+
+                    if(map_moved || posiswitch) return;
+                    posiswitch = true;
+                    map_center();
+                };
+
+
+                let mapLoader = document.querySelector("#mapLoader");
+                mapLoader.classList.add("hidden");   
+
+                
+            }
+
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }
+           			
+
+            // Funktionsaufrufe
+            loaderFunction = async () => {
+                redirect_if_logged_out(); 
+                await load_alarm();   
+                hydrantenkarte_load();
+                load_clock();
+
+                ws_server_connect();
+
+                setTimeout(() => {
+                    if(!isalarm) {
+                        loaderIn();                
+                        loaderIn('login', true);                              
+                        loaderOut();
+                    }
+                }, 1000 * 60 * 60 * 3);
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

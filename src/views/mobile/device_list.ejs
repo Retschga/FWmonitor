@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Verbundene Geräte</h1>    
+                
+                <div class="flex_grow"></div>
+
+                <button class="material-icons" onclick="location.reload()">refresh</button>   
+
+            </div>
+
+            <div class="content">
+
+                <template id="template-element">
+                    <div class="flex_column list" style="min-height: auto;">
+                        <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
+                        <div class="accordion_panel element_list">
+                        </div>               
+                    </div>
+                </template>
+
+                <template id="template-element-text">
+                    <div class="item smallitem">
+                        <span class="left material-icons">chevron_right</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <span class="var_value">Anzeigename</span>
+                    </div>
+                </template>
+
+                <template id="template-element-textinput">
+                    <div class="item smallitem">
+                        <span class="left material-icons">chevron_right</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <input type="text" class="var_value" placeholder="Wert..." style="width: 3em;">
+                        <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em">
+                            <span class="right material-icons" style="line-height: 0.7; margin: 0;">send</span>
+                        </div> 
+                    </div>
+                </template>
+
+                <template id="template-element-button">
+                    <div class="item smallitem padding_top_1">
+                        <span class="left material-icons">chevron_right</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em;">
+                            <span class="text text_align_right var_action" style="line-height: 1;">Aktion</span>
+                            <span class="right material-icons" style="line-height: 0.7;">send</span>
+                        </div> 
+                    </div>
+                </template>
+
+                <template id="template-element-dropdown">
+                    <div class="item smallitem">
+                        <span class="left material-icons">chevron_right</span>
+                        <span class="text var_name">Anzeigename</span>
+                        <select class="var_value var_dropdown" style="min-width: 30%;">
+                            <option value="0">Links</option>
+                            <option value="2">Rechts</option>
+                        </select>
+                        <div class="green right item rounded var_btn" style="height: 1em; padding: 0.5em">
+                            <span class="right material-icons" style="line-height: 0.7; margin: 0;">send</span>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_devices() {   
+                try {
+                    const devices = await fetch_get(url_device_all, true);
+                    console.log('devices', devices);
+
+                    const target = document.querySelector(".content");
+
+                    console.log(devices.length + ' devices found')
+
+                    for(let i = 0; i < devices.length; i++) {
+                        const device = devices[i];
+                        let clone;
+
+                        if(!device.name) {
+                            console.log('empty device');
+                            continue;
+                        }
+
+                        const template            = document.querySelector('#template-element');  
+                        const var_header_name     = template.content.querySelector(".var_header_name");   
+                        const target_elements     = template.content.querySelector(".element_list");  
+                        target_elements.innerHTML = '';    
+
+                        const template_text       = document.querySelector('#template-element-text');    
+                        const text_var_name       = template_text.content.querySelector(".var_name");
+                        const text_var_value      = template_text.content.querySelector(".var_value"); 
+
+                        const template_textinput  = document.querySelector('#template-element-textinput');   
+                        const textinput_var_name  = template_textinput.content.querySelector(".var_name");
+                        const textinput_var_value = template_textinput.content.querySelector(".var_value");   
+                        const textinput_var_btn   = template_textinput.content.querySelector(".var_btn");                       
+
+                        const template_button     = document.querySelector('#template-element-button');  
+                        const button_var_name     = template_button.content.querySelector(".var_name");
+                        const button_var_action   = template_button.content.querySelector(".var_action");  
+                        const button_var_btn      = template_button.content.querySelector(".var_btn"); 
+
+                        const template_dropdown   = document.querySelector('#template-element-dropdown'); 
+                        const dropdown_var_name   = template_dropdown.content.querySelector(".var_name");
+                        const dropdown_var_value  = template_dropdown.content.querySelector(".var_value");    
+                        const dropdown_var_btn    = template_dropdown.content.querySelector(".var_btn"); 
+                        
+                        var_header_name.innerHTML = device.name; 
+
+                        text_var_name.innerHTML = device.type;  
+                        text_var_value.innerHTML = device.info; 
+                        clone = document.importNode(template_text.content.firstElementChild, true);
+                        target_elements.append(clone);
+
+                        // siehe websocket.ts
+
+                        if(device.actions) {
+                            for(let i = 0; i < device.actions.length; i++) {
+                                const action = device.actions[i];                            
+                                
+                                switch (action.id) {
+                                    case '0':
+                                        button_var_name.innerHTML = 'Reload';  
+                                        button_var_action.innerHTML = 'Ausführen';
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                                      
+                                        clone = document.importNode(template_button.content.firstElementChild, true);  
+                                        target_elements.append(clone);                                    
+                                        break;
+                                    case '1':
+                                        button_var_name.innerHTML = 'Letzter Alarm';  
+                                        button_var_action.innerHTML = 'Ausführen';          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                          
+                                        clone = document.importNode(template_button.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '2':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Diashow'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '3':
+                                        textinput_var_name.innerHTML = 'Kalender Elemente';  
+                                        textinput_var_value.value = action.value;                  
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                    
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '4':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Präsentation'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '5':
+                                        button_var_name.innerHTML = 'Zurück';  
+                                        button_var_action.innerHTML = 'Ausführen';                          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                
+                                        clone = document.importNode(template_button.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '6':
+                                        text_var_name.innerHTML = 'Funktion';  
+                                        text_var_value.innerHTML = 'Kalender'; 
+                                        clone = document.importNode(template_text.content.firstElementChild, true);
+                                        target_elements.append(clone);
+                                        break;
+                                    case '7':
+                                        button_var_name.innerHTML = 'Neustart';  
+                                        button_var_action.innerHTML = 'Ausführen';          
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                               
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                     
+                                        target_elements.append(clone);
+                                        break;
+                                    case '8':
+                                        button_var_name.innerHTML = 'Version ' + action.value;  
+                                        button_var_action.innerHTML = 'Update';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '9':
+                                        button_var_name.innerHTML = 'Position';  
+                                        button_var_action.innerHTML = 'Karte';        
+                                        button_var_btn.dataset.coordinates = action.value;
+                                        button_var_btn.dataset.action = -1;                              
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '10':
+                                        dropdown_var_name.innerHTML = 'Kalender Position';                                      
+                                        dropdown_var_value.dataset.selectedindex = action.value;
+                                        dropdown_var_btn.dataset.deviceid = device.id
+                                        dropdown_var_btn.dataset.action = action.id;     
+                                        clone = document.importNode(template_dropdown.content.firstElementChild, true);  
+                                        target_elements.append(clone);
+                                        break;
+                                    case '11':
+                                        dropdown_var_name.innerHTML = 'DWD Position';                      
+                                        dropdown_var_value.dataset.selectedindex = action.value;
+                                        dropdown_var_btn.dataset.deviceid = device.id
+                                        dropdown_var_btn.dataset.action = action.id;     
+                                        clone = document.importNode(template_dropdown.content.firstElementChild, true);                                    
+                                        target_elements.append(clone);
+                                        break;
+                                    case '12':
+                                        textinput_var_name.innerHTML = 'Diashow Wechselzeit';  
+                                        textinput_var_value.value = action.value;               
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                        
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
+                                        target_elements.append(clone);
+                                        break;
+                                    case '13':
+                                        button_var_name.innerHTML = 'Verfügbar: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '14':
+                                        button_var_name.innerHTML = 'N. Verfügbar: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                    case '15':
+                                        textinput_var_name.innerHTML = 'Alarm Anzeigezeit';  
+                                        textinput_var_value.value = action.value;               
+                                        textinput_var_btn.dataset.deviceid = device.id
+                                        textinput_var_btn.dataset.action = action.id;                        
+                                        clone = document.importNode(template_textinput.content.firstElementChild, true);                                       
+                                        target_elements.append(clone);
+                                        break;
+                                    case '16':
+                                        button_var_name.innerHTML = 'Diashow Bilderdatum: ' + action.value;  
+                                        button_var_action.innerHTML = 'Umschalten';             
+                                        button_var_btn.dataset.deviceid = device.id
+                                        button_var_btn.dataset.action = action.id;                           
+                                        clone = document.importNode(template_button.content.firstElementChild, true);                                      
+                                        target_elements.append(clone);
+                                        break;
+                                }
+
+                                if (parseInt(action.id) < 0) {
+                                    text_var_name.innerHTML = escapeHtml(action.key);  
+                                    text_var_value.innerHTML = escapeHtml(action.value); 
+                                    clone = document.importNode(template_text.content.firstElementChild, true);
+                                    target_elements.append(clone);
+                                }
+                            }  
+                        }                     
+                        
+                        clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.querySelectorAll('.var_btn').forEach(function(anchorElement) {
+                            anchorElement.onclick = () => {
+                                const var_value = anchorElement.parentElement.querySelector(".var_value");
+                                console.log('click', anchorElement.dataset.deviceid, anchorElement.dataset.action, var_value ? escapeHtml(var_value.value) : undefined);
+                                
+                                if(anchorElement.dataset.action == -1) {
+                                    const coordinates = anchorElement.dataset.coordinates.split(',');
+                                    loaderIn(`map?lat=${coordinates[0]}&lng=${coordinates[1]}`)
+                                    return;
+                                }
+                                action(anchorElement.dataset.deviceid, anchorElement.dataset.action, var_value ? escapeHtml(var_value.value) : undefined);
+                            };
+                        });
+                        clone.querySelectorAll('.var_dropdown').forEach(function(anchorElement) {
+                            setSelectedIndex(anchorElement, String(anchorElement.dataset.selectedindex));            
+                        });
+
+                        console.log(device);
+                        
+
+                    }
+                } catch (error) {
+                    console.error('load_cars_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }   
+            }
+
+            // Hilfsfunktionen
+            async function action(id, action, value) {
+                loaderIn();
+                try {
+                    console.log('action', action, value); 
+                    const response = await fetch_post(url_device_action.replace(':id', id), {action: parseInt(action), value});
+                    console.log('action', action, value, response);   
+                } catch (error) {
+                    console.error('action', error);
+                    alert('Aktion konnte nicht gesendet werden.');
+                }                            
+                location.reload(); 
+            }
+
+            function action_openMap(lat, lng) {
+                loaderIn(`map?lat=${lat}&lng=${lng}`)
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_devices();
+            };
+            
+        </script>
+       
+    </body>
+	
+</html>

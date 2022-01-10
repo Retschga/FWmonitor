@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Benutzer</h1>     
+                
+                <div class="flex_grow"></div>
+
+                <button class="material-icons btn_add" onclick="create_plan();">add_circle_outline</button>
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column" style="background-color: var(--bg_veryLight);">
+
+                    <div class="plan_list list">
+                   
+                        <template id="template-planelement">
+                            <div class="item deleteme">
+                                <span class="left material-icons">pending_actions</span>
+                                <span class="text var_name">Planname</span>
+                                <label class="switch right noevents">
+                                    <input type="checkbox" class="var_value">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </template>
+                        
+                        
+
+                    </div>
+
+                    
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+        
+        <script>
+
+            const target = document.querySelector(".plan_list");
+            let plans = undefined;
+
+            // Laden
+            async function load_plans_all() {  
+                try {
+                    const user = await fetch_get(url_user_status.replace(':id', user_id), true);
+                    console.log('user', user);
+
+                    if(user.plans == undefined) user.plans = '{"plans":[]}';
+
+                    plans = JSON.parse(user.plans).plans;
+                    console.log('plans', plans);
+
+
+                    // Vorhandene Elemente löschen
+                    const elements = target.getElementsByClassName("deleteme");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+            
+                    // Planliste erstellen
+                    for(let i = 0; i < plans.length; i++) {
+                        const plan = plans[i];
+
+                        const template     = document.querySelector('#template-planelement');       
+                        const var_name     = template.content.querySelector(".var_name");     
+                        const var_value    = template.content.querySelector(".var_value"); 
+
+                        var_name.innerHTML = plan.name; 
+                        var_value.checked  = plan.active; 
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.addEventListener("click", () => {
+                            loaderIn('status_plan?id=' + i);
+                        });
+
+                        clone.querySelector('.noevents').addEventListener("click", (event) => {
+                            event.stopPropagation();
+                        });
+
+                        clone.querySelector('.var_value').addEventListener("change", () => {
+                            plans[i].active = clone.querySelector('.var_value').checked;
+                            save_plans();
+                        });
+
+                    }
+               
+                } catch (error) {
+                    console.error('load_plans_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                } 
+            }
+
+            // Speichern
+            async function save_plans() {
+                if(!plans) {
+                    alert('Fehler');
+                    return;
+                }
+
+                loaderIn();
+                try {
+                    console.log(JSON.stringify(plans));
+                    let response = await fetch_post(url_user_status_plans_update.replace(':id', user_id), {value: JSON.stringify({plans})});
+                    console.log('update_plans' , response);
+                } catch (error) {
+                    console.error('update_plans', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }            
+                loaderOut();
+            }
+            
+            // Plan erstellen
+            async function create_plan() {
+                plans.push({
+                    "name": "Neuer Plan",
+                    "from": "08:00",
+                    "to":   "09:30",
+                    "weekdays": [
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false,
+                        false
+                    ],
+                    "active": false
+                });
+                await save_plans();
+                location.reload();
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_plans_all();
+            };
+            
+        </script>
+
+    </body>
+	
+</html>

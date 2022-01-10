@@ -1,0 +1,495 @@
+
+<!-- WRAPPER -->
+</div>
+
+<script src="/scripts/common.js"></script> 
+<script src="/scripts/nav.js"></script>
+
+<!-- SCRIPT LOADER -->
+<script>    
+
+    let DEBUG = parseInt(localStorage.getItem('DEBUG') || 1);
+    let updateInProgress = false;
+    let hwVersion = '#.#.#';
+
+    let firststart = true;
+    let ws_hardware = null;
+
+    let GPS_last = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0, "precision": "(-1, -1)", "sats": 0};
+    let GPS_now = JSON.parse(localStorage.getItem('gps.now') || JSON.stringify(GPS_last));
+    let GPS_meanSum = {"lat": 0, "lng": 0, "speed": 0, "alt": 0, "track": 0, "climb": 0};
+    let GPS_meanNum = 0;
+    let GPS_hasChanged = () => {};
+    let GPS_hasFIX = false;
+    let GPS_alt_max = parseInt(localStorage.getItem('gps.altMax') || 0);
+    let GPS_alt_min = parseInt(localStorage.getItem('gps.altMin') || 0);
+    let GPS_dist_sum = parseInt(localStorage.getItem('gps.distSum') || 0);				
+
+    let status_memFree = 0;
+    let status_memTotal = 0;
+    let status_cpuTemp = 0;
+    let status_wpaSupp = localStorage.getItem('status.wpasupp') || "";
+    let status_connWlan = "";
+    let status_cpuIdle = 0;
+    let status_hostname = localStorage.getItem('status.hostname') || "";
+    let status_usbtether = false;
+
+    let loaderFunction = () => {};
+    let serviceWorker_registration = null;
+
+    const url_login = '/api/v1/auth/login';
+   
+
+    // -------- Update a Service Worker--------
+    function serviceWorker_invokeUpdateFlow(registration) {
+        // TODO implement your own UI notification element
+        loaderIn();
+        notification.show("New version of the app is available. Refresh now?");
+        notification.addEventListener('click', () => {
+            if (registration.waiting) {
+                // let waiting Servi<ce Worker know it should became active
+                registration.waiting.postMessage('SKIP_WAITING')
+            }
+        })
+    }
+
+    // -------- Register a Service Worker--------
+    async function serviceWorker_run() {
+
+        // Registriere Service Worker
+        if(DEBUG > 0) console.log('Registering service worker');	
+        serviceWorker_registration = await navigator.serviceWorker.
+            register('/serviceworker_car.js', { scope: "/car/" });            
+
+        // updatefound is fired if service-worker.js changes.
+        serviceWorker_registration.onupdatefound = function() {
+            var installingWorker = serviceWorker_registration.installing;
+
+            installingWorker.onstatechange = function() {
+                switch (installingWorker.state) {
+                    case 'installed':
+                        if (navigator.serviceWorker.controller) {
+                            // At this point, the old content will have been purged and the fresh content will
+                            // have been added to the cache.
+                            // It's the perfect time to display a "New content is available; please refresh."
+                            // message in the page's interface.
+                            if(DEBUG > 0) console.log('New or updated content is available.');
+                            loaderIn(undefined, undefined, 'Update');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);  
+                        } else {
+                            // At this point, everything has been precached.
+                            // It's the perfect time to display a "Content is cached for offline use." message.
+                            if(DEBUG > 0) console.log('Content is now available offline!');
+                        }
+                        break;
+
+                    case 'redundant':
+                        console.error('The installing service worker became redundant.');
+                        break;
+                }
+            };
+        };     
+
+        if(DEBUG > 0) console.log('Registered service worker');
+
+        // ensure the case when the updatefound event was missed is also handled
+        // by re-invoking the prompt when there's a waiting Service Worker
+        if (serviceWorker_registration.waiting) {
+            serviceWorker_invokeUpdateFlow(serviceWorker_registration)
+        }
+
+        if(DEBUG > 0) console.log('waiting for ready...');
+
+        await navigator.serviceWorker.ready;
+
+        if(DEBUG > 0) console.log('Registered service worker is now ready');
+    }
+
+
+    /**
+    *   https://gist.github.com/viktorbezdek/3957601
+    *	Distance between two points
+    * 	@param coords1 {lat: xx, lng: yy}
+    * 	@param coords2 {lat: xx, lng: yy}
+    * 	@returnd distance in meters
+    */
+    function _getCoordsDistance(coords1, coords2)
+    {
+        // earth
+        let R = 6371, // km
+            lat1 = parseFloat(coords1.lat),
+            lat2 = parseFloat(coords2.lat),
+            lon1 = parseFloat(coords1.lng),
+            lon2 = parseFloat(coords2.lng);
+        
+        // deg2rad
+        lat1 = (lat1 / 180) * Math.PI;
+        lat2 = (lat2 / 180) * Math.PI;
+        lon1 = (lon1 / 180) * Math.PI;
+        lon2 = (lon2 / 180) * Math.PI;
+            
+        // Equirectangular approximation
+        // lower accuracy, higher performance
+        const x = (lon2-lon1) * Math.cos((lat1+lat2)/2);
+        const y = (lat2-lat1);
+        const d = Math.sqrt(x*x + y*y) * R;
+        return Math.round(d * 1000);
+    }
+
+    function _getCoordsDistance_accurate(coords1, coords2) {
+        const lat1 = coords1.lat;
+        const lon1 = coords1.lng;
+        const lat2 = coords2.lat;
+        const lon2 = coords2.lng;
+
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180; 
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+        const d = R * c;
+        return d * 1000;
+    }
+    Number.prototype.toRad = function() {
+        return this * Math.PI / 180;
+    }
+
+    /**
+     * Aktualisieren der gefahrenen Wegstrecke
+     * @param _POS_last {lat: xx, lng: yy}
+     * @param _POS_now {lat: xx, lng: yy}
+    */
+    function updateDistance(_POS_last, _POS_now) {
+        const dist = _getCoordsDistance_accurate(_POS_last, _POS_now);
+        GPS_dist_sum += dist;				
+    }			
+
+    function update_gps_status(val) {
+        if(val == 2) { // 2D Fix
+            document.querySelector('.var_gps_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = true;
+        } else if(val == 3) { // 3D Fix
+            document.querySelector('.var_gps_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = true;
+        } else if(val == 1) { // No Fix
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.remove('hidden');
+            document.querySelector('.var_gps_error')?.classList.add('hidden');
+            GPS_hasFIX = false;
+        } else if(val == -1) { // Geräte Error
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.remove('hidden');
+            GPS_hasFIX = false;
+        } else { // GPS Error
+            document.querySelector('.var_gps_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_not_fixed')?.classList.add('hidden');
+            document.querySelector('.var_gps_error')?.classList.remove('hidden');
+            GPS_hasFIX = false;
+        }
+    }
+
+    // Websocket für GPS, Displaysteuerung
+    function ws_hardware_connect() {			
+        ws_hardware = new WebSocket('ws://localhost:8765');
+        let wsGPSInterval = null;				
+        
+        ws_hardware.onopen = function() {
+            if(DEBUG > 0) console.log("Hardware-connection socket connected:");
+
+            // Setze GPS Status auf kein FIX
+            update_gps_status(1);
+
+            // Interval GPS Positionsabfrage
+            wsGPSInterval = setInterval( () => { 
+                ws_hardware.send('getGPS'); 
+                ws_hardware.send('getMemFree'); 
+                ws_hardware.send('getMemTotal'); 
+                ws_hardware.send('getCpuTemp'); 
+                ws_hardware.send('getConnWlan'); 
+                ws_hardware.send('getCpuIdle'); 	
+                ws_hardware.send('getUsbtether'); 						
+            }, 1500);
+            ws_hardware.send('getWpaSupp'); 
+            ws_hardware.send('getHostname'); 
+            ws_hardware.send('getVersion'); 
+        };
+
+        ws_hardware.onmessage = function(e) {
+        //    if(DEBUG > 1) console.log("Hardware-connection socket data received: " + e.data);
+
+            // Kein FIX
+            if(e.data == "-1") {
+                update_gps_status(1);
+
+            } else if (e.data.indexOf('memFree') != -1) {
+                status_memFree = e.data.split(':')[1];
+
+            } else if (e.data.indexOf('memTotal') != -1) {
+                status_memTotal = e.data.split(':')[1];
+
+            } else if (e.data.indexOf('wpaSupp') != -1) {
+                status_wpaSupp = e.data.split(':')[1];
+                localStorage.setItem('status.wpasupp', status_wpaSupp);
+
+            } else if (e.data.indexOf('cpuTemp') != -1) {
+                status_cpuTemp = e.data.split(':')[1];
+
+            } else if (e.data.indexOf('connWlan') != -1) {
+                status_connWlan = e.data.split(':')[1];
+
+            } else if (e.data.indexOf('cpuIdle') != -1) {
+                status_cpuIdle = e.data.split(':')[1];
+
+            } else if (e.data.indexOf('hostname') != -1) {
+                status_hostname = e.data.split(':')[1];
+                localStorage.setItem('status.hostname', status_hostname);
+
+            } else if (e.data.indexOf('setWpaSupp') != -1) {
+                loaderOut();
+                alert('Daten gespeichert!');
+
+            } else if (e.data.indexOf('usbtether') != -1) {
+                status_usbtether = e.data.split(':')[1] == "true";
+
+            } else if (e.data.indexOf('beginUpdate') != -1) {
+                updateInProgress = true;
+
+            } else if (e.data.indexOf('version') != -1) {
+                hwVersion = e.data.split(':')[1];
+
+                
+
+            } else {
+                // Positionsdaten verarbeiten
+                let dat = JSON.parse(e.data);
+
+                // Status anzeigen
+                update_gps_status(dat.mode);
+
+                // Daten Aufsummieren -> Mittelwert
+                GPS_meanSum.lat += dat.lat;
+                GPS_meanSum.lng += dat.lng;
+                GPS_meanSum.speed += dat.speed;
+                GPS_meanSum.alt += dat.alt;
+                GPS_meanSum.track += dat.track;
+                GPS_meanSum.climb += dat.climb;
+                GPS_meanNum++;
+                // Kein 3D FIX -> Höhe rücksetzen
+                if(dat.mode < 3) GPS_meanSum.alt = 0;
+
+                // Mittelwert berechnen
+                if(GPS_meanNum >= 3) {
+                    GPS_meanSum.lat /= GPS_meanNum;
+                    GPS_meanSum.lng /= GPS_meanNum;
+                    GPS_meanSum.speed /= GPS_meanNum;
+                    GPS_meanSum.alt /= GPS_meanNum;
+                    GPS_meanSum.track /= GPS_meanNum;
+                    GPS_meanSum.climb /= GPS_meanNum;							
+
+                    // Abweichung von letzter Position berechnen
+                    if(GPS_now) {
+                        let d = _getCoordsDistance({lng: GPS_meanSum.lng, lat: GPS_meanSum.lat}, {lng: GPS_now.lng, lat: GPS_now.lat});
+                        if(DEBUG > 1) console.log("Distanz", d);
+                        if(d >= 2) {
+                            if(GPS_last.lat != 0 && GPS_last.speed > 5) updateDistance({lat: GPS_now.lat, lng: GPS_now.lng}, {lng: GPS_meanSum.lng, lat: GPS_meanSum.lat});
+                            if(DEBUG > 1) console.log("GPS Change", GPS_meanSum);
+                            GPS_hasChanged();									
+                        }
+                    }
+
+                    GPS_last.lat = GPS_now.lat;
+                    GPS_last.lng = GPS_now.lng;
+                    GPS_last.speed = GPS_now.speed;
+                    GPS_last.alt = GPS_now.alt;
+                    GPS_last.track = GPS_now.track;
+                    GPS_last.climb = GPS_now.climb;
+
+                    // Positionsdaten speichern
+                    GPS_now.lat = GPS_meanSum.lat.toFixed(5);
+                    GPS_now.lng = GPS_meanSum.lng.toFixed(5);
+                    GPS_now.speed = Math.round(GPS_meanSum.speed);
+                    GPS_now.alt = Math.round(GPS_meanSum.alt);
+                    GPS_now.track = Math.round(GPS_meanSum.track);
+                    GPS_now.climb = Math.round(GPS_meanSum.climb);
+                    GPS_now.precision = dat.precision;
+                    GPS_now.sats = dat.sats;
+                    localStorage.setItem('gps.now', JSON.stringify(GPS_now));
+
+                    // Höhe Min/Max
+                    if(GPS_alt_max < GPS_now.alt) GPS_alt_max = GPS_now.alt;
+                    if(GPS_alt_min > GPS_now.alt && GPS_now.alt != 0) GPS_alt_min = GPS_now.alt;
+                    localStorage.setItem('gps.altMax', GPS_alt_max);
+                    localStorage.setItem('gps.altMin', GPS_alt_min);
+                    localStorage.setItem('gps.distSum', GPS_dist_sum);
+
+                    // Summen rücksetzen
+                    GPS_meanSum.lat = 0;
+                    GPS_meanSum.lng = 0;
+                    GPS_meanSum.speed = 0;
+                    GPS_meanSum.alt = 0;
+                    GPS_meanSum.track = 0;
+                    GPS_meanSum.climb = 0;
+                    GPS_meanNum = 0;							
+                }
+            } 
+        };
+
+        ws_hardware.onclose = function(e) {
+            if(DEBUG > 0) console.log('Hardware-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+            // Setze GPS Status auf Fehler
+            update_gps_status(-1);	
+            // Lösche GPS Abfrageintervall
+            clearInterval(wsGPSInterval);
+
+            // Nach 1s neu verbinden
+            setTimeout(function() {
+                ws_hardware_connect();
+            }, 1000);					
+        };
+
+        ws_hardware.onerror = function(err) {
+            if(DEBUG > 0) console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
+            // Setze GPS Status auf Fehler
+            update_gps_status(-1);
+            // Lösche GPS Abfrageintervall
+            clearInterval(wsGPSInterval);
+            // Verbindung schließen
+            ws_hardware.close();
+        };
+    }			
+
+    
+    async function load_initial() {
+
+        ws_hardware_connect();          
+        
+        if(DEBUG > 0) console.log('Initiate Service Worker');
+        await serviceWorker_run().catch(error => console.error(error));
+
+        let refreshing = false;
+        // detect controller change and refresh the page
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                //loaderIn(undefined, undefined, 'Neustart');
+                //window.location.reload()
+                refreshing = true
+            }
+        })
+
+        // -------- Feature Detection --------
+        if ('serviceWorker' in navigator) {
+            if (Notification.permission === "granted") {
+                getNotificationPermission();
+            }
+
+        }
+
+        firststart = false;
+
+        if(DEBUG > 0) console.log('initialLoad .. DONE');
+        
+    }
+
+    async function load_later() {
+        if(window.location.href.indexOf('login') == -1) {
+            const userrights = await fetch_get('/api/v1/user/rights', true)
+            //.catch((err) => {/* location.reload() */});
+            if(DEBUG > 0) console.log('userrights', userrights);    
+            
+            //if(userrights == undefined) location.reload();
+        }
+
+        loaderOut(); 
+    }
+
+
+    // **** Events ****
+    document.addEventListener('readystatechange', event => { 
+        if(DEBUG > 0) console.log('readyState --> ' + event.target.readyState);
+
+        // When HTML/DOM elements are ready:
+        if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
+            
+        }
+
+        // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+        if (event.target.readyState === "complete") {            
+                       
+        }
+    });
+
+    window.addEventListener('load', async (event) => {
+        if(DEBUG > 0) console.log('The page has fully loaded');
+        try {
+            await load_initial();  
+        } catch (error) {
+            console.error(error);            
+        }
+        await loaderFunction();
+         
+        if(DEBUG > 0) console.log('Loader function done');
+        loaderOut();    
+    });
+
+    window.addEventListener('pageshow', (event) => {
+        if(DEBUG > 0) console.log('The page has been shown');
+        load_later();
+    });
+   
+    window.addEventListener("click", (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+
+        beep();               
+        dispAktiv();
+    }, false);
+/*
+    window.onunload = function(){
+        if(DEBUG > 0) console.log('The page is unloading');
+    };   
+*/    
+    window.addEventListener("visibilitychange", async () => {
+        if(DEBUG > 0) console.log(document.visibilityState, firststart);
+
+        if (document.visibilityState === 'visible' && !firststart) {
+            if(DEBUG > 0) console.log("open");
+
+            load_later();
+
+        } else {
+            if(DEBUG > 0) console.log("close");
+        }
+    });
+  
+
+    function beep() {
+        var snd = new  Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");  
+        snd.play();
+    }
+
+    function dispAktiv() {
+        ws_hardware.send('dispON');				
+    }
+
+    function restart() {
+        ws_hardware.send('restart');		
+    }
+
+    function update() {
+        ws_hardware.send('update');	
+    }
+
+
+
+</script>
+

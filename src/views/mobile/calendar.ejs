@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_calendar.css">       
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Kalender</h1>  
+
+                <div class="flex_grow"></div>
+
+                <button class="material-icons visibilityButton" onclick="changeAllVisibility();">visibility</button>
+
+                <div class="spacer" style="width: .5em; flex-shrink: 1;"></div>
+
+                <button class="material-icons" onclick="loaderIn('calendar_history', true);">history</button>   
+
+                <div class="spacer" style="width: .5em; flex-shrink: 1;"></div>
+
+                <button class="material-icons btn_add hidden" onclick="create_entry();">add_circle_outline</button>   
+
+            </div>
+
+            <div class="content">
+
+                <div class="calendar_list">
+
+                    <template id="template-calendarelement">
+
+                        <div class="calendar_element">
+
+                            <div style="display: flex; margin-bottom: 0.5em;">                            
+                                <div style="flex-grow: 1;">
+                                    <span class="var_text">
+                                        Text
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div class="var_emoji" style="padding-left: 0.5em;">
+                                    <span>?</span>
+                                </div>
+                            </div>
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>      
+        
+                        </div>
+
+                    </template>
+
+
+                </div>
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_calendar() {     
+                try {
+                    const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
+                    console.log('calendarUpcoming', calendarElements);
+
+                    const user = await fetch_get(url_user_calendar_groups.replace(':id', user_id), true);
+                    console.log('user', user);
+
+                    const target = document.querySelector(".calendar_list");
+
+                    const akt_status = localStorage.getItem('calendar_visibility_all');
+
+                    for(let i = 0; i < calendarElements.length; i++) {
+                        const element = calendarElements[i];
+                
+                        const date = new Date(element.start);   
+                        const {text, icon} = parseKalenderSummary(element.summary);
+                        let badge = "";
+                        let includesUsergroup = false;
+                        for(let j = 0; j < element.group.length; j++) {
+                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                            if(user.groups.includes(element.group[j].id)) includesUsergroup = true;
+                        }
+
+                        const template   = document.querySelector('#template-calendarelement');                
+                        const var_text   = template.content.querySelector(".var_text");
+                        const var_date   = template.content.querySelector(".var_date");
+                        const var_time   = template.content.querySelector(".var_time");
+                        const var_groups = template.content.querySelector(".var_groups");
+                        const var_emoji  = template.content.querySelector(".var_emoji");
+
+                        var_text.innerHTML   = text;
+                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                        var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                        var_groups.innerHTML = badge;
+                        var_emoji.innerHTML  = icon;
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        if(includesUsergroup) {
+                            clone.classList.remove('stripes');
+                        } else {
+                            clone.classList.add('stripes'); 
+                            if(akt_status == 'false') {
+                                clone.classList.add('hidden'); 
+                            }                       
+                        }
+
+                        target.appendChild(clone);
+
+                        if(element.id != -1 && (user_calendar_min || user_calendar_full)) {
+                            clone.addEventListener("click", () => {
+                                loaderIn('calendar_entry?id=' + element.id, true);
+                            });
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('load_calendar', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                } 
+            }
+
+            // Termin erstellen
+            async function create_entry() {
+                loaderIn();
+                try {                 
+
+                    const response = await fetch_post('/api/v1/calendar/new', {});
+                    console.log('create_entry', response);   
+                    location.reload();
+                    
+                } catch (error) {
+                    console.error('create_entry', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            function changeAllVisibility() {
+                console.log('change visibility all')
+                const akt_status = localStorage.getItem('calendar_visibility_all');
+                if(akt_status == 'true') {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';
+                    localStorage.setItem('calendar_visibility_all', 'false');
+                    const elements = document.querySelectorAll('.stripes');
+                    for(let i = 0; i < elements.length; i++) {
+                        elements[i].classList.add('hidden');
+                    }
+                } else {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility';
+                    localStorage.setItem('calendar_visibility_all', 'true');
+                    const elements = document.querySelectorAll('.stripes');
+                    for(let i = 0; i < elements.length; i++) {
+                        elements[i].classList.remove('hidden');
+                    }
+                }     
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_calendar();
+                if(user_calendar_min || user_calendar_full) {
+                    document.querySelector('.btn_add').classList.remove('hidden');
+                }
+                const akt_status = localStorage.getItem('calendar_visibility_all');
+                if(akt_status == 'false') {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';                
+                }  
+            };
+            
+
+        </script>
+       
+    </body>
+	
+</html>

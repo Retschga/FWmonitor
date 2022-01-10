@@ -2,5 +2,5 @@
 #cd /home/pi/Desktop/FWMonitor
 while true
 do
-  sudo nodejs app
+  sudo node build/app.js
 done

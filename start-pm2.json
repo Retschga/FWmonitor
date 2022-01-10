@@ -1,0 +1,11 @@
+{
+    "apps": [
+        {
+            "name": "FWmonitorV3",
+            "script": "./build/app.js",
+            "out_file": "/dev/null",
+            "error_file": "/dev/null",
+            "restart_delay": 3000
+        }
+    ]
+}

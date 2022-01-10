@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Menü</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    <!-- LINKS -->
+                    <div class="list">
+
+                        <div class="item" onclick="loaderIn('settings');">
+                            <span class="left material-icons">settings</span>
+                            <span class="text">Einstellungen</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div>
+
+                    <div class="flex_grow"></div>
+
+                    <!-- LOGOUT -->
+                    <div class="list">
+
+                        <div class="item" onclick="update()">
+                            <span class="left material-icons">upgrade</span>
+                            <span class="text">Update</span>
+                        </div>
+
+                        <div class="item" onclick="restart()">
+                            <span class="left material-icons">restart_alt</span>
+                            <span class="text">Neustart</span>
+                        </div>
+
+                        <div class="item" onclick="logout()">
+                            <span class="left material-icons">logout</span>
+                            <span class="text">Abmelden</span>
+                        </div>
+
+                    </div> 
+
+                    <div class="flex_row text_white" style="margin-top: 0.4em; padding: 0 0.2em 0 0.2em;">
+                        <span>2021 FWmonitor&nbsp;</span>
+                        <div class="flex_grow"></div> 
+                        <span>Version&nbsp;</span>
+                        <span><%= version %></span>
+                    </div>
+                    
+                </div>
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>     
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+               
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

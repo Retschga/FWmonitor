@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">local_fire_department</button>
+
+                <h1>FWmonitor</h1>      
+
+            </div>
+            <div class="content">
+
+                <!-- STATUS TEMPLATE -->  
+                <template id="template-status">          
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon">
+                                <span class="material-icons">
+                                    clear
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Aktueller Status: </span><br>
+                                    <span class="var_text">
+                                        Statustext
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>    
+
+
+
+                <!-- CALENDAR TEMPLATE -->
+                <template id="template-calendar">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon grey">
+                                <span class="material-icons">
+                                    calendar_today
+                                </span>
+                            </div>
+                        </div>                    
+                    
+                        <div class="index_container_content grey">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Nächster Termin:</span>
+                                    <p class="var_text">
+                                        Termintext
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="var_emoji">#</span>
+                                </div>
+                            </div>
+                            <div class="var_groups">
+                                <span class="badge green">#####</span>
+                                <span class="badge blue">#####</span>
+                            </div>                        
+                        </div>                    
+                    </div>
+                </template>
+
+                <!-- ALARM TEMPLATE -->  
+                <template id="template-alarm">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon red">
+                                <span class="material-icons">
+                                    notification_important
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="index_container_content red">
+                            <div style="display: flex;">                            
+                                <div style="flex-grow: 1;">
+                                    <span>Alarm: </span><span class="var_stichwort"></span><br>
+                                    <span class="var_text">
+                                        Stichwort
+                                    </span>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                                <div style="padding-left: 0.5em;">
+                                    <span class="material-icons">
+                                        schedule
+                                    </span>
+                                </div>
+                            </div>
+                            
+                        </div>                    
+                    </div>
+                </template>
+
+                <div class="pwa_install_container flex_column flex_center_horizontal flex_center_vertical hidden">
+                    <span class="material-icons btn_close" onclick="close_installpromt()">close</span>
+                    <h1>App Installation:</h1>
+
+                    <button class="btn pwa_android" onclick="install_pwa()">Installieren</button>
+          
+                    <h2 class="pwa_ios text_align_center hidden">
+                        Unten in auf ganz rechts Symbol in Safari öffnen klicken. (Wenn nicht verfügbar: URL kopieren und in Safari direkt öffnen.)
+                    </h2>
+
+                    <h2 class="pwa_safari text_align_center hidden">
+                        Unten in der Mitte auf ⬆️ drücken. <br> Dann ➕ "Zum Home-Bildschirm drücken. (Wenn nicht verfügbar:  
+                        Unten in auf ganz rechts Symbol in Safari öffnen klicken. ODER: URL kopieren und in Safari direkt öffnen.)
+                    </h2>
+                
+                
+                    
+                </div>
+
+                <%- include('partials/footer_nav') -%>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            var deferredPrompt;
+            
+            // Laden
+            async function load_calendar() {     
+                try {
+                    const calendarElement = await fetch_get(url_calendar_next.replace(':id', user_id), true);
+                    console.log('calendarElement', calendarElement);
+
+                    const target = document.querySelector(".content");
+
+                    const date = new Date(calendarElement.start);   
+                    const {text, icon} = parseKalenderSummary(calendarElement.summary);
+                    let badge = "";
+                    for(let j = 0; j < calendarElement.group.length; j++) {
+                        badge += '<span class="badge green">'+calendarElement.group[j].name+'</span>';
+                    }
+
+                    const template   = document.querySelector('#template-calendar');                
+                    const var_text   = template.content.querySelector(".var_text");
+                    const var_date   = template.content.querySelector(".var_date");
+                    const var_time   = template.content.querySelector(".var_time");
+                    const var_groups = template.content.querySelector(".var_groups");
+                    const var_emoji  = template.content.querySelector(".var_emoji");
+
+                    var_text.innerHTML   = text;
+                    var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                    var_groups.innerHTML = badge;
+                    var_emoji.innerHTML  = icon;
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('calendar');
+                    };
+
+                } catch (error) {
+                    console.error('load_calendar', error);
+                    //if(error.show) alert('Kalender konnte nicht geladen werden.');
+                }                 
+            }
+
+            async function load_status_id(id) {
+                try {
+                    const user_status = await fetch_get(url_user_status.replace(':id', id), true);
+                    console.log('user status', user_status);
+
+                    const target = document.querySelector(".content");
+
+                    const date = user_status.until != '' && user_status.until != null  ? new Date(user_status.until) : undefined;  
+
+                    const template = document.querySelector('#template-status');                
+                    const var_text   = template.content.querySelector(".var_text");
+                    const var_date   = template.content.querySelector(".var_date");
+                    const var_time   = template.content.querySelector(".var_time");
+                    const index_container_icon   = template.content.querySelector(".index_container_icon");
+                    const index_container_content   = template.content.querySelector(".index_container_content");
+
+                    var_text.innerHTML = user_status.statustext;
+                    if (date){
+                        var_date.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                        var_time.innerHTML = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                    } else {
+                        var_date.innerHTML = '';
+                        var_time.innerHTML = '';
+                    }
+                
+
+                    if(user_status.status == 1) {
+                        index_container_icon.classList.add('green');
+                        index_container_content.classList.add('green');
+                    } else {
+                        index_container_icon.classList.add('red');
+                        index_container_content.classList.add('red');
+                    }
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('status');
+                    };
+
+                } catch (error) {
+                    console.error('load_status_id', error);
+                    if(error.show) alert('Status konnte nicht geladen werden.');
+                }
+                
+            }
+
+            async function load_alarm() {
+                try {
+                    const isalarm = await fetch_get(url_alarm_isalarm, true);
+                    console.log('isalarm', isalarm);
+
+                    if(!isalarm.isAlarm) return;
+
+                    const alarm = (await fetch_get(url_alarm_last, true))[0];
+                    console.log('alarm', alarm);
+
+
+                    const target = document.querySelector(".content");
+
+                    const date = new Date(alarm.date);   
+
+                    const template        = document.querySelector('#template-alarm');   
+                    const var_stichwort   = template.content.querySelector(".var_stichwort");             
+                    const var_text        = template.content.querySelector(".var_text");
+                    const var_date        = template.content.querySelector(".var_date");
+                    const var_time        = template.content.querySelector(".var_time");
+
+                    var_stichwort.innerHTML   = alarm.einsatzstichwort;
+                    var_text.innerHTML        = alarm.schlagwort;
+                    var_date.innerHTML        = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
+                    var_time.innerHTML        = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    target.appendChild(clone);
+
+                    clone.onclick = () => {
+                        loaderIn('alarm?id=' + alarm.id);
+                    };
+
+
+                } catch (error) {
+                    console.error('load_alarm', error);
+                    if(error.show) alert('Aktuelle Alarme konnten nicht geladen werden.');
+                }
+            }
+
+            // Hilfsfunktionen
+            function close_installpromt() {
+                const target = document.querySelector(".pwa_install_container");
+                target.classList.add('hidden');
+            }
+
+            function install_pwa() {
+                // Show the prompt
+                deferredPrompt.prompt();
+                // Wait for the user to respond to the prompt
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the A2HS prompt');
+                    } else {
+                    console.log('User dismissed the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+
+            			
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                redirect_if_logged_out(); 
+                load_alarm();
+                load_calendar();
+                load_status_id(user_id);
+
+                
+                const target = document.querySelector(".pwa_install_container");
+                const ios = target.querySelector(".pwa_ios");
+                const safari = target.querySelector(".pwa_safari");
+                const android = target.querySelector(".pwa_android");
+
+                if (isIos() && !isInStandaloneMode()) {
+
+                    if ( safari ) {
+                        safari.classList.remove('hidden');
+                        android.classList.add('hidden');
+                        ios.classList.add('hidden');
+                    } else {
+                        safari.classList.add('hidden');
+                        android.classList.add('hidden');
+                        ios.classList.remove('hidden');
+                    }
+
+                    target.classList.remove('hidden');
+
+                } else {
+                    
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        //askPermission();
+
+                        // Prevent Chrome 67 and earlier from automatically showing the prompt
+                        e.preventDefault();
+                        // Stash the event so it can be triggered later.
+                        deferredPrompt = e;
+
+                        target.classList.remove('hidden');
+                    });	
+
+                }
+
+            };            
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

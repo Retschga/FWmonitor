@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Kalendergruppen</h1>      
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list margin_none groups_list">
+
+                    <button class="accordion" onclick="accordion_switch(this)">Verwendung im Google/ICAL Kalender:</button>
+                    <div class="accordion_panel" style="font-size: 0.8em;">
+                        Terminnamen Format: "🚒 Hauptübung {{alle}}" <br>
+                        (EMOJI NAME {{GRUPPE1}} {{GRUPPE2}} ...) <br>
+                        Wird Keine Gruppe angegeben wird automatisch {{alle}} angenommen.
+                    </div>
+
+                    <div class="item margin_top_2">
+                        <span class="text">Gruppen:</span>
+                        <div class="green right item rounded savebutton" onclick="update_groups_all();">
+                            <span class="text text_align_right">Speichern</span>
+                            <span class="right material-icons">save</span>
+                        </div>
+                    </div>
+
+                    <template id="template-groupelement">
+                        <div class="groupelement">
+                            <div class="padding_none border_bottom margin_top_0_5">
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Name</span>
+                                    <input class="var_name" type="text" placeholder="Name...">
+                                </div>
+                                <div class="item smallitem">
+                                    <span class="left material-icons">pin</span>
+                                    <span class="text">ICAL Pattern</span>
+                                    <input class="var_pattern" type="text" placeholder="Pattern...">
+                                </div>                        
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_groups_all() {   
+                try {
+                    const groups = await fetch_get(url_calendar_groups, true);
+                    console.log('groups', groups);
+
+                    const target = document.querySelector(".groups_list");
+
+                    for(let i = 0; i < groups.length; i++) {
+                        const group = groups[i];
+
+                        const template              = document.querySelector('#template-groupelement');       
+                        const var_name              = template.content.querySelector(".var_name");      
+                        const var_pattern           = template.content.querySelector(".var_pattern");
+
+                        const date = new Date(group.date);   
+
+                        var_name.value       = group.name; 
+                        var_pattern.value    = group.pattern; 
+
+                        var_name.disabled    = i == 0;
+                        var_pattern.disabled = i == 0;            
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.id = 'group_' + group.id;
+                        addFormatter(clone.querySelector(".var_pattern"), regexPrefix(/^{{.+}}$/, '{{}}'));   
+                    }
+                } catch (error) {
+                    console.error('load_groups_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }       
+            }
+
+            // Speichern
+            async function update_groups_all() {
+                loaderIn();
+                try {
+                    const groups = document.querySelectorAll('.groupelement');       
+
+                    for(let i = 1; i < groups.length; i++) {
+                        const group = groups[i];
+
+                        const id      = group.id.split('_')[1];
+                        const name    = group.querySelector('.var_name').value;
+                        const pattern = group.querySelector('.var_pattern').value;
+
+                        const response = await fetch_post(url_calendar_groups_update.replace(':id', id), {name: name, pattern: pattern});
+                        console.log('update_groups_all', response);   
+
+                    }
+                } catch (error) {
+                    console.error('update_groups_all', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+               load_groups_all(); 
+            };
+            
+        </script>
+       
+    </body>
+	
+</html>

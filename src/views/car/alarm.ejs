@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_calendar.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar flex_row">                
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Alarm</h1>    
+
+                <div class="flex_grow"></div>
+
+                <button class="material-icons hide_on_no_map" onclick="goBack()">map</button>
+                <h1 style="margin-right: 1em;" class="hide_on_no_map" onclick="goBack()">Karte</h1>    
+
+            </div>
+
+            <div class="content" style="font-size: 1.5em; padding-bottom: 1em;">
+
+                <div class="flex_column">
+
+                    
+                    <div class="list">
+
+                        <div class="item var_color">
+                            <span class="left material-icons">report_problem</span>
+                            <span class="text">Stichwort: </span>             
+                            <span class="text right var_stichwort">Stichwort</span>                 
+                        </div>
+
+                        <div class="item var_color">
+                            <span class="left material-icons">report_problem</span>
+                            <span class="text">Schlagwort:</span>
+                            <span class="text right var_schlagwort">Schlagwort</span>  
+                        </div>
+
+                    </div>
+
+                    <div class="list">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">map</span>
+                            <span class="text">Strasse:</span>
+                            <span class="text right var_strasse">Strasse</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">map</span>
+                            <span class="text">Ortsteil:</span>
+                            <span class="text right var_ortsteil">Ortsteil</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">map</span>
+                            <span class="text">Ort:</span>
+                            <span class="text right var_ort">Ort</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="left material-icons">map</span>
+                            <span class="text">Objekt:</span>
+                            <span class="text right var_objekt">Objekt</span>
+                        </div>
+
+                    </div>
+
+                    <div class="list einsatzmittel_eigen_list">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Einsatzmittel eigene:</span>
+                        </div>
+                        
+                        <template id="template-einsatzmittel_eigen">
+                            <div class="item smallitem">
+                                <span class="text var_text">Einsatzmittel</span>
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <div class="list einsatzmittel_andere_list">
+
+                        <div class="item smallitem">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Einsatzmittel andere:</span>
+                        </div>
+                        
+                        <template id="template-einsatzmittel_andere">
+                            <div class="item smallitem">
+                                <span class="text var_text">Einsatzmittel</span>
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <div class="list">
+
+                        <div class="item">
+                            <span class="left material-icons">description</span>
+                            <span class="text">Bemerkung:</span>
+                        </div>
+                        <div class="item smallitem">
+                            <span class="text var_bemerkung">Text</span>
+                        </div>
+
+                    </div>
+                    
+                    
+                </div>
+
+               
+                
+            </div>
+
+
+        <%- include('partials/foot') -%>
+        <%- include('partials/foot_loggedin') -%>
+
+        <script>
+
+            let coordiantes = {lat: 0, lng: 0}
+
+            // Laden
+            async function load_alarm() {   
+                let id = $_GET['id'];
+
+                if(!id) id = '';                
+
+                try {
+                    const alarm = (await fetch_get(url_alarm.replace(':id', id), true))[0];
+                    if(DEBUG > 0) console.log('alarm', alarm);
+
+                    const target_eigen   = document.querySelector(".einsatzmittel_eigen_list");
+                    const target_andere  = document.querySelector(".einsatzmittel_andere_list");
+
+                    const date = new Date(alarm.date);   
+
+                    let color = 'green';
+                    switch (alarm.color) {
+                        case 3:
+                            color = 'green';
+                            break;
+                        case 2:
+                            color = 'blue';
+                            break;
+                        case 1:
+                            color = 'orange';
+                            break;
+                        case 0:
+                            color = 'red';
+                            break;
+                        default:
+                            break;
+                    }
+
+                    const var_color   = document.querySelectorAll(".var_color");
+                    for (let i = 0; i < var_color.length; i++){
+                        var_color[i].classList.add(color);
+                    }
+
+                    const var_stichwort   = document.querySelector(".var_stichwort");
+                    const var_schlagwort  = document.querySelector(".var_schlagwort");
+                    const var_strasse     = document.querySelector(".var_strasse");
+                    const var_ortsteil    = document.querySelector(".var_ortsteil");
+                    const var_ort         = document.querySelector(".var_ort");
+                    const var_objekt      = document.querySelector(".var_objekt");
+                    const var_bemerkung   = document.querySelector(".var_bemerkung");      
+
+                    var_stichwort.innerHTML  = alarm.einsatzstichwort;
+                    var_schlagwort.innerHTML = alarm.schlagwort;
+                    var_strasse.innerHTML    = alarm.strasse;
+                    var_ortsteil.innerHTML   = alarm.ortsteil;
+                    var_ort.innerHTML        = alarm.ort;
+                    var_objekt.innerHTML     = alarm.objekt;
+                    var_bemerkung.innerHTML  = alarm.bemerkung;
+
+                    const einsatzmittel_eigen  = alarm.cars1.split('|');
+                    const einsatzmittel_andere = alarm.cars2.split('|');
+
+                    for (let i = 0; i < einsatzmittel_eigen.length; i++) {
+
+                        const template   = document.querySelector('#template-einsatzmittel_eigen');                
+                        const var_text   = template.content.querySelector(".var_text");
+
+                        var_text.innerHTML   = einsatzmittel_eigen[i];
+
+                        const clone = document.importNode(template.content, true);
+                        target_eigen.append(clone);
+                        
+                    }
+
+                    for (let i = 0; i < einsatzmittel_andere.length; i++) {
+
+                        const template   = document.querySelector('#template-einsatzmittel_andere');                
+                        const var_text   = template.content.querySelector(".var_text");
+
+                        var_text.innerHTML   = einsatzmittel_andere[i];
+
+                        const clone = document.importNode(template.content, true);
+                        target_andere.append(clone);
+
+                    }
+
+                    if(alarm.lat == '' || alarm.lng == '') {
+                        const var_color   = document.querySelectorAll(".hide_on_no_map");
+                        for (let i = 0; i < var_color.length; i++){
+                            var_color[i].classList.add('hidden');
+                        }
+                    } else {
+                        coordiantes.lat = alarm.lat;
+                        coordiantes.lng = alarm.lng;
+                    }
+                   
+
+           
+                } catch (error) {
+                    console.error('load_alarms', error);
+                }
+            }
+
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_alarm();
+            };
+            
+
+
+        </script>
+
+       
+    </body>
+	
+</html>

@@ -1,0 +1,296 @@
+
+<!-- WRAPPER -->
+</div>
+
+<script src="/scripts/common.js"></script> 
+
+<!-- SCRIPT LOADER -->
+<script>    
+
+    //if(!isIos()) {
+        let loader = document.querySelector("#pageloader");
+        loader.classList.remove("hidden")
+    //}
+
+
+
+    let firststart = true;
+
+    let user_id = -1;    
+    let user_telegramid = -1; 
+    let user_admin = false; 
+    let user_calendar_min = false; 
+    let user_calendar_full = false; 
+    let user_telefone = false;  
+    let user_praes = false;  
+
+    let loaderFunction = () => {};
+    let updateFunction = () => {};
+    let serviceWorker_registration = null;
+
+    const url_user_status_plans_update = '/api/v1/user/status/plans/update/:id';
+    const url_user_status_hidden_update = '/api/v1/user/status/hidden/update/:id';
+    const url_user_status = '/api/v1/user/status/:id';
+    const url_user_status_all = '/api/v1/user/status/all';
+    const url_user_status_update = '/api/v1/user/status/update/:id';
+    const url_user_calendar_groups = '/api/v1/user/calendargroups/:id';
+    const url_user = '/api/v1/user/:id';
+    const url_user_update = '/api/v1/user/:id';
+    const url_user_delete = '/api/v1/user/delete/:id';
+    const url_user_approve = '/api/v1/user/approve/:id';
+    const url_user_all = '/api/v1/user';
+    const url_user_notifications_app_update = '/api/v1/user/notifications/app/:id';
+    const url_user_notifications_calendar_update = '/api/v1/user/notifications/calendar/:id';
+
+    const url_group_update = '/api/v1/group/:id';
+    const url_group_all = `/api/v1/group`;
+
+    const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
+    const url_alarm = '/api/v1/alarm/:id';
+    const url_alarm_userstatus = '/api/v1/alarm/userstatus/:id';
+    const url_alarm_last = '/api/v1/alarm/last';
+    const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+    const url_alarm_silence = '/api/v1/alarm/silence';
+    const url_alarm_settings = '/api/v1/alarm/settings';
+
+    const url_calendar_groups = '/api/v1/calendarGroups';
+    const url_calendar_groups_update = '/api/v1/calendarGroups/:id';
+    const url_calendar = '/api/v1/calendar/:id';
+    const url_calendar_next = '/api/v1/calendar/next/:id';
+    const url_calendar_update = '/api/v1/calendar/:id';
+    const url_calendar_delete = '/api/v1/calendar/delete/:id';
+
+    const url_cars_all = '/api/v1/car';
+    const url_cars_update = '/api/v1/car/:id';
+    const url_cars_delete = '/api/v1/car/delete/:id';
+    const url_cars_create = '/api/v1/car/create';
+    const url_cars_password_new = '/api/v1/car/password';
+
+    const url_login = '/api/v1/auth/login';
+
+    const url_map_forstrettpkt = '/rettPunkte.geojson';
+    const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
+
+    const url_diashow_list = '/api/v1/diashow/list';
+    const url_diashow_disable = '/api/v1/diashow/disable';
+    const url_diashow_enable = '/api/v1/diashow/enable';
+    const url_diashow_delete = '/api/v1/diashow/delete';
+    const url_diashow_rotate_left = '/api/v1/diashow/rotateleft';
+    const url_diashow_rotate_right = '/api/v1/diashow/rotateright';
+    
+    const url_statistic = '/api/v1/statistic/:year';
+    const url_statistic_time = '/api/v1/statistic/time/:id/:year';
+    const url_statistic_list = '/api/v1/statistic/list/:year';
+
+    const url_device_all = '/api/v1/device/all';
+    const url_device_action = '/api/v1/device/:id/action';
+
+    const url_praesentation_list = '/api/v1/praesentation/list';
+    const url_praesentation_devicelist = '/api/v1/device/list/praesentation';   
+    const url_praesentation_start = '/api/v1/device/:id/praesentation/start';
+    const url_praesentation_action = '/api/v1/device/:id/praesentation/action';
+    const url_praesentation_webrtc = '/api/v1/device/:id/praesentation/webrtc';
+
+    const url_contact_all = '/api/v1/contact/all'
+    
+
+    // -------- Update a Service Worker--------
+    function serviceWorker_invokeUpadteFlow(registration) {
+        // TODO implement your own UI notification element
+        loaderIn();
+        notification.show("New version of the app is available. Refresh now?");
+        notification.addEventListener('click', () => {
+            if (registration.waiting) {
+                // let waiting Servi<ce Worker know it should became active
+                registration.waiting.postMessage('SKIP_WAITING')
+            }
+        })
+    }
+
+    // -------- Register a Service Worker--------
+    async function serviceWorker_run() {
+
+        // Registriere Service Worker
+        console.log('Registering service worker');	
+        serviceWorker_registration = await navigator.serviceWorker.
+            register('/serviceworker_app.js', { scope: "/app/" });
+            
+
+            // updatefound is fired if service-worker.js changes.
+            serviceWorker_registration.onupdatefound = function() {
+                var installingWorker = serviceWorker_registration.installing;
+
+                installingWorker.onstatechange = function() {
+                    switch (installingWorker.state) {
+                        case 'installed':
+                            if (navigator.serviceWorker.controller) {
+                                // At this point, the old content will have been purged and the fresh content will
+                                // have been added to the cache.
+                                // It's the perfect time to display a "New content is available; please refresh."
+                                // message in the page's interface.
+                                console.log('New or updated content is available.');
+                                loaderIn(undefined, undefined, 'Update');
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);                                
+                            } else {
+                                // At this point, everything has been precached.
+                                // It's the perfect time to display a "Content is cached for offline use." message.
+                                console.log('Content is now available offline!');
+                            }
+                            break;
+
+                        case 'redundant':
+                            console.error('The installing service worker became redundant.');
+                            break;
+                    }
+                };
+            };
+            
+
+
+        console.log('Registered service worker');
+
+        // ensure the case when the updatefound event was missed is also handled
+        // by re-invoking the prompt when there's a waiting Service Worker
+        if (serviceWorker_registration.waiting) {
+            serviceWorker_invokeUpadteFlow(serviceWorker_registration)
+        }
+
+        await navigator.serviceWorker.ready;
+    }
+
+    
+    async function load_initial() {
+
+        if(window.location.href.indexOf('offline') == -1) {
+            try {
+                const userrights = await fetch_get('/api/v1/user/rights', true);
+                console.log('userrights', userrights);
+
+                user_id = userrights.userid;    
+                user_telegramid = userrights.telegramid; 
+                user_admin = userrights.admin; 
+                user_calendar_min = userrights.calendar_min; 
+                user_calendar_full = userrights.calendar_full; 
+                user_telefone = userrights.telefone;   
+                user_praes = userrights.praes;    
+            } catch (error) {
+                console.error(error);
+            }            
+        }
+
+        
+        console.log('Initiate Service Worker');
+        await serviceWorker_run().catch(error => console.error(error));
+
+        let refreshing = false;
+        // detect controller change and refresh the page
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                //loaderIn(undefined, undefined, 'Neustart');
+                //window.location.reload()
+                refreshing = true
+            }
+        })
+
+        // -------- Feature Detection --------
+        if ('serviceWorker' in navigator) {
+            console.log('Notification Permission:', Notification.permission);
+            if (Notification.permission === "granted") {
+                getNotificationPermission();
+
+                // Close all open Notifications
+                navigator.serviceWorker.getRegistration().then(function(registration){
+                    if(!registration) return;
+                    registration.getNotifications().then(function(notifications){                        
+                        notifications.forEach(function(notification){
+                            notification.close()
+                        })
+                    })
+                })
+            }            
+
+        }
+
+        firststart = false;
+    }
+
+    async function load_later() {
+        if(window.location.href.indexOf('login') == -1) {
+            try {
+                const userrights = await fetch_get('/api/v1/user/rights', true);
+                console.log('userrights', userrights);    
+            } catch (error) {
+                console.error(error);
+            }          
+            try {
+                updateFunction();
+            } catch (error) {
+                console.error(error);
+            }  
+        }
+
+        loaderOut(); 
+    }
+
+
+    // **** Events ****
+    document.addEventListener('readystatechange', event => { 
+        console.log('readyState --> ' + event.target.readyState);
+
+        // When HTML/DOM elements are ready:
+        if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
+            
+        }
+
+        // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+        if (event.target.readyState === "complete") {            
+                       
+        }
+    });
+
+    window.addEventListener('load', async (event) => {
+        console.log('The page has fully loaded');
+        try {
+            await load_initial();  
+        } catch (error) {
+            console.error(error);            
+        }
+        await loaderFunction();
+            
+        loaderOut();    
+    });
+
+    window.addEventListener('pageshow', (event) => {
+        console.log('The page has been shown');
+        load_later();
+    });
+   
+    window.addEventListener("click", (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }, false);
+/*
+    window.onunload = function(){
+        console.log('The page is unloading');
+    };   
+  */  
+    window.addEventListener("visibilitychange", async () => {
+        console.log(document.visibilityState, firststart);
+
+        if (document.visibilityState === 'visible' && !firststart) {
+            console.log("open");
+
+            load_later();          
+
+        } else {
+            console.log("close");
+        }
+    });
+
+
+
+</script>
+

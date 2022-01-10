@@ -1,0 +1,44 @@
+/* Main Content Container */
+
+.index_container {
+    padding: 0.5em;
+    display: flex;
+}
+
+.index_container_icon {
+    border: 1px solid var(--color_border);
+    border-radius: 50%;
+    padding: 0.3em;
+    display: inline-block;
+    margin-right: 0.7em;
+}
+
+.index_container_icon .material-icons {
+    padding: 0.2em;
+}
+
+.index_container_content {
+    border: 1px solid var(--color_border);
+    border-radius: 5px;
+    padding: 0.3em;
+    display: inline-block;
+    flex-grow: 1;
+}
+
+.pwa_install_container {
+    background-color: var(--bg_loader);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    color: #fff;
+}
+
+.pwa_install_container .btn_close {
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    font-size: 2em;
+}

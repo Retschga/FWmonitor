@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_picturesdiashow.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">                
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Diashowbilder</h1>    
+
+            </div>
+
+            <div class="flex_row">
+                <button class="tablink flex_grow tablink_active" onclick="tab_switch('tab_active', this)">Aktiv</button>
+                <button class="tablink flex_grow" onclick="tab_switch('tab_inactive', this)">Inakiv</button>
+            </div>
+
+            <div class="content" style="overflow-x: hidden; overflow-y: auto;">
+                
+                <div id="tab_active" class="tabcontent diashow_list_enabled" style="display: block;">
+                    
+                </div>                
+                <div id="tab_inactive" class="tabcontent diashow_list_disabled">
+                    
+                </div>   
+                
+            </div>
+
+            <div id="modal_delete" class="modal">
+                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <h1>Bild löschen</h1>
+                        <p>Bild sicher löschen?</p>
+                
+                        <div class="clearfix">
+                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
+                            <button type="button" class="button_delete">JA</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="button_container hidden" id="fullscreenimg_btn">
+                <div class=" button_hide green" onclick="rotate_fullImg()"><span class="material-icons">rotate_right</span></div>
+                <div class=" button_hide red" onclick="closeFillImg()"><span class="material-icons">close</span></div>
+            </div>
+
+            <div id="fullscreenimg_btn" class="green hidden" onclick="rotate_fullImg()"><span class="material-icons">rotate_right</span></div>
+            <div id="fullscreenimg_bg" class="hidden" onclick="closeFillImg()">
+                <img src="/images/load.png" alt="image" id="fullscreenimg" />
+            </div>
+
+        <%- include('partials/foot') -%>
+
+       
+        <script>
+
+            const target_enabled = document.querySelector(".diashow_list_enabled");
+            const target_disabled = document.querySelector(".diashow_list_disabled");
+            const changedFiles = [];
+            
+            function createAccordionIfotExisting(id, year, target) {
+                let element = document.getElementById(id);
+                if(element != undefined) return;
+
+                target.innerHTML = target.innerHTML +
+                `<div id="cont_${year}"><button class="accordion var_header_name" onclick="accordion_switch(this); start_observer();">${year}</button>
+                <div class="accordion_panel" id="${id}">  
+                    <ul class="c">
+                       
+                    </ul>  
+                </div></div>`;
+            }
+
+            // Laden 
+            let loadNr = 0;
+            async function load_diashow_list() {   
+                loadNr++;  
+                try {
+                    const files = await fetch_get(url_diashow_list, true);
+                    console.log('files', files);
+                    const enabled = files.enabled;
+                    const disabled = files.disabled;                        
+
+                    for(let i = 0; i < enabled.length; i++) {
+                        const file = enabled[i].name;
+                        const file_withChache = changedFiles.indexOf(enabled[i].name) != -1 ? enabled[i].name + '?tmp=' + new Date().getTime() : enabled[i].name;
+                        
+                        const li = document.createElement("li");
+
+                        const existing = document.querySelector('[data-enname="'+file+'"]');
+
+                        if (existing) {
+                            if(changedFiles.indexOf(enabled[i].name) == -1) {
+                                existing.dataset.loadNr = loadNr;
+                                continue;
+                            } else {
+                                existing.parentNode.removeChild(existing);
+                            }
+                        }
+
+                        li.dataset.enname = file;
+                        li.dataset.loadNr = loadNr; 
+                        li.classList.add('deleteme');                       
+
+                        li.innerHTML = 
+                            `<div>
+                                <div class="button_container">
+                                    <div class=" button_hide red" onclick="disable_pic('${file}')"><span class="material-icons">visibility_off</span></div>
+                                    <div class=" button_hide green" onclick="rotate_pic_left('${file}')"><span class="material-icons">rotate_left</span></div>
+                                    <div class=" button_hide green" onclick="rotate_pic_right('${file}')"><span class="material-icons">rotate_right</span></div>
+                                </div>
+                                <img src="/images/load.png" data-src="/api/v1/diashow/files/${file_withChache}" alt="image" id="en_img_${i}" onclick="openFillImg('/api/v1/diashow/files/full/${file_withChache}')"/>
+                            </div>`;
+                        
+                        li.id = "en_" + i;
+
+                        const year = new Date(enabled[i].time).getFullYear();
+                        createAccordionIfotExisting('enabled' + year, year, target_enabled);
+                        document.getElementById('enabled' + year).getElementsByClassName("c")[0].append(li); 
+                    }
+
+                    const list1 = target_enabled;
+                    [...list1.children]
+                        .sort((a,b)=>a.id<b.id?1:-1)
+                        .forEach(node=>list1.appendChild(node));
+
+
+                    for(let i = 0; i < disabled.length; i++) {
+                        const file = disabled[i].name;
+
+                        const li = document.createElement("li");
+
+                        const existing = document.querySelector('[data-disname="'+file+'"]');
+
+                        if (existing) {
+                            existing.dataset.loadNr = loadNr;
+                            continue;
+                        } 
+
+                        li.dataset.disname = file;
+                        li.dataset.loadNr = loadNr; 
+                        li.classList.add('deleteme');     
+
+                        li.innerHTML = 
+                            `<div>
+                                <div class="button_container">
+                                    <div class=" button_show green" onclick="enable_pic('${file}')"><span class="material-icons">visibility</span></div>
+                                    <div class=" button_delete red" onclick="openModal_delete('${file}')"><span class="material-icons">delete_forever</span></div>
+                                </div>
+                                <img src="/images/load.png" data-src="/api/v1/diashow/files/${file}" alt="image" id="dis_img_${i}" onclick="openFillImg('/api/v1/diashow/files/full/${file}')" />
+                            </div>`;
+                        
+                        li.id = "dis_" + i;
+
+                        const year = new Date(disabled[i].time).getFullYear();
+                        createAccordionIfotExisting('disabled' + year, year, target_disabled);
+                        document.getElementById('disabled' + year).getElementsByClassName("c")[0].append(li);                          
+                    }
+
+                    const list2 = target_disabled;
+                    [...list2.children]
+                        .sort((a,b)=>a.id<b.id?1:-1)
+                        .forEach(node=>list2.appendChild(node));
+
+                    // Bereits vorhandene Elemente löschen
+                    let elements = target_enabled.getElementsByClassName("deleteme");
+                    [...elements].forEach( el => {
+                        if(parseInt(el.dataset.loadNr) < loadNr)
+                            el.parentNode.removeChild(el);
+                    });
+
+                    // Bereits vorhandene Elemente löschen
+                    elements = target_disabled.getElementsByClassName("deleteme");
+                    [...elements].forEach( el => {
+                        if(parseInt(el.dataset.loadNr) < loadNr)
+                            el.parentNode.removeChild(el);
+                    });
+
+                    start_observer();
+
+                } catch (error) {
+                    console.error('load_diashow_list', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                } 
+            }
+
+
+            // Speichern
+            async function disable_pic(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_disable, {filename: filename});
+                    console.log('disable_pic', response); 
+                    
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('disable_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function enable_pic(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_enable, {filename: filename});
+                    console.log('enable_pic', response);      
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('enable_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function delete_pic(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_delete, {filename: filename});
+                    console.log('delete_pic', response);   
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('delete_pic', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function rotate_pic_left(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_rotate_left, {filename: filename});
+                    console.log('rotate_pic_left', response);    
+                    changedFiles.push(filename);  
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('rotate_pic_left', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function rotate_pic_right(filename) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_diashow_rotate_right, {filename: filename});
+                    console.log('rotate_pic_right', response);      
+                    changedFiles.push(filename);  
+                    load_diashow_list();
+                } catch (error) {
+                    console.error('rotate_pic_right', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+
+            // Hilfsfunktionen
+            // https://www.zachleat.com/web/facepile/
+            function start_observer() {
+                if( typeof IntersectionObserver !== "undefined" && "forEach" in NodeList.prototype ) {
+                    var observer = new IntersectionObserver(function(changes) {
+                        if ("connection" in navigator && navigator.connection.saveData === true) {
+                            return;
+                        }
+
+                        changes.forEach(function(change) {
+                            if(change.isIntersecting) {
+                                change.target.setAttribute("src", change.target.dataset.src);
+                                observer.unobserve(change.target);
+                                // delete change.target.dataset.src;
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll("img[data-src]").forEach(function(img) {
+                        observer.observe(img);
+                    });
+                }
+            }
+
+            function openModal_delete(filename) {                
+                const modal = document.querySelector('#modal_delete');
+                modal.style.display = 'block';
+                modal.querySelector('.button_delete').onclick = () => {
+                    delete_pic(filename);
+                    document.getElementById('modal_delete').style.display='none';
+                };
+            }
+
+            function openFillImg(file) {
+                console.log('fullImg', file)
+                const img_cont = document.getElementById("fullscreenimg_bg");
+                img_cont.classList.remove('hidden');
+                const img_btn = document.getElementById("fullscreenimg_btn");
+                img_btn.classList.remove('hidden');
+
+                const img_elem = document.getElementById("fullscreenimg");
+                img_elem.setAttribute("src", file);
+            }
+
+            function closeFillImg() {
+                const img_cont = document.getElementById("fullscreenimg_bg");
+                img_cont.classList.add('hidden');
+                const img_btn = document.getElementById("fullscreenimg_btn");
+                img_btn.classList.add('hidden');
+            }
+
+            let imgrot = false;
+            function rotate_fullImg() {
+                console.log('rotate full img', imgrot)
+                const img_elem = document.getElementById("fullscreenimg");
+                if (imgrot == false) {
+                    img_elem.classList.add('fullscreenimg_rot');
+                } else {
+                    img_elem.classList.remove('fullscreenimg_rot');
+                }
+                imgrot = !imgrot;
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_diashow_list();
+            };
+            
+
+        </script>
+
+    </body>
+	
+</html>

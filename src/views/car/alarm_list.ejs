@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_calendar.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">                
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Alarme</h1>    
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column padding_bottom_1 alarm_list">
+
+                    <template id="template-alarm-green">
+                        <div class="list border_left border_right mark_green">
+
+                            <div class="item smallitem green">
+                                <span class="text var_text">TEXT</span>
+                                <span class="text right var_date">##:## - ##.##.####</span>
+                            </div>
+
+                            <div class="item subitem">
+                                <span class="text var_street">####</span>
+                            </div>
+                            <div class="item subitem">
+                                <span class="text var_city">####</span>
+                            </div>
+
+                        </div>
+                    </template>
+
+                    <template id="template-alarm-red">
+                        <div class="list border_left border_right mark_red">
+
+                            <div class="item smallitem red">
+                                <span class="text var_text">TEXT</span>
+                                <span class="text right var_date">##:## - ##.##.####</span>
+                            </div>
+
+                            <div class="item subitem">
+                                <span class="text var_street">####</span>
+                            </div>
+                            <div class="item subitem">
+                                <span class="text var_city">####</span>
+                            </div>
+
+                        </div>
+                    </template>
+
+                    <template id="template-alarm-blue">
+                        <div class="list border_left border_right mark_blue">
+
+                            <div class="item smallitem blue">
+                                <span class="text var_text">TEXT</span>
+                                <span class="text right var_date">##:## - ##.##.####</span>
+                            </div>
+
+                            <div class="item subitem">
+                                <span class="text var_street">####</span>
+                            </div>
+                            <div class="item subitem">
+                                <span class="text var_city">####</span>
+                            </div>
+
+                        </div>
+                    </template>
+
+                    <template id="template-alarm-orange">
+                        <div class="list border_left border_right mark_orange">
+
+                            <div class="item smallitem orange">
+                                <span class="text var_text">TEXT</span>
+                                <span class="text right var_date">##:## - ##.##.####</span>
+                            </div>
+
+                            <div class="item subitem">
+                                <span class="text var_street">####</span>
+                            </div>
+                            <div class="item subitem">
+                                <span class="text var_city">####</span>
+                            </div>
+
+                        </div>
+                    </template>
+
+
+                    <button class="btn alarm_list_loadmore margin_top_1" onclick="load_alarms(offset, limit); offset += limit;">
+                        Weitere laden...
+                    </button>                   
+          
+
+                </div>
+                
+            </div>
+
+        <%- include('partials/foot') -%>
+        <%- include('partials/foot_loggedin') -%>
+
+        <script>
+
+            const limit = 5;
+            let offset = 0;
+
+            // Laden
+            async function load_alarms(offset, limit) {   
+                if(offset == undefined || limit == undefined) {
+                    console.log('offset & limit required');
+                    return;
+                }
+
+                try {
+                    const alarmList = await fetch_get(url_alarm_list.replace(':offset', offset).replace(':limit', limit), true);
+                    if(DEBUG > 0) console.log('alarmList', alarmList);
+
+                    const target        = document.querySelector(".alarm_list");
+                    const target_before = document.querySelector(".alarm_list_loadmore");
+
+                    for(let i = 0; i < alarmList.length; i++) {
+                        const element = alarmList[i];
+
+                        const date = new Date(element.date);   
+
+                        let color = 'green';
+                        switch (element.color) {
+                            case 3:
+                                color = 'green';
+                                break;
+                            case 2:
+                                color = 'blue';
+                                break;
+                            case 1:
+                                color = 'orange';
+                                break;
+                            case 0:
+                                color = 'red';
+                                break;
+                            default:
+                                break;
+                        }
+
+
+                        const template   = document.querySelector('#template-alarm-' + color);                
+                        const var_text   = template.content.querySelector(".var_text");
+                        const var_date   = template.content.querySelector(".var_date");
+                        const var_street   = template.content.querySelector(".var_street");
+                        const var_city = template.content.querySelector(".var_city");
+
+                        var_text.innerHTML   = element.einsatzstichwort + ' - ' + element.schlagwort;
+                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + 
+                                ' - ' + ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                        var_street.innerHTML = element.strasse;
+                        var_city.innerHTML  = element.ort;
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.insertBefore(clone, target_before);
+
+                        clone.onclick = () => {
+                            loaderIn('alarm?id=' + element.id);
+                        };
+
+                    }
+                } catch (error) {
+                    console.error('load_alarms', error);
+                }
+            }
+
+            // Funktionsaufrufe            
+            loaderFunction = () => {
+                load_alarms(offset, limit);
+                offset += limit;
+            };
+
+
+
+        </script>
+
+       
+    </body>
+	
+</html>

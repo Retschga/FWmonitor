@@ -1,8 +1,0 @@
-{
-  "name":"menu",
-  "author": "fabiorogeriosj",
-  "dependencies": [
-    "base",
-    "list"
-  ]
-}

@@ -1,0 +1,139 @@
+
+<!-- WRAPPER -->
+</div>
+
+<script src="/scripts/common.js"></script> 
+
+<!-- SCRIPT LOADER -->
+<script>
+
+    let loaderFunction = () => {};
+
+    const url_user_status_all = '/api/v1/user/status/all';
+    const url_user_roles_all = '/api/v1/user/roles/all';
+
+    const url_alarm = '/api/v1/alarm/:id';
+    const url_alarm_last = '/api/v1/alarm/';
+    const url_alarm_isalarm = '/api/v1/alarm/isalarm';
+
+    const url_calendar_groups = '/api/v1/calendarGroups';
+    const url_calendar = '/api/v1/calendar/:id';
+
+    const url_map_forstrettpkt = 'rettPunkte.geojson';
+    const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
+
+    const url_diashow_list = '/api/v1/diashow/list';
+    const url_diashow_file = '/api/v1/diashow/files/full/:filename'
+
+    const url_dwd_warnings = 'https://maps.dwd.de/geoserver/dwd/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=dwd:Warnungen_Gemeinden&outputFormat=json&CQL_FILTER=WARNCELLID%20IN%20(%27:warncellid%27)';
+    
+    const url_praesentation_file = '/api/v1/praesentation/files/:filename'
+
+    let socket_hardware;
+    let watchdogInterval;
+
+    async function connect_hardware() {			
+        let keepAliveInterval = null;               
+
+        try {
+            console.log('Hardware-connection socket connecting...');
+            socket_hardware = await initWebsocket(
+                'ws://127.0.0.1:8765', 
+                socket_hardware, 
+                30000, 
+                30
+            );                      
+        } catch (error) {
+            console.error(error);
+            setTimeout(function() { connect_hardware(); }, 1000 * 30);
+        }
+
+        if(socket_hardware.readyState != 1) {
+            console.error("Error: Hardware-Connection not open");
+            setTimeout(function() { connect_hardware(); }, 1000 * 5);
+        }
+        
+        // Event: Socket geöffnet
+        console.log("Hardware-connection socket connected.");
+
+        socket_hardware.send(`watchdog`);        
+        watchdogInterval = setInterval(() => {
+            socket_hardware.send(`watchdog`); 
+        }, 10000)
+
+        // Event: Socket geschlossen
+        socket_hardware.onclose = function(e) {
+            console.log('Hardware-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
+            setTimeout(function() { connect_hardware(); }, 5000);
+        };
+
+        // Event: Scoket Fehler
+        socket_hardware.onerror = function(err) {
+            clearInterval(watchdogInterval);
+            console.error('Hardware-connection socket encountered error: ', err.message, 'Closing socket');
+            socket_hardware.close();
+        };
+    }
+
+    async function initialLoad() {
+        connect_hardware();
+    }
+
+    // **** Events ****
+    document.addEventListener('readystatechange', event => { 
+        console.log('readyState --> ' + event.target.readyState);
+
+        // When HTML/DOM elements are ready:
+        if (event.target.readyState === "interactive") {   //does same as:  ..addEventListener("DOMContentLoaded"..
+            
+        }
+
+        // When window loaded ( external resources are loaded too- `css`,`src`, etc...) 
+        if (event.target.readyState === "complete") {            
+                       
+        }
+    });
+
+    window.addEventListener('load', async (event) => {
+        console.log('The page has fully loaded');
+        try {
+            await initialLoad();  
+        } catch (error) {
+            console.error(error);            
+        }
+        await loaderFunction();
+
+        try {
+            loaderOut();     
+        } catch (error) {
+            console.error(error); 
+            location.reload();           
+        }            
+    });
+
+    window.addEventListener('onpageshow', (event) => {
+        console.log('The page has been shown');
+        try {
+            loaderOut();     
+        } catch (error) {
+            console.error(error); 
+            location.reload();           
+        }     
+    });
+   
+    window.addEventListener("click", (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }, false);
+
+    window.onunload = function(){
+        console.log('The page is unloading');
+    };   
+    
+  
+    
+
+
+</script>
+

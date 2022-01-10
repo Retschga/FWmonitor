@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar flex_row">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Auto - Bildschirme</h1>    
+                
+                <div class="flex_grow"></div>
+
+                <button class="material-icons" onclick="create_car();">add_circle_outline</button>
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column list car_list">
+
+                    <template id="template-carelement">
+                        <div class="carelement margin_none padding_none">
+
+                            <button class="accordion var_header_name" onclick="accordion_switch(this)">Anzeigename</button>
+                            <div class="accordion_panel">
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Anzeigename</span>
+                                    <input class="var_name" type="text" placeholder="Name...">
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">person</span>
+                                    <span class="text">Benutzername</span>
+                                    <input class="var_user" type="text" placeholder="Benutzer...">
+                                </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">password</span>
+                                    <span class="text">Passwort</span>
+                                    <span class="left material-icons button_newPassword">autorenew</span>
+                                    <input class="var_password" type="text" placeholder="Passwort..." disabled>                                    
+                                </div>
+
+                                <div class="item smallitem padding_top_1">
+                                    <div class="red left item rounded button_delete">
+                                        <span class="left material-icons">delete</span>
+                                        <span class="text">Löschen</span>                                
+                                    </div>
+                                    <div class="flex_grow"></div>
+                                    <div class="green right item rounded button_save">
+                                        <span class="text text_align_right">Speichern</span>
+                                        <span class="right material-icons">save</span>
+                                    </div>                            
+                                    
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </template>
+                                        
+                    
+                </div>
+
+            </div>
+
+            <div id="modal_delete" class="modal">
+                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <h1>Account löschen</h1>
+                        <p>Auto-Account sicher löschen?</p>
+                
+                        <div class="clearfix">
+                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
+                            <button type="button" class="button_delete">JA</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_cars_all() {   
+                try {
+                    const cars = await fetch_get(url_cars_all, true);
+                    console.log('cars', cars);
+
+                    const target = document.querySelector(".car_list");
+
+                    for(let i = 0; i < cars.length; i++) {
+                        const car = cars[i];
+
+                        const template            = document.querySelector('#template-carelement');       
+                        const var_header_name     = template.content.querySelector(".var_header_name");      
+                        const var_name            = template.content.querySelector(".var_name");      
+                        const var_user            = template.content.querySelector(".var_user");
+                        const var_password        = template.content.querySelector(".var_password");          
+                        
+                        var_header_name.innerHTML = car.name; 
+                        var_name.value            = htmlDecode(car.name); 
+                        var_user.value            = car.appBenutzer; 
+                        var_password.value        = car.appPasswort; 
+                        
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.id = 'car_' + car.id;
+                        const button_save = clone.querySelector(".button_save");  
+                        button_save.addEventListener("click", () => {
+                            update_cars_id(car.id);
+                        });
+                        const button_delete = clone.querySelector(".button_delete");  
+                        button_delete.addEventListener("click", () => {
+                            openModal_delete_id(car.id);
+                        });
+                        const button_newPassword = clone.querySelector(".button_newPassword");  
+                        button_newPassword.addEventListener("click", () => {
+                            get_password_new_id(car.id);
+                        });
+
+                        addFormatter(clone.querySelector(".var_user"), regexPrefix(/^AUTO/, 'AUTO'));
+
+                    }
+                } catch (error) {
+                    console.error('load_cars_all', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }   
+            }
+
+            // Speichern
+            async function update_cars_id(id) {
+                loaderIn();
+                try {
+                    const carelement = document.querySelector('#car_' + id);       
+
+                    const name     = carelement.querySelector('.var_name').value;
+                    const user     = carelement.querySelector('.var_user').value;
+                    const password = carelement.querySelector('.var_password').value;
+
+                    carelement.querySelector('.var_header_name').innerHTML = name;
+
+                    if(password != '****') {
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPassword: password});
+                        console.log('updateCar', response);
+                    } else {
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user});
+                        console.log('updateCar', response);
+                    }        
+                } catch (error) {
+                    console.error('update_cars_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }       
+                loaderOut();
+            }
+
+            async function delete_car_id(id) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_cars_delete.replace(':id', id), {});
+                    console.log('delete_car_id', response);   
+                } catch (error) {
+                    console.error('delete_car_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }                            
+                location.reload(); 
+            }
+
+            async function create_car() {
+                loaderIn();
+                try {
+                    const response = await fetch_get(url_cars_create);
+                    console.log('create_car', response); 
+                } catch (error) {
+                    console.error('create_car', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }                
+                location.reload();        
+            }
+
+            async function get_password_new_id(id) {
+                loaderIn();
+                try {
+                    const response = await fetch_get(url_cars_password_new, true);
+                    console.log('get_password_new_id', response);      
+                    
+                    const carelement = document.querySelector('#car_' + id);   
+                    const password   = carelement.querySelector('.var_password'); 
+
+                    password.value = response.password;
+                } catch (error) {
+                    console.error('get_password_new_id', error);                    
+                    alert('Daten konnten nicht geladen werden.');
+                }
+                loaderOut();
+            }
+
+            // Hilfsfunktionen
+            function openModal_delete_id(id) {                
+                const modal = document.querySelector('#modal_delete');
+                modal.style.display = 'block';
+                modal.querySelector('.button_delete').onclick = () => delete_car_id(id);
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_cars_all();
+            };
+            
+        </script>
+       
+    </body>
+	
+</html>

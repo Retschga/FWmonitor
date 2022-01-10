@@ -1,0 +1,164 @@
+<html>
+    <head>
+        <%- include('screen/partials/head') -%>
+
+        <title>Alarmausdruck</title>
+        <style>
+            body {
+                min-width: 0;
+                min-height: 0;
+                width: 190mm;
+                height: 277mm;
+                margin-top: 1cm;
+                margin-bottom: 0.5cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                font-family: Arial;
+                border: 2px solid black;
+                overflow: scroll;
+                background-color: #fff;
+            }
+            img {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            #container {
+                width: 190mm;
+                height: 277mm;
+                overflow: hidden;
+            }
+
+            .stichwort {
+                font-size: 18pt;
+                font-weight: bold;
+                vertical-align: top;
+                background-color: #e8e8e8;
+                padding-left: 15px;
+                padding-right: 5px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                border-top: 1px solid black;
+                text-align: center;
+            }
+            #bemerk {
+                padding-left: 15px;
+                padding-right: 5px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                border-top: 1px solid black;
+                vertical-align: top;
+                text-align: center;
+            }
+            #ort {
+                padding-left: 15px;
+                padding-right: 5px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                border-top: 1px solid black;
+                vertical-align: top;
+                text-align: center;
+            }
+            #mapid {
+                height: 190mm;
+                border-top: 1px solid black;
+                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='500px'><text x='50' y='50' fill='red' font-size='20'>Keine Karte gefunden.</text></svg>");
+                background-repeat: no-repeat;
+            }
+            p {
+                display: inline;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <img src="images/print_logo.jpg" />
+
+            <div class="stichwort">
+                <p id="varEINSATZSTICHWORT">Stichw</p>
+                -
+                <p id="varSCHLAGWORT">Schlagw</p>
+                <p id="varOBJEKT">Objekt</p>
+            </div>
+            <div id="bemerk">
+                <p id="varBEMERKUNG">BEMERKUNG</p>
+            </div>
+            <div id="ort">
+                <p id="varSTRASSE">STRASSE</p>
+                <p id="varORTSTEIL">ORTSTEIL</p>
+                <p id="varORT">ORT</p>
+                -
+                <p id="varTIME">TIME</p>
+            </div>
+
+            <div id="mapidContainer" class="flex_grow flex_column">
+                <div id="mapid" class="flex_grow hide_on_no_map"></div>
+            </div>
+        </div>
+
+        <%- include('screen/partials/foot') -%>
+
+        <script>
+            // -------- GET Parameter auslesen --------
+            var parts = window.location.search.substr(1).split('&');
+            var $_GET = {};
+            for (var i = 0; i < parts.length; i++) {
+                var temp = parts[i].split('=');
+                $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+            }
+
+            const coordiantes = { lat: $_GET['lat'], lng: $_GET['lng'] };
+			document.getElementById('varEINSATZSTICHWORT').innerHTML = $_GET['varEINSATZSTICHWORT'];
+            document.getElementById('varSCHLAGWORT').innerHTML = $_GET['varSCHLAGWORT'];
+            document.getElementById('varOBJEKT').innerHTML = $_GET['varOBJEKT'];
+            document.getElementById('varBEMERKUNG').innerHTML = $_GET['varBEMERKUNG'];
+            document.getElementById('varSTRASSE').innerHTML = $_GET['varSTRASSE'];
+            document.getElementById('varORTSTEIL').innerHTML = $_GET['varORTSTEIL'];
+            document.getElementById('varORT').innerHTML = $_GET['varORT'];
+
+            var lvalue = document.getElementById('varBEMERKUNG').innerHTML.length;
+            if (lvalue > 200) document.getElementById('varBEMERKUNG').style.fontSize = '1em';
+            if (lvalue > 400) document.getElementById('varBEMERKUNG').style.fontSize = '0.8em';
+
+            // Laden
+            async function hydrantenkarte_load() {
+                let latitude = coordiantes.lat;
+                let longitude = coordiantes.lng;
+                const pos = { lat: latitude, lng: longitude };
+
+                const map = createMap(pos, true, false, true);
+                add_circle(latitude, longitude, map);
+
+                if(latitude != undefined && longitude != undefined  && latitude != 'undefined' && longitude != 'undefined') {
+                    const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
+                    add_hydranten(hydrantenCache, map);
+                }
+                add_forstRettPkt(map);
+
+
+                map.setView(
+                    new ol.View({
+                        center: ol.proj.fromLonLat([pos.lng, pos.lat]),
+                        zoom: map.getView().getZoom()
+                    })
+                );
+
+            }
+
+            async function load_clock() {
+                const d = new Date();
+                const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+                const time = d.toLocaleTimeString();
+                const date = d.toLocaleDateString('de-DE', options);
+                document.querySelector('#varTIME').innerHTML = time + ' - ' + date;
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = async () => {
+                hydrantenkarte_load();
+                load_clock();
+            };
+
+        </script>
+    </body>
+</html>

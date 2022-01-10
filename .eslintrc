@@ -1,0 +1,31 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "prettier"  
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier"  
+    ],
+    "rules": {
+        "no-console": 1,       // Means warning
+        "linebreak-style": ["error", "unix"],
+        "@typescript-eslint/no-inferrable-types": [
+            0,
+            {
+              "ignoreParameters": true,
+              "ignoreProperties": true
+            }
+          ],
+        "prettier/prettier": [
+          "error",
+          {
+            "endOfLine": "auto"
+          }
+        ]
+  }
+  }

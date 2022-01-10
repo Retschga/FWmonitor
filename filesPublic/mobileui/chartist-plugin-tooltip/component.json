@@ -1,7 +1,0 @@
-{
-  "name":"chartist-plugin-tooltip",
-  "author": "tmmdata",
-  "dependencies": [
-    "chartist"
-  ]
-}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_status.css">
+
+        <style>
+            .modal-bottom {
+                background-color: #5252526b;
+            }
+            .modal-bottom .modal-content {
+                margin: 0;
+                bottom: 7em;
+                position: fixed;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 1em;
+            }
+        </style>
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Status</h1>      
+
+            </div>
+
+            <div class="content">
+
+              
+                <div
+                    class="var_statuscolor"
+                    style="margin: 0 auto; border: 1px solid var(--border_color); width: 80%; border-radius: 5%; padding: 1em; text-align: center; margin-top: 1em;"
+                >
+                    <span>Aktuell: &nbsp;</span><span class="var_statustext">########</span><br>
+                    <span class="var_until" style="font-size: 0.8em;">##.##.#### ##:##</span>
+                </div>
+                
+
+                <div style="display: flex; justify-content: space-around; position: fixed; bottom: 1em; width: 100%;">
+                    <button class="btn green" onclick="update_status_id(user_id, 1)" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">done</span>
+                    </button>
+                    <button class="btn red" onclick="openModal_until()" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">close</span>
+                    </button>
+                    <button class="btn grey" onclick="loaderIn('status_plan_list')" style="border-radius: 50%; width: 5em; height: 5em;">
+                        <span class="material-icons">list</span>
+                    </button>
+                </div>
+
+                <div class="flex_row" style="margin-top: 2em; padding: 1em;">
+
+                    <div class="flex_column flex_grow text_align_center border_right" style="width: 100%; padding-bottom: 1em;">
+                        <p class="border_bottom">
+                            Verfügbar:
+                        </p>
+                        <template id="template-verfuegbar">
+                            <p class="margin_none var_name">####r</p>
+                        </template>
+                        <div class="list_verfuegbar" style="max-height: 40vh; overflow-y: auto; font-size: 0.7em;">    
+
+                        </div>
+                    </div>
+                    <div class="flex_column flex_grow text_align_center" style="width: 100%;">
+                        <p class="border_bottom">
+                            Nicht verfügbar:
+                        </p>
+                        <template id="template-nichtverfuegbar">
+                            <p class="margin_none var_name">####r</p>
+                        </template>
+                        <div class="list_nichtverfuegabr" style="max-height: 40vh; overflow-y: auto; font-size: 0.7em;">
+                            
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="modal_until" class="modal modal-bottom">
+                <span onclick="document.getElementById('modal_until').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container">
+                        <p>Zeitraum?</p>
+
+                        <div class="list">
+
+                            <div class="item" style="background-color: inherit;">
+                                <span class="text">Bis</span>
+                                <input class="var_until_select" type="datetime-local">
+                            </div>
+
+                            <div class="item" style="background-color: inherit;">
+                                <span class="text">Tage</span>
+                            </div>
+
+                            <div class="item" style="background-color: inherit; display: inherit;">
+                                <button type="button" onclick="setUntilDays(1)">01</button>
+                                <button type="button" onclick="setUntilDays(2)">02</button>
+                                <button type="button" onclick="setUntilDays(3)">03</button>
+                                <button type="button" onclick="setUntilDays(4)">04</button>
+                                <button type="button" onclick="setUntilDays(5)">05</button>
+                                <button type="button" onclick="setUntilDays(6)">06</button>
+                                <button type="button" onclick="setUntilDays(7)">07</button>
+                                <button type="button" onclick="setUntilDays(14)">14</button>
+                            </div>
+
+                        </div>
+
+                        
+                       
+                
+                        <div class="clearfix">
+                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_until').style.display='none'">Abbrechen</button>
+                            <button type="button" class="button_delete">Übernehmen</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            // Laden
+            async function load_status_id(id) {
+                try {
+                    const user_status = await fetch_get(url_user_status.replace(':id', id), true);
+                    console.log('user status', user_status);
+
+                    const date = user_status.until != '' && user_status.until != null ? new Date(user_status.until) : undefined;   
+                
+                    const var_text   = document.querySelector(".var_statustext");
+                    const var_until   = document.querySelector(".var_until");
+                    const var_statuscolor   = document.querySelector(".var_statuscolor");
+
+                    var_text.innerHTML = user_status.statustext;
+                    if (date){
+                        var_until.innerHTML = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.' + date.getFullYear() + ' - ' + 
+                                            ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                    } else {
+                        var_until.innerHTML = '';
+                    }
+
+                    var_statuscolor.classList.remove('red');
+                    var_statuscolor.classList.remove('green');
+                    var_statuscolor.classList.add(user_status.status == 1 ? 'green' : 'red');
+
+                } catch (error) {
+                    console.error('load_status_id', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }
+            }
+
+            async function load_statuslist() {
+                try {
+                    const userStatusList = await fetch_get(url_user_status_all, true);
+                    console.log('user status all', userStatusList);
+
+                    var target_verfuegbar = document.querySelector(".list_verfuegbar");
+                    var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
+
+                    target_verfuegbar.innerHTML = '';
+                    target_nichtverfuegbar.innerHTML = '';
+
+                    for(let i = 0; i < userStatusList.length; i++) {
+
+                        const userstatus = userStatusList[i];
+
+                        if(userstatus.status == 1) {
+                            const template = document.querySelector('#template-verfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_verfuegbar.appendChild(clone);
+                        } else {
+                            const template = document.querySelector('#template-nichtverfuegbar');                
+                            const var_text   = template.content.querySelector(".var_name");
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            var clone = document.importNode(template.content, true);
+                            target_nichtverfuegbar.appendChild(clone);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('load_statuslist', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                }                
+            }
+
+            // Speichern
+            async function update_status_id(id, value, until = null) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(url_user_status_update.replace(':id', id), {value: value, until: until});
+                    console.log('update_status_id', response);               
+                    await load_status_id(id);
+                    await load_statuslist();
+
+                } catch (error) {
+                    console.error('update_status_id', error);
+                    alert('Einstellungen konnten nicht gespeichert werden.');
+                }           
+                document.getElementById('modal_until').style.display='none';    
+                loaderOut();
+            }
+
+            function setUntilDays(days) {
+                const var_until   = document.querySelector(".var_until_select");
+                const date = new Date();
+                date.setDate(date.getDate() + days);
+                const datestring = date.toISOString();
+                console.log(datestring.substring(0, (datestring.indexOf("T")|0) + 6|0));
+                var_until.value      = datestring.substring(0, (datestring.indexOf("T")|0) + 6|0);
+            }
+
+            function openModal_until() {                
+                const modal = document.querySelector('#modal_until');
+                const var_until   = document.querySelector(".var_until_select");
+                modal.style.display = 'block';
+                modal.querySelector('.button_delete').onclick = () => update_status_id(user_id, 2, new Date(var_until.value).toISOString());
+            }
+            
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_status_id(user_id);
+                load_statuslist();
+
+                setUntilDays(1);
+            };
+            
+
+
+        </script>
+
+       
+    </body>
+	
+</html>

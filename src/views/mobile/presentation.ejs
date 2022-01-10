@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+
+                <h1>Präsentation</h1>      
+
+                <div class="flex_grow"></div>
+
+                <button id="btn_reconnect" class="material-icons" onclick="openModal_device(undefined);">refresh</button> 
+
+                <div class="spacer" style="width: 0.5em;"></div>
+
+            </div>
+
+            <div class="content">
+
+                <div class="flex_column">
+
+                    <div id="controls_start" class="list controls_start">
+
+                        <div class="item" onclick="openModal_device(undefined);">
+                            <span class="right material-icons">devices</span>
+                            <span class="text text_align_center">Steuerung starten</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                        <div class="item var_screenshare hidden" onclick="openModal_device('screenshare');">
+                            <span class="right material-icons">devices</span>
+                            <span class="text text_align_center">Bildschirm teilen</span>
+                            <span class="right material-icons">chevron_right</span>
+                        </div>
+
+                    </div>
+
+                    <div class="list controls hidden">
+
+                        <div class="item">
+                            <span class="text text_align_center var_connected_device">GERÄTENAME</span>
+                        </div>
+
+                    </div>
+                    
+                    <div class="list controls hidden">
+
+                        <div class="item">
+                            <span class="left material-icons" onclick="send_action('page-');">chevron_left</span>
+                            <span class="text text_align_center">Foliensteuerung</span>
+                            <span class="right material-icons" onclick="send_action('page+');">chevron_right</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="left material-icons" onclick="send_action('pause');">pause</span>
+                            <span class="text text_align_center">Folien verstecken</span>
+                            <span class="right material-icons" onclick="send_action('play');">play_arrow</span>
+                        </div>
+
+                        <div class="item">
+                            <span class="text text_align_center" onclick="send_action('stop');">Präsentation beenden</span>
+                        </div>
+
+                    </div>
+
+                    <div id="file_list" class="list file_list">
+
+                        <div class="item">
+                            <span class="text text_align_center">Datei auswählen</span>
+                        </div>
+
+                        <template id="template-file">
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">description</span>
+                                <span class="text var_name">Dateiname</span>
+                                <span class="right material-icons">cast_connected</span>
+                            </div>
+
+                        </template>
+              
+                    </div>
+
+                    <div id="controlsVideo" class="list hidden">                        
+
+                        <div class="item">
+                            <span class="text text_align_center">Vorschau</span>
+                        </div>
+
+                        <video id="controlsVideo_video" autoplay style="width: 100%; padding: 0;"></video> 
+
+                        <div class="item hidden" id="controlsVideo_loading" >
+                            <span class="text text_align_center">Verbinden ...</span>
+                        </div>
+
+                        <div class="item" id="controlsVideo_stop">
+                            <span class="text text_align_center" onclick="stopWebrtc();">Teilen beenden</span>
+                        </div>
+
+                    </div>                   
+                    
+                </div>
+
+            </div>
+
+            <div id="modal_device" class="modal">
+                <span onclick="document.getElementById('modal_device').style.display='none'" class="close" title="Close Modal">&times;</span>
+                <form class="modal-content" action="/">
+                    <div class="container device_list">
+                        <h1>Gerät auswählen</h1>
+
+                        <template id="template-device">
+                            <button type="button" class="deleteme var_name">GERÄTENAME</button>
+                        </template>
+
+                    </div>
+                </form>
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+		<script src="/vendor/simplepeer.min.js"></script>
+
+        <script>
+
+            let targetdevice_id;
+            let targetfile;
+            let peer1 = undefined;
+            let peerPollInterval = undefined;
+
+            // Laden
+            async function load_praes_list() {  
+                const target = document.querySelector(".file_list");
+                try {
+                    const files = await fetch_get(url_praesentation_list, true);
+                    console.log('files', files);
+
+                    for(let i = 0; i < files.length; i++) {
+
+                        const template     = document.querySelector('#template-file');       
+                        const var_name     = template.content.querySelector(".var_name");     
+
+                        var_name.innerHTML = files[i]; 
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+
+                        clone.addEventListener("click", () => {
+                            openModal_device(files[i]);
+                        });                    
+
+                    }                        
+
+               
+                } catch (error) {
+                    console.error('load_praes_list', error);
+                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                } 
+            }
+
+            async function load_device_list() {     
+                const target = document.querySelector(".device_list");             
+                try {
+                    loaderIn();
+                    const devices = await fetch_get(url_praesentation_devicelist, true);
+                    console.log('devices', devices);
+
+                    // Vorhandene Elemente löschen
+                    const elements = target.getElementsByClassName("deleteme");
+                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+
+                    for(let i = 0; i < devices.length; i++) {
+
+                        const template     = document.querySelector('#template-device');       
+                        const var_name     = template.content.querySelector(".var_name");     
+
+                        var_name.innerHTML = devices[i].name; 
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.append(clone);
+            
+                        clone.addEventListener("click", () => {
+                            start_praesentation(devices[i]);
+                        });                          
+            
+                    }
+               
+                } catch (error) {
+                    console.error('load_device_list', error);
+                    if(error.show) alert('Geräteliste konnte nicht geladen werden.');
+                } 
+                loaderOut();
+            }
+            
+            async function load_webrtc(device) {
+                try {          
+                    
+                    document.getElementById('file_list').classList.add('hidden');
+                    document.getElementById('btn_reconnect').classList.add('hidden');
+                    document.getElementById('controlsVideo').classList.remove('hidden');
+                    document.getElementById('controls_start').classList.add('hidden');
+                    document.getElementById('controlsVideo_loading').classList.remove('hidden');
+
+
+                    var displayMediaOptions = {
+                            video: {
+                                cursor: "always"
+                            },
+                            audio: true
+                        };
+                    const videoElement = document.querySelector('video');
+                    const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+                    videoElement.srcObject = stream;
+                  
+                    // Warte bis Bildschirm umgeschalten hat
+                    await timeout(3000);
+
+                    console.log("Start SimplePeer...");
+                    peer1 = new SimplePeer({ 
+                        initiator: true, 
+                        stream: stream,
+                        config: {
+                            iceServers: []
+                        }
+                        })
+                    peer1.on('signal', data => {
+                        send_webrtcData(data);
+                    })
+                    peer1.on('error', (err) => {
+                        console.error(err);
+                    });                    
+                    peer1.on('close', () => {
+                        console.error("############ closed #########"); 
+                        stopWebrtc();
+                    });
+                    peer1.on('connect', () => {
+                        console.error("########### CONNECT #############")
+                        document.getElementById('controlsVideo_loading').classList.add('hidden');
+                        document.getElementById('controlsVideo_video').classList.remove('hidden');
+                        document.getElementById('controlsVideo').classList.remove('hidden');
+                        setWebrtcPollInterval(5000);
+                    });
+                    peer1.on('data', () => {
+                        console.error("########### DATA #############");
+                    });
+
+                    setWebrtcPollInterval();
+
+                } catch (error) {
+                    console.error("screenshare error", error);
+                }
+                
+			}
+
+            // Hilfsfunktionen
+            async function openModal_device(filename) {   
+                targetfile = filename;
+                await load_device_list();             
+                const modal = document.querySelector('#modal_device');
+                modal.style.display = 'block';
+            }
+
+            async function start_praesentation(device) {
+                loaderIn();
+                document.getElementById('modal_device').style.display='none';
+
+                try {
+                    if(targetfile) {
+                        console.log('targetfile', targetfile)
+                        const response = await fetch_post(url_praesentation_start.replace(':id', device.id), {file: targetfile});
+                        console.log('start_praesentation response', response);
+
+                        document.querySelector('.controls_start').classList.remove('hidden');
+
+                        if(targetfile == 'screenshare') {
+                            targetdevice_id = device.id;  
+                            load_webrtc();
+                        }
+                    
+                    } else {
+                        targetdevice_id = device.id;  
+
+                        const secure_options   = document.querySelectorAll('.controls');  
+                        for(let i = 0; i < secure_options.length; i++) {
+                            const element = secure_options[i];
+                            element.classList.remove('hidden');
+                        }                    
+
+                        document.querySelector('.var_connected_device').innerHTML = device.name;
+                        document.querySelector('.file_list').classList.add('hidden');
+                        document.querySelector('.controls_start').classList.add('hidden');
+                    }                    
+               
+                } catch (error) {
+                    console.error('start_praesentation', error);
+                    alert('Präsentation konnte nicht gestartet werden.');
+                    load_device_list();
+                }                 
+                loaderOut();              
+
+            }
+
+            async function send_action(action) {
+                loaderIn();
+                try {                  
+                    console.log('targetfile', targetfile)
+                    const response = await fetch_post(url_praesentation_action.replace(':id', targetdevice_id), {action: action});
+                    console.log('send_action response', response);   
+
+                    if(response == false) openModal_device(undefined);
+                    
+                    if(action == 'stop') location.reload();
+
+                } catch (error) {
+                    console.error('send_action', error);
+                    alert('Aktion konnte nicht gesendet werden.');
+                    load_device_list();
+                }                 
+                loaderOut();  
+            }
+            
+            function setWebrtcPollInterval(time) {
+                if(peerPollInterval != undefined) {
+                    clearInterval(peerPollInterval);
+                    peerPollInterval = undefined;
+                }
+                peerPollInterval = setInterval(() => {
+                    send_webrtcData();
+                }, time || 1000);
+            }
+            
+            function clearWebrtcPollInterval(time) {
+                if(peerPollInterval != undefined) {
+                    clearInterval(peerPollInterval);
+                    peerPollInterval = undefined;
+                }
+            }
+
+            function stopWebrtc() {
+                if(!peer1) {
+                    location.reload();
+                } else {                    
+                    peer1.destroy();
+                    const videoElement = document.querySelector('video');
+                    videoElement.pause();
+                    clearWebrtcPollInterval();
+                    location.reload();
+                }
+            }         
+
+            async function send_webrtcData(data) {
+                try {              
+                    //console.log('=======> send webrtc data', data);    
+                    const response = await fetch_post(url_praesentation_webrtc.replace(':id', targetdevice_id), 
+                        {action: (data ? 1 : 0), data: JSON.stringify(data)});
+
+                    console.log('<====== webrtc receive', response);
+
+                    if(response === false) { 
+                        throw new Error('ScreenShare konnte nicht gestartet werden');
+                    
+                    } else if(response && response.length > 0) {
+                        for(let i = 0; i < response.length; i++) {
+					        peer1.signal(response[i]);
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('ERROR: send_webrtcData', error);
+                    //stopWebrtc();
+                    //load_device_list();
+                    //openModal_device('screenshare');
+                }                 
+            }
+
+            function timeout(ms) {
+                return new Promise((resolve) => setTimeout(resolve, ms));
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_praes_list();
+
+                if ('getDisplayMedia' in navigator.mediaDevices) {
+                    const elem     = document.querySelector('.var_screenshare');   
+                    elem.classList.remove('hidden')
+                }
+            };
+            
+        </script>
+
+       
+    </body>
+	
+</html>

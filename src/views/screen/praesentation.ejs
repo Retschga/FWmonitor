@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - Screen</title>	
+
+        <link rel="stylesheet" href="/css/screen_index.css">
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons" onclick="loaderIn('index?name=' + clientName);">menu</button>
+
+                <h1>FWmonitor</h1>  
+                
+				<div class="flex_grow"></div>
+
+				<h1 id="pdfName" class="text_align_center" style="margin-right: 1em;"></h1>				
+				<h1 id="page_num"></h1>
+				<h1> / </h1>
+				<h1 id="page_count"></h1>
+
+				<div class="flex_grow"></div>
+
+                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
+
+            </div>
+            <div class="content">
+	
+				<div id="pdfContainer" style="width: 100%; height: 100%; display: flex; justify-content: center; align-items:center;" id="canvas-container">
+					<canvas id="the-canvas" style="margin: 0 auto"></canvas>
+				</div>		
+				
+				<video autoplay style="width: 100%; height: 100%;"></video>                    
+
+
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script src="/vendor/pdf.js"></script>
+		<script src="/vendor/simplepeer.min.js"></script>
+
+		
+
+        <script>
+
+            const clientName          = $_GET['name'];	
+            const filename            = $_GET['file'];	
+            const keepAlive_intervall = 10000;
+            const keepAlive_timeout   = 60000;
+            let clientId              = localStorage.getItem("clientId") || undefined; 
+
+			console.log("Client-Name: ", clientName);
+            console.log("Datei-Name:  ", filename);
+
+            let connected = true;
+            let socket_software;
+
+            document.getElementById('pdfName').innerHTML = filename;
+            var canvCont = document.getElementById('canvas-container');
+            pdfjsLib.GlobalWorkerOptions.workerSrc = '/vendor/pdf.worker.js';
+
+            let pdfDoc = null;
+            let pageNum = 1;
+            let pageRendering = false;
+            let pageNumPending = null;
+            let scale = 0.8;
+            let canvas = document.getElementById('the-canvas');
+            let ctx = canvas.getContext('2d');
+
+			var peer2 = new SimplePeer({ 
+                            config: {
+                                iceServers: []
+                            }
+                         });
+
+
+            // Laden            
+            async function load_clock() {
+                setInterval(() => {
+                    const d = new Date();
+                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const time = d.toLocaleTimeString();
+                    const date = d.toLocaleDateString('de-DE', options);
+                    document.querySelector('.var_time').innerHTML = time + " - " + date;
+                }, 1000)
+            }
+
+            async function load_pdf() {                
+
+                /**
+				 * Asynchronously downloads PDF.
+				 */
+				pdfjsLib.getDocument(url_praesentation_file.replace(':filename', filename)).promise.then(function(pdfDoc_) {
+				  pdfDoc = pdfDoc_;
+				  document.getElementById('page_count').textContent = pdfDoc.numPages;
+
+				  // Initial/first page rendering
+				  renderPage(pageNum);
+				});
+            }
+
+			async function load_webrtc() {
+				peer2.on('stream', stream => {
+					console.log('########## RECEIVED STREAM ###############')
+					// got remote video stream, now let's show it in a video tag
+					var video = document.querySelector('video');
+					try {
+						if ('srcObject' in video) {
+						video.srcObject = stream
+						} else {
+							video.src = window.URL.createObjectURL(stream) // for older browsers
+						}
+					} catch (error) {
+						console.log(error);
+					}
+
+					try {
+						video.play();
+						document.getElementById('pdfContainer').classList.add('hidden');
+						document.getElementById('page_num').classList.add('hidden');
+						document.getElementById('page_count').classList.add('hidden');
+					} catch (error) {
+						console.log(error);
+					}
+									
+				})
+
+				peer2.on('signal', data => {
+					console.log('SimplePeer sending ===>');
+					socket_software.send(`{
+                        "topic": "backchannel",
+						"data":${JSON.stringify(data)}}`);
+				})
+				peer2.on('error', (err) => {console.error(err)});
+				peer2.on('close', () => {
+					console.error("############ closed #########"); 
+					loaderIn('index?name=' + clientName);
+				});
+				peer2.on('connect', () => {console.error("########### CONNECT #############")});
+				peer2.on('data', () => {console.error("########### DATA #############")});
+			}
+
+            async function connect_software() {			
+				let keepAliveInterval = null;               
+
+                try {
+                    console.log('Software-connection socket connecting...');
+                    socket_software = await initWebsocket(
+                        'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
+                        socket_software, 
+                        30000, 
+                        -1
+                    );                      
+                } catch (error) {
+                    console.error(error);
+                    setTimeout(function() { connect_software(); }, 1000 * 30);
+                }
+
+                if(socket_software.readyState != 1) {
+                    console.error("Error: Connection not open");
+                    setTimeout(function() { connect_software(); }, 1000 * 5);
+                }
+				
+				// Event: Socket geöffnet
+                console.log("Software-connection socket connected.");
+
+                socket_software.send(`{
+					"topic": "init",
+					"type":"WebClient",
+					"name":"Alarmdisplay ${clientName}",
+					"info":"Praesentation",
+					${clientId ? '"id":"' + clientId + '",' : ''}
+					"actions":[
+						{"id":"0"},	
+						{"id":"4"}
+					]}`);
+
+					// siehe websockets.ts
+				
+				
+				lastKeepAlive = new Date();					
+				keepAliveInterval = setInterval(() => {
+					if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {						
+						loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+					}
+				}, keepAlive_intervall)
+
+				connected = true;
+
+				// Event: Daten empfangen
+				socket_software.onmessage = function(e) {
+					processMessage(e.data, socket_software);
+				};
+
+				// Event: Socket geschlossen
+				socket_software.onclose = function(e) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+					console.log('Software-connection socket is closed. Reconnect will be attempted in 1 second.', e.reason);
+					setTimeout(function() { connect_software(); }, 1000);
+					connected = false;
+				};
+
+				// Event: Scoket Fehler
+				socket_software.onerror = function(err) {
+					clearInterval(keepAliveInterval);
+					loaderIn(undefined, undefined, 'Verbindungsaufbau...');
+					console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+					socket_software.close();
+					connected = false;
+				};            
+
+			};
+
+			
+            // Hilfsfunktionen
+            function processMessage(data, socket) {
+				console.log('Software-connection socket message:', data);
+			
+				data           = JSON.parse(data);
+				const topic    = data.topic;
+				const message  = data.message;
+				
+				// Keep Alive
+				if(topic == 'ping') {
+					lastKeepAlive = new Date();	
+                    socket.send(JSON.stringify({topic: 'pong', message :message}));				
+					loaderOut();
+				}
+
+				// Client ID
+				if(topic == 'setId') {	
+                    console.log('CLIENT_ID is ' + message);
+                    clientId = message;		
+                    localStorage.setItem("clientId", message);
+                }
+	
+				// Alarm
+				if(topic == 'alarm') {			
+                    loaderIn('alarm?name=' + clientName + '&id=' + message);		
+                }
+
+
+				if(topic == 'action_0') {
+					location.reload(); 
+                }
+
+                if(topic == 'action_4') {
+                    let msg = JSON.parse(message);
+					switch (msg.action) {
+                        case 'play':
+                            document.getElementById("canvas-container").classList.remove('hidden');	
+                            break;
+                        case 'pause':
+                            document.getElementById("canvas-container").classList.add('hidden');
+                            break;
+                        case 'stop':
+                            loaderIn('index?name=' + clientName);
+                            break;
+                         case 'page-':
+                            onPrevPage();
+                            break;
+                        case 'page+':
+                            onNextPage();
+                            break;
+                    
+                    }
+                }
+
+				if(topic == 'action_15') {
+					peer2.signal(JSON.parse(message).data);
+                }
+                
+			}
+            
+            /**
+			 * Get page info from document, resize canvas accordingly, and render page.
+			 * @param num Page number.
+			 */
+			function renderPage(num) {
+				// Loader öffnen
+				loaderIn(undefined, undefined, 'Lade Seite ' + num);
+			 	pageRendering = true;
+			  	// Using promise to fetch the page
+			 	pdfDoc.getPage(num).then(function(page) {			  
+					var viewport = page.getViewport({ scale: 1 });
+				
+					scale = Math.min( canvCont.clientWidth/viewport.width, canvCont.clientHeight/viewport.height)
+					
+					console.log(scale, canvCont.clientHeight,  viewport.height, viewport.height * scale);
+					
+					viewport = page.getViewport({scale: scale});
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+
+					// Render PDF page into canvas context
+					var renderContext = {
+					canvasContext: ctx,
+					viewport: viewport
+					};
+					var renderTask = page.render(renderContext);
+
+					// Wait for rendering to finish
+					renderTask.promise.then(function() {
+						loaderOut();
+					pageRendering = false;
+					if (pageNumPending !== null) {
+						// New page rendering is pending
+						renderPage(pageNumPending);
+						pageNumPending = null;
+					}
+					});
+			  	});
+
+			  // Update page counters
+			  document.getElementById('page_num').textContent = num;
+			}
+
+			/**
+			 * If another page rendering in progress, waits until the rendering is
+			 * finised. Otherwise, executes rendering immediately.
+			 */
+			function queueRenderPage(num) {
+			  if (pageRendering) {
+				pageNumPending = num;
+			  } else {
+				renderPage(num);
+			  }
+			}
+
+			/**
+			 * Displays previous page.
+			 */
+			function onPrevPage() {
+			  if (pageNum <= 1) {
+				return;
+			  }
+			  pageNum--;
+			  queueRenderPage(pageNum);
+			}
+			//document.getElementById('prev').addEventListener('click', onPrevPage);
+
+			/**
+			 * Displays next page.
+			 */
+			function onNextPage() {
+			  if (pageNum >= pdfDoc.numPages) {
+				return;
+			  }
+			  pageNum++;
+			  queueRenderPage(pageNum);
+			}
+			//document.getElementById('next').addEventListener('click', onNextPage);
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+
+                load_clock();
+				if ( filename != 'screenshare') {
+                	load_pdf();
+				} else {
+					load_webrtc();
+				}
+
+                connect_software();                
+
+            };      
+            
+            
+        </script>
+
+       
+    </body>
+	
+</html>

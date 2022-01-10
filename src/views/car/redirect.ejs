@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar">
+
+                <button class="material-icons">arrow_forward</button>
+
+                <h1>FWmonitor - Weiterleitung</h1>      
+
+            </div>
+
+            <div class="content" style="display: flex; align-items: stretch;">
+
+                <div class="flexcontainer" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <div class="spinner_rotateplane"></div>
+                        <h2 class="var_text1">Weiterleiten...</h2>
+                        <h2 class="var_text2"></h2>
+                    </div>
+                </div>
+
+            </div>
+
+        <%- include('partials/foot') -%>
+
+        <script>
+
+            const target = $_GET['target'];
+
+            // Text
+            const text2 = document.querySelector(".var_text2");
+            text2.innerHTML = escapeHtml(target);
+
+            // Redirect
+            loaderIn(target, true);
+        </script>
+
+       
+    </body>
+	
+</html>
