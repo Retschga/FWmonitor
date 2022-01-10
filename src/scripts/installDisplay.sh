@@ -79,6 +79,9 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-infobars \
 --enable-webgl \
 --ignore-gpu-blacklist \
+--ignore-gpu-blocklist \
+--enable-gpu-rasterization \
+--enable-accelerated-video-decode \
 --start-fullscreen \
 --disable-translate \
 --disable-features=TranslateUI \
