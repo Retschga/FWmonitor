@@ -1,11 +1,12 @@
 'use strict';
 
-import ical from 'node-ical';
-import * as CalendarModel from '../models/calendar';
 import * as CalendarGroupsModel from '../models/calendarGroup';
-import globalEvents from '../utils/globalEvents';
-import logging from '../utils/logging';
+import * as CalendarModel from '../models/calendar';
+
 import config from '../utils/config';
+import globalEvents from '../utils/globalEvents';
+import ical from 'node-ical';
+import logging from '../utils/logging';
 
 const NAMESPACE = 'Calendar_Service';
 
@@ -177,14 +178,13 @@ class CalendarService {
         const now = new Date();
         const calendarGroups = await CalendarGroupsModel.model.find();
         const dbElements = await CalendarModel.model.find({ 'start>=': now.toISOString() });
-        if (dbElements.length < 1) return;
+        const icalElements = await this.get_ical(true, calendarGroups);
 
+        if (dbElements.length < 1 && (!icalElements || icalElements?.length < 1)) return;
         const calendarElements = this.createCalendarElementsFromRows(dbElements, calendarGroups);
 
-        const calendarElements2 = await this.get_ical(true, calendarGroups);
-        if (calendarElements2) {
-            for (let i = 0; i < calendarElements2.length; i++)
-                calendarElements.push(calendarElements2[i]);
+        if (icalElements) {
+            for (let i = 0; i < icalElements.length; i++) calendarElements.push(icalElements[i]);
             calendarElements.sort(this.sortByDate);
         }
 
