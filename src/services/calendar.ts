@@ -129,6 +129,27 @@ class CalendarService {
                     });
                 }
 
+                let remind = undefined;
+
+                Object.entries(entry).forEach(([key, value]) => {
+                    if (value.type != undefined && value.type == 'VALARM') {
+                        const trig = value.trigger;
+                        const days = parseInt(
+                            trig.substring(trig.indexOf('P') + 1, trig.indexOf('D')) || 0
+                        );
+                        let hours =
+                            parseInt(trig.substring(trig.indexOf('T') + 1, trig.indexOf('H'))) || 0;
+                        const minutes =
+                            parseInt(trig.substring(trig.indexOf('H') + 1, trig.indexOf('M'))) || 0;
+
+                        hours = hours + days * 24;
+
+                        remind = new Date(String(entry.start));
+                        remind.setHours(remind.getHours() - hours);
+                        remind.setMinutes(remind.getMinutes() - minutes);
+                    }
+                });
+
                 // Termin speichern
                 const calendarElement: CalendarElement = {
                     id: -1,
@@ -136,7 +157,7 @@ class CalendarService {
                     start: new Date(String(entry.start)),
                     end: new Date(String(entry.end)),
                     location: String(entry.location),
-                    remind: undefined,
+                    remind: remind,
                     group: group
                 };
 
@@ -249,10 +270,10 @@ class CalendarService {
         globalEvents.emit('calendar-change');
     }
 
-    public init() {
+    public async init() {
         let lastTime = new Date();
 
-        setInterval(async () => {
+        const check = async () => {
             logging.debug(NAMESPACE, 'Terminerinnerung CHECK...');
 
             const termine = await this.find_all_upcoming();
@@ -275,7 +296,12 @@ class CalendarService {
                 }
             }
             lastTime = date_now;
+        };
+
+        setInterval(async () => {
+            check();
         }, 60000);
+        check();
     }
 }
 
