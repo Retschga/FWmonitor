@@ -188,13 +188,14 @@ DIASHOW_DELAY=15000
 
 # Diashow Bilddatum anzeigen (true/false)
 #DIASHOW_SHOW_IMAGEDATE=false
+#DIASHOW_SHOW_FILEDATE=true
 
 # Zeige Verfügbarkeit im Standby
 SCREEN_VERF=false
 SCREEN_NVERF=true
 
 
-######## STANDBY Bildschirm / Google Kalender ########
+######## ICAL / Google Kalender ########
 
 # Kalender (ICAL Link) (https://support.google.com/calendar/answer/37648?hl=de)
 # Unter Einstellungen, Betreffenden Kalender auswählen, "Privatadresse im iCal-Format" kopieren
@@ -202,6 +203,19 @@ SCREEN_NVERF=true
 # eingetragene Terminerinnerungen werden durch den Bot/App versendet
 # leer = kein ICAL Kalender -> nur APP Kalender
 #ICAL_LINK=
+
+
+######## Karten ########
+
+# Layer 1
+MAP_LAYER1_URL=https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png
+MAP_LAYER1_ATTR=© openstreetmap
+#MAP_LAYER1_HILLSHADING_URL=https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png 
+#MAP_LAYER1_HILLSHADING_ATTR=© wmflabs
+
+# Layer 2
+MAP_LAYER2_URL=https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png
+MAP_LAYER2_ATTR=© OpenTopoMap
 
 
 ######## FWVV Anbindung ########

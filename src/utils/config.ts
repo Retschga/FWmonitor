@@ -162,6 +162,15 @@ const SCREEN = {
         : true
 };
 
+const MAP = {
+    layer1_url: process.env.MAP_LAYER1_URL,
+    layer1_attr: process.env.MAP_LAYER1_ATTR,
+    layer1_hillshade_url: process.env.MAP_LAYER1_HILLSHADING_URL,
+    layer1_hillshade_attr: process.env.MAP_LAYER1_HILLSHADING_ATTR,
+    layer2_url: process.env.MAP_LAYER2_URL,
+    layer2_attr: process.env.MAP_LAYER2_ATTR
+};
+
 const GEOCODE = {
     bing: process.env.GEOBING_KEY ? true : false,
     bing_apikey: process.env.GEOBING_KEY,
@@ -285,7 +294,8 @@ const config = {
     rateLimit: RATE_LIMITS,
     email: EMAIL,
     update: UPDATE,
-    timezone: 'de-DE'
+    timezone: 'de-DE',
+    map: MAP
 };
 
 export default config;

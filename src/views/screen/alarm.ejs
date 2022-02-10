@@ -339,7 +339,7 @@
                 let longitude = coordiantes.lng;
                 const pos = {lat:latitude, lng:longitude};
 
-                const map = createMap(pos, true);
+                const map = await createMap(pos, true);
                 //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
                 //add_hydranten(hydrantenCache, map);
                 //add_forstRettPkt(ret.map);

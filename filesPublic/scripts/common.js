@@ -524,6 +524,33 @@ function initWebsocket(url, existingWebsocket, timeoutMs, numberOfRetries) {
     return promise;
 }
 
+// -------- Karten --------
+let layer1_url = undefined;
+let layer1_attr = undefined;
+let layer1_hillshade_url = undefined;
+let layer1_hillshade_attr = undefined;
+let layer2_url = undefined;
+let layer2_attr = undefined;
+
+async function getTileLayerUrls() {
+    const url = '/api/v1/map/layerurls';
+
+    try {
+        const layerUrls = await fetch_get(url, true);
+        console.log('getTileLayerUrls', layerUrls);
+
+        layer1_url = layerUrls.layer1_url;
+        layer1_attr = layerUrls.layer1_attr;
+        layer1_hillshade_url = layerUrls.layer1_hillshade_url;
+        layer1_hillshade_attr = layerUrls.layer1_hillshade_attr;
+        layer2_url = layerUrls.layer2_url;
+        layer2_attr = layerUrls.layer2_attr;
+    } catch (error) {
+        console.error('getTileLayerUrls', error);
+        if (error.show) alert('Aktuelle Layer-Tile-Urls konnten nicht geladen werden.');
+    }
+}
+
 // Icons Karte
 var styleCache = {
     undefined: new ol.style.Style({
@@ -691,7 +718,7 @@ function add_circle(lat, lng, map) {
     map.addLayer(layer);
 }
 
-// Pasitionsmarker
+// Positionsmarker
 function add_posmarker(lat, lng, map) {
     var posMarker = new ol.Feature({
         geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
@@ -769,14 +796,18 @@ let map_moved = false;
 let map_center = () => {};
 let map_position = null;
 
-function createMap(dest, center = false, preload = false, hideControls = false) {
+async function createMap(dest, center = false, preload = false, hideControls = false) {
+    await getTileLayerUrls();
+
     // Karten Controls
     let control_attribution = new ol.control.Attribution({
         collapsible: false
     });
+
     let control_fullscreen = new ol.control.FullScreen({
         source: 'mapid'
     });
+
     let btnCenter = /*@__PURE__*/ (function (Control) {
         function btnCenter(opt_options) {
             var options = opt_options || {};
@@ -811,6 +842,7 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
 
         return btnCenter;
     })(ol.control.Control);
+
     let btnSwitchMap = /*@__PURE__*/ (function (Control) {
         function btnSwitchMap(opt_options) {
             var options = opt_options || {};
@@ -836,7 +868,7 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
         btnSwitchMap.prototype.constructor = btnSwitchMap;
 
         btnSwitchMap.prototype.handleCenter = function handleRotateNorth() {
-            tileLayer_OpenTopoMap.setVisible(!tileLayer_OpenTopoMap.getVisible());
+            tileLayer2_main.setVisible(!tileLayer2_main.getVisible());
         };
 
         return btnSwitchMap;
@@ -850,33 +882,41 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
 
     // Kartenlayer
     let layers = [];
-    let tileLayer_OSM = new ol.layer.Tile({
-        source: new ol.source.OSM({
-            url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png',
-            preload: preload ? 18 : 0,
-            crossOrigin: null
-        })
-    });
-    let tileLayer_Hillshade = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-            url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
-            attributions: ['© wmflabs'],
-            preload: preload ? 16 : 0,
-            maxZoom: 16,
-            crossOrigin: null
-        })
-    });
-    let tileLayer_OpenTopoMap = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-            url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
-            attributions: ['© OpenTopoMap'],
-            crossOrigin: null
-        }),
-        preload: preload ? 17 : 0
-    });
-    layers.push(tileLayer_OSM);
-    layers.push(tileLayer_Hillshade);
-    layers.push(tileLayer_OpenTopoMap);
+    if (layer1_url) {
+        let tileLayer1_main = new ol.layer.Tile({
+            source: new ol.source.OSM({
+                url: layer1_url,
+                attributions: [layer1_attr],
+                preload: preload ? 18 : 0,
+                crossOrigin: null
+            })
+        });
+        layers.push(tileLayer1_main);
+    }
+    if (layer1_hillshade_url) {
+        let tileLayer1_hillshade = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: layer1_hillshade_url,
+                attributions: [layer1_hillshade_attr],
+                preload: preload ? 16 : 0,
+                maxZoom: 16,
+                crossOrigin: null
+            })
+        });
+        layers.push(tileLayer1_hillshade);
+    }
+    let tileLayer2_main;
+    if (layer2_url) {
+        tileLayer2_main = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: layer2_url,
+                attributions: [layer2_attr],
+                crossOrigin: null
+            }),
+            preload: preload ? 17 : 0
+        });
+        layers.push(tileLayer2_main);
+    }
 
     // Karte erstellen
     var map = new ol.Map({
@@ -890,7 +930,7 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
                       control_attribution,
                       control_fullscreen,
                       new btnCenter(),
-                      new btnSwitchMap()
+                      layer2_url ? new btnSwitchMap() : undefined
                   ]),
         view: view
     });
@@ -917,7 +957,7 @@ function createMap(dest, center = false, preload = false, hideControls = false) 
 
     setTimeout(function () {
         map_moved = false;
-        tileLayer_OpenTopoMap.setVisible(false);
+        if (tileLayer2_main) tileLayer2_main.setVisible(false);
     }, 1500);
 
     add_markerPopup(map);

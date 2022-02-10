@@ -174,7 +174,7 @@
                 }
 
                 // Karte erstellen
-                const map = createMap({lat:map_position[1], lng: map_position[0]}, true, preloadMap);
+                const map = await createMap({lat:map_position[1], lng: map_position[0]}, true, preloadMap);
                 try {
                     const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', map_position[1]).replace(':lng', map_position[0]), true);
                     add_hydranten(hydrantenCache, map);

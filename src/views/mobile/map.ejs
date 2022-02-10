@@ -49,7 +49,7 @@
 
                     const pos = { lat: latitude, lng: longitude };
 
-                    const map = createMap(pos, true);
+                    const map = await createMap(pos, true);
 
                     try {
                         const hydrantenCache = await fetch_get(

@@ -15,6 +15,7 @@ import express from 'express';
 import groupRoutes from './api/group';
 import hydrantRoutes from './api/hydrant';
 import logging from '../utils/logging';
+import mapRoutes from './api/map';
 import notificationactionRoutes from './api/notificationaction';
 import praesentationRoutes from './api/praesentation';
 import rateLimit from 'express-rate-limit';
@@ -107,6 +108,7 @@ class RouterApi {
             this.router.use('/hydrant', apiLimiter, auth_api(), hydrantRoutes);
             this.router.use('/praesentation', apiLimiter, auth_api(), praesentationRoutes);
             this.router.use('/contact', apiLimiter, auth_api(), contactRoutes);
+            this.router.use('/map', apiLimiter, auth_api(), mapRoutes);
         } else {
             // HTTP Bildschirm
             this.router.use('/alarm', alarmRoutes);
@@ -115,6 +117,7 @@ class RouterApi {
             this.router.use('/praesentation', praesentationRoutes);
             this.router.use('/user', userRoutes);
             this.router.use('/hydrant', apiLimiter, hydrantRoutes);
+            this.router.use('/map', mapRoutes);
         }
 
         /** Error handling */
