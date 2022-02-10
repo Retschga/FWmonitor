@@ -172,10 +172,14 @@ sed -i ‘s/”exit_type”: “Crashed”/”exit_type”: “Normal”/’ /ho
 --disable-infobars \
 --enable-webgl \
 --ignore-gpu-blacklist \
+--ignore-gpu-blocklist \
+--enable-gpu-rasterization \
+--enable-accelerated-video-decode \
 --start-fullscreen \
 --disable-translate \
 --disable-features=TranslateUI \
 --fast \
+
 --fast-start \
 --app=https://${1}/car/?name=${2}&auto=true
 EOF2
