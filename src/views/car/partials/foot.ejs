@@ -478,7 +478,9 @@
     }
 
     function dispAktiv() {
-        ws_hardware.send('dispON');				
+        try {
+            ws_hardware.send('dispON');		
+        } catch (error) {}        		
     }
 
     function restart() {

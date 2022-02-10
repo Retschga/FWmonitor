@@ -1,11 +1,12 @@
 'use strict';
 
-import logging from '../utils/logging';
 import * as GroupModel from '../models/group';
 
-const NAMESPACE = 'Group_Service';
+import logging from '../utils/logging';
 
-class GroupService {
+const NAMESPACE = 'Userroup_Service';
+
+class UserGroupService {
     public async find_by_id(id: number): Promise<GroupModel.GroupRow[] | undefined> {
         const response = await GroupModel.model.find({ id: id });
         if (response.length < 1) return;
@@ -31,4 +32,4 @@ class GroupService {
     }
 }
 
-export default new GroupService();
+export default new UserGroupService();

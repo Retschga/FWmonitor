@@ -7,7 +7,6 @@ import { AlarmRow } from '../models/alarm';
 import AlarmService from '../services/alarm';
 import { instance as DeviceServiceInstance } from '../services/device';
 import { GroupRow } from '../models/group';
-import GroupService from '../services/group';
 import TelegramBot from './bot';
 import { UserRow } from '../models/user';
 import config from '../utils/config';
@@ -15,6 +14,7 @@ import fs from 'fs';
 import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import userService from '../services/user';
+import usergroupService from '../services/userGroup';
 
 const NAMESPACE = 'TELEGRAM_BOT';
 
@@ -51,7 +51,7 @@ export default class BotAlarm {
                 throw new Error('Error: No User found');
             }
 
-            const groups = await GroupService.find_all();
+            const groups = await usergroupService.find_all();
             if (!groups || groups.length < 1) {
                 throw new Error('Error: No Groups found');
             }

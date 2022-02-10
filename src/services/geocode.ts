@@ -121,8 +121,6 @@ class GeocodeService {
     }
 
     private async geocode_nominatim(alarmFields: AlarmFields) {
-        //nominatim.openstreetmap.org/?useragent=FWmonitor&referer=https%3A%2F%2Fgithub.com%2FRetschga%2FFWmonitor&format=json&q=DE%2C%20Bayr%C4%B1schzell%2C%20Tannerhofstra%C3%9Fe%2032
-
         const url = encodeURI(
             'https://nominatim.openstreetmap.org/search' +
                 '?useragent=FWmonitor' +

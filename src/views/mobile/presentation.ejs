@@ -231,9 +231,9 @@
                     peer1 = new SimplePeer({ 
                         initiator: true, 
                         stream: stream,
-                        config: {
-                            iceServers: []
-                        }
+                        //config: {
+                        //    iceServers: []
+                        //}
                         })
                     peer1.on('signal', data => {
                         send_webrtcData(data);

@@ -121,7 +121,9 @@
                 }
 
                 // Alarm
-                if(topic == 'alarm') {
+                if(topic == 'alarm') {                                        
+                    dispAktiv();
+
                     // GPS Statistik für Einsatz zurücksetzen
                     localStorage.setItem('gps.distSum', GPS_dist_sum);
                     localStorage.setItem('gps.altMax', GPS_alt_max);

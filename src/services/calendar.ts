@@ -94,6 +94,12 @@ class CalendarService {
         return calendarElements;
     }
 
+    /**
+     * Lädt den ICAL Kalender herunter
+     * @param onlyFuture gib nur zukünftige Einträge zurück
+     * @param calendarGroups Kalendergruppen
+     * @returns CalendarElement Array oder undefined
+     */
     private async get_ical(
         onlyFuture: boolean = true,
         calendarGroups: CalendarGroupsModel.CalendarGroupRow[]
@@ -141,8 +147,9 @@ class CalendarService {
                             parseInt(trig.substring(trig.indexOf('T') + 1, trig.indexOf('H'))) || 0;
                         const minutes =
                             parseInt(trig.substring(trig.indexOf('H') + 1, trig.indexOf('M'))) || 0;
-
+                        //console.log(`d ${days}, h ${hours}, m ${minutes}`);
                         hours = hours + days * 24;
+                        //console.log(` --> h ${hours}, m ${minutes}`);
 
                         remind = new Date(String(entry.start));
                         remind.setHours(remind.getHours() - hours);
@@ -170,6 +177,11 @@ class CalendarService {
         }
     }
 
+    /**
+     * Gibt einen Kalendereintrag zurück
+     * @param id Eintrag ID
+     * @returns Kelenderelement
+     */
     public async find_id(id: number): Promise<CalendarElement[]> {
         const calendarGroups = await CalendarGroupsModel.model.find();
         const dbElements = await CalendarModel.model.find({ id: id });
@@ -179,6 +191,10 @@ class CalendarService {
         return calendarElements;
     }
 
+    /**
+     * Gibt alle Kalendereinträge zurück (ICAL + Datenbank)
+     * @returns Kalenderelement Array
+     */
     public async find_all(): Promise<CalendarElement[]> {
         const calendarGroups = await CalendarGroupsModel.model.find();
         const dbElements = await CalendarModel.model.find({}, undefined, undefined);
@@ -195,6 +211,10 @@ class CalendarService {
         return calendarElements;
     }
 
+    /**
+     * Gibt alle zukünftigen Kalendereinträge zurück (ICAL + Datenbank)
+     * @returns Kalenderelement Array
+     */
     public async find_all_upcoming(): Promise<CalendarElement[] | undefined> {
         const now = new Date();
         const calendarGroups = await CalendarGroupsModel.model.find();
@@ -212,6 +232,9 @@ class CalendarService {
         return calendarElements;
     }
 
+    /**
+     * Erstellte einen neuen Kalendereintrag
+     */
     public async create(
         summary: string,
         start: Date,
@@ -233,6 +256,9 @@ class CalendarService {
         globalEvents.emit('calendar-change');
     }
 
+    /**
+     * Löscht einen Kalendereintrag
+     */
     public async delete(id: number) {
         logging.debug(NAMESPACE, 'delete', id);
 
@@ -249,6 +275,9 @@ class CalendarService {
         globalEvents.emit('calendar-change');
     }
 
+    /**
+     * Ändert einen Kalendereintrag
+     */
     public async update(id: number, summary: string, start: Date, remind: Date, group: string) {
         logging.debug(NAMESPACE, 'update', { id, summary, start, remind, group });
 
@@ -270,6 +299,9 @@ class CalendarService {
         globalEvents.emit('calendar-change');
     }
 
+    /**
+     * Terminüberwachung aktivieren
+     */
     public async init() {
         let lastTime = new Date();
 
@@ -288,6 +320,13 @@ class CalendarService {
                     // Erinnerungs-Datum zwischen letzter Überprüfung und jetzt
 
                     const timeRemind = new Date(termin.remind).getTime();
+
+                    /*console.log(
+                        new Date(timeRemind).toLocaleDateString() +
+                            ' ' +
+                            new Date(timeRemind).toTimeString(),
+                        termin
+                    );*/
 
                     if (lastTime.getTime() < timeRemind && timeRemind < date_now.getTime()) {
                         logging.debug(NAMESPACE, 'Terminerinnerung: ', termin);

@@ -4,9 +4,9 @@ import { AlarmRow } from '../models/alarm';
 import AlarmService from '../services/alarm';
 import config from '../utils/config';
 import globalEvents from '../utils/globalEvents';
-import groupService from './group';
 import logging from '../utils/logging';
 import userService from './user';
+import usergroupService from './userGroup';
 import webpush from 'web-push';
 
 const NAMESPACE = 'Webpush_Service';
@@ -82,7 +82,7 @@ class WebpushService {
                 logging.debug(NAMESPACE, 'Sende Alarm');
 
                 const users = await userService.find_all_approved();
-                const groups = await groupService.find_all();
+                const groups = await usergroupService.find_all();
 
                 if (!users) return;
 
