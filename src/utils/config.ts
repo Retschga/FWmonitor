@@ -156,7 +156,10 @@ const SCREEN = {
     screen_time_diashow: Number(process.env.DIASHOW_DELAY) || 15000,
     screen_imagedate_diashow: process.env.DIASHOW_SHOW_IMAGEDATE
         ? /true/i.test(process.env.DIASHOW_SHOW_IMAGEDATE)
-        : false
+        : false,
+    screen_filedate_diashow: process.env.DIASHOW_SHOW_FILEDATE
+        ? !/false/i.test(process.env.DIASHOW_SHOW_FILEDATE)
+        : true
 };
 
 const GEOCODE = {
@@ -254,7 +257,7 @@ const LOG = {
 };
 
 const UPDATE = {
-    updateCheck: process.env.UPDATE_CHECK ? /false/i.test(process.env.UPDATE_CHECK) : true
+    updateCheck: process.env.UPDATE_CHECK ? !/false/i.test(process.env.UPDATE_CHECK) : true
     //autoupdate: false
 };
 

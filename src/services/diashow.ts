@@ -13,6 +13,7 @@ import moveFile from 'move-file';
 const NAMESPACE = 'Diashow_Service';
 
 class DiashowService {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private exifCache: any = {};
 
     /**
@@ -58,8 +59,8 @@ class DiashowService {
                     );
                     if (exifInfo != undefined && exifInfo['DateTimeOriginal'] != undefined) {
                         files[i].time = new Date(exifInfo['DateTimeOriginal']).getTime();
-                    } else {
-                        // files[i].time = 0;
+                    } else if (!config.screen.screen_filedate_diashow) {
+                        files[i].time = 0;
                     }
                     this.exifCache[files[i].name] = files[i].time;
                 }
@@ -183,6 +184,9 @@ class DiashowService {
         return true;
     }
 
+    /**
+     * Verarbeitet ein neues Bild (Auflösung, Thumbnail, ...)
+     */
     public async process_new(path: string, filename: string) {
         try {
             await moveFile(path + '/' + filename, config.folders.diashow + '/' + filename);
