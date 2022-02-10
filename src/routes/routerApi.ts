@@ -12,7 +12,6 @@ import deviceRoutes from './api/device';
 import diashowRoutes from './api/diashow';
 import errorMiddleware from '../middleware/error';
 import express from 'express';
-import groupRoutes from './api/group';
 import hydrantRoutes from './api/hydrant';
 import logging from '../utils/logging';
 import mapRoutes from './api/map';
@@ -21,6 +20,7 @@ import praesentationRoutes from './api/praesentation';
 import rateLimit from 'express-rate-limit';
 import statisticRoutes from './api/statistic';
 import userRoutes from './api/user';
+import usergroupRoutes from './api/userGroup';
 
 const loginAccountLimiter = rateLimit({
     windowMs: config.rateLimit.api_login_time * 60 * 1000,
@@ -102,7 +102,7 @@ class RouterApi {
             this.router.use('/user', apiLimiter, auth_api(), userRoutes);
             this.router.use('/statistic', apiLimiter, auth_api(), statisticRoutes);
             this.router.use('/alarm', apiLimiter, auth_api(), alarmRoutes);
-            this.router.use('/group', apiLimiter, auth_api(), groupRoutes);
+            this.router.use('/group', apiLimiter, auth_api(), usergroupRoutes);
             this.router.use('/diashow', diashowLimiter, auth_api(), diashowRoutes);
             this.router.use('/device', apiLimiter, auth_api(), deviceRoutes);
             this.router.use('/hydrant', apiLimiter, auth_api(), hydrantRoutes);

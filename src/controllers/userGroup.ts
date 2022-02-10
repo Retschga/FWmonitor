@@ -8,9 +8,9 @@ import { checkValidation } from './controller';
 import logging from '../utils/logging';
 import usergroupService from '../services/userGroup';
 
-const NAMESPACE = 'GroupController';
+const NAMESPACE = 'UsergroupController';
 
-class GroupController {
+class UsergroupController {
     /**
      * Findet eine Gruppe anhand der ID
      */
@@ -60,4 +60,4 @@ class GroupController {
     }
 }
 
-export default new GroupController();
+export default new UsergroupController();

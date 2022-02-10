@@ -147,7 +147,7 @@
                         target.append(clone);
 
                         clone.addEventListener("click", () => {
-                            loaderIn('user?id=' + user.id);
+                            loaderIn('user_edit?id=' + user.id);
                             localStorage.setItem('user_list-scrollid', user.id);
                         });
                     }
@@ -207,7 +207,7 @@
                         target.append(clone);
 
                         clone.addEventListener("click", () => {
-                            loaderIn('user?id=' + element.id);
+                            loaderIn('user_edit?id=' + element.id);
                             localStorage.setItem('user_list-scrollid', element.id);
                         });
                     }

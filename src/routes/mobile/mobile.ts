@@ -1,8 +1,9 @@
 'use strict';
 
-import express from 'express';
 import { Request, Response } from 'express';
+
 import config from '../../utils/config';
+import express from 'express';
 
 const router = express.Router();
 
@@ -35,8 +36,8 @@ router.get('/status', (req: Request, res: Response) => {
     res.render('mobile/status', generateParams());
 });
 
-router.get('/status_plan', (req: Request, res: Response) => {
-    res.render('mobile/status_plan', generateParams());
+router.get('/status_plan_edit', (req: Request, res: Response) => {
+    res.render('mobile/status_plan_edit', generateParams());
 });
 
 router.get('/status_plan_list', (req: Request, res: Response) => {
@@ -63,20 +64,20 @@ router.get('/map', (req: Request, res: Response) => {
     res.render('mobile/map', generateParams());
 });
 
-router.get('/alarmsettings', (req: Request, res: Response) => {
-    res.render('mobile/alarmsettings', generateParams());
+router.get('/alarm_settings', (req: Request, res: Response) => {
+    res.render('mobile/alarm_settings', generateParams());
 });
 
-router.get('/presentation', (req: Request, res: Response) => {
-    res.render('mobile/presentation', generateParams());
+router.get('/praesentation', (req: Request, res: Response) => {
+    res.render('mobile/praesentation', generateParams());
 });
 
-router.get('/picturesdiashow', (req: Request, res: Response) => {
-    res.render('mobile/picturesdiashow', generateParams());
+router.get('/picture_edit', (req: Request, res: Response) => {
+    res.render('mobile/picture_edit', generateParams());
 });
 
-router.get('/settings_user', (req: Request, res: Response) => {
-    res.render('mobile/settings_user', generateParams());
+router.get('/settings_app', (req: Request, res: Response) => {
+    res.render('mobile/settings_app', generateParams());
 });
 
 router.get('/settings_alarm', (req: Request, res: Response) => {
@@ -87,8 +88,8 @@ router.get('/user_list', (req: Request, res: Response) => {
     res.render('mobile/user_list', generateParams());
 });
 
-router.get('/user', (req: Request, res: Response) => {
-    res.render('mobile/user', generateParams());
+router.get('/user_edit', (req: Request, res: Response) => {
+    res.render('mobile/user_edit', generateParams());
 });
 
 router.get('/car_list', (req: Request, res: Response) => {
@@ -125,8 +126,8 @@ router.get('/offline', (req: Request, res: Response) => {
 router.get('/picture_upload', (req: Request, res: Response) => {
     res.render('mobile/picture_upload', generateParams());
 });
-router.get('/phonebook', (req: Request, res: Response) => {
-    res.render('mobile/phonebook', generateParams());
+router.get('/contacts', (req: Request, res: Response) => {
+    res.render('mobile/contacts', generateParams());
 });
 router.get('/einsatzzeit', (req: Request, res: Response) => {
     res.render('mobile/einsatzzeit', generateParams());

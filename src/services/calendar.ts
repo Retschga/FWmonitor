@@ -137,6 +137,7 @@ class CalendarService {
 
                 let remind = undefined;
 
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 Object.entries(entry).forEach(([key, value]) => {
                     if (value.type != undefined && value.type == 'VALARM') {
                         const trig = value.trigger;
