@@ -1,12 +1,13 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { checkValidation } from './controller';
-import userService from '../services/user';
-import { calendarService } from '../services/calendar';
+
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { calendarService } from '../services/calendar';
+import { checkValidation } from './controller';
 import logging from '../utils/logging';
+import userService from '../services/user';
 
 const NAMESPACE = 'Calerndar_Controller';
 
@@ -109,8 +110,13 @@ class CalendarController {
         checkValidation(req);
 
         try {
-            const eventDate = new Date();
+            let eventDate = new Date();
             eventDate.setTime(eventDate.getTime() + 60 * 60 * 1000);
+
+            if (req.body.year && req.body.month && req.body.day) {
+                eventDate = new Date(req.body.year, req.body.month, req.body.day);
+            }
+
             await calendarService.create('Neuer Termin', eventDate, eventDate, '');
         } catch (error) {
             throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Entry creation error');

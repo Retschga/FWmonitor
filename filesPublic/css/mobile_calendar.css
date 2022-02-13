@@ -1,3 +1,5 @@
+/* Kalender Liste */
+
 .calendar_list {
     padding: 0.5em;
 }
@@ -9,4 +11,98 @@
 
 .stripes {
     background: repeating-linear-gradient(45deg, #f7f8ff, #f7f8ff 10px, #cfcfcf 10px, #cfcfcf 20px);
+}
+
+/* Menü */
+.moreMenu {
+    position: absolute;
+    right: 10px;
+    top: 3.1rem;
+    clear:both;
+    border-radius: 1rem;
+    padding: .4em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: column;
+    background-color: var(--bg_navbar);
+    overflow: hidden;
+    text-align: center;
+    transition: height .4s ease;
+    z-index: 100;
+}
+
+.moreMenu button {
+    padding-bottom: .4em;
+}
+
+.moreMenu :last-child {
+    padding-bottom: inherit;
+}
+
+.moreMenu .spacer {
+    /*border-bottom: 1px solid var(--color_border);
+    min-height: 1px;
+    height: 1px;
+    min-width: 1.65em;*/
+    margin-bottom: .4em;
+}
+
+/* Monatskalender */
+
+.calendar {
+    border: 1px solid #efefef;
+    padding: .5rem 0 .5rem 0;
+    width: 100%;
+}
+
+.days-header,
+.days {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.days-header > span,
+.days > span {
+    position: relative;
+    width: 14%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 100%;
+    bottom: 8px;
+}
+.dots .dot {
+    display: inline-flex;
+    height: 4px;
+    width: 4px;
+    margin: 0 2px;
+    border-radius: 4px;
+    background-color: red;
+}
+.days > span {
+    height: 4rem;
+    border-radius: 8px;
+}
+.days > span:hover {
+    background-color: #f7fcff;
+    cursor: pointer;
+}
+.days-header {
+    height: 30px;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.days_grey {
+    color: grey;
 }

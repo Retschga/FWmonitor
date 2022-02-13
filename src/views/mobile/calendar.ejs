@@ -1,195 +1,433 @@
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-        <link rel="stylesheet" href="/css/mobile_calendar.css">       
-
-    </head>	
+        <link rel="stylesheet" href="/css/mobile_calendar.css" />
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>Kalender</h1>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <div class="flex_grow"></div>
 
-                <h1>Kalender</h1>  
+            <button class="material-icons" onclick="changeMoreMenuVisibility();">more_vert</button>
 
-                <div class="flex_grow"></div>
+            <div class="moreMenu hidden">
+                <button
+                    class="material-icons visibilityButton"
+                    onclick="changeAllVisibility(); changeMoreMenuVisibility();"
+                >
+                    visibility
+                </button>
 
-                <button class="material-icons visibilityButton" onclick="changeAllVisibility();">visibility</button>
+                <div class="spacer" style="width: 0.5em; flex-shrink: 1"></div>
 
-                <div class="spacer" style="width: .5em; flex-shrink: 1;"></div>
+                <button
+                    class="material-icons"
+                    onclick="changeMoreMenuVisibility(); loaderIn('calendar_history', true);"
+                >
+                    history
+                </button>
+                <button
+                    class="material-icons btn_switchMonthCalendar"
+                    onclick="monthCalendar_show(); changeMoreMenuVisibility();"
+                >
+                    calendar_month
+                </button>
+                <button
+                    class="material-icons btn_switchListCalendar"
+                    onclick="listCalendar_showFull(); changeMoreMenuVisibility();"
+                >
+                    list
+                </button>
 
-                <button class="material-icons" onclick="loaderIn('calendar_history', true);">history</button>   
+                <div class="spacer" style="width: 0.5em; flex-shrink: 1"></div>
 
-                <div class="spacer" style="width: .5em; flex-shrink: 1;"></div>
-
-                <button class="material-icons btn_add hidden" onclick="create_entry();">add_circle_outline</button>   
-
+                <button
+                    class="material-icons btn_add hidden"
+                    onclick="create_entry(); changeMoreMenuVisibility();"
+                >
+                    add_circle_outline
+                </button>
             </div>
+        </div>
 
-            <div class="content">
+        <div class="navbar subnavbar hidden" id="monthCalendar_nav_day">
+            <button class="material-icons" onclick="monthCalendar_show();">today</button>
 
-                <div class="calendar_list">
+            <h2 class="var_date">##.##.####</h2>
+            <div class="flex_grow"></div>
 
-                    <template id="template-calendarelement">
+            <button class="material-icons" onclick="monthCalendar_show();">chevron_left</button>
+        </div>
 
-                        <div class="calendar_element">
+        <div class="navbar subnavbar hidden" id="monthCalendar_nav_month">
+            <button class="material-icons" onclick="monthCalendar_prevMonth();">
+                chevron_left
+            </button>
+            <div class="flex_grow"></div>
+            <h2 class="var_monthname">######## ####</h2>
+            <div class="flex_grow"></div>
+            <button class="material-icons" onclick="monthCalendar_nextMonth();">
+                chevron_right
+            </button>
+        </div>
 
-                            <div style="display: flex; margin-bottom: 0.5em;">                            
-                                <div style="flex-grow: 1;">
-                                    <span class="var_text">
-                                        Text
-                                    </span>
-                                </div>
-                                <div style="text-align: right;">
-                                    <span class="var_date">##.##.</span>
-                                    <span class="var_time">##:##&nbsp;</span>
-                                </div>
-                                <div class="var_emoji" style="padding-left: 0.5em;">
-                                    <span>?</span>
-                                </div>
-                            </div>
-                            <div class="var_groups">
-                                <span class="badge green">#####</span>
-                                <span class="badge blue">#####</span>
-                            </div>      
-        
-                        </div>
-
-                    </template>
-
-
+        <div class="content">
+            <div class="calendar hidden" id="monthCalendar">
+                <div class="days-header">
+                    <span>Mo</span>
+                    <span>Di</span>
+                    <span>Mi</span>
+                    <span>Do</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                    <span>So</span>
                 </div>
-
-
+                <div class="days" id="monthCalendar_days">laden...</div>
             </div>
 
+            <template id="template-calendarelement">
+                <div class="calendar_element">
+                    <div style="display: flex; margin-bottom: 0.5em">
+                        <div style="flex-grow: 1">
+                            <span class="var_text"> Text </span>
+                        </div>
+                        <div style="text-align: right">
+                            <span class="var_date">##.##.</span>
+                            <span class="var_time">##:##&nbsp;</span>
+                        </div>
+                        <div class="var_emoji" style="padding-left: 0.5em">
+                            <span>?</span>
+                        </div>
+                    </div>
+                    <div class="var_groups">
+                        <span class="badge green">#####</span>
+                        <span class="badge blue">#####</span>
+                    </div>
+                </div>
+            </template>
+            <div class="calendar_list hidden"></div>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
+            let calendarElements = undefined;
+            let user_groups = undefined;
+            let selectedDate = undefined;
+            const months = [
+                'Januar',
+                'Februar',
+                'März',
+                'April',
+                'Mai',
+                'Juni',
+                'Juli',
+                'August',
+                'September',
+                'Oktober',
+                'November',
+                'Dezember'
+            ];
+            function daysInMonth(month, year) {
+                return new Date(year, month + 1, 0).getDate();
+            }
+
+            let showMoreMenu = false;
+            function changeMoreMenuVisibility() {
+                if (showMoreMenu) {
+                    showMoreMenu = false;
+                    document.querySelector('.moreMenu').classList.add('hidden');
+                } else {
+                    showMoreMenu = true;
+                    document.querySelector('.moreMenu').classList.remove('hidden');
+                }
+            }
 
             // Laden
-            async function load_calendar() {     
+            async function load_calendar() {
                 try {
-                    const calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
+                    calendarElements = await fetch_get('/api/v1/calendar/upcoming', true);
                     console.log('calendarUpcoming', calendarElements);
 
-                    const user = await fetch_get(url_user_calendar_groups.replace(':id', user_id), true);
+                    const user = await fetch_get(
+                        url_user_calendar_groups.replace(':id', user_id),
+                        true
+                    );
                     console.log('user', user);
-
-                    const target = document.querySelector(".calendar_list");
-
-                    const akt_status = localStorage.getItem('calendar_visibility_all');
-
-                    for(let i = 0; i < calendarElements.length; i++) {
-                        const element = calendarElements[i];
-                
-                        const date = new Date(element.start);   
-                        const {text, icon} = parseKalenderSummary(element.summary);
-                        let badge = "";
-                        let includesUsergroup = false;
-                        for(let j = 0; j < element.group.length; j++) {
-                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
-                            if(user.groups.includes(element.group[j].id)) includesUsergroup = true;
-                        }
-
-                        const template   = document.querySelector('#template-calendarelement');                
-                        const var_text   = template.content.querySelector(".var_text");
-                        const var_date   = template.content.querySelector(".var_date");
-                        const var_time   = template.content.querySelector(".var_time");
-                        const var_groups = template.content.querySelector(".var_groups");
-                        const var_emoji  = template.content.querySelector(".var_emoji");
-
-                        var_text.innerHTML   = text;
-                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
-                        var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
-                        var_groups.innerHTML = badge;
-                        var_emoji.innerHTML  = icon;
-                        
-                        const clone = document.importNode(template.content.firstElementChild, true);
-                        if(includesUsergroup) {
-                            clone.classList.remove('stripes');
-                        } else {
-                            clone.classList.add('stripes'); 
-                            if(akt_status == 'false') {
-                                clone.classList.add('hidden'); 
-                            }                       
-                        }
-
-                        target.appendChild(clone);
-
-                        if(element.id != -1 && (user_calendar_min || user_calendar_full)) {
-                            clone.addEventListener("click", () => {
-                                loaderIn('calendar_entry?id=' + element.id, true);
-                            });
-                        }
-                    }
-
+                    user_groups = user.groups;
                 } catch (error) {
                     console.error('load_calendar', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                } 
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
             }
 
             // Termin erstellen
             async function create_entry() {
                 loaderIn();
-                try {                 
+                try {
+                    let params = {};
 
-                    const response = await fetch_post('/api/v1/calendar/new', {});
-                    console.log('create_entry', response);   
-                    location.reload();
-                    
+                    if (selectedDate) {
+                        params = {
+                            year: selectedDate.getFullYear(),
+                            month: selectedDate.getMonth(),
+                            day: selectedDate.getDate()
+                        };
+                    }
+
+                    const response = await fetch_post('/api/v1/calendar/new', params);
+                    console.log('create_entry', response);
+
+                    //location.reload();
+                    await load_calendar();
+                    monthCalendar_build();
+                    listCalendar_build();
                 } catch (error) {
                     console.error('create_entry', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
-                }       
+                }
                 loaderOut();
             }
 
+            let visibility_akt_status = localStorage.getItem('calendar_visibility_all');
             function changeAllVisibility() {
-                console.log('change visibility all')
-                const akt_status = localStorage.getItem('calendar_visibility_all');
-                if(akt_status == 'true') {
+                console.log('change visibility all from ' + visibility_akt_status);
+                if (visibility_akt_status == 'true') {
                     document.querySelector('.visibilityButton').innerHTML = 'visibility_off';
+                    visibility_akt_status = 'false';
                     localStorage.setItem('calendar_visibility_all', 'false');
                     const elements = document.querySelectorAll('.stripes');
-                    for(let i = 0; i < elements.length; i++) {
+                    for (let i = 0; i < elements.length; i++) {
                         elements[i].classList.add('hidden');
                     }
                 } else {
                     document.querySelector('.visibilityButton').innerHTML = 'visibility';
+                    visibility_akt_status = 'true';
                     localStorage.setItem('calendar_visibility_all', 'true');
                     const elements = document.querySelectorAll('.stripes');
-                    for(let i = 0; i < elements.length; i++) {
+                    for (let i = 0; i < elements.length; i++) {
                         elements[i].classList.remove('hidden');
                     }
-                }     
+                }
+                monthCalendar_build();
+                listCalendar_build();
+                console.log('to ' + visibility_akt_status + ' --> done')
+            }
+
+            // Monatskalender erstellen
+            let monthCalendar_date = new Date();
+            monthCalendar_date = new Date(
+                monthCalendar_date.getFullYear(),
+                monthCalendar_date.getMonth(),
+                1
+            );
+
+            function monthCalendar_build() {
+                document.querySelector('.var_monthname').innerHTML =
+                    months[monthCalendar_date.getMonth()] + ' ' + monthCalendar_date.getFullYear();
+                const m = monthCalendar_date.getMonth();
+                const y = monthCalendar_date.getFullYear();
+
+                let firstDayOfWeek = new Date(y, m, 1).getDay();
+                if (firstDayOfWeek == 0) firstDayOfWeek = 7;
+
+                // Letzter Monat
+                document.querySelector('#monthCalendar_days').innerHTML = '';
+                for (let i = 0; i < firstDayOfWeek - 1; i++) {
+                    document.querySelector('#monthCalendar_days').innerHTML += `<span></span>`;
+                }
+
+                // Dieser Monat
+                const days = daysInMonth(m, y);
+                let now = new Date();
+                for (let i = 0; i < days; i++) {
+                    const isPast = new Date(y, m, i + 1).getTime() < now.getTime();
+
+                    document.querySelector(
+                        '#monthCalendar_days'
+                    ).innerHTML += `<span id="day_${y}_${m}_${i + 1}" onclick="${
+                        !isPast ? 'listCalendar_showDay(' + y + ',' + m + ',' + (i + 1) + ')' : ''
+                    }" class="${isPast ? 'days_grey' : ''}">
+                        ${i + 1}
+                        <span class="dots" id="day_${y}_${m}_${i + 1}_dots"></span></span>`;
+                }
+
+                // Nächster Monat
+                let lastdayOfWeek = new Date(y, m + 1, 0).getDay();
+                if (lastdayOfWeek == 0) lastdayOfWeek = 7;
+                for (let i = 0; i < 7 - lastdayOfWeek; i++) {
+                    document.querySelector('#monthCalendar_days').innerHTML += `<span></span>`;
+                }
+
+                // Punkte zu Monatskalender hinzufügen
+                if (calendarElements) {
+                    for (let i = 0; i < calendarElements.length; i++) {
+                        const element = calendarElements[i];
+                        const date = new Date(element.start);
+
+                        let includesUsergroup = false;
+                        for (let j = 0; j < element.group.length; j++) {
+                            if (user_groups.includes(element.group[j].id)) includesUsergroup = true;
+                        }
+
+                        const dayElement = document.querySelector(
+                            `#day_${date.getFullYear()}_${date.getMonth()}_${date.getDate()}_dots`
+                        );
+                        if (dayElement && (visibility_akt_status == 'true' || includesUsergroup)) dayElement.innerHTML += '<span class="dot"></span>';
+                    }
+                }
+            }
+
+            function monthCalendar_nextMonth() {
+                monthCalendar_date.setMonth(monthCalendar_date.getMonth() + 1);
+                monthCalendar_build();
+            }
+            function monthCalendar_prevMonth() {
+                monthCalendar_date.setMonth(monthCalendar_date.getMonth() - 1);
+                if (monthCalendar_date.getTime() < new Date().getTime()) {
+                    monthCalendar_date = new Date();
+                    monthCalendar_date = new Date(
+                        monthCalendar_date.getFullYear(),
+                        monthCalendar_date.getMonth(),
+                        1
+                    );
+                }
+                monthCalendar_build();
+            }
+
+            let monthCalendar_visible = localStorage.getItem('calendar_visibility_month');
+            function monthCalendar_show() {
+                monthCalendar_build();
+
+                document.querySelector('#monthCalendar').classList.remove('hidden');
+                document.querySelector('#monthCalendar_nav_month').classList.remove('hidden');
+                document.querySelector('#monthCalendar_nav_day').classList.add('hidden');
+                document.querySelector('.calendar_list').classList.add('hidden');
+                document.querySelector('.btn_switchMonthCalendar').classList.add('hidden');
+                document.querySelector('.btn_switchListCalendar').classList.remove('hidden');
+
+                localStorage.setItem('calendar_visibility_month', 'true');
+            }
+
+            // Listenkalender erstellen
+            function listCalendar_build() {
+                const target = document.querySelector('.calendar_list');
+                target.innerHTML = '';
+
+                const akt_status = localStorage.getItem('calendar_visibility_all');
+
+                for (let i = 0; i < calendarElements.length; i++) {
+                    const element = calendarElements[i];
+
+                    const date = new Date(element.start);
+
+                    if (
+                        selectedDate &&
+                        (selectedDate.getFullYear() != date.getFullYear() ||
+                            selectedDate.getMonth() != date.getMonth() ||
+                            selectedDate.getDate() != date.getDate())
+                    )
+                        continue;
+
+                    const { text, icon } = parseKalenderSummary(element.summary);
+                    let badge = '';
+                    let includesUsergroup = false;
+                    for (let j = 0; j < element.group.length; j++) {
+                        badge += '<span class="badge green">' + element.group[j].name + '</span>';
+                        if (user_groups.includes(element.group[j].id)) includesUsergroup = true;
+                    }
+
+                    const template = document.querySelector('#template-calendarelement');
+                    const var_text = template.content.querySelector('.var_text');
+                    const var_date = template.content.querySelector('.var_date');
+                    const var_time = template.content.querySelector('.var_time');
+                    const var_groups = template.content.querySelector('.var_groups');
+                    const var_emoji = template.content.querySelector('.var_emoji');
+
+                    var_text.innerHTML = text;
+                    var_date.innerHTML =
+                        ('0' + date.getDate()).slice(-2) +
+                        '.' +
+                        ('0' + (date.getMonth() + 1)).slice(-2) +
+                        '.';
+                    var_time.innerHTML =
+                        ('0' + date.getHours()).slice(-2) +
+                        ':' +
+                        ('0' + date.getMinutes()).slice(-2);
+                    var_groups.innerHTML = badge;
+                    var_emoji.innerHTML = icon;
+
+                    const clone = document.importNode(template.content.firstElementChild, true);
+                    if (includesUsergroup) {
+                        clone.classList.remove('stripes');
+                    } else {
+                        clone.classList.add('stripes');
+                        if (akt_status == 'false') {
+                            clone.classList.add('hidden');
+                        }
+                    }
+
+                    target.appendChild(clone);
+
+                    if (element.id != -1 && (user_calendar_min || user_calendar_full)) {
+                        clone.addEventListener('click', () => {
+                            loaderIn('calendar_entry?id=' + element.id, true);
+                        });
+                    }
+                }
+            }
+
+            function listCalendar_showDay(y, m, d) {
+                document.querySelector('#monthCalendar').classList.add('hidden');
+                document.querySelector('#monthCalendar_nav_month').classList.add('hidden');
+                document.querySelector('#monthCalendar_nav_day').classList.remove('hidden');
+                document.querySelector('.calendar_list').classList.remove('hidden');
+                document.querySelector('.btn_switchMonthCalendar').classList.remove('hidden');
+                document.querySelector('.btn_switchListCalendar').classList.add('hidden');
+
+                document.querySelector('.var_date').innerHTML =
+                    ('0' + d).slice(-2) + '.' + ('0' + m).slice(-2) + '.' + y;
+
+                selectedDate = new Date(y, m, d);
+                listCalendar_build();
+            }
+
+            function listCalendar_showFull() {
+                document.querySelector('#monthCalendar').classList.add('hidden');
+                document.querySelector('#monthCalendar_nav_month').classList.add('hidden');
+                document.querySelector('#monthCalendar_nav_day').classList.add('hidden');
+                document.querySelector('.calendar_list').classList.remove('hidden');
+                document.querySelector('.btn_switchMonthCalendar').classList.remove('hidden');
+                document.querySelector('.btn_switchListCalendar').classList.add('hidden');
+
+                listCalendar_build();
+                selectedDate = undefined;
+                localStorage.setItem('calendar_visibility_month', 'false');
             }
 
             // Funktionsaufrufe
-            loaderFunction = () => {
-                load_calendar();
-                if(user_calendar_min || user_calendar_full) {
+            loaderFunction = async () => {
+                await load_calendar();
+                if (monthCalendar_visible == 'true') monthCalendar_show();
+                else listCalendar_showFull();
+
+                if (user_calendar_min || user_calendar_full) {
                     document.querySelector('.btn_add').classList.remove('hidden');
                 }
                 const akt_status = localStorage.getItem('calendar_visibility_all');
-                if(akt_status == 'false') {
-                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';                
-                }  
+                if (akt_status == 'false') {
+                    document.querySelector('.visibilityButton').innerHTML = 'visibility_off';
+                }
             };
-            
-
         </script>
-       
     </body>
-	
 </html>

@@ -1,71 +1,61 @@
-
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-    <head>	
+        <link rel="stylesheet" href="/css/mobile_picture_upload.css">
 
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <h1>Bild für Diashow</h1>
+        </div>
 
-            <div class="navbar">                
+        <div class="content padding_1">
+            <form id="myForm" method="post" action="" enctype="multipart/form-data">
+                <div class="spacer"></div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-                <h1>Bild für Diashow</h1>    
-
-            </div>
-
-            <div class="content padding_1">
-            
-                <form id="myForm" method="post" action="" enctype="multipart/form-data">
-                    <label class="margin_bottom_1">Wählen Sie eine Bilddatei aus.
-                        <input type="file"
-                        id="image" name="image"
-                        class="margin_bottom_1"
-                        accept="image/png, image/jpeg">
-                    </label>  
-                    <button class="btn" type="submit">Absenden</button>
-                </form>
- 
-                
-            </div>
-
-
+                <label class="margin_bottom_1 uploadLabel" id="uploadLabel"
+                    >Bild auswählen:
+                    <input
+                        type="file"
+                        id="image"
+                        name="image"
+                        class="margin_bottom_1 uploadButton" 
+                        accept="image/png, image/jpeg"
+                    />
+                </label>
+                <button class="btn" type="submit">Absenden</button>
+            </form>
+        </div>
 
         <%- include('partials/foot') -%>
-       
-        <script>
 
+        <script>
             function send() {
                 var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/api/v1/diashow/upload"); 
-                xhr.onload = function(event){ 
-                    alert("Bild gespeichert");
+                xhr.open('POST', '/api/v1/diashow/upload');
+                xhr.onload = function (event) {
+                    alert('Bild gespeichert');
                     window.location.reload();
-                }; 
+                };
                 // or onerror, onabort
-                var formData = new FormData(document.getElementById("myForm")); 
-                xhr.send(formData)
+                var formData = new FormData(document.getElementById('myForm'));
+                xhr.send(formData);
             }
 
             // Funktionsaufrufe
             loaderFunction = () => {
-
-                document.getElementById('myForm').onsubmit = function () {    
+                document.getElementById('myForm').onsubmit = function () {
                     send();
-                    return false;                
-                }
-
+                    return false;
+                };
             };
-            
-
         </script>
-
     </body>
-	
 </html>

@@ -1,6 +1,7 @@
 :root {
     --bg_loader: #525252;
     --bg_navbar: #ef5350;
+    --bg_subnavbar: #f37775;
     --color_navbar: rgba(255, 255, 255, 0.9);
     --color_border: #e0e0e0;
     --bg_list_item: #eee;
@@ -48,6 +49,8 @@ button {
     position: initial !important;
     flex-grow: 1;
     overflow-x: auto;
+
+    width: 100%;
 }
 
 .wrapper_app {
@@ -104,6 +107,10 @@ button {
     font-size: 1.6em;
     color: var(--color_navbar);
     min-width: 0.5em;
+}
+
+.subnavbar {
+    background-color: var(--bg_subnavbar);    
 }
 
 /* -------- Helper -------- */
