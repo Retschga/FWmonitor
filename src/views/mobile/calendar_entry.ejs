@@ -1,235 +1,255 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="loaderIn('calendar', true);">
+                chevron_left
+            </button>
 
-            <div class="navbar">
+            <h1>Termin</h1>
+        </div>
 
-                <button class="material-icons" onclick="loaderIn('calendar', true);">chevron_left</button>
-
-                <h1>Termin</h1>      
-
-            </div>
-
-            <div class="content">
-
-                <div class="flex_column">                                      
-
-                    <div class="list">
-                        <div class="item">
-                            <span class="left material-icons">text_fields</span>
-                            <span class="text">Name</span>
-                            <input class="var_name" type="right" placeholder="Name...">
-                        </div> 
-                        <div class="item">
-                            <span class="left material-icons">emoji_symbols</span>
-                            <span class="text">Symbol</span>
-                            <select class="var_symbol">
-                                <option value="🚒">🚒</option>
-                                <option value="📖">📖</option>
-                                <option value="🗓️">🗓️</option>
-                                <option value="🛠️">🛠️</option>
-                                <option value="🍻">🍻</option>
-                                <option value="🔔">🔔</option>
-                                <option value="🚧">🚧</option>
-                                <option value="🔥">🔥</option>
-                            </select>
-                        </div> 
-                        <div class="item">
-                            <span class="left material-icons">schedule</span>
-                            <span class="text">Datum</span>
-                            <input class="var_date" type="datetime-local">
-                        </div>
-                        <div class="item">
-                            <span class="left material-icons">notifications_active</span>
-                            <span class="text">Erinnerung</span>
-                            <input class="var_remind" type="datetime-local">
-                        </div>
-                        <div class="item text_align_center">
-                            <span class="left material-icons">notifications_active</span>
-                            <span class="text flex_grow margin_right_1 white border" onclick="set_remind_h(6)">6h</span>
-                            <span class="text flex_grow margin_right_1 white border" onclick="set_remind_h(12)">12h</span>
-                            <span class="text flex_grow margin_right_1 white border" onclick="set_remind_h(24)">24h</span>
-                            <span class="text flex_grow margin_right_1 white border" onclick="set_remind_h(48)">48h</span>
-                        </div>
+        <div class="content">
+            <div class="flex_column">
+                <div class="list">
+                    <div class="item">
+                        <span class="left material-icons">text_fields</span>
+                        <span class="text">Name</span>
+                        <input class="var_name" type="right" placeholder="Name..." />
                     </div>
-
-                    <div class="list calendargroup_list">
-
-                        <div class="item">
-                            <span class="left material-icons">people</span>
-                            <span class="text">Gruppen</span>
-                        </div> 
-
-                        <template id="template-calendargroup">
-                            <div class="item smallitem white">
-                                <span class="left material-icons">badge</span>
-                                <span class="text var_name">Gruppenname</span>
-                                <label class="right checkmark_container">
-                                    <input class="var_value" type="checkbox">
-                                    <span class="checkmark"></span>
-                                </label>
-                            </div>
-                        </template>
-
-                    </div>  
-
-                    <div style="height: 5em;"></div>
-
-                    <div class="list" style="position: absolute; bottom: 0; width: 100%;">
-                        <div class="item smallitem white">
-                            <div class="red left item rounded deletebutton"  onclick="openModal_delete()">
-                                <span class="left material-icons">delete</span>
-                                <span class="text">Löschen</span>                                
-                            </div>
-                            <div class="flex_grow"></div>
-                            <div class="green right item rounded savebutton" onclick="update_entry()">
-                                <span class="text text_align_right">Speichern</span>
-                                <span class="right material-icons">save</span>
-                            </div>                        
-                            
-                        </div>
+                    <div class="item">
+                        <span class="left material-icons">emoji_symbols</span>
+                        <span class="text">Symbol</span>
+                        <select class="var_symbol">
+                            <option value="🚒">🚒</option>
+                            <option value="📖">📖</option>
+                            <option value="🗓️">🗓️</option>
+                            <option value="🛠️">🛠️</option>
+                            <option value="🍻">🍻</option>
+                            <option value="🔔">🔔</option>
+                            <option value="🚧">🚧</option>
+                            <option value="🔥">🔥</option>
+                        </select>
                     </div>
-
+                    <div class="item">
+                        <span class="left material-icons">schedule</span>
+                        <span class="text">Datum</span>
+                        <input class="var_date" type="datetime-local" />
+                    </div>
+                    <div class="item">
+                        <span class="left material-icons">notifications_active</span>
+                        <span class="text">Erinnerung</span>
+                        <input class="var_remind" type="datetime-local" />
+                    </div>
+                    <div class="item text_align_center">
+                        <span class="left material-icons">notifications_active</span>
+                        <span
+                            class="text flex_grow margin_right_1 white border"
+                            onclick="set_remind_h(6)"
+                            >6h</span
+                        >
+                        <span
+                            class="text flex_grow margin_right_1 white border"
+                            onclick="set_remind_h(12)"
+                            >12h</span
+                        >
+                        <span
+                            class="text flex_grow margin_right_1 white border"
+                            onclick="set_remind_h(24)"
+                            >24h</span
+                        >
+                        <span
+                            class="text flex_grow margin_right_1 white border"
+                            onclick="set_remind_h(48)"
+                            >48h</span
+                        >
+                    </div>
                 </div>
 
-            </div>
+                <div class="list calendargroup_list">
+                    <div class="item">
+                        <span class="left material-icons">people</span>
+                        <span class="text">Gruppen</span>
+                    </div>
 
-            <div id="modal_delete" class="modal">
-                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
-                <form class="modal-content" action="/">
-                    <div class="container">
-                        <h1>Termin löschen</h1>
-                        <p>Termin sicher löschen?</p>
-                
-                        <div class="clearfix">
-                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
-                            <button type="button" class="button_delete red">JA</button>
+                    <template id="template-calendargroup">
+                        <div class="item smallitem white">
+                            <span class="left material-icons">badge</span>
+                            <span class="text var_name">Gruppenname</span>
+                            <label class="right checkmark_container">
+                                <input class="var_value" type="checkbox" />
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </template>
+                </div>
+
+                <div style="height: 5em"></div>
+
+                <div class="list" style="position: absolute; bottom: 0; width: 100%">
+                    <div class="item smallitem white">
+                        <div
+                            class="red left item rounded deletebutton"
+                            onclick="openModal_delete()"
+                        >
+                            <span class="left material-icons">delete</span>
+                            <span class="text">Löschen</span>
+                        </div>
+                        <div class="flex_grow"></div>
+                        <div class="green right item rounded savebutton" onclick="update_entry()">
+                            <span class="text text_align_right">Speichern</span>
+                            <span class="right material-icons">save</span>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
+        </div>
 
+        <div id="modal_delete" class="modal">
+            <span
+                onclick="document.getElementById('modal_delete').style.display='none'"
+                class="close"
+                title="Close Modal"
+                >&times;</span
+            >
+            <form class="modal-content" action="/">
+                <div class="container">
+                    <h1>Termin löschen</h1>
+                    <p>Termin sicher löschen?</p>
+
+                    <div class="clearfix">
+                        <button
+                            type="button"
+                            class="button_cancel"
+                            onclick="document.getElementById('modal_delete').style.display='none'"
+                        >
+                            Nein
+                        </button>
+                        <button type="button" class="button_delete red">JA</button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
             const id = $_GET['id'];
 
             function localIsoDateTime(date) {
-                return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString();
+                return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
             }
 
             // Laden
-            async function load_groups_all() {   
+            async function load_groups_all() {
                 try {
                     const groups = await fetch_get(url_calendar_groups, true);
                     console.log('groups', groups);
 
-                    const user = await fetch_get(url_user_calendar_groups.replace(':id', user_id), true);
+                    const user = await fetch_get(
+                        url_user_calendar_groups.replace(':id', user_id),
+                        true
+                    );
                     console.log('user', user);
 
-                    const target = document.querySelector(".calendargroup_list");
+                    const target = document.querySelector('.calendargroup_list');
 
-                    for(let i = 0; i < groups.length; i++) {
+                    for (let i = 0; i < groups.length; i++) {
                         const group = groups[i];
 
-                        const template         = document.querySelector('#template-calendargroup');       
-                        const var_name         = template.content.querySelector(".var_name");      
-                        const var_value        = template.content.querySelector(".var_value");   
-                      
-                        var_name.innerHTML     = group.name; 
+                        const template = document.querySelector('#template-calendargroup');
+                        const var_name = template.content.querySelector('.var_name');
+                        const var_value = template.content.querySelector('.var_value');
 
-                        console.log((user.groups.includes(group.id)))
+                        var_name.innerHTML = group.name;
 
-                        var_value.disabled     = i == 0 || (user_calendar_min && !(user.groups.includes(group.id))); 
+                        console.log(user.groups.includes(group.id));
+
+                        var_value.disabled =
+                            i == 0 || (user_calendar_min && !user.groups.includes(group.id));
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);
 
-                        clone.id = 'group_' + group.id; 
-                        clone.classList.add('group_' + i); 
-                        clone.classList.add('group'); 
+                        clone.id = 'group_' + group.id;
+                        clone.classList.add('group_' + i);
+                        clone.classList.add('group');
 
-                        clone.querySelector(".var_value").onchange = () => {
+                        clone.querySelector('.var_value').onchange = () => {
                             let count = 0;
-                            for(let j = 1; j < groups.length; j++) {
-                                if(document.querySelector('.group_' + j).querySelector(".var_value").checked == true) {
-                                    count++;                                    
+                            for (let j = 1; j < groups.length; j++) {
+                                if (
+                                    document
+                                        .querySelector('.group_' + j)
+                                        .querySelector('.var_value').checked == true
+                                ) {
+                                    count++;
                                 }
                             }
-                            document.querySelector('.group_0').querySelector(".var_value").checked = count == 0;
-                        }
+                            document.querySelector('.group_0').querySelector('.var_value').checked =
+                                count == 0;
+                        };
                     }
                 } catch (error) {
                     console.error('load_groups_all', error);
-                    if(error.show) alert('Kalendergruppen konnten nicht geladen werden.');
-                }       
+                    if (error.show) alert('Kalendergruppen konnten nicht geladen werden.');
+                }
             }
 
             async function load_entry() {
-
-
                 try {
                     const entry = await fetch_get(url_calendar.replace(':id', id), true);
-                    console.log('entry', entry);   
+                    console.log('entry', entry);
 
+                    const date = localIsoDateTime(new Date(entry.start));
+                    const remind = localIsoDateTime(new Date(entry.remind));
+                    const { text, icon } = parseKalenderSummary(entry.summary);
 
-                    const date = localIsoDateTime(new Date(entry.start));   
-                    const remind = localIsoDateTime(new Date(entry.remind));  
-                    const {text, icon} = parseKalenderSummary(entry.summary);
+                    const var_name = document.querySelector('.var_name');
+                    const var_symbol = document.querySelector('.var_symbol');
+                    const var_date = document.querySelector('.var_date');
+                    const var_remind = document.querySelector('.var_remind');
 
-                    const var_name         = document.querySelector(".var_name"); 
-                    const var_symbol       = document.querySelector(".var_symbol"); 
-                    const var_date         = document.querySelector(".var_date"); 
-                    const var_remind       = document.querySelector(".var_remind"); 
+                    var_name.value = htmlDecode(text);
+                    ui_setSelectedIndex(var_symbol, icon);
+                    var_date.value = date.substring(0, ((date.indexOf('T') | 0) + 6) | 0);
+                    var_remind.value = remind.substring(0, ((remind.indexOf('T') | 0) + 6) | 0);
 
-                    var_name.value      =  htmlDecode(text); 
-                    setSelectedIndex(var_symbol, icon);  
-                    var_date.value      = date.substring(0, (date.indexOf("T")|0) + 6|0);
-                    var_remind.value    = remind.substring(0, (remind.indexOf("T")|0) + 6|0);
-
-                    for(let j = 0; j < entry.group.length; j++) {
+                    for (let j = 0; j < entry.group.length; j++) {
                         const container = document.querySelector('#group_' + entry.group[j].id);
-                        console.log(entry)
-                        container.querySelector(".var_value").checked = true; 
+                        console.log(entry);
+                        container.querySelector('.var_value').checked = true;
                     }
-
-
                 } catch (error) {
                     console.error('load_entry', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                }       
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
             }
 
             // Speichern
             async function update_entry() {
                 loaderIn();
                 try {
+                    const var_name = document.querySelector('.var_name');
+                    const var_symbol = document.querySelector('.var_symbol');
+                    const var_date = document.querySelector('.var_date');
+                    const var_remind = document.querySelector('.var_remind');
 
-                    const var_name         = document.querySelector(".var_name"); 
-                    const var_symbol       = document.querySelector(".var_symbol"); 
-                    const var_date         = document.querySelector(".var_date"); 
-                    const var_remind       = document.querySelector(".var_remind");  
-
-                    const groups           = document.querySelectorAll('.group');  
+                    const groups = document.querySelectorAll('.group');
 
                     let groupString = '';
-                    for(let i = 1; i < groups.length; i++) {
-                        const group = groups[i];     
-                        if(group.querySelector(".var_value").checked) {
+                    for (let i = 1; i < groups.length; i++) {
+                        const group = groups[i];
+                        if (group.querySelector('.var_value').checked) {
                             groupString += '|' + group.id.replace('group_', '');
-                        }   
+                        }
                     }
                     groupString = groupString.substring(1);
 
@@ -239,19 +259,17 @@
                         remind: new Date(var_remind.value).toISOString(),
                         group: groupString
                     });
-                    console.log('update_entry', response);   
-                    
+                    console.log('update_entry', response);
                 } catch (error) {
                     console.error('update_entry', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
-                }       
+                }
                 loaderOut();
             }
 
-
             // Löschen
             async function delete_entry() {
-                loaderIn();    
+                loaderIn();
                 try {
                     const response = await fetch_post(url_calendar_delete.replace(':id', id), {});
                     console.log('delete_entry', response);
@@ -259,41 +277,37 @@
                 } catch (error) {
                     console.error('delete_entry', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
-                }  
+                }
                 loaderIn('calendar', true);
             }
 
             // Hilfsfunktionen
             function set_remind_h(hours) {
-                const var_date         = document.querySelector(".var_date"); 
-                const var_remind       = document.querySelector(".var_remind"); 
+                const var_date = document.querySelector('.var_date');
+                const var_remind = document.querySelector('.var_remind');
 
-                let remind = new Date(var_date.value); 
-                remind.setHours(remind.getHours() - hours); 
+                let remind = new Date(var_date.value);
+                remind.setHours(remind.getHours() - hours);
                 remind = remind.toISOString();
 
-                var_remind.value    = remind.substring(0, (remind.indexOf("T")|0) + 6|0);
+                var_remind.value = remind.substring(0, ((remind.indexOf('T') | 0) + 6) | 0);
             }
 
-            function openModal_delete() {                
+            function openModal_delete() {
                 const modal = document.querySelector('#modal_delete');
                 modal.style.display = 'block';
                 modal.querySelector('.button_delete').onclick = () => delete_entry();
             }
 
-
             // Funktionsaufrufe
-            loaderFunction = async() => {
-                if(!id) {
+            loaderFunction = async () => {
+                if (!id) {
                     alert('id nötig');
                     return;
                 }
                 await load_groups_all();
                 await load_entry();
             };
-
         </script>
-       
     </body>
-	
 </html>

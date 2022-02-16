@@ -1,404 +1,401 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>Alarmgruppen</h1>
+        </div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
+        <div class="content">
+            <div class="flex_column list alarmgroup_list">
+                <template id="template-alarmgroup">
+                    <div class="alarmgroup margin_none padding_none">
+                        <button class="accordion var_group_header" onclick="ui_accordion_switch(this)">
+                            Gruppe 1
+                        </button>
+                        <div class="accordion_panel">
+                            <div class="item smallitem">
+                                <span class="left material-icons">badge</span>
+                                <span class="text">Anzeigename</span>
+                                <input
+                                    class="right var_group_name"
+                                    type="text"
+                                    placeholder="Name..."
+                                />
+                            </div>
 
-                <h1>Alarmgruppen</h1>      
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Einsatzstichwort</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_einsatzstichwort" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
 
-            </div>
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Schlagwort</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_schlagwort" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
 
-            <div class="content">
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Objekt</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_objekt" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
 
-                <div class="flex_column list alarmgroup_list">
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Straße</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_strasse" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
 
-                    <template id="template-alarmgroup">
-                        <div class="alarmgroup margin_none padding_none">
-                            <button class="accordion var_group_header" onclick="accordion_switch(this)">Gruppe 1</button>
-                            <div class="accordion_panel">
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Ortsteil</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_ortsteil" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
 
-                                <div class="item smallitem">
-                                    <span class="left material-icons">badge</span>
-                                    <span class="text">Anzeigename</span>
-                                    <input class="right var_group_name" type="text" placeholder="Name...">
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Ort</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_ort" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Kreuzung</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_kreuzung" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Bemerkung</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_bemerkung" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Hinweis</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_hinweis" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Priorität</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_prio" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Tetra</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_tetra" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Einsatzmittel - Eigen</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_car1" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Einsatzmittel - Andere</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_car2" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">FAX PDF</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_fax" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Karte</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_map" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Hydrantenkarte</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_hydranten" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Mitteiler</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_mitteiler" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Rufnummer</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_rufnummer" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Patient</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_patient" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem">
+                                <span class="left material-icons">visibility</span>
+                                <span class="text">Einsatzplan</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_einsatzplan" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
+                            <div class="item smallitem padding_top_1">
+                                <div class="flex_grow"></div>
+                                <div class="green right item rounded savebutton">
+                                    <span class="text text_align_right">Speichern</span>
+                                    <span class="right material-icons">save</span>
                                 </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Einsatzstichwort</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_einsatzstichwort" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Schlagwort</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_schlagwort" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Objekt</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_objekt" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Straße</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_strasse" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Ortsteil</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_ortsteil" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Ort</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_ort" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Kreuzung</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_kreuzung" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Bemerkung</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_bemerkung" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Hinweis</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_hinweis" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Priorität</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_prio" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Tetra</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_tetra" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Einsatzmittel - Eigen</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_car1" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Einsatzmittel - Andere</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_car2" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">FAX PDF</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_fax" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Karte</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_map" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Hydrantenkarte</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_hydranten" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Mitteiler</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_mitteiler" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Rufnummer</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_rufnummer" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Patient</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_patient" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                <div class="item smallitem">
-                                    <span class="left material-icons">visibility</span>
-                                    <span class="text">Einsatzplan</span>
-                                    <label class="right checkmark_container">
-                                        <input class="var_einsatzplan" type="checkbox">
-                                        <span class="checkmark"></span>
-                                    </label>
-                                </div>
-
-                                
-
-                                <div class="item smallitem padding_top_1">        
-                                    <div class="flex_grow"></div>
-                                    <div class="green right item rounded savebutton">
-                                        <span class="text text_align_right">Speichern</span>
-                                        <span class="right material-icons">save</span>
-                                    </div>                            
-                                    
-                                </div>
-
                             </div>
                         </div>
-                    </template>
-                    
-                </div>
-
+                    </div>
+                </template>
             </div>
-
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
             // Laden
-            async function load_groups_all() {  
-                try {                   
+            async function load_groups_all() {
+                try {
                     const groups = await fetch_get(url_group_all, true);
                     console.log('groups', groups);
 
-                    const target = document.querySelector(".alarmgroup_list");
+                    const target = document.querySelector('.alarmgroup_list');
 
-                    for(let i = 0; i < groups.length; i++) {
+                    for (let i = 0; i < groups.length; i++) {
                         const group = groups[i];
-                      
-                        const template              = document.querySelector('#template-alarmgroup');       
-                        const var_group_header      = template.content.querySelector(".var_group_header");      
-                        const var_group_name        = template.content.querySelector(".var_group_name");
-                        const var_einsatzstichwort  = template.content.querySelector(".var_einsatzstichwort");
-                        const var_schlagwort        = template.content.querySelector(".var_schlagwort");
-                        const var_objekt            = template.content.querySelector(".var_objekt");
-                        const var_strasse           = template.content.querySelector(".var_strasse");
-                        const var_ortsteil          = template.content.querySelector(".var_ortsteil");
-                        const var_ort               = template.content.querySelector(".var_ort");
-                        const var_bemerkung         = template.content.querySelector(".var_bemerkung");
-                        const var_car1              = template.content.querySelector(".var_car1");
-                        const var_car2              = template.content.querySelector(".var_car2");
-                        const var_fax               = template.content.querySelector(".var_fax");
-                        const var_map               = template.content.querySelector(".var_map");
-                        const var_hydranten         = template.content.querySelector(".var_hydranten");                    
-                        const var_kreuzung          = template.content.querySelector(".var_kreuzung");                    
-                        const var_hinweis           = template.content.querySelector(".var_hinweis");                    
-                        const var_prio              = template.content.querySelector(".var_prio");                    
-                        const var_tetra             = template.content.querySelector(".var_tetra");                    
-                        const var_mitteiler         = template.content.querySelector(".var_mitteiler");                    
-                        const var_rufnummer         = template.content.querySelector(".var_rufnummer");                    
-                        const var_patient           = template.content.querySelector(".var_patient");                    
-                        const var_einsatzplan       = template.content.querySelector(".var_einsatzplan");                    
-                        
-                        const date = new Date(group.date); 
 
-                        var_group_header.innerHTML      = 'Gruppe ' + (i);
-                        var_group_name.value            = group.name; 
-                        var_einsatzstichwort.checked    = group.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1; 
-                        var_schlagwort.checked          = group.pattern.indexOf('{{SCHLAGWORT}}') != -1; 
-                        var_objekt.checked              = group.pattern.indexOf('{{OBJEKT}}') != -1; 
-                        var_strasse.checked             = group.pattern.indexOf('{{STRASSE}}') != -1; 
-                        var_ortsteil.checked            = group.pattern.indexOf('{{ORTSTEIL}}') != -1; 
-                        var_ort.checked                 = group.pattern.indexOf('{{ORT}}') != -1; 
-                        var_bemerkung.checked           = group.pattern.indexOf('{{BEMERKUNG}}') != -1; 
-                        var_car1.checked                = group.pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') != -1; 
-                        var_car2.checked                = group.pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') != -1; 
-                        var_fax.checked                 = group.pattern.indexOf('{{FAX}}') != -1; 
-                        var_map.checked                 = group.pattern.indexOf('{{KARTE}}') != -1; 
-                        var_hydranten.checked           = group.pattern.indexOf('{{KARTE_EMG}}') != -1; 
-                        var_kreuzung.checked            = group.pattern.indexOf('{{KREUZUNG}}') != -1; 
-                        var_hinweis.checked             = group.pattern.indexOf('{{HINWEIS}}') != -1; 
-                        var_prio.checked                = group.pattern.indexOf('{{PRIO}}') != -1; 
-                        var_tetra.checked               = group.pattern.indexOf('{{TETRA}}') != -1; 
-                        var_mitteiler.checked           = group.pattern.indexOf('{{MITTEILER}}') != -1; 
-                        var_rufnummer.checked           = group.pattern.indexOf('{{RUFNUMMER}}') != -1; 
-                        var_patient.checked             = group.pattern.indexOf('{{PATIENT}}') != -1; 
-                        var_einsatzplan.checked         = group.pattern.indexOf('{{EINSATZPLAN}}') != -1; 
-                        
-                        const clone  = document.importNode(template.content.firstElementChild, true);
+                        const template = document.querySelector('#template-alarmgroup');
+                        const var_group_header =
+                            template.content.querySelector('.var_group_header');
+                        const var_group_name = template.content.querySelector('.var_group_name');
+                        const var_einsatzstichwort =
+                            template.content.querySelector('.var_einsatzstichwort');
+                        const var_schlagwort = template.content.querySelector('.var_schlagwort');
+                        const var_objekt = template.content.querySelector('.var_objekt');
+                        const var_strasse = template.content.querySelector('.var_strasse');
+                        const var_ortsteil = template.content.querySelector('.var_ortsteil');
+                        const var_ort = template.content.querySelector('.var_ort');
+                        const var_bemerkung = template.content.querySelector('.var_bemerkung');
+                        const var_car1 = template.content.querySelector('.var_car1');
+                        const var_car2 = template.content.querySelector('.var_car2');
+                        const var_fax = template.content.querySelector('.var_fax');
+                        const var_map = template.content.querySelector('.var_map');
+                        const var_hydranten = template.content.querySelector('.var_hydranten');
+                        const var_kreuzung = template.content.querySelector('.var_kreuzung');
+                        const var_hinweis = template.content.querySelector('.var_hinweis');
+                        const var_prio = template.content.querySelector('.var_prio');
+                        const var_tetra = template.content.querySelector('.var_tetra');
+                        const var_mitteiler = template.content.querySelector('.var_mitteiler');
+                        const var_rufnummer = template.content.querySelector('.var_rufnummer');
+                        const var_patient = template.content.querySelector('.var_patient');
+                        const var_einsatzplan = template.content.querySelector('.var_einsatzplan');
+
+                        const date = new Date(group.date);
+
+                        var_group_header.innerHTML = 'Gruppe ' + i;
+                        var_group_name.value = group.name;
+                        var_einsatzstichwort.checked =
+                            group.pattern.indexOf('{{EINSATZSTICHWORT}}') != -1;
+                        var_schlagwort.checked = group.pattern.indexOf('{{SCHLAGWORT}}') != -1;
+                        var_objekt.checked = group.pattern.indexOf('{{OBJEKT}}') != -1;
+                        var_strasse.checked = group.pattern.indexOf('{{STRASSE}}') != -1;
+                        var_ortsteil.checked = group.pattern.indexOf('{{ORTSTEIL}}') != -1;
+                        var_ort.checked = group.pattern.indexOf('{{ORT}}') != -1;
+                        var_bemerkung.checked = group.pattern.indexOf('{{BEMERKUNG}}') != -1;
+                        var_car1.checked = group.pattern.indexOf('{{EINSATZMITTEL_EIGEN}}') != -1;
+                        var_car2.checked = group.pattern.indexOf('{{EINSATZMITTEL_ANDERE}}') != -1;
+                        var_fax.checked = group.pattern.indexOf('{{FAX}}') != -1;
+                        var_map.checked = group.pattern.indexOf('{{KARTE}}') != -1;
+                        var_hydranten.checked = group.pattern.indexOf('{{KARTE_EMG}}') != -1;
+                        var_kreuzung.checked = group.pattern.indexOf('{{KREUZUNG}}') != -1;
+                        var_hinweis.checked = group.pattern.indexOf('{{HINWEIS}}') != -1;
+                        var_prio.checked = group.pattern.indexOf('{{PRIO}}') != -1;
+                        var_tetra.checked = group.pattern.indexOf('{{TETRA}}') != -1;
+                        var_mitteiler.checked = group.pattern.indexOf('{{MITTEILER}}') != -1;
+                        var_rufnummer.checked = group.pattern.indexOf('{{RUFNUMMER}}') != -1;
+                        var_patient.checked = group.pattern.indexOf('{{PATIENT}}') != -1;
+                        var_einsatzplan.checked = group.pattern.indexOf('{{EINSATZPLAN}}') != -1;
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);
 
                         clone.id = 'group_' + group.id;
-                        const savebutton = clone.querySelector(".savebutton");  
-                        savebutton.addEventListener("click", () => {
+                        const savebutton = clone.querySelector('.savebutton');
+                        savebutton.addEventListener('click', () => {
                             update_group_id(group.id);
                         });
-                        
-
                     }
-
                 } catch (error) {
                     console.error('load_groups_all', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                } 
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
             }
 
             // Speichern
             async function update_group_id(id) {
                 loaderIn();
                 try {
-                    const alarmgroup = document.querySelector('#group_' + id); 
-                    const name = alarmgroup.querySelector('.var_group_name').value;     
+                    const alarmgroup = document.querySelector('#group_' + id);
+                    const name = alarmgroup.querySelector('.var_group_name').value;
 
-                    let pattern  = '';   
-                    if(alarmgroup.querySelector('.var_einsatzstichwort').checked) {
+                    let pattern = '';
+                    if (alarmgroup.querySelector('.var_einsatzstichwort').checked) {
                         pattern += '   *{{EINSATZSTICHWORT}}*';
                     }
-                    if(alarmgroup.querySelector('.var_map').checked) {
+                    if (alarmgroup.querySelector('.var_map').checked) {
                         pattern += ' {{KARTE}}';
                     }
-                    if(alarmgroup.querySelector('.var_hydranten').checked) {
+                    if (alarmgroup.querySelector('.var_hydranten').checked) {
                         pattern += ' {{KARTE_EMG}}';
                     }
-                    if(alarmgroup.querySelector('.var_fax').checked) {
+                    if (alarmgroup.querySelector('.var_fax').checked) {
                         pattern += ' {{FAX}}';
                     }
                     pattern += '\n';
-                    if(alarmgroup.querySelector('.var_schlagwort').checked) {
+                    if (alarmgroup.querySelector('.var_schlagwort').checked) {
                         pattern += '_> {{SCHLAGWORT}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_prio').checked) {
+                    if (alarmgroup.querySelector('.var_prio').checked) {
                         pattern += '_> Priorität {{PRIO}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_objekt').checked) {
+                    if (alarmgroup.querySelector('.var_objekt').checked) {
                         pattern += '_> {{OBJEKT}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_strasse').checked) {
+                    if (alarmgroup.querySelector('.var_strasse').checked) {
                         pattern += '_> {{STRASSE}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_ortsteil').checked) {
+                    if (alarmgroup.querySelector('.var_ortsteil').checked) {
                         pattern += '_> {{ORTSTEIL}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_ort').checked) {
+                    if (alarmgroup.querySelector('.var_ort').checked) {
                         pattern += '_> {{ORT}}_' + '\n';
                     }
-                    if(alarmgroup.querySelector('.var_kreuzung').checked) {
+                    if (alarmgroup.querySelector('.var_kreuzung').checked) {
                         pattern += '_> {{KREUZUNG}}_\n';
                     }
-                    if(alarmgroup.querySelector('.var_bemerkung').checked) {
+                    if (alarmgroup.querySelector('.var_bemerkung').checked) {
                         pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
                     }
-                    if(alarmgroup.querySelector('.var_einsatzplan').checked) {
-                        pattern +=  '\n' + '*Einsatzplan:*' + '\n' + '_{{EINSATZPLAN}}_';
+                    if (alarmgroup.querySelector('.var_einsatzplan').checked) {
+                        pattern += '\n' + '*Einsatzplan:*' + '\n' + '_{{EINSATZPLAN}}_';
                     }
-                    if(alarmgroup.querySelector('.var_hinweis').checked) {
+                    if (alarmgroup.querySelector('.var_hinweis').checked) {
                         pattern += '\n' + '*Hinweis:*' + '\n' + '_{{HINWEIS}}_';
-                    }   
-                    if(alarmgroup.querySelector('.var_car1').checked) {
-                        pattern += '{{newline}}' + '\n' + '*Einsatzmittel:*' + '\n' + '_{{EINSATZMITTEL_EIGEN}}_';
                     }
-                    if(alarmgroup.querySelector('.var_car2').checked) {
+                    if (alarmgroup.querySelector('.var_car1').checked) {
+                        pattern +=
+                            '{{newline}}' +
+                            '\n' +
+                            '*Einsatzmittel:*' +
+                            '\n' +
+                            '_{{EINSATZMITTEL_EIGEN}}_';
+                    }
+                    if (alarmgroup.querySelector('.var_car2').checked) {
                         pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
-                    }                                                         
-                    if(alarmgroup.querySelector('.var_tetra').checked) {
+                    }
+                    if (alarmgroup.querySelector('.var_tetra').checked) {
                         pattern += '{{newline}}' + '\n' + '*Tetra:*' + '\n' + '_{{TETRA}}_';
                     }
-                    if(alarmgroup.querySelector('.var_mitteiler').checked ||
-                    alarmgroup.querySelector('.var_rufnummer').checked
+                    if (
+                        alarmgroup.querySelector('.var_mitteiler').checked ||
+                        alarmgroup.querySelector('.var_rufnummer').checked
                     ) {
                         pattern += '{{newline}}' + '\n' + '*Mitteiler:*';
-                        if(alarmgroup.querySelector('.var_mitteiler').checked) {
+                        if (alarmgroup.querySelector('.var_mitteiler').checked) {
                             pattern += '\n' + '_{{MITTEILER}}_';
                         }
-                        if(alarmgroup.querySelector('.var_rufnummer').checked) {
+                        if (alarmgroup.querySelector('.var_rufnummer').checked) {
                             pattern += '\n' + '_{{RUFNUMMER}}_';
                         }
                     }
-                    if(alarmgroup.querySelector('.var_patient').checked) {
-                        pattern +=  '{{newline}}' + '\n' + '*Patient:*' + '\n' + '_{{PATIENT}}_';
+                    if (alarmgroup.querySelector('.var_patient').checked) {
+                        pattern += '{{newline}}' + '\n' + '*Patient:*' + '\n' + '_{{PATIENT}}_';
                     }
-                    
 
-                    const response = await fetch_post(url_group_update.replace(':id', id), {name: name, pattern: pattern});
-                    console.log('update_group_id', response);  
+                    const response = await fetch_post(url_group_update.replace(':id', id), {
+                        name: name,
+                        pattern: pattern
+                    });
+                    console.log('update_group_id', response);
                 } catch (error) {
                     console.error('update_group_id', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
-                }                             
+                }
                 loaderOut();
             }
 
@@ -406,9 +403,6 @@
             loaderFunction = () => {
                 load_groups_all();
             };
-            
         </script>
-       
     </body>
-	
 </html>

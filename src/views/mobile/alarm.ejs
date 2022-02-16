@@ -1,183 +1,156 @@
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-        <link rel="stylesheet" href="/css/mobile_calendar.css">
-
-    </head>	
+        <link rel="stylesheet" href="/css/mobile_calendar.css" />
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar flex_row">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <h1>Alarm</h1>
 
-            <div class="navbar flex_row">                
+            <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-                <h1>Alarm</h1>    
+            <button class="material-icons hide_on_no_map" onclick="openMap()">map</button>
+            <h1 style="margin-right: 1em" class="hide_on_no_map" onclick="openMap()">Karte</h1>
+        </div>
 
-                <div class="flex_grow"></div>
-
-                <button class="material-icons hide_on_no_map" onclick="openMap()">map</button>
-                <h1 style="margin-right: 1em;" class="hide_on_no_map" onclick="openMap()">Karte</h1>    
-
-            </div>
-
-            <div class="content" style="margin-bottom: 4em;">
-
-                <div class="flex_column">
-
-                    <div class="list hidden var_kombi">
-
-                        <div class="item">
-                            <span class="left material-icons">report_problem</span>
-                            <span class="text">Kombialarm: </span>             
-                            <span class="text right var_kombi_name">Feuerwehr Name</span>                 
-                        </div>
-
+        <div class="content" style="margin-bottom: 4em">
+            <div class="flex_column">
+                <div class="list hidden var_kombi">
+                    <div class="item">
+                        <span class="left material-icons">report_problem</span>
+                        <span class="text">Kombialarm: </span>
+                        <span class="text right var_kombi_name">Feuerwehr Name</span>
                     </div>
-                    
-                    <div class="list">
-
-                        <div class="item var_color container_stichwort">
-                            <span class="left material-icons">report_problem</span>
-                            <span class="text">Stichwort: </span>             
-                            <span class="text right var_stichwort">Stichwort</span>                 
-                        </div>
-
-                        <div class="item var_color container_schlagwort">
-                            <span class="left material-icons">report_problem</span>
-                            <span class="text">Schlagwort:</span>
-                            <span class="text right var_schlagwort">Schlagwort</span>  
-                        </div>
-
-                    </div>
-
-                    <div class="list">
-
-                        <div class="item smallitem container_prio">
-                            <span class="left material-icons">report_problem</span>
-                            <span class="text">Priorität:</span>
-                            <span class="text right var_prio">Priorität</span>
-                        </div>
-                        <div class="item smallitem container_strasse">
-                            <span class="left material-icons">map</span>
-                            <span class="text">Strasse:</span>
-                            <span class="text right var_strasse">Strasse</span>
-                        </div>
-                        <div class="item smallitem container_ortsteil">
-                            <span class="left material-icons">map</span>
-                            <span class="text">Ortsteil:</span>
-                            <span class="text right var_ortsteil">Ortsteil</span>
-                        </div>
-                        <div class="item smallitem container_ort">
-                            <span class="left material-icons">map</span>
-                            <span class="text">Ort:</span>
-                            <span class="text right var_ort">Ort</span>
-                        </div>
-                        <div class="item smallitem container_objekt">
-                            <span class="left material-icons">map</span>
-                            <span class="text">Objekt:</span>
-                            <span class="text right var_objekt">Objekt</span>
-                        </div>
-                        <div class="item smallitem container_kreuzung">
-                            <span class="left material-icons">map</span>
-                            <span class="text">Kreuzung:</span>
-                            <span class="text right var_kreuzung">Kreuzung</span>
-                        </div>
-                        <div class="item smallitem container_tetra">
-                            <span class="left material-icons">wifi</span>
-                            <span class="text">Tetra:</span>
-                            <span class="text right var_tetra">Tetra</span>
-                        </div>
-                        <div class="item smallitem container_mitteiler">
-                            <span class="left material-icons">person</span>
-                            <span class="text">Mitteiler:</span>
-                            <span class="text right var_mitteiler">Tetra</span>
-                        </div>
-                        <div class="item smallitem container_rufnummer">
-                            <span class="left material-icons">person</span>
-                            <span class="text">Rufnummer:</span>
-                            <span class="text right var_rufnummer">Rufnummer</span>
-                        </div>
-                        <div class="item smallitem container_patient">
-                            <span class="left material-icons">local_hospital</span>
-                            <span class="text">Patient:</span>
-                            <span class="text right var_patient">Patient</span>
-                        </div>
-                        <div class="item smallitem container_einsatzplan">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Einsatzplan:</span>
-                            <span class="text right var_einsatzplan">Einsatzplan</span>
-                        </div>
-
-                    </div>
-
-                    <div class="list einsatzmittel_eigen_list">
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Einsatzmittel eigene:</span>
-                        </div>
-                        
-                        <template id="template-einsatzmittel_eigen">
-                            <div class="item smallitem">
-                                <span class="text var_text">Einsatzmittel</span>
-                            </div>
-                        </template>
-
-                    </div>
-
-                    <div class="list einsatzmittel_andere_list">
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Einsatzmittel andere:</span>
-                        </div>
-                        
-                        <template id="template-einsatzmittel_andere">
-                            <div class="item smallitem">
-                                <span class="text var_text">Einsatzmittel</span>
-                            </div>
-                        </template>
-
-                    </div>
-
-                    <div class="list container_bemerkung">
-
-                        <div class="item">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Bemerkung:</span>
-                        </div>
-                        <div class="item smallitem">
-                            <span class="text var_bemerkung">Text</span>
-                        </div>
-
-                    </div>
-
-                    <div class="list container_hinweis">
-
-                        <div class="item">
-                            <span class="left material-icons">description</span>
-                            <span class="text">Hinweis:</span>
-                        </div>
-                        <div class="item smallitem">
-                            <span class="text var_hinweis">Text</span>
-                        </div>
-
-                    </div>
-
-                    
                 </div>
 
-               
-                
-            </div>
+                <div class="list">
+                    <div class="item var_color container_stichwort">
+                        <span class="left material-icons">report_problem</span>
+                        <span class="text">Stichwort: </span>
+                        <span class="text right var_stichwort">Stichwort</span>
+                    </div>
 
-            <div
+                    <div class="item var_color container_schlagwort">
+                        <span class="left material-icons">report_problem</span>
+                        <span class="text">Schlagwort:</span>
+                        <span class="text right var_schlagwort">Schlagwort</span>
+                    </div>
+                </div>
+
+                <div class="list">
+                    <div class="item smallitem container_prio">
+                        <span class="left material-icons">report_problem</span>
+                        <span class="text">Priorität:</span>
+                        <span class="text right var_prio">Priorität</span>
+                    </div>
+                    <div class="item smallitem container_strasse">
+                        <span class="left material-icons">map</span>
+                        <span class="text">Strasse:</span>
+                        <span class="text right var_strasse">Strasse</span>
+                    </div>
+                    <div class="item smallitem container_ortsteil">
+                        <span class="left material-icons">map</span>
+                        <span class="text">Ortsteil:</span>
+                        <span class="text right var_ortsteil">Ortsteil</span>
+                    </div>
+                    <div class="item smallitem container_ort">
+                        <span class="left material-icons">map</span>
+                        <span class="text">Ort:</span>
+                        <span class="text right var_ort">Ort</span>
+                    </div>
+                    <div class="item smallitem container_objekt">
+                        <span class="left material-icons">map</span>
+                        <span class="text">Objekt:</span>
+                        <span class="text right var_objekt">Objekt</span>
+                    </div>
+                    <div class="item smallitem container_kreuzung">
+                        <span class="left material-icons">map</span>
+                        <span class="text">Kreuzung:</span>
+                        <span class="text right var_kreuzung">Kreuzung</span>
+                    </div>
+                    <div class="item smallitem container_tetra">
+                        <span class="left material-icons">wifi</span>
+                        <span class="text">Tetra:</span>
+                        <span class="text right var_tetra">Tetra</span>
+                    </div>
+                    <div class="item smallitem container_mitteiler">
+                        <span class="left material-icons">person</span>
+                        <span class="text">Mitteiler:</span>
+                        <span class="text right var_mitteiler">Tetra</span>
+                    </div>
+                    <div class="item smallitem container_rufnummer">
+                        <span class="left material-icons">person</span>
+                        <span class="text">Rufnummer:</span>
+                        <span class="text right var_rufnummer">Rufnummer</span>
+                    </div>
+                    <div class="item smallitem container_patient">
+                        <span class="left material-icons">local_hospital</span>
+                        <span class="text">Patient:</span>
+                        <span class="text right var_patient">Patient</span>
+                    </div>
+                    <div class="item smallitem container_einsatzplan">
+                        <span class="left material-icons">description</span>
+                        <span class="text">Einsatzplan:</span>
+                        <span class="text right var_einsatzplan">Einsatzplan</span>
+                    </div>
+                </div>
+
+                <div class="list einsatzmittel_eigen_list">
+                    <div class="item smallitem">
+                        <span class="left material-icons">description</span>
+                        <span class="text">Einsatzmittel eigene:</span>
+                    </div>
+
+                    <template id="template-einsatzmittel_eigen">
+                        <div class="item smallitem">
+                            <span class="text var_text">Einsatzmittel</span>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="list einsatzmittel_andere_list">
+                    <div class="item smallitem">
+                        <span class="left material-icons">description</span>
+                        <span class="text">Einsatzmittel andere:</span>
+                    </div>
+
+                    <template id="template-einsatzmittel_andere">
+                        <div class="item smallitem">
+                            <span class="text var_text">Einsatzmittel</span>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="list container_bemerkung">
+                    <div class="item">
+                        <span class="left material-icons">description</span>
+                        <span class="text">Bemerkung:</span>
+                    </div>
+                    <div class="item smallitem">
+                        <span class="text var_bemerkung">Text</span>
+                    </div>
+                </div>
+
+                <div class="list container_hinweis">
+                    <div class="item">
+                        <span class="left material-icons">description</span>
+                        <span class="text">Hinweis:</span>
+                    </div>
+                    <div class="item smallitem">
+                        <span class="text var_hinweis">Text</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
             style="
                 position: fixed;
                 bottom: 0;
@@ -186,28 +159,26 @@
                 height: 4em;
                 background-color: var(--bg_navbar);
                 display: flex;
-                flex-direction: row;"
-                class="container_rueckmeldung"
-            >
-
-                <button class="btn red status_0" onclick="sendStatus(0);">
-                    <span class="material-icons">thumb_down</span>
-                </button>
-                <button class="btn green status_1" onclick="sendStatus(1);">
-                    <span class="material-icons">thumb_up</span>
-                </button>
-
-            </div>
+                flex-direction: row;
+            "
+            class="container_rueckmeldung"
+        >
+            <button class="btn red status_0" onclick="sendStatus(0);">
+                <span class="material-icons">thumb_down</span>
+            </button>
+            <button class="btn green status_1" onclick="sendStatus(1);">
+                <span class="material-icons">thumb_up</span>
+            </button>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
-            let coordiantes = {lat: 0, lng: 0}
+            let coordiantes = { lat: 0, lng: 0 };
 
             // Laden
-            async function load_alarm() {   
-                if($_GET['id'] == undefined || $_GET['id'] == '') {
+            async function load_alarm() {
+                if ($_GET['id'] == undefined || $_GET['id'] == '') {
                     console.log('$_GET["id"] required');
                     return;
                 }
@@ -218,18 +189,18 @@
                     const alarm = (await fetch_get(url_alarm.replace(':id', id), true))[0];
                     console.log('alarm', alarm);
 
-                    const target_eigen   = document.querySelector(".einsatzmittel_eigen_list");
-                    const target_andere  = document.querySelector(".einsatzmittel_andere_list");
-                    const container_rueckmeldung  = document.querySelector(".container_rueckmeldung");
-                    const content  = document.querySelector(".content");
-                    
-                    const date = new Date(alarm.date);   
-                    
-                    if(new Date().getTime() - date.getTime() > 3 * 60 * 60 * 1000) {
+                    const target_eigen = document.querySelector('.einsatzmittel_eigen_list');
+                    const target_andere = document.querySelector('.einsatzmittel_andere_list');
+                    const container_rueckmeldung =
+                        document.querySelector('.container_rueckmeldung');
+                    const content = document.querySelector('.content');
+
+                    const date = new Date(alarm.date);
+
+                    if (new Date().getTime() - date.getTime() > 3 * 60 * 60 * 1000) {
                         container_rueckmeldung.classList.add('hidden');
                         content.style.marginBottom = 0;
                     }
-                    
 
                     let color = 'green';
                     switch (alarm.color) {
@@ -249,168 +220,160 @@
                             break;
                     }
 
-                    const var_kombi        = document.querySelector(".var_kombi");
-                    const var_kombi_name   = document.querySelector(".var_kombi_name");
-                    
-                    if(alarm.kombi) {
+                    const var_kombi = document.querySelector('.var_kombi');
+                    const var_kombi_name = document.querySelector('.var_kombi_name');
+
+                    if (alarm.kombi) {
                         var_kombi.classList.remove('hidden');
                         var_kombi_name.innerHTML = alarm.kombi;
                     }
 
-                    const var_color   = document.querySelectorAll(".var_color");
-                    for (let i = 0; i < var_color.length; i++){
+                    const var_color = document.querySelectorAll('.var_color');
+                    for (let i = 0; i < var_color.length; i++) {
                         var_color[i].classList.add(color);
                     }
 
-                    const var_stichwort   = document.querySelector(".var_stichwort");
-                    const var_schlagwort  = document.querySelector(".var_schlagwort");
-                    const var_strasse     = document.querySelector(".var_strasse");
-                    const var_ortsteil    = document.querySelector(".var_ortsteil");
-                    const var_ort         = document.querySelector(".var_ort");
-                    const var_objekt      = document.querySelector(".var_objekt");                       
-                    const var_kreuzung    = document.querySelector(".var_kreuzung"); 
-                    const var_prio        = document.querySelector(".var_prio"); 
-                    const var_tetra       = document.querySelector(".var_tetra"); 
-                    const var_einsatzplan = document.querySelector(".var_einsatzplan"); 
-                    const var_mitteiler   = document.querySelector(".var_mitteiler"); 
-                    const var_rufnummer   = document.querySelector(".var_rufnummer"); 
-                    const var_patient     = document.querySelector(".var_patient"); 
+                    const var_stichwort = document.querySelector('.var_stichwort');
+                    const var_schlagwort = document.querySelector('.var_schlagwort');
+                    const var_strasse = document.querySelector('.var_strasse');
+                    const var_ortsteil = document.querySelector('.var_ortsteil');
+                    const var_ort = document.querySelector('.var_ort');
+                    const var_objekt = document.querySelector('.var_objekt');
+                    const var_kreuzung = document.querySelector('.var_kreuzung');
+                    const var_prio = document.querySelector('.var_prio');
+                    const var_tetra = document.querySelector('.var_tetra');
+                    const var_einsatzplan = document.querySelector('.var_einsatzplan');
+                    const var_mitteiler = document.querySelector('.var_mitteiler');
+                    const var_rufnummer = document.querySelector('.var_rufnummer');
+                    const var_patient = document.querySelector('.var_patient');
 
-                    var_stichwort.innerHTML   = alarm.einsatzstichwort;
-                    var_schlagwort.innerHTML  = alarm.schlagwort;
-                    var_strasse.innerHTML     = alarm.strasse;
-                    var_ortsteil.innerHTML    = alarm.ortsteil;
-                    var_ort.innerHTML         = alarm.ort;
-                    var_objekt.innerHTML      = alarm.objekt;                    
-                    var_kreuzung.innerHTML    = alarm.kreuzung;                    
-                    var_prio.innerHTML        = alarm.prio;                    
-                    var_tetra.innerHTML       = alarm.tetra;                    
-                    var_einsatzplan.innerHTML = alarm.einsatzplan;    
-                    var_mitteiler.innerHTML   = alarm.mitteiler;    
-                    var_rufnummer.innerHTML   = alarm.rufnummer;    
-                    var_patient.innerHTML     = alarm.patient;    
-                    
-                    const container_stichwort   = document.querySelector(".container_stichwort");
-                    const container_schlagwort  = document.querySelector(".container_schlagwort");
-                    const container_strasse     = document.querySelector(".container_strasse");
-                    const container_ortsteil    = document.querySelector(".container_ortsteil");
-                    const container_ort         = document.querySelector(".container_ort");
-                    const container_objekt      = document.querySelector(".container_objekt");                       
-                    const container_kreuzung    = document.querySelector(".container_kreuzung"); 
-                    const container_prio        = document.querySelector(".container_prio"); 
-                    const container_tetra       = document.querySelector(".container_tetra"); 
-                    const container_einsatzplan = document.querySelector(".container_einsatzplan"); 
-                    const container_mitteiler   = document.querySelector(".container_mitteiler"); 
-                    const container_rufnummer   = document.querySelector(".container_rufnummer"); 
-                    const container_patient     = document.querySelector(".container_patient"); 
+                    var_stichwort.innerHTML = alarm.einsatzstichwort;
+                    var_schlagwort.innerHTML = alarm.schlagwort;
+                    var_strasse.innerHTML = alarm.strasse;
+                    var_ortsteil.innerHTML = alarm.ortsteil;
+                    var_ort.innerHTML = alarm.ort;
+                    var_objekt.innerHTML = alarm.objekt;
+                    var_kreuzung.innerHTML = alarm.kreuzung;
+                    var_prio.innerHTML = alarm.prio;
+                    var_tetra.innerHTML = alarm.tetra;
+                    var_einsatzplan.innerHTML = alarm.einsatzplan;
+                    var_mitteiler.innerHTML = alarm.mitteiler;
+                    var_rufnummer.innerHTML = alarm.rufnummer;
+                    var_patient.innerHTML = alarm.patient;
 
-                    if(alarm.einsatzstichwort == '') container_stichwort.classList.add('hidden');
-                    if(alarm.schlagwort == '') container_schlagwort.classList.add('hidden');
-                    if(alarm.strasse == '') container_strasse.classList.add('hidden');
-                    if(alarm.ortsteil == '') container_ortsteil.classList.add('hidden');
-                    if(alarm.ort == '') container_ort.classList.add('hidden');
-                    if(alarm.objekt == '') container_objekt.classList.add('hidden');
-                    if(alarm.kreuzung == '') container_kreuzung.classList.add('hidden');
-                    if(alarm.prio == '') container_prio.classList.add('hidden');
-                    if(alarm.tetra == '') container_tetra.classList.add('hidden');
-                    if(alarm.einsatzplan == '') container_einsatzplan.classList.add('hidden');
-                    if(alarm.mitteiler == '') container_mitteiler.classList.add('hidden');
-                    if(alarm.rufnummer == '') container_rufnummer.classList.add('hidden');
-                    if(alarm.patient == '') container_patient.classList.add('hidden');
+                    const container_stichwort = document.querySelector('.container_stichwort');
+                    const container_schlagwort = document.querySelector('.container_schlagwort');
+                    const container_strasse = document.querySelector('.container_strasse');
+                    const container_ortsteil = document.querySelector('.container_ortsteil');
+                    const container_ort = document.querySelector('.container_ort');
+                    const container_objekt = document.querySelector('.container_objekt');
+                    const container_kreuzung = document.querySelector('.container_kreuzung');
+                    const container_prio = document.querySelector('.container_prio');
+                    const container_tetra = document.querySelector('.container_tetra');
+                    const container_einsatzplan = document.querySelector('.container_einsatzplan');
+                    const container_mitteiler = document.querySelector('.container_mitteiler');
+                    const container_rufnummer = document.querySelector('.container_rufnummer');
+                    const container_patient = document.querySelector('.container_patient');
 
-                    const var_bemerkung       = document.querySelector(".var_bemerkung"); 
-                    const container_bemerkung = document.querySelector(".container_bemerkung");   
-                    var_bemerkung.innerHTML  = alarm.bemerkung;
-                    if(alarm.bemerkung == '') container_bemerkung.classList.add('hidden');
+                    if (alarm.einsatzstichwort == '') container_stichwort.classList.add('hidden');
+                    if (alarm.schlagwort == '') container_schlagwort.classList.add('hidden');
+                    if (alarm.strasse == '') container_strasse.classList.add('hidden');
+                    if (alarm.ortsteil == '') container_ortsteil.classList.add('hidden');
+                    if (alarm.ort == '') container_ort.classList.add('hidden');
+                    if (alarm.objekt == '') container_objekt.classList.add('hidden');
+                    if (alarm.kreuzung == '') container_kreuzung.classList.add('hidden');
+                    if (alarm.prio == '') container_prio.classList.add('hidden');
+                    if (alarm.tetra == '') container_tetra.classList.add('hidden');
+                    if (alarm.einsatzplan == '') container_einsatzplan.classList.add('hidden');
+                    if (alarm.mitteiler == '') container_mitteiler.classList.add('hidden');
+                    if (alarm.rufnummer == '') container_rufnummer.classList.add('hidden');
+                    if (alarm.patient == '') container_patient.classList.add('hidden');
 
-                    const var_hinweis       = document.querySelector(".var_hinweis"); 
-                    const container_hinweis = document.querySelector(".container_hinweis");   
-                    var_hinweis.innerHTML  = alarm.hinweis;
-                    if(alarm.hinweis == '') container_hinweis.classList.add('hidden');
+                    const var_bemerkung = document.querySelector('.var_bemerkung');
+                    const container_bemerkung = document.querySelector('.container_bemerkung');
+                    var_bemerkung.innerHTML = alarm.bemerkung;
+                    if (alarm.bemerkung == '') container_bemerkung.classList.add('hidden');
 
-                    const einsatzmittel_eigen  = alarm.cars1.split('|');
+                    const var_hinweis = document.querySelector('.var_hinweis');
+                    const container_hinweis = document.querySelector('.container_hinweis');
+                    var_hinweis.innerHTML = alarm.hinweis;
+                    if (alarm.hinweis == '') container_hinweis.classList.add('hidden');
+
+                    const einsatzmittel_eigen = alarm.cars1.split('|');
                     const einsatzmittel_andere = alarm.cars2.split('|');
 
                     for (let i = 0; i < einsatzmittel_eigen.length; i++) {
-                        const template   = document.querySelector('#template-einsatzmittel_eigen');                
-                        const var_text   = template.content.querySelector(".var_text");
+                        const template = document.querySelector('#template-einsatzmittel_eigen');
+                        const var_text = template.content.querySelector('.var_text');
 
-                        var_text.innerHTML   = einsatzmittel_eigen[i];
+                        var_text.innerHTML = einsatzmittel_eigen[i];
 
                         const clone = document.importNode(template.content, true);
-                        target_eigen.append(clone);                        
+                        target_eigen.append(clone);
                     }
-                    if(alarm.cars1.length < 1) target_eigen.classList.add('hidden');
+                    if (alarm.cars1.length < 1) target_eigen.classList.add('hidden');
 
                     for (let i = 0; i < einsatzmittel_andere.length; i++) {
-                        const template   = document.querySelector('#template-einsatzmittel_andere');                
-                        const var_text   = template.content.querySelector(".var_text");
+                        const template = document.querySelector('#template-einsatzmittel_andere');
+                        const var_text = template.content.querySelector('.var_text');
 
-                        var_text.innerHTML   = einsatzmittel_andere[i];
+                        var_text.innerHTML = einsatzmittel_andere[i];
 
                         const clone = document.importNode(template.content, true);
                         target_andere.append(clone);
                     }
-                    if(alarm.cars2.length < 1) target_andere.classList.add('hidden');
+                    if (alarm.cars2.length < 1) target_andere.classList.add('hidden');
 
-
-                    if(!alarm.lat || !alarm.lng || alarm.lat == '' || alarm.lng == '') {
-                        const var_color   = document.querySelectorAll(".hide_on_no_map");
-                        for (let i = 0; i < var_color.length; i++){
+                    if (!alarm.lat || !alarm.lng || alarm.lat == '' || alarm.lng == '') {
+                        const var_color = document.querySelectorAll('.hide_on_no_map');
+                        for (let i = 0; i < var_color.length; i++) {
                             var_color[i].classList.add('hidden');
                         }
                     } else {
                         coordiantes.lat = alarm.lat;
                         coordiantes.lng = alarm.lng;
                     }
-                   
-
-           
                 } catch (error) {
                     console.error('load_alarms', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
                 }
             }
 
             // Hilfsfunktionen
             function openMap() {
-                loaderIn(`map?lat=${coordiantes.lat}&lng=${coordiantes.lng}`)
+                loaderIn(`map?lat=${coordiantes.lat}&lng=${coordiantes.lng}`);
             }
 
             async function sendStatus(status) {
                 loaderIn();
 
-                const button0   = document.querySelector(".status_0");
-                const button1   = document.querySelector(".status_1");
+                const button0 = document.querySelector('.status_0');
+                const button1 = document.querySelector('.status_1');
 
                 button0.classList.remove('text_black');
                 button1.classList.remove('text_black');
 
-                const button   = document.querySelector(".status_" + status);
+                const button = document.querySelector('.status_' + status);
                 button.classList.add('text_black');
-                
+
                 const id = $_GET['id'];
-                
+
                 try {
-                    const response = await fetch_post(url_alarm_userstatus.replace(':id', user_id), {alarmid: parseInt(id), value: status});  
+                    const response = await fetch_post(
+                        url_alarm_userstatus.replace(':id', user_id),
+                        { alarmid: parseInt(id), value: status }
+                    );
                 } catch (error) {
                     console.error('sendStatus', error);
                     alert('Status konnte nicht gesendet werden.');
-                }                            
+                }
                 loaderOut();
             }
-
 
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_alarm();
             };
-            
-
-
         </script>
-
-       
     </body>
-	
 </html>

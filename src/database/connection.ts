@@ -6,7 +6,7 @@ import fs from 'fs';
 import logging from '../utils/logging';
 import config from '../utils/config';
 
-const NAMESPACE = 'DatabaseConnection';
+const NAMESPACE = 'Database_Connection';
 
 class DatabaseConnection {
     private db: Database.Database | undefined = undefined;

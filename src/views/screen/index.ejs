@@ -1,153 +1,135 @@
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - Screen</title>
 
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - Screen</title>	
-
-        <link rel="stylesheet" href="/css/screen_index.css">
-
-    </head>	
+        <link rel="stylesheet" href="/css/screen_index.css" />
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button
+                class="material-icons"
+                onclick="loaderIn('alarm?name=' + clientName + '&id=last&manuell=true');"
+            >
+                menu
+            </button>
 
-            <div class="navbar">
+            <h1>FWmonitor</h1>
 
-                <button class="material-icons" onclick="loaderIn('alarm?name=' + clientName + '&id=last&manuell=true');">menu</button>
+            <h1 class="var_name text_align_center flex_grow"><%= fwname %></h1>
 
-                <h1>FWmonitor</h1>  
-                
-                <h1 class="var_name text_align_center flex_grow"><%= fwname %></h1>  
+            <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>
+        </div>
+        <div
+            class="content flex_row"
+            style="
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-position: center top;
+                background-size: contain;
+            "
+        >
+            <div class="col_left"></div>
 
-                <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>  
-
-            </div>
-            <div class="content flex_row" style=" background-repeat: no-repeat; background-attachment: fixed; background-position: center top; background-size: contain;">
-
-                <div class="col_left">                
+            <div class="col_center flex_grow">
+                <div class="list_verfuegbar">
+                    <template id="template-verfuegbar">
+                        <p class="var_name deleteme_verf st_verf green">####r</p>
+                    </template>
                 </div>
-
-                <div class="col_center flex_grow">
-                    <div class="list_verfuegbar">
-                        <template id="template-verfuegbar">
-                            <p class="var_name deleteme_verf st_verf green">####r</p>
-                        </template>
-                    </div>
-                    <div class="list_nichtverfuegabr">
-                        <template id="template-nichtverfuegbar">
-                            <p class="var_name deleteme_nverf st_nverf red">####r</p>
-                        </template>
-                    </div>
+                <div class="list_nichtverfuegabr">
+                    <template id="template-nichtverfuegbar">
+                        <p class="var_name deleteme_nverf st_nverf red">####r</p>
+                    </template>
                 </div>
-
-                <div class="col_right">
-                </div>
-
-                <template id="template-calendarelement">
-
-                    <div class="calendar_element flex_row deleteme_calendar">
-
-                        <div class="var_emoji color-emoji">
-                            <span>?</span>
-                        </div>    
-
-                        <div class="flex_column flex_grow content_container">                        
-
-                            <div class="flex_row">  
-                                                      
-                                <div class="flex_grow text_container">
-                                    <span class="var_text">
-                                        Text
-                                    </span>
-                                </div>
-
-                                <div class="text_align_right date_container">
-                                    <span class="var_date">##.##.</span>
-                                    <span class="var_time">##:##&nbsp;</span>
-                                </div>  
-
-                            </div>
-
-                            <div class="var_groups">
-                                <span class="badge green">#####</span>
-                                <span class="badge blue">#####</span>
-                            </div>   
-
-                        </div>   
-    
-                    </div>
-
-                </template>
-
-                <template id="template-dwdelement">
-
-                    <div class="calendar_element dwd_element flex_row deleteme_dwd">
-
-                        <div class="var_emoji">
-                            <span>⚠️</span>
-                        </div>    
-
-                        <div class="flex_column flex_grow content_container">         
-                            
-                            <div class="flex_grow">
-                                <span class="var_name">
-                                    Name
-                                </span>
-                            </div>
-                              
-                            <div class="flex_grow">
-                                <span class="var_text">
-                                    Text
-                                </span>
-                            </div>
-
-                            <div class="text_align_right dwd_date">
-                                <span class="var_date">##.##.#### ##:## - ##.##.#### ##:##</span>
-                            </div>  
-
-                        </div>   
-    
-                    </div>
-
-                </template>
-
             </div>
 
-            <div class="var_imagedate hidden">####-##-##</div>
+            <div class="col_right"></div>
+
+            <template id="template-calendarelement">
+                <div class="calendar_element flex_row deleteme_calendar">
+                    <div class="var_emoji color-emoji">
+                        <span>?</span>
+                    </div>
+
+                    <div class="flex_column flex_grow content_container">
+                        <div class="flex_row">
+                            <div class="flex_grow text_container">
+                                <span class="var_text"> Text </span>
+                            </div>
+
+                            <div class="text_align_right date_container">
+                                <span class="var_date">##.##.</span>
+                                <span class="var_time">##:##&nbsp;</span>
+                            </div>
+                        </div>
+
+                        <div class="var_groups">
+                            <span class="badge green">#####</span>
+                            <span class="badge blue">#####</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template id="template-dwdelement">
+                <div class="calendar_element dwd_element flex_row deleteme_dwd">
+                    <div class="var_emoji">
+                        <span>⚠️</span>
+                    </div>
+
+                    <div class="flex_column flex_grow content_container">
+                        <div class="flex_grow">
+                            <span class="var_name"> Name </span>
+                        </div>
+
+                        <div class="flex_grow">
+                            <span class="var_text"> Text </span>
+                        </div>
+
+                        <div class="text_align_right dwd_date">
+                            <span class="var_date">##.##.#### ##:## - ##.##.#### ##:##</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <div class="var_imagedate hidden">####-##-##</div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
-            const col_left        = document.querySelector('.col_left');
-            const col_center      = document.querySelector('.col_center');
-            const col_right       = document.querySelector('.col_right');
-
+            const col_left = document.querySelector('.col_left');
+            const col_center = document.querySelector('.col_center');
+            const col_right = document.querySelector('.col_right');
+            
             let diashow_time       = parseInt(localStorage.getItem("diashow_time")       || <%= time_diashow %>);
             let diashow_imagedate  = parseInt(localStorage.getItem("diashow_imagedate")  || <%= imagedate_diashow %>);
             let pos_dwd            = parseInt(localStorage.getItem("pos_dwd")            || <%= dwd_position %>);
             let pos_calendar       = parseInt(localStorage.getItem("pos_calendar")       || <%= calendar_position %>);
-            let calendar_elements  = parseInt(localStorage.getItem("calendar_elements")  || 8);     
-            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || <%= show_verf %>; 
-            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || <%= show_nverf %>;      
-            let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);  
-            let clientId           = localStorage.getItem("clientId") || undefined; 
+            let calendar_elements  = parseInt(localStorage.getItem("calendar_elements")  || 8);
+            let status_verf        = parseInt(localStorage.getItem("status_verf"))       || <%= show_verf %>;
+            let status_nverf       = parseInt(localStorage.getItem("status_nverf"))      || <%= show_nverf %>;
+            let alarm_visible_time = parseInt(localStorage.getItem("alarm_visible_time") || <%= time_alarm %>);
+            let clientId           = localStorage.getItem("clientId") || undefined;
 
 
-            const clientName          = $_GET['name'];	
+            const clientName = $_GET['name'];
             const keepAlive_intervall = 10000;
-            const keepAlive_timeout   = 60000;
+            const keepAlive_timeout = 60000;
 
-			console.log("Client-Name: ", clientName);
-            console.log("diashow_time: ", diashow_time);
-            console.log("pos_dwd: ", pos_dwd);
-            console.log("pos_calendar: ", pos_calendar);
-            console.log("calendar_elements: ", calendar_elements);
-            console.log("status_verf: ", status_verf);
-            console.log("status_nverf: ", status_nverf);
+            console.log('Client-Name: ', clientName);
+            console.log('diashow_time: ', diashow_time);
+            console.log('pos_dwd: ', pos_dwd);
+            console.log('pos_calendar: ', pos_calendar);
+            console.log('calendar_elements: ', calendar_elements);
+            console.log('status_verf: ', status_verf);
+            console.log('status_nverf: ', status_nverf);
 
             let connected = true;
             let socket_software;
@@ -159,25 +141,28 @@
                     console.log('files', files);
                     const images = files.enabled;
 
-                    const target = document.querySelector(".content");
-                    const target_date = document.querySelector(".var_imagedate");
+                    const target = document.querySelector('.content');
+                    const target_date = document.querySelector('.var_imagedate');
 
                     const count = images.length;
                     let nextImage = Math.floor(Math.random() * count);
                     let img;
                     function slideshow() {
-                        target.style.backgroundImage = `url("${url_diashow_file.replace(':filename', images[nextImage].name)}")`;
-         
-                        if(diashow_imagedate > 0 && images[nextImage].time > 0) {
-                            const imgdate = new Date(images[nextImage].time)
+                        target.style.backgroundImage = `url("${url_diashow_file.replace(
+                            ':filename',
+                            images[nextImage].name
+                        )}")`;
+
+                        if (diashow_imagedate > 0 && images[nextImage].time > 0) {
+                            const imgdate = new Date(images[nextImage].time);
                             target_date.innerHTML = imgdate.toISOString().split('T')[0];
                             target_date.classList.remove('hidden');
                         } else {
                             target_date.classList.add('hidden');
                         }
-                        
+
                         nextImage++;
-                        if(nextImage >= count){
+                        if (nextImage >= count) {
                             nextImage = 0;
                         }
                         // Nächstes Bild preload
@@ -187,20 +172,19 @@
                     }
                     slideshow();
                     setInterval(slideshow, diashow_time);
-
                 } catch (error) {
                     console.error('load_diashow', error);
-                } 
+                }
             }
-            
+
             async function load_clock() {
                 setInterval(() => {
                     const d = new Date();
-                    const options = {  year: 'numeric', month: '2-digit', day: '2-digit' };
+                    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
                     const time = d.toLocaleTimeString();
                     const date = d.toLocaleDateString('de-DE', options);
-                    document.querySelector('.var_time').innerHTML = time + " - " + date;
-                }, 1000)
+                    document.querySelector('.var_time').innerHTML = time + ' - ' + date;
+                }, 1000);
             }
 
             async function load_calendar() {
@@ -222,44 +206,52 @@
                     console.log('calendarUpcoming', calendarElements);
 
                     // Bereits vorhandene Elemente löschen
-                    let elements = target.getElementsByClassName("deleteme_calendar");
-                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                    let elements = target.getElementsByClassName('deleteme_calendar');
+                    while (elements.length > 0) {
+                        elements[0].parentNode.removeChild(elements[0]);
+                    }
 
-                    for(let i = 0; i < calendarElements.length && i < calendar_elements; i++) {
+                    for (let i = 0; i < calendarElements.length && i < calendar_elements; i++) {
                         const element = calendarElements[i];
 
-                        const date = new Date(element.start);   
-                        const {text, icon} = parseKalenderSummary(element.summary);
-                        let badge = "";
-                        for(let j = 0; j < element.group.length; j++) {
-                            badge += '<span class="badge green">'+element.group[j].name+'</span>';
+                        const date = new Date(element.start);
+                        const { text, icon } = parseKalenderSummary(element.summary);
+                        let badge = '';
+                        for (let j = 0; j < element.group.length; j++) {
+                            badge +=
+                                '<span class="badge green">' + element.group[j].name + '</span>';
                         }
 
-                        const template   = document.querySelector('#template-calendarelement');                
-                        const var_text   = template.content.querySelector(".var_text");
-                        const var_date   = template.content.querySelector(".var_date");
-                        const var_time   = template.content.querySelector(".var_time");
-                        const var_groups = template.content.querySelector(".var_groups");
-                        const var_emoji  = template.content.querySelector(".var_emoji");
+                        const template = document.querySelector('#template-calendarelement');
+                        const var_text = template.content.querySelector('.var_text');
+                        const var_date = template.content.querySelector('.var_date');
+                        const var_time = template.content.querySelector('.var_time');
+                        const var_groups = template.content.querySelector('.var_groups');
+                        const var_emoji = template.content.querySelector('.var_emoji');
 
-                        var_text.innerHTML   = text;
-                        var_date.innerHTML   = ('0' + date.getDate()).slice(-2) + '.' + ('0' + (date.getMonth()+1)).slice(-2) + '.';
-                        var_time.innerHTML   = ('0' + date.getHours()).slice(-2) + ':' + ('0' + date.getMinutes()).slice(-2);
+                        var_text.innerHTML = text;
+                        var_date.innerHTML =
+                            ('0' + date.getDate()).slice(-2) +
+                            '.' +
+                            ('0' + (date.getMonth() + 1)).slice(-2) +
+                            '.';
+                        var_time.innerHTML =
+                            ('0' + date.getHours()).slice(-2) +
+                            ':' +
+                            ('0' + date.getMinutes()).slice(-2);
                         var_groups.innerHTML = badge;
-                        var_emoji.innerHTML  = icon;
+                        var_emoji.innerHTML = icon;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.appendChild(clone);
-
                     }
-
                 } catch (error) {
                     console.error('load_calendar', error);
-                } 
+                }
             }
 
             async function load_dwd() {
-                if('<%= dwd_warncellid %>' == '') return;
+                if ('<%= dwd_warncellid %>' == '') return;
 
                 let target;
                 switch (pos_dwd) {
@@ -275,41 +267,45 @@
                 }
 
                 try {
-                    const dwd_warnings = await fetch_get(url_dwd_warnings.replace(':warncellid', '<%= dwd_warncellid %>'), true);
+                    const dwd_warnings = await fetch_get(
+                        url_dwd_warnings.replace(':warncellid', '<%= dwd_warncellid %>'),
+                        true
+                    );
                     console.log('dwd_warnings', dwd_warnings);
 
                     const features = dwd_warnings.features;
 
                     // Bereits vorhandene Elemente löschen
-                    let elements = target.getElementsByClassName("deleteme_dwd");
-                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                    let elements = target.getElementsByClassName('deleteme_dwd');
+                    while (elements.length > 0) {
+                        elements[0].parentNode.removeChild(elements[0]);
+                    }
 
-                    for(let i = 0; i < features.length; i++) {
+                    for (let i = 0; i < features.length; i++) {
                         const element = features[i];
 
-                        const prop_name        = element.properties.NAME;
-                        const prop_event       = element.properties.EVENT;
-                        const prop_headline    = element.properties.HEADLINE;
-                        const prop_begin       = element.properties.ONSET.replace(/[TZ]/g, ' ');
-                        const prop_end         = element.properties.EXPIRES.replace(/[TZ]/g, ' ');
-                        const prop_description = element.properties.DESCRIPTION;						
+                        const prop_name = element.properties.NAME;
+                        const prop_event = element.properties.EVENT;
+                        const prop_headline = element.properties.HEADLINE;
+                        const prop_begin = element.properties.ONSET.replace(/[TZ]/g, ' ');
+                        const prop_end = element.properties.EXPIRES.replace(/[TZ]/g, ' ');
+                        const prop_description = element.properties.DESCRIPTION;
 
-                        const template   = document.querySelector('#template-dwdelement');  
-                        const var_name   = template.content.querySelector(".var_name");              
-                        const var_text   = template.content.querySelector(".var_text");
-                        const var_date   = template.content.querySelector(".var_date");
+                        const template = document.querySelector('#template-dwdelement');
+                        const var_name = template.content.querySelector('.var_name');
+                        const var_text = template.content.querySelector('.var_text');
+                        const var_date = template.content.querySelector('.var_date');
 
-                        var_name.innerHTML   = prop_name;
-                        var_text.innerHTML   = prop_headline;
-                        var_date.innerHTML   = prop_begin + '<br />' + prop_end;
+                        var_name.innerHTML = prop_name;
+                        var_text.innerHTML = prop_headline;
+                        var_date.innerHTML = prop_begin + '<br />' + prop_end;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.appendChild(clone);
                     }
-
                 } catch (error) {
                     console.error('load_dwd', error);
-                } 
+                }
             }
 
             async function load_status() {
@@ -317,137 +313,165 @@
                     const userStatusList = await fetch_get(url_user_status_all, true);
                     console.log('user status all', userStatusList);
 
-                    var target_verfuegbar = document.querySelector(".list_verfuegbar");
-                    var target_nichtverfuegbar = document.querySelector(".list_nichtverfuegabr");
+                    var target_verfuegbar = document.querySelector('.list_verfuegbar');
+                    var target_nichtverfuegbar = document.querySelector('.list_nichtverfuegabr');
 
                     // Bereits vorhandene Elemente löschen
-                    let elements = target_verfuegbar.getElementsByClassName("deleteme_verf");
-                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                    let elements = target_verfuegbar.getElementsByClassName('deleteme_verf');
+                    while (elements.length > 0) {
+                        elements[0].parentNode.removeChild(elements[0]);
+                    }
 
                     // Bereits vorhandene Elemente löschen
-                    elements = target_nichtverfuegbar.getElementsByClassName("deleteme_nverf");
-                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                    elements = target_nichtverfuegbar.getElementsByClassName('deleteme_nverf');
+                    while (elements.length > 0) {
+                        elements[0].parentNode.removeChild(elements[0]);
+                    }
 
-                    for(let i = 0; i < userStatusList.length; i++) {
-
+                    for (let i = 0; i < userStatusList.length; i++) {
                         const userstatus = userStatusList[i];
 
-                        if(userstatus.status == 1 && status_verf) {
-                            const template = document.querySelector('#template-verfuegbar');                
-                            const var_text   = template.content.querySelector(".var_name");
-                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                        if (userstatus.status == 1 && status_verf) {
+                            const template = document.querySelector('#template-verfuegbar');
+                            const var_text = template.content.querySelector('.var_name');
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;
                             var clone = document.importNode(template.content, true);
                             target_verfuegbar.appendChild(clone);
                         } else if (userstatus.status == 2 && status_nverf) {
-                            const template = document.querySelector('#template-nichtverfuegbar');                
-                            const var_text   = template.content.querySelector(".var_name");
-                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;                        
+                            const template = document.querySelector('#template-nichtverfuegbar');
+                            const var_text = template.content.querySelector('.var_name');
+                            var_text.innerHTML = userstatus.name + ' ' + userstatus.vorname;
                             var clone = document.importNode(template.content, true);
                             target_nichtverfuegbar.appendChild(clone);
-                        } else if (status_nverf && (userstatus.status == -2 || userstatus.status == -1 || userstatus.status == 0)) {
-                            const template = document.querySelector('#template-nichtverfuegbar');                
-                            const var_text   = template.content.querySelector(".var_name");
-                            var_text.innerHTML = "Telegram Fehler: " + userstatus.name + ' ' + userstatus.vorname;                        
+                        } else if (
+                            status_nverf &&
+                            (userstatus.status == -2 ||
+                                userstatus.status == -1 ||
+                                userstatus.status == 0)
+                        ) {
+                            const template = document.querySelector('#template-nichtverfuegbar');
+                            const var_text = template.content.querySelector('.var_name');
+                            var_text.innerHTML =
+                                'Telegram Fehler: ' + userstatus.name + ' ' + userstatus.vorname;
                             var clone = document.importNode(template.content, true);
                             target_nichtverfuegbar.appendChild(clone);
                         }
                     }
-
                 } catch (error) {
                     console.error('load_status', error);
-                }                
+                }
             }
 
             async function check_isAlarm() {
                 const isalarm = await fetch_get(url_alarm_isalarm, true);
                 console.log('isalarm', isalarm);
 
-                if(!isalarm.isAlarm) return;
+                if (!isalarm.isAlarm) return;
 
                 window.location.href = 'alarm?name=' + clientName;
             }
 
-            async function connect_software() {			
-				let keepAliveInterval = null;               
+            async function connect_software() {
+                let keepAliveInterval = null;
 
                 try {
                     console.log('Software-connection socket connecting...');
-                    socket_software = await initWebsocket(
-                        'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
-                        socket_software, 
-                        30000, 
+                    socket_software = await ws_init(
+                        'ws://' +
+                            window.location.hostname +
+                            (window.location.port ? ':' + window.location.port : ''),
+                        socket_software,
+                        30000,
                         -1
-                    );                      
+                    );
                 } catch (error) {
                     console.error(error);
-                    setTimeout(function() { connect_software(); }, 1000 * 30);
+                    setTimeout(function () {
+                        connect_software();
+                    }, 1000 * 30);
                 }
 
-                if(socket_software.readyState != 1) {
-                    console.error("Error: Connection not open");
-                    setTimeout(function() { connect_software(); }, 1000 * 5);
+                if (socket_software.readyState != 1) {
+                    console.error('Error: Connection not open');
+                    setTimeout(function () {
+                        connect_software();
+                    }, 1000 * 5);
                 }
-				
-				// Event: Socket geöffnet
-                console.log("Software-connection socket connected.");
+
+                // Event: Socket geöffnet
+                console.log('Software-connection socket connected.');
 
                 socket_software.send(`{
-                    "topic": "init",
-                    "type":"WebClient",
-                    "name":"Alarmdisplay ${clientName}",
-                    "info":"Index",
-                    ${clientId ? '"id":"' + clientId + '",' : ''}
-                    "actions":[
-                        {"id":"0"},
-                        {"id":"1"},		
-                        {"id":"8", "value": "<%= version %>"},							
-                        {"id":"3", "value": ${calendar_elements}},                            
-                        {"id":"10", "value": ${pos_calendar}},
-                        {"id":"11", "value": ${pos_dwd}},
-                        {"id":"12", "value": ${diashow_time/1000}},
-                        {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
-                        {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
-                        {"id":"15", "value": "${alarm_visible_time}"},
-                        {"id":"16", "value": "${diashow_imagedate ? 'sichtbar' : 'versteckt'}"},
-                        {"id":"2"},
-                        {"id":"4"},
-                        {"id":"6"}
-                    ]}`
-                ); // siehe websockets.ts                
-                
-                lastKeepAlive = new Date();					
+                             "topic": "init",
+                             "type":"WebClient",
+                             "name":"Alarmdisplay ${clientName}",
+                             "info":"Index",
+                             ${clientId ? '"id":"' + clientId + '",' : ''}
+                             "actions":[
+                                 {"id":"0"},
+                                 {"id":"1"},
+                                 {"id":"8", "value": "<%= version %>"},
+                                 {"id":"3", "value": ${calendar_elements}},
+                                 {"id":"10", "value": ${pos_calendar}},
+                                 {"id":"11", "value": ${pos_dwd}},
+                                 {"id":"12", "value": ${diashow_time / 1000}},
+                                 {"id":"13", "value": "${status_verf ? 'sichtbar' : 'versteckt'}"},
+                                 {"id":"14", "value": "${status_nverf ? 'sichtbar' : 'versteckt'}"},
+                                 {"id":"15", "value": "${alarm_visible_time}"},
+                                 {"id":"16", "value": "${
+                                     diashow_imagedate ? 'sichtbar' : 'versteckt'
+                                 }"},
+                                 {"id":"2"},
+                                 {"id":"4"},
+                                 {"id":"6"}
+                             ]}`); // siehe websockets.ts
+
+                lastKeepAlive = new Date();
                 keepAliveInterval = setInterval(() => {
-                    if((new Date().getTime() - lastKeepAlive.getTime()) > keepAlive_timeout) {		
-                        console.log('Software-connection socket is closed (watchdog). Reconnect will be attempted in 5 second.');
+                    if (new Date().getTime() - lastKeepAlive.getTime() > keepAlive_timeout) {
+                        console.log(
+                            'Software-connection socket is closed (watchdog). Reconnect will be attempted in 5 second.'
+                        );
                         loaderIn(undefined, undefined, 'Verbindungsaufbau... (watchdog)');
                         socket_software.close();
-                        setTimeout(function() { connect_software(); }, 5000);
+                        setTimeout(function () {
+                            connect_software();
+                        }, 5000);
                     }
-                }, keepAlive_intervall)
+                }, keepAlive_intervall);
 
                 connected = true;
-                loaderOut();      
+                loaderOut();
                 console.log('Software-connection socket connecting... DONE');
 
-				// Event: Daten empfangen
-                socket_software.onmessage = function(e) {
+                // Event: Daten empfangen
+                socket_software.onmessage = function (e) {
                     processMessage(e.data, socket_software);
                 };
 
-				// Event: Socket geschlossen
-                socket_software.onclose = function(e) {
-					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau... (close)');
-                    console.log('Software-connection socket is closed. Reconnect will be attempted in 5 second.', e.reason);
-                    setTimeout(function() { connect_software(); }, 2000);
+                // Event: Socket geschlossen
+                socket_software.onclose = function (e) {
+                    clearInterval(keepAliveInterval);
+                    loaderIn(undefined, undefined, 'Verbindungsaufbau... (close)');
+                    console.log(
+                        'Software-connection socket is closed. Reconnect will be attempted in 5 second.',
+                        e.reason
+                    );
+                    setTimeout(function () {
+                        connect_software();
+                    }, 2000);
                     connected = false;
                 };
 
-				// Event: Scoket Fehler
-                socket_software.onerror = function(err) {
-					clearInterval(keepAliveInterval);
-					loaderIn(undefined, undefined, 'Verbindungsaufbau... (error)');
-                    console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
+                // Event: Scoket Fehler
+                socket_software.onerror = function (err) {
+                    clearInterval(keepAliveInterval);
+                    loaderIn(undefined, undefined, 'Verbindungsaufbau... (error)');
+                    console.error(
+                        'Software-connection socket encountered error: ',
+                        err.message,
+                        'Closing socket'
+                    );
                     socket_software.close();
                     connected = false;
                 };
@@ -455,107 +479,105 @@
 
             // Hilfsfunktionen
             function processMessage(data, socket) {
-				console.log('Software-connection socket message:', data);
-			
-				data           = JSON.parse(data);
-				const topic    = data.topic;
-				const message  = data.message;
-				
-				// Keep Alive
-				if(topic == 'ping') {
-					lastKeepAlive = new Date();	
-                    socket.send(JSON.stringify({topic: 'pong', message :message}));				
-					loaderOut();
-				}
+                console.log('Software-connection socket message:', data);
+
+                data = JSON.parse(data);
+                const topic = data.topic;
+                const message = data.message;
+
+                // Keep Alive
+                if (topic == 'ping') {
+                    lastKeepAlive = new Date();
+                    socket.send(JSON.stringify({ topic: 'pong', message: message }));
+                    loaderOut();
+                }
 
                 // Client ID
-                if(topic == 'setId') {	
+                if (topic == 'setId') {
                     console.log('CLIENT_ID is ' + message);
-                    clientId = message;		
-                    localStorage.setItem("clientId", message);
-                }
-	
-				// Alarm
-				if(topic == 'alarm') {			
-                    loaderIn('alarm?name=' + clientName + '&id=' + message);		
+                    clientId = message;
+                    localStorage.setItem('clientId', message);
                 }
 
-
-				if(topic == 'action_0') {
-					location.reload(); 
+                // Alarm
+                if (topic == 'alarm') {
+                    loaderIn('alarm?name=' + clientName + '&id=' + message);
                 }
 
-				if(topic == 'action_1') {
-					window.location.href = 'alarm?manuell=true&name=' + clientName;
+                if (topic == 'action_0') {
+                    location.reload();
                 }
 
-                if(topic == 'action_3') {
-                    localStorage.setItem("calendar_elements", parseInt(message));
-					location.reload(); 
+                if (topic == 'action_1') {
+                    window.location.href = 'alarm?manuell=true&name=' + clientName;
                 }
 
-                if(topic == 'action_8') {
-					location.reload(); 
+                if (topic == 'action_3') {
+                    localStorage.setItem('calendar_elements', parseInt(message));
+                    location.reload();
                 }
 
-                if(topic == 'action_10') {
-                    localStorage.setItem("pos_calendar", parseInt(message));
-					location.reload(); 
-				}	
+                if (topic == 'action_8') {
+                    location.reload();
+                }
 
-                if(topic == 'action_11') {
-                    localStorage.setItem("pos_dwd", parseInt(message));
-					location.reload(); 
-				}	
+                if (topic == 'action_10') {
+                    localStorage.setItem('pos_calendar', parseInt(message));
+                    location.reload();
+                }
 
-                if(topic == 'action_12') {
-                    localStorage.setItem("diashow_time", parseInt(message) * 1000);
-					location.reload(); 
-				}	
+                if (topic == 'action_11') {
+                    localStorage.setItem('pos_dwd', parseInt(message));
+                    location.reload();
+                }
 
-                if(topic == 'action_13') {
-                    localStorage.setItem("status_verf", !status_verf ? 1 : 0);
-                    console.log(localStorage.getItem('status_verf'))
-					location.reload(); 
-				}	
+                if (topic == 'action_12') {
+                    localStorage.setItem('diashow_time', parseInt(message) * 1000);
+                    location.reload();
+                }
 
-                if(topic == 'action_14') {
-                    localStorage.setItem("status_nverf", !status_nverf ? 1 : 0);
-					location.reload(); 
-				}	
+                if (topic == 'action_13') {
+                    localStorage.setItem('status_verf', !status_verf ? 1 : 0);
+                    console.log(localStorage.getItem('status_verf'));
+                    location.reload();
+                }
 
-                if(topic == 'action_15') {
-                    localStorage.setItem("alarm_visible_time", parseInt(message));
-					location.reload(); 
-				}	
+                if (topic == 'action_14') {
+                    localStorage.setItem('status_nverf', !status_nverf ? 1 : 0);
+                    location.reload();
+                }
 
-                if(topic == 'action_16') {
-                    localStorage.setItem("diashow_imagedate", !diashow_imagedate ? 1 : 0);
-					location.reload(); 
-				}	
+                if (topic == 'action_15') {
+                    localStorage.setItem('alarm_visible_time', parseInt(message));
+                    location.reload();
+                }
 
-                if(topic == 'calendar-change') {
+                if (topic == 'action_16') {
+                    localStorage.setItem('diashow_imagedate', !diashow_imagedate ? 1 : 0);
+                    location.reload();
+                }
+
+                if (topic == 'calendar-change') {
                     load_calendar();
-				}
-                
-                if(topic == 'userstatus-change') {
+                }
+
+                if (topic == 'userstatus-change') {
                     load_status();
-				}	
+                }
 
-                if(topic == 'diashow-change') {
+                if (topic == 'diashow-change') {
                     load_diashow();
-				}
+                }
 
-                if(topic == 'action_4') {
+                if (topic == 'action_4') {
                     let msg = JSON.parse(message);
 
-                    if(msg.action == 'start') {
+                    if (msg.action == 'start') {
                         loaderIn('praesentation?name=' + clientName + '&file=' + msg.file);
                     }
                 }
-                
-			}
-            
+            }
+
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_diashow();
@@ -563,23 +585,18 @@
                 load_calendar();
                 load_dwd();
                 load_status();
-                connect_software();
+                setTimeout(() => {                    
+                    connect_software();
+                }, 200);
                 check_isAlarm();
 
-                setInterval(function() {
-
-                    if(connected) {
+                setInterval(function () {
+                    if (connected) {
                         socket_software.close();
-                        location.reload(true);                    
+                        location.reload(true);
                     }
-
                 }, 60000 * 30); // 30min
-            };      
-            
-            
+            };
         </script>
-
-       
     </body>
-	
 </html>

@@ -1,48 +1,125 @@
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-        <link rel="stylesheet" href="/css/car_index.css">
-
-    </head>	
+        <link rel="stylesheet" href="/css/car_gps.css" />
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>GPS</h1>
+        </div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-
-                <h1>GPS</h1>      
-
+        <div class="content">
+            <div class="content_column">
+                <div>
+                    <span>Position:</span>
+                    <span>{lat}, {lng}</span>
+                </div>
+                <div>
+                    <span>Höhe:</span>
+                    <span>{height}</span>
+                </div>
+                <div>
+                    <span>Geschwindigkeit:</span>
+                    <span>{speed}</span>
+                </div>
+                <div>
+                    <span>Steigung:</span>
+                    <span>{climb}</span>
+                </div>
+                <div></div>
+                <div>
+                    <span>Satelliten::</span>
+                    <span>{sats}</span>
+                </div>
+                <div>
+                    <span>Genauigkeit:</span>
+                    <span>{precision}</span>
+                </div>
             </div>
 
-            <div class="content">
+            <div class="content_column">sa</div>
+        </div>
 
-
-
-            </div>
-
-        <%- include('partials/foot') -%>
-        <%- include('partials/foot_loggedin') -%>
+        <%- include('partials/foot') -%> <%- include('partials/foot_loggedin') -%>
 
         <script>
-          			
+            function gps_update() {
+                // Steigungsanzeige
+                if (GPS_now.climb > 0) {
+                    document.getElementById('gps_carIcon').classList.add('rot-up');
+                    document.getElementById('gps_carIcon').classList.remove('rot-down');
+                    document.getElementById('gps_carIcon').classList.remove('rot-none');
+                } else if (GPS_now.climb > 0) {
+                    document.getElementById('gps_carIcon').classList.remove('rot-up');
+                    document.getElementById('gps_carIcon').classList.add('rot-down');
+                    document.getElementById('gps_carIcon').classList.remove('rot-none');
+                } else {
+                    document.getElementById('gps_carIcon').classList.remove('rot-up');
+                    document.getElementById('gps_carIcon').classList.remove('rot-down');
+                    document.getElementById('gps_carIcon').classList.add('rot-none');
+                }
+
+                // Werte
+                document.getElementById('gps_latlng').innerHTML =
+                    GPS_now.lat + '<br>' + GPS_now.lng;
+                let precision = GPS_now.precision
+                    .substring(1, GPS_now.precision.length - 2)
+                    .split(',');
+                document.getElementById('gps_latlng_precision').innerHTML =
+                    'Pos: ±' +
+                    Math.round(precision[0]) +
+                    ' m  Höhe: ±' +
+                    Math.round(precision[1]) +
+                    ' m';
+                document.getElementById('gps_speed').innerHTML =
+                    Math.round(parseInt(GPS_now.speed) * 3.6) + ' km/h';
+                document.getElementById('gps_alt').innerHTML = Math.round(GPS_now.alt) + ' m';
+                document.getElementById('gps_alt_min').innerHTML =
+                    '(' + Math.round(GPS_alt_min) + ' m, ';
+                document.getElementById('gps_alt_max').innerHTML = Math.round(GPS_alt_max) + ' m)';
+                document.getElementById('gps_climb').innerHTML = Math.round(GPS_now.climb) + ' m/s';
+                document.getElementById('gps_sats').innerHTML = GPS_now.sats;
+                if (parseInt(GPS_dist_sum) < 5000) {
+                    document.getElementById('gps_distance').innerHTML =
+                        Math.round(GPS_dist_sum) + ' m';
+                } else {
+                    document.getElementById('gps_distance').innerHTML =
+                        Math.round(GPS_dist_sum / 1000) + ' km';
+                }
+
+                // Kompass
+                setTimeout(function () {
+                    var translateValue = '';
+                    var to = { property: GPS_now.track };
+
+                    var compass = document.getElementById('gps_compass');
+                    console.log(compass);
+                    console.log(getSubDocument(compass));
+                    compass = getSubDocument(compass).getElementById('compassNeedle');
+
+                    compass.setAttribute(
+                        'transform',
+                        translateValue + ' rotate(' + to.property + ', 250, 250)'
+                    );
+                }, 500);
+            }
+
             // Funktionsaufrufe
             loaderFunction = () => {
-                redirect_if_logged_out(); 
+                redirect_if_logged_out();
                 ws_server_connect();
-            };            
-            
-            
+                GPS_hasChanged = () => {
+                    gps_update();
+                };
+            };
         </script>
-
-       
     </body>
-	
 </html>

@@ -3,14 +3,18 @@
 </div>
 
 <script src="/scripts/common.js"></script> 
+<script src="/scripts/ui.js"></script> 
+<script src="/scripts/map.js"></script>
 <script src="/scripts/nav.js"></script>
+<script src="/scripts/ws.js"></script> 
+<script src="/scripts/gps.js"></script>
 
 <!-- SCRIPT LOADER -->
 <script>    
 
     let DEBUG = parseInt(localStorage.getItem('DEBUG') || 1);
-    let updateInProgress = false;
-    let hwVersion = '#.#.#';
+    let hw_updateInProgress = false;
+    let hw_version = '#.#.#';
 
     let firststart = true;
     let ws_hardware = null;
@@ -63,7 +67,7 @@
 
         // updatefound is fired if service-worker.js changes.
         serviceWorker_registration.onupdatefound = function() {
-            var installingWorker = serviceWorker_registration.installing;
+            const installingWorker = serviceWorker_registration.installing;
 
             installingWorker.onstatechange = function() {
                 switch (installingWorker.state) {
@@ -105,57 +109,6 @@
         await navigator.serviceWorker.ready;
 
         if(DEBUG > 0) console.log('Registered service worker is now ready');
-    }
-
-
-    /**
-    *   https://gist.github.com/viktorbezdek/3957601
-    *	Distance between two points
-    * 	@param coords1 {lat: xx, lng: yy}
-    * 	@param coords2 {lat: xx, lng: yy}
-    * 	@returnd distance in meters
-    */
-    function _getCoordsDistance(coords1, coords2)
-    {
-        // earth
-        let R = 6371, // km
-            lat1 = parseFloat(coords1.lat),
-            lat2 = parseFloat(coords2.lat),
-            lon1 = parseFloat(coords1.lng),
-            lon2 = parseFloat(coords2.lng);
-        
-        // deg2rad
-        lat1 = (lat1 / 180) * Math.PI;
-        lat2 = (lat2 / 180) * Math.PI;
-        lon1 = (lon1 / 180) * Math.PI;
-        lon2 = (lon2 / 180) * Math.PI;
-            
-        // Equirectangular approximation
-        // lower accuracy, higher performance
-        const x = (lon2-lon1) * Math.cos((lat1+lat2)/2);
-        const y = (lat2-lat1);
-        const d = Math.sqrt(x*x + y*y) * R;
-        return Math.round(d * 1000);
-    }
-
-    function _getCoordsDistance_accurate(coords1, coords2) {
-        const lat1 = coords1.lat;
-        const lon1 = coords1.lng;
-        const lat2 = coords2.lat;
-        const lon2 = coords2.lng;
-
-        const R = 6371; // km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180; 
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-        const d = R * c;
-        return d * 1000;
-    }
-    Number.prototype.toRad = function() {
-        return this * Math.PI / 180;
     }
 
     /**
@@ -200,7 +153,7 @@
     // Websocket für GPS, Displaysteuerung
     function ws_hardware_connect() {			
         ws_hardware = new WebSocket('ws://localhost:8765');
-        let wsGPSInterval = null;				
+        let ws_gpsInterval = null;				
         
         ws_hardware.onopen = function() {
             if(DEBUG > 0) console.log("Hardware-connection socket connected:");
@@ -209,7 +162,7 @@
             update_gps_status(1);
 
             // Interval GPS Positionsabfrage
-            wsGPSInterval = setInterval( () => { 
+            ws_gpsInterval = setInterval( () => { 
                 ws_hardware.send('getGPS'); 
                 ws_hardware.send('getMemFree'); 
                 ws_hardware.send('getMemTotal'); 
@@ -261,16 +214,16 @@
                 status_usbtether = e.data.split(':')[1] == "true";
 
             } else if (e.data.indexOf('beginUpdate') != -1) {
-                updateInProgress = true;
+                hw_updateInProgress = true;
 
             } else if (e.data.indexOf('version') != -1) {
-                hwVersion = e.data.split(':')[1];
+                hw_version = e.data.split(':')[1];
 
                 
 
             } else {
                 // Positionsdaten verarbeiten
-                let dat = JSON.parse(e.data);
+                const dat = JSON.parse(e.data);
 
                 // Status anzeigen
                 update_gps_status(dat.mode);
@@ -348,7 +301,7 @@
             // Setze GPS Status auf Fehler
             update_gps_status(-1);	
             // Lösche GPS Abfrageintervall
-            clearInterval(wsGPSInterval);
+            clearInterval(ws_gpsInterval);
 
             // Nach 1s neu verbinden
             setTimeout(function() {
@@ -361,7 +314,7 @@
             // Setze GPS Status auf Fehler
             update_gps_status(-1);
             // Lösche GPS Abfrageintervall
-            clearInterval(wsGPSInterval);
+            clearInterval(ws_gpsInterval);
             // Verbindung schließen
             ws_hardware.close();
         };
@@ -451,7 +404,7 @@
         }
 
         beep();               
-        dispAktiv();
+        hw_sendDispAktiv();
     }, false);
 /*
     window.onunload = function(){
@@ -477,17 +430,17 @@
         snd.play();
     }
 
-    function dispAktiv() {
+    function hw_sendDispAktiv() {
         try {
             ws_hardware.send('dispON');		
         } catch (error) {}        		
     }
 
-    function restart() {
+    function hw_sendRestart() {
         ws_hardware.send('restart');		
     }
 
-    function update() {
+    function hw_sendUpdate() {
         ws_hardware.send('update');	
     }
 

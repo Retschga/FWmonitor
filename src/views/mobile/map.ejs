@@ -44,25 +44,23 @@
                 };
 
                 async function success(position) {
-                    let latitude = position.coords.latitude;
-                    let longitude = position.coords.longitude;
-
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
                     const pos = { lat: latitude, lng: longitude };
-
-                    const map = await createMap(pos, true);
+                    const map = await map_createMap(pos, true);
 
                     try {
                         const hydrantenCache = await fetch_get(
                             url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude),
                             true
                         );
-                        add_hydranten(hydrantenCache, map);
+                        map_add_layerHydranten(hydrantenCache, map);
                     } catch (error) {
                         console.log(error);
                         alert('Hydrankten konnten nicht geladen werden!');
                     }
 
-                    add_forstRettPkt(map);
+                    map_add_layerForstRettPkt(map);
 
                     if (
                         $_GET['lat'] != undefined &&
@@ -71,7 +69,7 @@
                         $_GET['lng'] != ''
                     ) {
                         console.log('target', $_GET['lat'], $_GET['lng']);
-                        add_circle($_GET['lat'], $_GET['lng'], map);
+                        map_add_layerCircle($_GET['lat'], $_GET['lng'], map);
                     }
 
                     Number.prototype.toRad = function () {
@@ -132,7 +130,7 @@
                         })
                     );
 
-                    let mapLoader = document.querySelector('#mapLoader');
+                    const mapLoader = document.querySelector('#mapLoader');
                     mapLoader.classList.add('hidden');
                 }
 

@@ -7,6 +7,9 @@ import express from 'express';
 
 const router = express.Router();
 
+/**
+ * EJS Parameter
+ */
 function generateParams() {
     return {
         fwvv: config.fwvv.enabled,

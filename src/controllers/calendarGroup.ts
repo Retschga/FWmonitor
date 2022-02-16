@@ -1,10 +1,11 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { checkValidation } from './controller';
+
 import CalendarGroupService from '../services/calendarGroup';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { checkValidation } from './controller';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'CalendarGroup_Controller';

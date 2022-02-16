@@ -7,7 +7,7 @@ import HttpStatusCodes from '../utils/httpStatusCodes';
 import logging from '../utils/logging';
 import maptiles from '../services/maptiles';
 
-const NAMESPACE = 'MapController';
+const NAMESPACE = 'Map_Controller';
 
 class MapController {
     /**

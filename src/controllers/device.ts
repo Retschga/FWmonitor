@@ -1,6 +1,6 @@
 'use strict';
 
-import { Request, Response, response } from 'express';
+import { Request, Response } from 'express';
 
 import { instance as DeviceServiceInstance } from '../services/device';
 import HttpException from '../utils/httpException';
@@ -9,7 +9,6 @@ import { SocketInfo } from '../websocket';
 import { checkValidation } from './controller';
 import config from '../utils/config';
 import logging from '../utils/logging';
-import { timeout } from '../utils/common';
 
 const NAMESPACE = 'Alarm_Controller';
 
@@ -139,6 +138,9 @@ class AlarmController {
         res.send(response);
     }
 
+    /**
+     * Sende WebRTC Daten für Bildschirmübertragung
+     */
     public async send_action_webrtc(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'send_action_webrtc');
         checkValidation(req);

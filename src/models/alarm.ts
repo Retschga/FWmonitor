@@ -1,8 +1,8 @@
 'use strict';
 
+import DatabaseConnection from '../database/connection';
 import Model from './model';
 import logging from '../utils/logging';
-import DatabaseConnection from '../database/connection';
 
 const NAMESPACE = 'Alarm_Model';
 const TABLENAME = 'alarms';
@@ -56,6 +56,9 @@ class AlarmModel extends Model {
         return await super.findElement<AlarmRow>(params, limit, offset, extra);
     }
 
+    /**
+     * Gibt die Häufigkeit der Stichworte für ein Jahr zurück
+     */
     public async getStatistic(year?: number): Promise<StatisticRow[]> {
         logging.debug(NAMESPACE, 'getStatistic', { year: year });
 

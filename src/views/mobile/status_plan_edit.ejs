@@ -1,172 +1,167 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>Verfügbarkeitsplan</h1>
+        </div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-
-                <h1>Verfügbarkeitsplan</h1>      
-
-            </div>
-
-            <div class="content">
-
-                <div class="flex_column">
-
-                    
-                    <div class="list">
-
-                        <div class="item">
-                            <span class="left material-icons">settings</span>
-                            <span class="text">Typ</span>
-                            <span class="text right">Nicht verfügbar</span>
-                        </div> 
-
-                        <div class="item">
-                            <span class="left material-icons">text_fields</span>
-                            <span class="text">Name</span>
-                            <input class="var_name" type="right" placeholder="Name...">
-                        </div> 
-
-                        <div class="item">
-                            <span class="left material-icons">schedule</span>
-                            <span class="text">Beginn</span>
-                            <input class="var_start" type="time">
-                        </div>
-
-                        <div class="item">
-                            <span class="left material-icons">schedule</span>
-                            <span class="text">Ende</span>
-                            <input class="var_end" type="time">
-                        </div>
-
-                    </div>
-                    <div class="list">
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Montag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_mon">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Dienstag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_tue">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Mittwoch</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_wed">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Donnerstag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_thu">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Freitag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_fri">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Samstag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_sat">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
-                        <div class="item smallitem">
-                            <span class="left material-icons">date_range</span>
-                            <span class="text">Sonntag</span>
-                            <label class="switch right">
-                                <input type="checkbox" class="var_sun">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-
+        <div class="content">
+            <div class="flex_column">
+                <div class="list">
+                    <div class="item">
+                        <span class="left material-icons">settings</span>
+                        <span class="text">Typ</span>
+                        <span class="text right">Nicht verfügbar</span>
                     </div>
 
-                    <div style="height: 5em;"></div>
-
-                    <div class="list" style="position: absolute; bottom: 0; width: 100%;">
-                        <div class="item smallitem white">
-                            <div class="red left item rounded deletebutton"  onclick="openModal_delete()">
-                                <span class="left material-icons">delete</span>
-                                <span class="text">Löschen</span>                                
-                            </div>
-                            <div class="flex_grow"></div>
-                            <div class="green right item rounded savebutton" onclick="update_plan()">
-                                <span class="text text_align_right">Speichern</span>
-                                <span class="right material-icons">save</span>
-                            </div>                        
-                            
-                        </div>
+                    <div class="item">
+                        <span class="left material-icons">text_fields</span>
+                        <span class="text">Name</span>
+                        <input class="var_name" type="right" placeholder="Name..." />
                     </div>
-                    
-                    
+
+                    <div class="item">
+                        <span class="left material-icons">schedule</span>
+                        <span class="text">Beginn</span>
+                        <input class="var_start" type="time" />
+                    </div>
+
+                    <div class="item">
+                        <span class="left material-icons">schedule</span>
+                        <span class="text">Ende</span>
+                        <input class="var_end" type="time" />
+                    </div>
+                </div>
+                <div class="list">
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Montag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_mon" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Dienstag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_tue" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Mittwoch</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_wed" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Donnerstag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_thu" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Freitag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_fri" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Samstag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_sat" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">date_range</span>
+                        <span class="text">Sonntag</span>
+                        <label class="switch right">
+                            <input type="checkbox" class="var_sun" />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
 
-            </div>
+                <div style="height: 5em"></div>
 
-            <div id="modal_delete" class="modal">
-                <span onclick="document.getElementById('modal_delete').style.display='none'" class="close" title="Close Modal">&times;</span>
-                <form class="modal-content" action="/">
-                    <div class="container">
-                        <h1>Plan löschen</h1>
-                        <p>Plan sicher löschen?</p>
-                
-                        <div class="clearfix">
-                            <button type="button" class="button_cancel" onclick="document.getElementById('modal_delete').style.display='none'">Nein</button>
-                            <button type="button" class="button_delete red">JA</button>
+                <div class="list" style="position: absolute; bottom: 0; width: 100%">
+                    <div class="item smallitem white">
+                        <div
+                            class="red left item rounded deletebutton"
+                            onclick="openModal_delete()"
+                        >
+                            <span class="left material-icons">delete</span>
+                            <span class="text">Löschen</span>
+                        </div>
+                        <div class="flex_grow"></div>
+                        <div class="green right item rounded savebutton" onclick="update_plan()">
+                            <span class="text text_align_right">Speichern</span>
+                            <span class="right material-icons">save</span>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
+        </div>
 
+        <div id="modal_delete" class="modal">
+            <span
+                onclick="document.getElementById('modal_delete').style.display='none'"
+                class="close"
+                title="Close Modal"
+                >&times;</span
+            >
+            <form class="modal-content" action="/">
+                <div class="container">
+                    <h1>Plan löschen</h1>
+                    <p>Plan sicher löschen?</p>
+
+                    <div class="clearfix">
+                        <button
+                            type="button"
+                            class="button_cancel"
+                            onclick="document.getElementById('modal_delete').style.display='none'"
+                        >
+                            Nein
+                        </button>
+                        <button type="button" class="button_delete red">JA</button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
             const id = $_GET['id'];
 
             let plans = undefined;
 
             // Laden
-            async function load_plan() {  
+            async function load_plan() {
                 try {
                     const user = await fetch_get(url_user_status.replace(':id', user_id), true);
                     console.log('user', user);
@@ -175,22 +170,22 @@
                     console.log('plans', plans);
 
                     const plan = plans[id];
-   
-                    const var_name   = document.querySelector(".var_name");     
-                    const var_start  = document.querySelector(".var_start"); 
-                    const var_end    = document.querySelector(".var_end"); 
 
-                    const var_mon    = document.querySelector(".var_mon"); 
-                    const var_tue    = document.querySelector(".var_tue"); 
-                    const var_wed    = document.querySelector(".var_wed"); 
-                    const var_thu    = document.querySelector(".var_thu"); 
-                    const var_fri    = document.querySelector(".var_fri"); 
-                    const var_sat    = document.querySelector(".var_sat"); 
-                    const var_sun    = document.querySelector(".var_sun"); 
+                    const var_name = document.querySelector('.var_name');
+                    const var_start = document.querySelector('.var_start');
+                    const var_end = document.querySelector('.var_end');
 
-                    var_name.value   = plan.name; 
-                    var_start.value  = plan.from;
-                    var_end.value    = plan.to;  
+                    const var_mon = document.querySelector('.var_mon');
+                    const var_tue = document.querySelector('.var_tue');
+                    const var_wed = document.querySelector('.var_wed');
+                    const var_thu = document.querySelector('.var_thu');
+                    const var_fri = document.querySelector('.var_fri');
+                    const var_sat = document.querySelector('.var_sat');
+                    const var_sun = document.querySelector('.var_sun');
+
+                    var_name.value = plan.name;
+                    var_start.value = plan.from;
+                    var_end.value = plan.to;
 
                     var_mon.checked = plan.weekdays[1];
                     var_tue.checked = plan.weekdays[2];
@@ -199,34 +194,31 @@
                     var_fri.checked = plan.weekdays[5];
                     var_sat.checked = plan.weekdays[6];
                     var_sun.checked = plan.weekdays[0];
-
-                
-        
                 } catch (error) {
                     console.error('load_plan', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                } 
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
             }
 
             // Speichern
             async function update_plan() {
                 const plan = plans[id];
-   
-                const var_name   = document.querySelector(".var_name");     
-                const var_start  = document.querySelector(".var_start"); 
-                const var_end    = document.querySelector(".var_end"); 
 
-                const var_mon    = document.querySelector(".var_mon"); 
-                const var_tue    = document.querySelector(".var_tue"); 
-                const var_wed    = document.querySelector(".var_wed"); 
-                const var_thu    = document.querySelector(".var_thu"); 
-                const var_fri    = document.querySelector(".var_fri"); 
-                const var_sat    = document.querySelector(".var_sat"); 
-                const var_sun    = document.querySelector(".var_sun"); 
+                const var_name = document.querySelector('.var_name');
+                const var_start = document.querySelector('.var_start');
+                const var_end = document.querySelector('.var_end');
 
-                plan.name = var_name.value; 
+                const var_mon = document.querySelector('.var_mon');
+                const var_tue = document.querySelector('.var_tue');
+                const var_wed = document.querySelector('.var_wed');
+                const var_thu = document.querySelector('.var_thu');
+                const var_fri = document.querySelector('.var_fri');
+                const var_sat = document.querySelector('.var_sat');
+                const var_sun = document.querySelector('.var_sun');
+
+                plan.name = var_name.value;
                 plan.from = var_start.value;
-                plan.to   = var_end.value;  
+                plan.to = var_end.value;
 
                 plan.weekdays[1] = var_mon.checked;
                 plan.weekdays[2] = var_tue.checked;
@@ -240,7 +232,7 @@
             }
 
             async function save_plans() {
-                if(!plans) {
+                if (!plans) {
                     alert('Fehler');
                     return;
                 }
@@ -248,12 +240,15 @@
                 loaderIn();
                 try {
                     console.log(JSON.stringify(plans));
-                    let response = await fetch_post(url_user_status_plans_update.replace(':id', user_id), {value: JSON.stringify({plans})});
-                    console.log('update_plans' , response);
+                    let response = await fetch_post(
+                        url_user_status_plans_update.replace(':id', user_id),
+                        { value: JSON.stringify({ plans }) }
+                    );
+                    console.log('update_plans', response);
                 } catch (error) {
                     console.error('update_plans', error);
                     alert('Einstellungen konnten nicht gespeichert werden.');
-                }            
+                }
                 loaderOut();
             }
 
@@ -265,21 +260,16 @@
             }
 
             // Hilfsfunktionen
-            function openModal_delete() {                
+            function openModal_delete() {
                 const modal = document.querySelector('#modal_delete');
                 modal.style.display = 'block';
                 modal.querySelector('.button_delete').onclick = () => delete_plan();
             }
 
-
             // Funktionsaufrufe
             loaderFunction = () => {
                 load_plan();
             };
-
-
         </script>
-       
     </body>
-	
 </html>

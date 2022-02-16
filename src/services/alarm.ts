@@ -53,6 +53,9 @@ class AlarmService {
         return 0;
     }
 
+    /**
+     * Findet einen Alarm
+     */
     public async find(
         params: Record<string, unknown> = {},
         limit = -1,
@@ -64,12 +67,18 @@ class AlarmService {
         return response;
     }
 
+    /**
+     * Findet einen Alarm anhand der ID
+     */
     public async find_by_id(id: number): Promise<AlarmModel.AlarmRow[] | undefined> {
         const response = await AlarmModel.model.find({ id: id });
         if (response.length < 1) return;
         return response;
     }
 
+    /**
+     * Erstellt einen neuen Alarm
+     */
     public async create(alarm: AlarmModel.AlarmRow) {
         logging.debug(NAMESPACE, 'create', alarm);
         const affectedRows = await AlarmModel.model.insert(alarm);
@@ -86,22 +95,37 @@ class AlarmService {
         globalEvents.emit('alarm', list[0]);
     }
 
+    /**
+     * Telegram Alarmeinstellung
+     */
     public set_alarmsettings_telegram(value: boolean) {
         config.alarm.telegram = value;
     }
 
+    /**
+     * App Alarmeinstellung
+     */
     public set_alarmsettings_app(value: boolean) {
         config.alarm.app = value;
     }
 
+    /**
+     * Gibt Telegram/App Alarmeinstellungen zurück
+     */
     public get_alarmsettings() {
         return { telegram: config.alarm.telegram, app: config.alarm.app };
     }
 
+    /**
+     * Aktiviert die Alarmstille
+     */
     public set_alarm_silence(seconds: number) {
         config.alarm.silence = seconds;
     }
 
+    /**
+     * Gibt zurück ob die Alarmstille aktiviert ist
+     */
     public is_alarm_silence() {
         return config.alarm.silence > 0;
     }

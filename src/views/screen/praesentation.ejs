@@ -155,7 +155,7 @@
 
                 try {
                     console.log('Software-connection socket connecting...');
-                    socket_software = await initWebsocket(
+                    socket_software = await ws_init(
                         'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
                         socket_software, 
                         30000, 

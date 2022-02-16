@@ -57,12 +57,12 @@ function getCookie(cname) {
  * @param  {Boolean} 	noHistroy   - Aktuelle Seite aus der History entfernen
  */
 function loaderIn(url, noHistroy, text) {
-    let loader = document.querySelector('#pageloader');
+    const loader = document.querySelector('#pageloader');
     if (!loader) return;
     loader.classList.remove('loader_out');
     loader.classList.add('loader_in');
 
-    let var_text = loader.querySelector('.var_text');
+    const var_text = loader.querySelector('.var_text');
     if (text) {
         var_text.classList.remove('hidden');
         var_text.innerHTML = text;
@@ -85,7 +85,7 @@ function loaderIn(url, noHistroy, text) {
  * Versteckt den Seitenloader
  */
 function loaderOut() {
-    let loader = document.querySelector('#pageloader');
+    const loader = document.querySelector('#pageloader');
     if (!loader) return;
     loader.classList.remove('loader_in');
     loader.classList.add('loader_out');
@@ -95,7 +95,7 @@ function loaderOut() {
  * Geht mit dem Seitenloader eine Seite zurück
  */
 function goBack() {
-    let loader = document.querySelector('#pageloader');
+    const loader = document.querySelector('#pageloader');
     loader.classList.remove('loader_out');
     loader.classList.add('loader_in');
 
@@ -140,57 +140,6 @@ function redirect_if_logged_out() {
     }
 }
 
-// **** Hilfsfunktionen ****
-function tab_switch(pageName, elmnt) {
-    // Hide all elements with class="tabcontent" by default */
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName('tabcontent');
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = 'none';
-    }
-
-    // Remove the background color of all tablinks/buttons
-    tablinks = document.getElementsByClassName('tablink');
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].classList.remove('tablink_active');
-    }
-
-    // Show the specific tab content
-    document.getElementById(pageName).style.display = 'block';
-
-    elmnt.classList.add('tablink_active');
-}
-
-function accordion_switch(elmnt) {
-    /* Toggle between adding and removing the "active" class,
-        to highlight the button that controls the panel */
-    elmnt.classList.toggle('accordion_active');
-
-    /* Toggle between hiding and showing the active panel */
-    var panel = elmnt.nextElementSibling;
-    if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-    } else {
-        panel.style.display = 'block';
-    }
-}
-
-/**
- * Selektiert einen Wert in einem Dropdown-Element
- * @param {*} s Element
- * @param {*} v Wert
- * @returns {boolean} Element gefunden
- */
-function setSelectedIndex(s, v) {
-    for (var i = 0; i < s.options.length; i++) {
-        if (s.options[i].value == v) {
-            s.options[i].selected = true;
-            return true;
-        }
-    }
-    return false;
-}
-
 /**
  * Kalender summary in Icon und Text teilen
  * @returns { text: string, icon: string }
@@ -218,16 +167,21 @@ function parseKalenderSummary(summary) {
  * HTML escapes für text durchführen
  */
 function escapeHtml(str) {
-    let div = document.createElement('div');
+    const div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
 }
 function htmlDecode(input) {
-    let e = document.createElement('div');
-    e.innerHTML = input;
-    return e.childNodes.length === 0 ? '' : e.childNodes[0].nodeValue;
+    const elem = document.createElement('div');
+    elem.innerHTML = input;
+    return elem.childNodes.length === 0 ? '' : elem.childNodes[0].nodeValue;
 }
 
+/**
+ * Gibt zurück ob System IOS ist
+ */
+const userAgent = window.navigator.userAgent.toLowerCase();
+const safari = /safari/.test(userAgent);
 function isIos() {
     return (
         ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'].includes(
@@ -238,6 +192,9 @@ function isIos() {
     );
 }
 
+/**
+ * Gibt den aktuellen Display Modus zurück
+ */
 function getPWADisplayMode() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (document.referrer.startsWith('android-app://')) {
@@ -248,11 +205,10 @@ function getPWADisplayMode() {
     return 'browser';
 }
 
-// Detects if device is in standalone mode
+/**
+ * Gipt zurück ob Display Modus == standalone
+ */
 const isInStandaloneMode = () => getPWADisplayMode() == 'standalone';
-
-const userAgent = window.navigator.userAgent.toLowerCase();
-const safari = /safari/.test(userAgent);
 
 // Input Prefixes
 // https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
@@ -277,7 +233,7 @@ function regexPrefix(regex, prefix) {
 
 // FETCH Helper functions
 // https://jasonwatmore.com/post/2020/04/18/fetch-a-lightweight-fetch-wrapper-to-simplify-http-requests
-function fetch_get(url, xxxx, timeout = 20000) {
+function fetch_get(url, xxxx, timeout = 5000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -289,7 +245,7 @@ function fetch_get(url, xxxx, timeout = 20000) {
 
     return fetch(url, requestOptions).then(fetch_handleResonse).catch(fetch_handleError);
 }
-function fetch_post(url, body, xxxx, timeout = 20000) {
+function fetch_post(url, body, xxxx, timeout = 5000) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -381,7 +337,7 @@ function fetch_handleError(error) {
     return Promise.reject(error);
 }
 
-// -------- Base64 Decoding --------
+// Base64 Decoding
 // https://www.npmjs.com/package/web-push#using-vapid-key-for-applicationserverkey
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -396,7 +352,9 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 
-// -------- Notification Permission --------
+/**
+ * Erfrägt Notification Berechtingungen
+ */
 async function getNotificationPermission() {
     if (!serviceWorker_registration) {
         throw new Error('No service worker registered!');
@@ -437,530 +395,4 @@ async function getNotificationPermission() {
             console.log('Sent Subscribe');
         }
     });
-}
-
-/**
- * Websocket State zu Text
- * @param {Number} state
- */
-function wsStateToText(state) {
-    if (state == 0) return 'CONNECTING';
-    if (state == 1) return 'OPEN';
-    if (state == 2) return 'CLOSING';
-    if (state == 3) return 'CLOSED';
-    return state;
-}
-
-/**
- * https://stackoverflow.com/questions/29881957/websocket-connection-timeout
- * inits a websocket by a given url, returned promise resolves with initialized websocket, rejects after failure/timeout.
- *
- * @param url the websocket url to init
- * @param existingWebsocket if passed and this passed websocket is already open, this existingWebsocket is resolved, no additional websocket is opened
- * @param timeoutMs the timeout in milliseconds for opening the websocket
- * @param numberOfRetries the number of times initializing the socket should be retried, if not specified or 0, no retries are made
- *        and a failure/timeout causes rejection of the returned promise
- * @return {Promise}
- */
-function initWebsocket(url, existingWebsocket, timeoutMs, numberOfRetries) {
-    timeoutMs = timeoutMs ? timeoutMs : 1500;
-    numberOfRetries = numberOfRetries ? numberOfRetries : 0;
-    var hasReturned = false;
-    var promise = new Promise((resolve, reject) => {
-        setTimeout(function () {
-            if (!hasReturned) {
-                console.info('opening websocket timed out: ' + url);
-                rejectInternal();
-            }
-        }, timeoutMs);
-        if (!existingWebsocket || existingWebsocket.readyState != existingWebsocket.OPEN) {
-            if (existingWebsocket) {
-                existingWebsocket.close();
-            }
-            var websocket = new WebSocket(url);
-            websocket.onopen = function () {
-                if (hasReturned) {
-                    websocket.close();
-                } else {
-                    console.info('websocket to opened! url: ' + url);
-                    resolve(websocket);
-                }
-            };
-            websocket.onclose = function () {
-                console.info('websocket closed! url: ' + url);
-                rejectInternal();
-            };
-            websocket.onerror = function () {
-                console.info('websocket error! url: ' + url);
-                rejectInternal();
-            };
-        } else {
-            resolve(existingWebsocket);
-        }
-
-        function rejectInternal() {
-            if (numberOfRetries <= 0 && numberOfRetries > -1) {
-                reject();
-            } else if (!hasReturned) {
-                hasReturned = true;
-                console.info(
-                    'retrying connection to websocket! url: ' +
-                        url +
-                        ', remaining retries: ' +
-                        (numberOfRetries - 1)
-                );
-                initWebsocket(url, null, timeoutMs, numberOfRetries - 1).then(resolve, reject);
-            }
-        }
-    });
-    promise.then(
-        function () {
-            hasReturned = true;
-        },
-        function () {
-            hasReturned = true;
-        }
-    );
-    return promise;
-}
-
-// -------- Karten --------
-let layer1_url = undefined;
-let layer1_attr = undefined;
-let layer1_hillshade_url = undefined;
-let layer1_hillshade_attr = undefined;
-let layer2_url = undefined;
-let layer2_attr = undefined;
-
-async function getTileLayerUrls() {
-    const url = '/api/v1/map/layerurls';
-
-    try {
-        const layerUrls = await fetch_get(url, true);
-        console.log('getTileLayerUrls', layerUrls);
-
-        layer1_url = layerUrls.layer1_url;
-        layer1_attr = layerUrls.layer1_attr;
-        layer1_hillshade_url = layerUrls.layer1_hillshade_url;
-        layer1_hillshade_attr = layerUrls.layer1_hillshade_attr;
-        layer2_url = layerUrls.layer2_url;
-        layer2_attr = layerUrls.layer2_attr;
-    } catch (error) {
-        console.error('getTileLayerUrls', error);
-        if (error.show) alert('Aktuelle Layer-Tile-Urls konnten nicht geladen werden.');
-    }
-}
-
-// Icons Karte
-var styleCache = {
-    undefined: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_undefined.png' })
-    }),
-    pipe: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_pipe.png' })
-    }),
-    wall: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_wall.png' })
-    }),
-    pillar: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_ueberflur.png' })
-    }),
-    underground: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_hydrant_unterflur.png' })
-    }),
-    pond: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_openwater.png' })
-    }),
-    water_tank: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_tank.png' })
-    }),
-    rettPkt: new ol.style.Style({
-        image: new ol.style.Icon({
-            src: '/images/map_marker_rettPkt.png',
-            scale: 0.1
-        })
-    }),
-    posMarker: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_pos.png' })
-    }),
-    destMarker: new ol.style.Style({
-        image: new ol.style.Icon({ src: '/images/map_marker_finish.png' })
-    }),
-    circleDest: new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 30,
-            stroke: new ol.style.Stroke({
-                color: 'red'
-            }),
-            fill: new ol.style.Fill({
-                color: '#3399CCBB'
-            })
-        })
-    }),
-    streetDest: new ol.style.Style({
-        stroke: new ol.style.Stroke({
-            width: 6,
-            color: [245, 66, 87, 0.8]
-        })
-    }),
-    route: new ol.style.Style({
-        stroke: new ol.style.Stroke({
-            width: 6,
-            color: [47, 55, 82, 0.8]
-        })
-    }),
-    helpline: new ol.style.Style({
-        stroke: new ol.style.Stroke({
-            width: 6,
-            color: [35, 150, 232, 0.8]
-        })
-    }),
-    circleOnRoute: new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 10,
-            stroke: new ol.style.Stroke({
-                color: 'red'
-            }),
-            fill: new ol.style.Fill({
-                color: [0, 204, 0, 0.8]
-            })
-        })
-    }),
-    circleNextInstr: new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 20,
-            stroke: new ol.style.Stroke({
-                color: 'red'
-            }),
-            fill: new ol.style.Fill({
-                color: [0, 204, 0, 0.6]
-            })
-        })
-    })
-};
-
-var styleFunction = function (feature) {
-    let icon = feature.get('title');
-    let style = styleCache[icon];
-    if (!style) {
-        style = styleCache.destMarker;
-    }
-    return style;
-};
-
-// Forst Rettungspunkte
-async function add_forstRettPkt(map) {
-    let response = await fetch_get(url_map_forstrettpkt, true);
-
-    for (let i = 0; i < response.features.length; i++) {
-        response.features[i].properties.title = 'rettPkt';
-    }
-
-    console.log('Forst', response);
-
-    let layer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-            features: new ol.format.GeoJSON({
-                featureProjection: 'EPSG:3857',
-                dataProjection: 'EPSG:4326'
-            }).readFeatures(response)
-        }),
-        style: styleFunction
-    });
-    map.addLayer(layer);
-}
-
-// Hydranten
-function add_hydranten(hydrantenCache, map) {
-    let vectorSource_hydrant = new ol.source.Vector({
-        features: new ol.format.GeoJSON({
-            featureProjection: 'EPSG:3857',
-            dataProjection: 'EPSG:4326'
-        }).readFeatures({
-            type: 'FeatureCollection',
-            features: hydrantenCache
-        })
-    });
-    let vectorLayer_hydrant = new ol.layer.Vector({
-        source: vectorSource_hydrant,
-        style: styleFunction
-    });
-
-    map.addLayer(vectorLayer_hydrant);
-
-    const view = map.getView();
-    // Zoom event
-    view.on('change:resolution', function (e) {
-        let zoom = this.getZoom();
-        if (hydrantenCache != undefined) {
-            if (zoom >= 15) {
-                vectorLayer_hydrant.setVisible(true);
-            } else if (zoom < 15) {
-                vectorLayer_hydrant.setVisible(false);
-            }
-        }
-    });
-}
-
-// Zielkreis
-function add_circle(lat, lng, map) {
-    const layer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-            features: [
-                new ol.Feature({
-                    geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
-                    title: 'circleDest'
-                })
-            ]
-        }),
-        style: styleFunction
-    });
-    map.addLayer(layer);
-}
-
-// Positionsmarker
-function add_posmarker(lat, lng, map) {
-    var posMarker = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([lng, lat])),
-        title: 'posMarker'
-    });
-    let layer = new ol.layer.Vector({
-        source: new ol.source.Vector({
-            features: [posMarker]
-        }),
-        style: styleFunction
-    });
-    map.addLayer(layer);
-    return posMarker;
-}
-
-// Klickbare Marker
-function add_markerPopup(map) {
-    const container = document.getElementById('map-popup');
-    const content = document.getElementById('map-popup-content');
-    const closer = document.getElementById('map-popup-closer');
-
-    if (!container) return;
-
-    const overlay = new ol.Overlay({
-        element: container,
-        autoPan: true,
-        autoPanAnimation: {
-            duration: 250
-        }
-    });
-    map.addOverlay(overlay);
-    closer.onclick = function () {
-        overlay.setPosition(undefined);
-        closer.blur();
-        return false;
-    };
-
-    // display popup on click
-    map.addEventListener('click', function (evt) {
-        const feature = map.forEachFeatureAtPixel(
-            evt.pixel,
-            function (feature, layer) {
-                return feature;
-            },
-            {
-                hitTolerance: 20
-            }
-        );
-        if (feature) {
-            const attr = feature.getProperties();
-            const geometry = feature.getGeometry();
-            let coord = geometry.getCoordinates();
-
-            if (attr.FIELD1) {
-                content.innerHTML =
-                    `<p>Typ: Forst Rettungspunkt</p>` + `<p>Nummer: ${attr.FIELD1 || 'k.A.'}</p>`;
-            } else {
-                content.innerHTML =
-                    `<p>Typ: ${attr.title || 'k.A.'}</p>` +
-                    `<p>Leitung: ${attr.diameter || 'k.A.'}</p>` +
-                    `<p>Wasserquelle: ${attr.watersource || 'k.A.'}</p>` +
-                    `<p>Position: ${attr.positiondesc || 'k.A.'}</p>`;
-            }
-            overlay.setPosition(coord);
-        } else {
-            overlay.setPosition(undefined);
-        }
-    });
-}
-
-// Karte
-let map_instance = null;
-let map_moved = false;
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-let map_center = () => {};
-let map_position = null;
-
-async function createMap(dest, center = false, preload = false, hideControls = false) {
-    await getTileLayerUrls();
-
-    // Karten Controls
-    let control_attribution = new ol.control.Attribution({
-        collapsible: false
-    });
-
-    let control_fullscreen = new ol.control.FullScreen({
-        source: 'mapid'
-    });
-
-    let btnCenter = /*@__PURE__*/ (function (Control) {
-        function btnCenter(opt_options) {
-            var options = opt_options || {};
-
-            var button = document.createElement('button');
-            button.innerHTML = '<span class="material-icons">filter_center_focus</span>';
-            button.className = '';
-
-            var element = document.createElement('div');
-            element.className = 'ol-center ol-unselectable ol-control';
-            element.appendChild(button);
-
-            Control.call(this, {
-                element: element,
-                target: options.target
-            });
-
-            button.addEventListener('click', this.handleCenter.bind(this), false);
-        }
-
-        if (Control) btnCenter.__proto__ = Control;
-        btnCenter.prototype = Object.create(Control && Control.prototype);
-        btnCenter.prototype.constructor = btnCenter;
-
-        btnCenter.prototype.handleCenter = function handleRotateNorth() {
-            map_moved = false;
-            map_center();
-            setTimeout(function () {
-                map_moved = false;
-            }, 50);
-        };
-
-        return btnCenter;
-    })(ol.control.Control);
-
-    let btnSwitchMap = /*@__PURE__*/ (function (Control) {
-        function btnSwitchMap(opt_options) {
-            var options = opt_options || {};
-
-            var button = document.createElement('button');
-            button.innerHTML = '<span class="material-icons">layers</span>';
-            button.className = '';
-
-            var element = document.createElement('div');
-            element.className = 'ol-center2 ol-unselectable ol-control';
-            element.appendChild(button);
-
-            Control.call(this, {
-                element: element,
-                target: options.target
-            });
-
-            button.addEventListener('click', this.handleCenter.bind(this), false);
-        }
-
-        if (Control) btnSwitchMap.__proto__ = Control;
-        btnSwitchMap.prototype = Object.create(Control && Control.prototype);
-        btnSwitchMap.prototype.constructor = btnSwitchMap;
-
-        btnSwitchMap.prototype.handleCenter = function handleRotateNorth() {
-            tileLayer2_main.setVisible(!tileLayer2_main.getVisible());
-        };
-
-        return btnSwitchMap;
-    })(ol.control.Control);
-
-    // Karte View
-    let view = new ol.View({
-        center: ol.proj.fromLonLat([dest.lng, dest.lat]),
-        zoom: 15
-    });
-
-    // Kartenlayer
-    let layers = [];
-    if (layer1_url) {
-        let tileLayer1_main = new ol.layer.Tile({
-            source: new ol.source.OSM({
-                url: layer1_url,
-                attributions: [layer1_attr],
-                preload: preload ? 18 : 0,
-                crossOrigin: null
-            })
-        });
-        layers.push(tileLayer1_main);
-    }
-    if (layer1_hillshade_url) {
-        let tileLayer1_hillshade = new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                url: layer1_hillshade_url,
-                attributions: [layer1_hillshade_attr],
-                preload: preload ? 16 : 0,
-                maxZoom: 16,
-                crossOrigin: null
-            })
-        });
-        layers.push(tileLayer1_hillshade);
-    }
-    let tileLayer2_main;
-    if (layer2_url) {
-        tileLayer2_main = new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                url: layer2_url,
-                attributions: [layer2_attr],
-                crossOrigin: null
-            }),
-            preload: preload ? 17 : 0
-        });
-        layers.push(tileLayer2_main);
-    }
-
-    // Karte erstellen
-    var map = new ol.Map({
-        target: 'mapid',
-        layers: layers,
-        controls: hideControls
-            ? []
-            : ol.control
-                  .defaults({ attribution: false })
-                  .extend([
-                      control_attribution,
-                      control_fullscreen,
-                      new btnCenter(),
-                      layer2_url ? new btnSwitchMap() : undefined
-                  ]),
-        view: view
-    });
-    map_instance = map;
-
-    // Move Event
-    map.on('moveend', function (e) {
-        map_moved = true;
-    });
-
-    if (center) {
-        map_position = [dest.lng, dest.lat];
-        map_center = () => {
-            //view.setZoom(15);
-            view.setCenter(ol.proj.transform(map_position, 'EPSG:4326', 'EPSG:3857'));
-            map_moved = false;
-            setTimeout(function () {
-                map_moved = false;
-            }, 50);
-            console.log('MAP CENTER (Standard)', map_position, map_moved);
-        };
-        map_center();
-    }
-
-    setTimeout(function () {
-        map_moved = false;
-        if (tileLayer2_main) tileLayer2_main.setVisible(false);
-    }, 1500);
-
-    add_markerPopup(map);
-
-    return map;
 }

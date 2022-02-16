@@ -3,6 +3,8 @@
 </div>
 
 <script src="/scripts/common.js"></script> 
+<script src="/scripts/ws.js"></script> 
+<script src="/scripts/map.js"></script> 
 
 <!-- SCRIPT LOADER -->
 <script>
@@ -37,7 +39,7 @@
 
         try {
             console.log('Hardware-connection socket connecting...');
-            socket_hardware = await initWebsocket(
+            socket_hardware = await ws_init(
                 'ws://127.0.0.1:8765', 
                 socket_hardware, 
                 30000, 
@@ -47,6 +49,8 @@
             console.error(error);
             setTimeout(function() { connect_hardware(); }, 1000 * 30);
         }
+
+        if(!socket_hardware) return;
 
         if(socket_hardware.readyState != 1) {
             console.error("Error: Hardware-Connection not open");
@@ -76,7 +80,9 @@
     }
 
     async function initialLoad() {
-        connect_hardware();
+        setTimeout(() => {                    
+            connect_hardware();
+                }, 200);
     }
 
     // **** Events ****

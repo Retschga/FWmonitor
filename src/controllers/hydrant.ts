@@ -1,6 +1,7 @@
 'use strict';
 
 import { Request, Response } from 'express';
+
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
 import HydrantService from '../services/hydrant';

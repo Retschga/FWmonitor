@@ -335,16 +335,16 @@
 
             async function hydrantenkarte_load() {
 
-                let latitude  = coordiantes.lat;
-                let longitude = coordiantes.lng;
+                const latitude  = coordiantes.lat;
+                const longitude = coordiantes.lng;
                 const pos = {lat:latitude, lng:longitude};
 
-                const map = await createMap(pos, true);
+                const map = await map_createMap(pos, true);
                 //const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
                 //add_hydranten(hydrantenCache, map);
                 //add_forstRettPkt(ret.map);
 
-                add_circle(latitude, longitude, map);  
+                map_add_layerCircle(latitude, longitude, map);  
 
                 map.setView(
                     new ol.View({
@@ -353,7 +353,7 @@
                     })
                 );
 
-                let mapLoader = document.querySelector("#mapLoader");
+                const mapLoader = document.querySelector("#mapLoader");
                 mapLoader.classList.add("hidden")
             
                 
@@ -365,7 +365,7 @@
 
                 try {
                     console.log('Software-connection socket connecting...');
-                    socket_software = await initWebsocket(
+                    socket_software = await ws_init(
                         'ws://'+window.location.hostname+(window.location.port ? ':'+window.location.port: ''), 
                         socket_software, 
                         30000, 

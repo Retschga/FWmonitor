@@ -1,52 +1,37 @@
 <!DOCTYPE html>
 <html lang="de">
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-        <link rel="stylesheet" href="/css/car_index.css">
-
-    </head>	
+        <link rel="stylesheet" href="/css/car_index.css" />
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
 
-            <div class="navbar">
+            <h1>Funk</h1>
+        </div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
+        <div class="content" style="text-align: center">
+            <img
+                class=""
+                src="/images/funkstatus.png"
+                style="object-fit: contain; max-height: 100%; max-width: 100%"
+            />
+        </div>
 
-                <h1>Funk</h1>      
-
-            </div>
-
-            <div class="content" style="text-align: center;">
-
-                <img 
-                    class="" 
-                    src="/images/funkstatus.png" 
-                    style="object-fit: contain; max-height: 100%; max-width: 100%"
-                >
-
-            </div>
-
-        <%- include('partials/foot') -%>
-        <%- include('partials/foot_loggedin') -%>
+        <%- include('partials/foot') -%> <%- include('partials/foot_loggedin') -%>
 
         <script>
-          			
             // Funktionsaufrufe
             loaderFunction = () => {
-                redirect_if_logged_out(); 
+                redirect_if_logged_out();
                 ws_server_connect();
-            };            
-            
-            
+            };
         </script>
-
-       
     </body>
-	
 </html>

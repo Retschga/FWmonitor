@@ -1,98 +1,91 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
-        <%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	
-
-    </head>	
+    <head>
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
+    </head>
 
     <body>
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
+        <div class="navbar">
+            <button class="material-icons" onclick="goBack();">chevron_left</button>
+            <h1>Statistik</h1>
 
-            <div class="navbar">                
+            <div class="flex_grow"></div>
 
-                <button class="material-icons" onclick="goBack();">chevron_left</button>
-                <h1>Statistik</h1>    
+            <button class="material-icons" onclick="yearBack()">chevron_left</button>
+            <h1 class="var_year">XXXX</h1>
+            <button class="material-icons" onclick="yearForeward()">chevron_right</button>
+        </div>
 
-                <div class="flex_grow"></div> 
+        <div class="content">
+            <div class="flex_column">
+                <% if (fwvv == true) { %>
 
-                <button class="material-icons" onclick="yearBack()">chevron_left</button>
-                <h1 class="var_year">XXXX</h1>    
-                <button class="material-icons" onclick="yearForeward()">chevron_right</button>
-
-            </div>
-
-            <div class="content">
-
-                <div class="flex_column">
-
-                    <% if (fwvv == true) { %>
-
-                    <div class="list">
-
-                        <div class="item">
-                            <span class="text">Einsatzzeit</span>
-                            <span class="text right var_usertime" onclick="load_time_id_year(user_id, year);">antippen zum laden</span>
-                        </div>
-
+                <div class="list">
+                    <div class="item">
+                        <span class="text">Einsatzzeit</span>
+                        <span
+                            class="text right var_usertime"
+                            onclick="load_time_id_year(user_id, year);"
+                            >antippen zum laden</span
+                        >
                     </div>
-
-                    <% } %>
-
-                    <div class="list list_statistic">
-
-                        <div class="item">
-                            <span class="text">Einsätze</span>
-                            <span class="text right var_counttotal">##</span>
-                            <span class="text right"> Einsätze</span>
-                        </div>
-
-                        <template id="template-statisticelement">
-                            <div class="item subitem deleteme">
-                                <span class="text var_text">Text</span>
-                                <span class="text right var_count">##</span>
-                            </div>
-                        </template>
-
-                    </div>
-
-
                 </div>
-                
+
+                <% } %>
+
+                <div class="list list_statistic">
+                    <div class="item">
+                        <span class="text">Einsätze</span>
+                        <span class="text right var_counttotal">##</span>
+                        <span class="text right"> Einsätze</span>
+                    </div>
+
+                    <template id="template-statisticelement">
+                        <div class="item subitem deleteme">
+                            <span class="text var_text">Text</span>
+                            <span class="text right var_count">##</span>
+                        </div>
+                    </template>
+                </div>
             </div>
+        </div>
 
         <%- include('partials/foot') -%>
 
         <script>
-
-            var   year     = new Date().getFullYear();
+            var year = new Date().getFullYear();
             const thisyear = year;
-            
+
             // Laden
-            async function load_statistic_year(year) {       
+            async function load_statistic_year(year) {
                 try {
-                    const statisticList = await fetch_get(url_statistic.replace(':year', year), true);
+                    const statisticList = await fetch_get(
+                        url_statistic.replace(':year', year),
+                        true
+                    );
                     console.log('statistic ' + year, statisticList);
 
-                    const target = document.querySelector(".list_statistic");
+                    const target = document.querySelector('.list_statistic');
 
                     // Bereits vorhandene Elemente löschen
-                    const elements = target.getElementsByClassName("deleteme");
-                    while(elements.length>0){elements[0].parentNode.removeChild(elements[0]);}
+                    const elements = target.getElementsByClassName('deleteme');
+                    while (elements.length > 0) {
+                        elements[0].parentNode.removeChild(elements[0]);
+                    }
 
                     let countTotal = 0;
 
                     // Liste erstellen
                     for (let i = 0; i < statisticList.length; i++) {
-                        const template   = document.querySelector('#template-statisticelement');                
-                        const var_text   = template.content.querySelector(".var_text");
-                        const var_count   = template.content.querySelector(".var_count");
+                        const template = document.querySelector('#template-statisticelement');
+                        const var_text = template.content.querySelector('.var_text');
+                        const var_count = template.content.querySelector('.var_count');
 
-                        var_text.innerHTML   = statisticList[i].einsatzstichwort;
-                        var_count.innerHTML   = statisticList[i].count;
+                        var_text.innerHTML = statisticList[i].einsatzstichwort;
+                        var_count.innerHTML = statisticList[i].count;
 
                         const clone = document.importNode(template.content, true);
                         target.appendChild(clone);
@@ -100,36 +93,39 @@
                         countTotal += parseInt(statisticList[i].count);
                     }
 
-                    const var_year   = document.querySelector(".var_year");
-                    const var_counttotal   = document.querySelector(".var_counttotal");
-                    var_year.innerHTML   = year;
-                    var_counttotal.innerHTML   = countTotal;
-
+                    const var_year = document.querySelector('.var_year');
+                    const var_counttotal = document.querySelector('.var_counttotal');
+                    var_year.innerHTML = year;
+                    var_counttotal.innerHTML = countTotal;
                 } catch (error) {
                     console.error('load_statistic_year', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                }   
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
             }
 
             async function load_time_id_year(id, year) {
                 loaderIn();
                 try {
-                    const user_time = await fetch_get(url_statistic_time.replace(':id', id).replace(':year', year), true);
+                    const user_time = await fetch_get(
+                        url_statistic_time.replace(':id', id).replace(':year', year),
+                        true
+                    );
                     console.log('user time', user_time);
 
-                    const var_usertime = document.querySelector('.var_usertime');    
+                    const var_usertime = document.querySelector('.var_usertime');
 
-                    var_usertime.innerHTML = `${Math.round(user_time.time / 60)}h ${user_time.time % 60}m (${user_time.count} Einsätze)`;
-
+                    var_usertime.innerHTML = `${Math.round(user_time.time / 60)}h ${
+                        user_time.time % 60
+                    }m (${user_time.count} Einsätze)`;
                 } catch (error) {
                     console.error('load_time_year', error);
-                    if(error.show) alert('Daten konnten nicht geladen werden.');
-                }   
-                loaderOut();             
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
+                loaderOut();
             }
 
             // Hilfsfunktionen
-            function yearBack() {                
+            function yearBack() {
                 year--;
                 loaderIn();
                 load_statistic_year(year);
@@ -137,9 +133,12 @@
                 loaderOut();
             }
 
-            function yearForeward() {                
+            function yearForeward() {
                 year++;
-                if (year > thisyear)  {year = thisyear; return;}
+                if (year > thisyear) {
+                    year = thisyear;
+                    return;
+                }
                 loaderIn();
                 load_statistic_year(year);
                 clearTime();
@@ -147,7 +146,7 @@
             }
 
             async function clearTime() {
-                const var_usertime = document.querySelector('.var_usertime');   
+                const var_usertime = document.querySelector('.var_usertime');
 
                 var_usertime.innerHTML = 'antippen zum laden';
             }
@@ -156,11 +155,6 @@
             loaderFunction = () => {
                 load_statistic_year(year);
             };
-            
-            
         </script>
-
-       
     </body>
-	
 </html>

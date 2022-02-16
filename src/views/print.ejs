@@ -99,14 +99,6 @@
         <%- include('screen/partials/foot') -%>
 
         <script>
-            // -------- GET Parameter auslesen --------
-            var parts = window.location.search.substr(1).split('&');
-            var $_GET = {};
-            for (var i = 0; i < parts.length; i++) {
-                var temp = parts[i].split('=');
-                $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-            }
-
             const coordiantes = { lat: $_GET['lat'], lng: $_GET['lng'] };
 			document.getElementById('varEINSATZSTICHWORT').innerHTML = $_GET['varEINSATZSTICHWORT'];
             document.getElementById('varSCHLAGWORT').innerHTML = $_GET['varSCHLAGWORT'];
@@ -126,14 +118,14 @@
                 let longitude = coordiantes.lng;
                 const pos = { lat: latitude, lng: longitude };
 
-                const map = createMap(pos, true, false, true);
-                add_circle(latitude, longitude, map);
+                const map = map_createMap(pos, true, false, true);
+                map_add_layerCircle(latitude, longitude, map);
 
                 if(latitude != undefined && longitude != undefined  && latitude != 'undefined' && longitude != 'undefined') {
                     const hydrantenCache = await fetch_get(url_map_hydranten.replace(':lat', latitude).replace(':lng', longitude), true);
-                    add_hydranten(hydrantenCache, map);
+                    map_add_layerHydranten(hydrantenCache, map);
                 }
-                add_forstRettPkt(map);
+                map_add_layerForstRettPkt(map);
 
 
                 map.setView(

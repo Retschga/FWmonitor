@@ -1,9 +1,10 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { contactService } from '../services/contact';
+
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { contactService } from '../services/contact';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Contact_Controller';

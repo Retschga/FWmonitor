@@ -1,11 +1,9 @@
 <!-- SCRIPT LOADER -->
-<script>    
-
+<script>
     let car_name = localStorage.getItem('car_name');
 
-    // Websockets
-    var ws_software = null;
-    let lastKeepAlive = new Date();
+    let ws_software = null;
+    let ws_lastKeepAlive = new Date();
 
     const url_alarm_list = '/api/v1/alarm/list?offset=:offset&limit=:limit';
     const url_alarm = '/api/v1/alarm/:id';
@@ -17,9 +15,9 @@
     const url_map_forstrettpkt = '/rettPunkte.geojson';
     const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
 
-	// Server Verbindungsstatus
-    function update_server_status(val) {
-        if(val) {
+    // Server Verbindungsstatus
+    function serverStatus_update(val) {
+        if (val) {
             document.querySelector('.var_server_ok')?.classList.remove('hidden');
             document.querySelector('.var_server_error')?.classList.add('hidden');
         } else {
@@ -29,24 +27,31 @@
     }
 
     // Websocket Server Verbindung
-    async function ws_server_connect() {	
+    async function ws_server_connect() {
         try {
-            ws_software = new WebSocket('wss://'+window.location.hostname+(window.location.port ? ':'+window.location.port: '')+'?token='+getCookie('token'));
-       
-            let wsStatusInterval = null;
-            let keepAliveInterval = null;
+            ws_software = new WebSocket(
+                'wss://' +
+                    window.location.hostname +
+                    (window.location.port ? ':' + window.location.port : '') +
+                    '?token=' +
+                    getCookie('token')
+            );
+
+            let ws_statusInterval = null;
+            let ws_keepAliveInterval = null;
 
             const userrights = await fetch_get('/api/v1/user/rights', true);
-            if(DEBUG > 0) console.log('userrights', userrights);
+            if (DEBUG > 0) console.log('userrights', userrights);
 
             car_name = userrights.name;
             localStorage.setItem('car_name', car_name);
 
-            if(DEBUG > 0) console.log('Software-connection socket connecting...');
+            if (DEBUG > 0) console.log('Software-connection socket connecting...');
 
             // Sende Status Datensatz
-            let sendStatus = () => {ws_software.send(
-                `{
+            let ws_sendStatusInitial = () => {
+                ws_software.send(
+                    `{
                     "topic": "init",
                     "type":"AutoClient",
                     "name":"Auto - ${car_name}",
@@ -54,132 +59,148 @@
                     "actions":[
                         {"id":"0"},
                         {"id":"7"},
-                        {"id":"8", "key": "Version", "value": "<%= version %> / ${hwVersion}"},
+                        {"id":"8", "key": "Version", "value": "<%= version %> / ${hw_version}"},
                         {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(
+                            /\"/g,
+                            ''
+                        )}"},
                         {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
-                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"}
+                        {"id":"-4", "key": "WS Hardware", "value": "${
+                            ws_hardware && ws_stateToText(ws_hardware.readyState)
+                        }"}
                 ]}`
-            );}   
-            let sendStatusUpdate = () => {ws_software.send(
-                `{
+                );
+            };
+            let ws_sendStatusUpdate = () => {
+                ws_software.send(
+                    `{
                     "topic": "update",
                     "info":"Update",
                     "actions":[
                         {"id":"-1", "key": "GPS FIX", "value": "${GPS_hasFIX}"},
                         {"id":"9", "key": "GPS Pos", "value": "${GPS_now.lat}, ${GPS_now.lng}"},
-                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(/\"/g, '')}"},
+                        {"id":"-2", "key": "Wlan", "value": "${status_connWlan.replace(
+                            /\"/g,
+                            ''
+                        )}"},
                         {"id":"-3", "key": "USB Tethering", "value": "${status_usbtether}"},
-                        {"id":"-4", "key": "WS Hardware", "value": "${ws_hardware && wsStateToText(ws_hardware.readyState)}"}
-                        ${updateInProgress ? ',{"id":"-5", "key": "Update", "value": "läuft"}' : ''}
+                        {"id":"-4", "key": "WS Hardware", "value": "${
+                            ws_hardware && ws_stateToText(ws_hardware.readyState)
+                        }"}
+                        ${hw_updateInProgress ? ',{"id":"-5", "key": "Update", "value": "läuft"}' : ''}
                 ]}`
-            );}      
-
-            ws_software.onopen = function() {
-                if(DEBUG > 0) console.log("Software-connection socket connected!");
-
-                // Sende Status Datensatz
-                sendStatus();
-
-                // Setze Verbindungsstatus auf OK
-                update_server_status(true);
-
-                // Sende alle 30 sek einen Statusdatensatz
-                wsStatusInterval = setInterval( () => {
-                    sendStatusUpdate();
-                }, 30000);
-
-                // Sende KeepAlive Intervall
-                lastKeepAlive = new Date();
-                keepAliveInterval = setInterval(() => {
-                    if((new Date().getTime() - lastKeepAlive.getTime()) > 60000) {		
-                        if(DEBUG > 0) console.error('Software-connection keep-alive timeout!');
-                        update_server_status(false);				
-                        ws_software.close();
-                    } else {
-                        if(DEBUG > 0) console.log('Software-connection keep-alive OK!');
-                    }
-                }, 60000)
+                );
             };
 
-            ws_software.onmessage = function(e) {
+            ws_software.onopen = function () {
+                if (DEBUG > 0) console.log('Software-connection socket connected!');
+
+                // Sende Status Datensatz
+                ws_sendStatusInitial();
+
+                // Setze Verbindungsstatus auf OK
+                serverStatus_update(true);
+
+                // Sende alle 30 sek einen Statusdatensatz
+                ws_statusInterval = setInterval(() => {
+                    ws_sendStatusUpdate();
+                }, 30000);
+
+                // KeepAlive Intervall
+                ws_lastKeepAlive = new Date();
+                ws_keepAliveInterval = setInterval(() => {
+                    if (new Date().getTime() - ws_lastKeepAlive.getTime() > 60000) {
+                        if (DEBUG > 0) console.error('Software-connection keep-alive timeout!');
+                        serverStatus_update(false);
+                        ws_software.close();
+                    } else {
+                        if (DEBUG > 0) console.log('Software-connection keep-alive OK!');
+                    }
+                }, 60000);
+            };
+
+            ws_software.onmessage = function (e) {
                 let socket = ws_software;
                 let data = e.data;
-                if(DEBUG > 1) console.log('Software-connection socket message:', data);
-                
-                data           = JSON.parse(data);
-                const topic    = data.topic;
-                const message  = data.message;
-                
+                if (DEBUG > 1) console.log('Software-connection socket message:', data);
+
+                data = JSON.parse(data);
+                const topic = data.topic;
+                const message = data.message;
+
                 // Keep Alive
-                if(topic == 'ping') {
-                    lastKeepAlive = new Date();	
-                    socket.send(JSON.stringify({topic: 'pong', message :message}));			
-                    update_server_status(true);		
+                if (topic == 'ping') {
+                    ws_lastKeepAlive = new Date();
+                    socket.send(JSON.stringify({ topic: 'pong', message: message }));
+                    serverStatus_update(true);
                     loaderOut();
                 }
 
                 // Alarm
-                if(topic == 'alarm') {                                        
-                    dispAktiv();
+                if (topic == 'alarm') {
+                    hw_sendDispAktiv();
 
                     // GPS Statistik für Einsatz zurücksetzen
                     localStorage.setItem('gps.distSum', GPS_dist_sum);
                     localStorage.setItem('gps.altMax', GPS_alt_max);
                     localStorage.setItem('gps.altMin', GPS_alt_min);
 
-                    location.reload(); 
-                } 
-                
-                if(topic == 'init') {
+                    location.reload();
+                }
+
+                if (topic == 'init') {
                     // Sende Status Datensatz
-                    sendStatus();
+                    ws_sendStatusInitial();
                 }
 
-                if(topic == 'action_0') {
-                    location.reload(); 
+                if (topic == 'action_0') {
+                    location.reload();
                 }
-                
-                if(topic == 'action_7') {
+
+                if (topic == 'action_7') {
                     loaderIn(undefined, undefined, 'Neustart');
-                    restart();
+                    hw_sendRestart();
                 }
 
-                if(topic == 'action_8') {
+                if (topic == 'action_8') {
                     loaderIn(undefined, undefined, 'Update');
-                    update();
+                    hw_sendUpdate();
                 }
             };
 
-            ws_software.onclose = function(e) {
-                if(DEBUG > 0) console.log('Software-connection socket is closed. Reconnect will be attempted in 15 second.', e.reason);
-                update_server_status(false);	
-                clearInterval(wsStatusInterval);
-                clearInterval(keepAliveInterval);
-                setTimeout(function() {
+            ws_software.onclose = function (e) {
+                if (DEBUG > 0)
+                    console.log(
+                        'Software-connection socket is closed. Reconnect will be attempted in 15 second.',
+                        e.reason
+                    );
+                serverStatus_update(false);
+                clearInterval(ws_statusInterval);
+                clearInterval(ws_keepAliveInterval);
+                setTimeout(function () {
                     ws_server_connect();
                 }, 15000);
             };
 
-            ws_software.onerror = function(err) {
-                if(DEBUG > 0) console.error('Software-connection socket encountered error: ', err.message, 'Closing socket');
-                update_server_status(false);
-                clearInterval(wsStatusInterval);
-                clearInterval(keepAliveInterval);
+            ws_software.onerror = function (err) {
+                if (DEBUG > 0)
+                    console.error(
+                        'Software-connection socket encountered error: ',
+                        err.message,
+                        'Closing socket'
+                    );
+                serverStatus_update(false);
+                clearInterval(ws_statusInterval);
+                clearInterval(ws_keepAliveInterval);
                 ws_software.close();
             };
         } catch (error) {
             console.error(error);
-            setTimeout(function() {
+            setTimeout(function () {
                 ws_server_connect();
             }, 15000);
         }
-        
     }
-
-    
-
-
 </script>
-

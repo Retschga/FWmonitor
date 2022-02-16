@@ -220,7 +220,7 @@
                 }
                 monthCalendar_build();
                 listCalendar_build();
-                console.log('to ' + visibility_akt_status + ' --> done')
+                console.log('to ' + visibility_akt_status + ' --> done');
             }
 
             // Monatskalender erstellen
@@ -282,7 +282,8 @@
                         const dayElement = document.querySelector(
                             `#day_${date.getFullYear()}_${date.getMonth()}_${date.getDate()}_dots`
                         );
-                        if (dayElement && (visibility_akt_status == 'true' || includesUsergroup)) dayElement.innerHTML += '<span class="dot"></span>';
+                        if (dayElement && (visibility_akt_status == 'true' || includesUsergroup))
+                            dayElement.innerHTML += '<span class="dot"></span>';
                     }
                 }
             }

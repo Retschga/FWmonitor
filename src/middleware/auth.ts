@@ -30,6 +30,9 @@ export const enum UserRights {
     praesentation = 8
 }
 
+/**
+ * Führt die App/Auto Anmeldung durch
+ */
 export async function login_app(
     req: Request,
     res: Response,
@@ -133,11 +136,7 @@ export async function login_app(
             req.session.name = car[0].name;
         }
 
-        /*         console.log('\n\n\n\n\n');
-        console.log(req.session);
-        console.log('\n\n\n\n\n'); */
-
-        // JWT erzeugen und als Cookie senden
+        // neuen JWT erzeugen und als Cookie senden
         const tokenSession: PartialTokenSession = { id: userid, car: car, isV3: true };
         const new_token_session = createToken(tokenSession);
         res.header('Access-Control-Allow-Credentials', 'true');
@@ -202,6 +201,9 @@ export async function login_app(
     }
 }
 
+/**
+ * Meldet debn aktuellen Session Benutzer ab
+ */
 export async function logout_app(
     req: Request,
     res: Response
@@ -223,13 +225,17 @@ export async function logout_app(
         path: '/',
         maxAge: config.app.jwt_expire * 1000
     });
-*/
+    
+    */
     // Antwort senden
     return res.status(200).send({
         message: 'OK'
     });
 }
 
+/**
+ * Middleware: Prüft den Anmeldestatus, sowie Berechtigungen
+ */
 const auth = (redirect?: string, ...roles: UserRights[]) => {
     return async function (req: Request, res: Response, next: NextFunction) {
         try {
@@ -289,11 +295,17 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
     };
 };
 
+/**
+ * Auth Middleware für Seiten
+ */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function auth_page(redirect?: string, ...roles: UserRights[]) {
     return auth(redirect, ...roles);
 }
 
+/**
+ * Auth Middleware für API Endpunkte
+ */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function auth_api(...roles: UserRights[]) {
     return auth(undefined, ...roles);

@@ -3,6 +3,8 @@
 </div>
 
 <script src="/scripts/common.js"></script> 
+<script src="/scripts/ui.js"></script> 
+<script src="/scripts/map.js"></script> 
 
 <!-- SCRIPT LOADER -->
 <script>    
@@ -11,8 +13,6 @@
         let loader = document.querySelector("#pageloader");
         loader.classList.remove("hidden")
     //}
-
-
 
     let firststart = true;
 
@@ -264,7 +264,9 @@
 
     window.addEventListener('pageshow', (event) => {
         console.log('The page has been shown');
-        load_later();
+        setTimeout(() => {            
+            load_later();
+        }, 100);
     });
    
     window.addEventListener("click", (event) => {
@@ -283,7 +285,9 @@
         if (document.visibilityState === 'visible' && !firststart) {
             console.log("open");
 
-            load_later();          
+            setTimeout(() => {            
+                load_later();
+            }, 250);         
 
         } else {
             console.log("close");

@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 'use strict';
 
-const staticCacheName = 'cache-vers-3.1.1-d';
+const staticCacheName = 'cache-vers-3.2.1-b';
 console.log('Loaded service worker! Cache Version ' + staticCacheName);
 
 const filesToCache = ['/app/offline'];
@@ -187,6 +187,7 @@ this.addEventListener('fetch', function (event) {
                             event.request.url.indexOf('.js') != -1 ||
                             event.request.url.indexOf('.woff2') != -1 ||
                             event.request.url.indexOf('.ico') != -1 ||
+                            event.request.url.indexOf('icon.png') != -1 ||
                             event.request.url.indexOf('family=Material+Icons') != -1 ||
                             event.request.url.indexOf(url_map_hydranten) != -1 ||
                             event.request.url.indexOf(url_map_forstrettpkt) != -1 ||

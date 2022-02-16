@@ -16,15 +16,15 @@
 }
 
 html {
-    min-width: 100vw;
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     font-size: 18px;
     font-family: Roboto, 'Helvetica Neue', sans-serif;
 }
 
 body {
-    min-width: 100vw;
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     background-color: var(--bg_body);
 
     -webkit-touch-callout: none; /* iOS Safari */

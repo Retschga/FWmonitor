@@ -1,148 +1,130 @@
 <!DOCTYPE html>
 <html lang="de">
-
-    <head>	
-
+    <head>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <link rel="stylesheet" href="/vendor/keyboard.css" />
         <script src="/vendor/keyboard.js"></script>
 
-		<%- include('partials/head') -%>	
-        <title>FWmonitor - APP</title>	 
+        <%- include('partials/head') -%>
+        <title>FWmonitor - APP</title>
 
-        <link rel="stylesheet" href="/css/car_login.css">
-        
-    </head>	
+        <link rel="stylesheet" href="/css/car_login.css" />
+    </head>
 
     <body class="">
+        <%- include('partials/header') -%>
 
-        <%- include('partials/header') -%>  
-
-            <!-- TOP -->
-            <div 
-                class="navbar" 
-                style="
-                    height: 30vh;
-                    display: flex;
-                    align-items: center;"
-            >
-
-                <div 
+        <!-- TOP -->
+        <div class="navbar" style="height: 30vh; display: flex; align-items: center">
+            <div style="display: flex">
+                <div
                     style="
-                        display: flex;"
+                        width: 4em;
+                        margin-left: 2em;
+                        margin-right: 1.5em;
+                        display: flex;
+                        align-items: center;
+                    "
                 >
-
-                    <div 
+                    <img
+                        class="avatar circle"
+                        src="/icons/icon-384x384.png"
                         style="
-                            width: 4em;
-                            margin-left: 2em;
-                            margin-right: 1.5em;
-                            display: flex;
-                            align-items: center;"
-                    >
-                        <img 
-                            class="avatar circle" 
-                            src="/icons/icon-384x384.png"
-                            style="
-                                border-radius: 50%;
-                                border: 1px solid white;
-                                display: block;
-                                width: 100%;
-                                height: auto;"
-                        />
-                    </div>                    
-
-                    <div>
-                        <p
-                            style="
-                                font-size: 1.2em;
-                                font-weight: bold;"
-                        >
-                            FWmonitor
-                        </p>  
-                        <p>
-                            FF Fischbachau
-                        </p>  
-                    </div>
-                    
-                    
+                            border-radius: 50%;
+                            border: 1px solid white;
+                            display: block;
+                            width: 100%;
+                            height: auto;
+                        "
+                    />
                 </div>
 
+                <div>
+                    <p style="font-size: 1.2em; font-weight: bold">FWmonitor</p>
+                    <p>FF Fischbachau</p>
+                </div>
             </div>
-            <div class="navbar" style="height: 2em; transform: translate3d(0,-30%,0) skewY(-1deg);"></div>
+        </div>
+        <div
+            class="navbar"
+            style="height: 2em; transform: translate3d(0, -30%, 0) skewY(-1deg)"
+        ></div>
 
-
-            <!-- CONTENT -->
+        <!-- CONTENT -->
+        <div class="content flex_column" style="align-items: stretch; padding-top: 3em">
+            <!-- LOADER LOGIN -->
             <div
-                class="content flex_column" 
-                style="
-                    align-items: stretch;
-                    padding-top: 3em;"
+                id="loginLoader"
+                class="flex-grow flex_column flex_center_horizontal flex_center_vertical hidden"
             >
-
-                <!-- LOADER LOGIN -->
-                <div 
-                    id="loginLoader"
-                    class="flex-grow flex_column flex_center_horizontal flex_center_vertical hidden" 
-                >
-                        <div class="spinner_rotateplane"></div>
-                        <h2 class="text_align_center">Laden...</h2>
-                </div>
-
-                <!-- LOGIN FORM -->
-                <div 
-                    id="loginFormContainer" 
-                    class="flex-grow flex_column flex_center_horizontal flex_center_vertical" 
-                >
-                    <form 
-                        id="loginForm"
-                        action="login" 
-                        method="get"
-                        style="width: 90%;"
-                    >
-
-                        <div class="input-container">
-                            <span class="material-icons">person</span>                                
-                            <input id="var_telid" class="input-field use-keyboard-input" type="text" placeholder="Telegram ID" name="username">
-                        </div>
-
-                        <div class="input-container">
-                            <span class="material-icons">password</span>                                
-                            <input id="var_passwort" class="input-field use-keyboard-input" type="password" placeholder="Passwort" name="password">
-                        </div>
-
-                        <button type="submit" class="btn">Anmelden</button>                        
-
-                    </form>
-
-                    <button class="btn" id="btn_token" style="margin-top: 1em; width: 90%;" onclick="login(true)">Token Login</button>
-                </div>
-
+                <div class="spinner_rotateplane"></div>
+                <h2 class="text_align_center">Laden...</h2>
             </div>
 
-            <span class="material-icons btn btn_settings" onclick="loaderIn('settings')">settings</span>
+            <!-- LOGIN FORM -->
+            <div
+                id="loginFormContainer"
+                class="flex-grow flex_column flex_center_horizontal flex_center_vertical"
+            >
+                <form id="loginForm" action="login" method="get" style="width: 90%">
+                    <div class="input-container">
+                        <span class="material-icons">person</span>
+                        <input
+                            id="var_telid"
+                            class="input-field use-keyboard-input"
+                            type="text"
+                            placeholder="Telegram ID"
+                            name="username"
+                        />
+                    </div>
+
+                    <div class="input-container">
+                        <span class="material-icons">password</span>
+                        <input
+                            id="var_passwort"
+                            class="input-field use-keyboard-input"
+                            type="password"
+                            placeholder="Passwort"
+                            name="password"
+                        />
+                    </div>
+
+                    <button type="submit" class="btn">Anmelden</button>
+                </form>
+
+                <button
+                    class="btn"
+                    id="btn_token"
+                    style="margin-top: 1em; width: 90%"
+                    onclick="login(true)"
+                >
+                    Token Login
+                </button>
+            </div>
+        </div>
+
+        <span class="material-icons btn btn_settings" onclick="loaderIn('settings')">settings</span>
 
         <%- include('partials/foot') -%>
 
-        <script>            
-
-            addFormatter(document.getElementById("var_telid"), regexPrefix(/^AUTO/, 'AUTO'));
+        <script>
+            ui_addFormatter(document.getElementById('var_telid'), regexPrefix(/^AUTO/, 'AUTO'));
 
             function login(useToken = false) {
-                let loader = document.querySelector("#loginLoader");
-                loader.classList.remove("hidden");
+                const loader = document.querySelector('#loginLoader');
+                loader.classList.remove('hidden');
 
-                let loginFormContainer = document.querySelector("#loginFormContainer");
-                loginFormContainer.classList.add("hidden");
+                const loginFormContainer = document.querySelector('#loginFormContainer');
+                loginFormContainer.classList.add('hidden');
 
-                let telid = document.getElementById("var_telid").value;
-                let pw = document.getElementById("var_passwort").value;
-                if(telid == 'AUTO') {
+                let telid = document.getElementById('var_telid').value;
+                let pw = document.getElementById('var_passwort').value;
+                if (telid == 'AUTO') {
                     telid = undefined;
                     pw = undefined;
                 }
 
-                fetch(url_login, {                    
+                fetch(url_login, {
                     method: 'POST', // *GET, POST, PUT, DELETE, etc.
                     mode: 'cors', // no-cors, *cors, same-origin
                     cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -150,48 +132,48 @@
                     withCredentials: true,
                     redirect: 'follow', // manual, *follow, error
                     referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-					headers: {'Content-Type': 'application/json'},					
-					body: JSON.stringify(useToken == true ? {} : {
-						telegramid: telid,
-						password: pw
-					})
-				})
-				.then(data => data.json())
-				.then(data =>  { 
-					if(DEBUG > 0) console.log(data);
-                    if(data.message && data.message == 'OK') {
-                        setCookie('logout_status', 'false', 1);
-                        loaderIn('index', true); 
-                        return false;
-                    }
-                    if(data.message) {
-                        console.error("Login Fehler: ", data.message);	
-                        alert(data.message);
-                        loader.classList.add("hidden");
-                        loginFormContainer.classList.remove("hidden");
-                    }
-				}) 
-				.catch((err) => {
-					console.error("Login Fehler: ", err);	
-                    loader.classList.add("hidden");
-                    loginFormContainer.classList.remove("hidden");
-				})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(
+                        useToken == true
+                            ? {}
+                            : {
+                                  telegramid: telid,
+                                  password: pw
+                              }
+                    )
+                })
+                    .then((data) => data.json())
+                    .then((data) => {
+                        if (DEBUG > 0) console.log(data);
+                        if (data.message && data.message == 'OK') {
+                            setCookie('logout_status', 'false', 1);
+                            loaderIn('index', true);
+                            return false;
+                        }
+                        if (data.message) {
+                            console.error('Login Fehler: ', data.message);
+                            alert(data.message);
+                            loader.classList.add('hidden');
+                            loginFormContainer.classList.remove('hidden');
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Login Fehler: ', err);
+                        loader.classList.add('hidden');
+                        loginFormContainer.classList.remove('hidden');
+                    });
             }
 
-            if($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != "") login();
+            if ($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != '')
+                login(true);
 
-            if(!getCookie('token') || getCookie('token') == "") document.getElementById('btn_token').classList.add('hidden');
+            if (!getCookie('token') || getCookie('token') == '')
+                document.getElementById('btn_token').classList.add('hidden');
 
             document.getElementById('loginForm').onsubmit = function () {
-
                 login();
-
                 return false;
-            }
-           
+            };
         </script>
-
-       
     </body>
-	
 </html>

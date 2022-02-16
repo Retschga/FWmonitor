@@ -1,11 +1,12 @@
 'use strict';
 
 import { Request, Response } from 'express';
-import { checkValidation } from './controller';
-import CarService from '../services/car';
 import { createNewPassword, hashPassword } from '../utils/security';
+
+import CarService from '../services/car';
 import HttpException from '../utils/httpException';
 import HttpStatusCodes from '../utils/httpStatusCodes';
+import { checkValidation } from './controller';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Car_Controller';

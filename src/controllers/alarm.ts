@@ -276,6 +276,9 @@ class AlarmController {
         res.send('OK');
     }
 
+    /**
+     *  Strassen Polyline
+     */
     public async get_streetCache(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_streetCache');
 
@@ -284,6 +287,9 @@ class AlarmController {
         res.send(response);
     }
 
+    /**
+     * Route
+     */
     public async get_route(req: Request, res: Response) {
         logging.debug(NAMESPACE, 'get_route');
 

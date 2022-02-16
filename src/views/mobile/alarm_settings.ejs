@@ -12,10 +12,10 @@
             <button class="material-icons" onclick="goBack();">chevron_left</button>
 
             <h1>Alarmierung</h1>
-              
+
             <div class="flex_grow"></div>
 
-            <button class="material-icons" onclick="location.reload()">refresh</button>   
+            <button class="material-icons" onclick="location.reload()">refresh</button>
         </div>
 
         <div class="content">
@@ -53,7 +53,12 @@
                         <span class="left material-icons">notifications_off</span>
                         <span class="text">Aktiv</span>
                         <label class="switch right">
-                            <input type="checkbox" class="var_silence_status" disabled onchange="update_silence_seconds(0)" />
+                            <input
+                                type="checkbox"
+                                class="var_silence_status"
+                                disabled
+                                onchange="update_silence_seconds(0)"
+                            />
                             <span class="slider round"></span>
                         </label>
                     </div>
@@ -62,13 +67,13 @@
                         <span class="left material-icons">notifications_off</span>
                         <span class="text">Minuten</span>
                         <input type="number" class="var_silence_min" min="0" max="60" />
-                    </div> 
+                    </div>
 
                     <div class="item">
                         <span class="left material-icons">notifications_off</span>
                         <span class="text">= Sekunden</span>
-                        <input type="number" class="var_silence_seconds" disabled/>
-                    </div>                                       
+                        <input type="number" class="var_silence_seconds" disabled />
+                    </div>
 
                     <div class="item">
                         <div class="flex_grow"></div>
@@ -124,8 +129,8 @@
                     const var_seconds = document.querySelector('.var_silence_min');
 
                     let sec = seconds;
-                    if(seconds == undefined) {
-                        sec = var_seconds.value *60;
+                    if (seconds == undefined) {
+                        sec = var_seconds.value * 60;
                     }
 
                     const response = await fetch_post(url_alarm_silence, {

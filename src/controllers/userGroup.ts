@@ -8,7 +8,7 @@ import { checkValidation } from './controller';
 import logging from '../utils/logging';
 import usergroupService from '../services/userGroup';
 
-const NAMESPACE = 'UsergroupController';
+const NAMESPACE = 'Usergroup_Controller';
 
 class UsergroupController {
     /**
