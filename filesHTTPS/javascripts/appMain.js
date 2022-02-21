@@ -424,12 +424,12 @@ function createMap(dest, hydrantenCache, center = false) {
 			url: 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png'
 		})
 	})
-	let tileLayer_Hillshade = new ol.layer.Tile({
-		source: new ol.source.XYZ({
-			url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
-			attributions: ['© wmflabs']
-		})
-	})
+	// let tileLayer_Hillshade = new ol.layer.Tile({
+	// 	source: new ol.source.XYZ({
+	// 		url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+	// 		attributions: ['© wmflabs']
+	// 	})
+	// })
 
 
 	let vectorSource_hydrant = new ol.source.Vector({
@@ -446,7 +446,7 @@ function createMap(dest, hydrantenCache, center = false) {
 		style: styleFunction,
 	});	
 	layers.push(tileLayer_OSM);
-	layers.push(tileLayer_Hillshade);
+	// layers.push(tileLayer_Hillshade);
 	layers.push(vectorLayer_hydrant);
 
 

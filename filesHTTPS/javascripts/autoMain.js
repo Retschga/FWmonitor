@@ -283,14 +283,14 @@ function createMap(dest, hydrantenCache, center = false) {
 		}),
 		preload: 18
 	})
-	let tileLayer_Hillshade = new ol.layer.Tile({
-		source: new ol.source.XYZ({
-			url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
-			attributions: ['© wmflabs']
-		}),
-		preload: 16,
-		maxZoom: 16, // visible at zoom levels 14 and below
-	})	
+	// let tileLayer_Hillshade = new ol.layer.Tile({
+	// 	source: new ol.source.XYZ({
+	// 		url: 'https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png',
+	// 		attributions: ['© wmflabs']
+	// 	}),
+	// 	preload: 16,
+	// 	maxZoom: 16, // visible at zoom levels 14 and below
+	// })	
 	tileLayer_OpenTopoMap = new ol.layer.Tile({
 		source: new ol.source.XYZ({
 			url: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -314,7 +314,7 @@ function createMap(dest, hydrantenCache, center = false) {
 	});	
 
 	layers.push(tileLayer_OSM);
-	layers.push(tileLayer_Hillshade);
+	// layers.push(tileLayer_Hillshade);
 	layers.push(tileLayer_OpenTopoMap);
 	layers.push(vectorLayer_hydrant);
 
