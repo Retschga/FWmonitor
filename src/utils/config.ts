@@ -163,12 +163,12 @@ const SCREEN = {
 };
 
 const MAP = {
-    layer1_url: process.env.MAP_LAYER1_URL,
-    layer1_attr: process.env.MAP_LAYER1_ATTR,
+    layer1_url: process.env.MAP_LAYER1_URL || 'https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png',
+    layer1_attr: process.env.MAP_LAYER1_ATTR || '© openstreetmap',
     layer1_hillshade_url: process.env.MAP_LAYER1_HILLSHADING_URL,
     layer1_hillshade_attr: process.env.MAP_LAYER1_HILLSHADING_ATTR,
-    layer2_url: process.env.MAP_LAYER2_URL,
-    layer2_attr: process.env.MAP_LAYER2_ATTR
+    layer2_url: process.env.MAP_LAYER2_URL || 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    layer2_attr: process.env.MAP_LAYER2_ATTR || '© OpenTopoMap'
 };
 
 const GEOCODE = {

@@ -1,0 +1,10 @@
+.content {
+    display: flex;
+    justify-content: space-around;
+}
+
+.content_column {
+    width: 50%;
+    height: 100%;
+    padding: .5rem;
+}
