@@ -29,7 +29,7 @@ class CalendarController {
             list[i].appPasswort = '****';
         }
 
-        res.send(list);
+        res.send(list[0]);
     }
 
     /**
@@ -52,6 +52,29 @@ class CalendarController {
     }
 
     /**
+     * Findet alle Funkstati
+     */
+    public async get_funkstatus_list_all(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'get_funkstatus_list_all', {
+            limit: req.query.limit,
+            offset: req.query.offset
+        });
+        checkValidation(req);
+
+        const list = await CarService.find_FunkStatus(
+            {},
+            Number(req.query.limit),
+            Number(req.query.offset),
+            'ORDER BY id DESC'
+        );
+        if (!list) {
+            throw new HttpException(HttpStatusCodes.NOT_FOUND, 'No Status found');
+        }
+
+        res.send(list);
+    }
+
+    /**
      * Update eines Autos
      */
     public async update_id(req: Request, res: Response) {
@@ -66,6 +89,7 @@ class CalendarController {
                 Number(req.params.id),
                 String(req.body.name),
                 String(req.body.appBenutzer),
+                String(req.body.funk_name),
                 password
             );
         } catch (error) {

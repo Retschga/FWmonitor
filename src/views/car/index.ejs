@@ -24,6 +24,8 @@
             <button class="material-icons var_server_ok hidden">leak_add</button>
             <button class="material-icons var_server_error">leak_remove</button>
 
+            <h1 class="var_statusNr hidden" style="margin-left: 1rem;">Status #</h1>
+
             <div class="flex_grow"></div>
 
             <h1 class="var_time margin_right_1">##:## - ##.##.####</h1>
@@ -46,6 +48,9 @@
                     <div id="map-popup-content"></div>
                 </div>
             </div>
+
+            <div class="statusPopup hidden">Status 1</div>
+            <div class="statusText hidden">Statustext</div>
 
             <!-- ALARM TEMPLATE -->
             <template id="template-alarm">
@@ -360,6 +365,7 @@
                 load_clock();
 
                 ws_server_connect();
+                carData_load();
 
                 setTimeout(() => {
                     if (!isalarm) {

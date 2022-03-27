@@ -377,7 +377,8 @@ class UserService {
             softwareInfo: user.softwareInfo,
             telefonliste: user.telefonliste,
             kalender: user.kalender,
-            praes: user.praes
+            praes: user.praes,
+            car_list: user.car_list
         };
     }
 
@@ -401,7 +402,8 @@ class UserService {
                 drucker: user.drucker,
                 softwareInfo: user.softwareInfo,
                 telefonliste: user.telefonliste,
-                kalender: user.kalender
+                kalender: user.kalender,
+                car_list: user.car_list
             });
         }
 
@@ -415,6 +417,16 @@ class UserService {
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' update_roles_admin - No rows changed');
+        }
+    }
+
+    public async update_roles_carList(id: number, value: boolean) {
+        const affectedRows = await UserModel.model.update(Number(id), {
+            car_list: value
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update_roles_carList - No rows changed');
         }
     }
 

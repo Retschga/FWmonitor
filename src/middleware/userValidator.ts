@@ -94,6 +94,11 @@ export const updateUser = [
         .withMessage('praes is required')
         .isBoolean()
         .withMessage('praes must be boolean'),
+    body('car_list')
+        .exists()
+        .withMessage('car_list is required')
+        .isBoolean()
+        .withMessage('car_list must be boolean'),
     body('name').isString().withMessage('name must be string'),
     body('vorname').isString().withMessage('vorname must be string')
 ];

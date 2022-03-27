@@ -2,6 +2,8 @@
 
  #Autor: Jesús Sánchez Sänchez (gokuhs)
  #Based on veproza proyect: https://gist.github.com/veproza/55ec6eaa612781ac29e7
+
+ #https://raspberrypi.stackexchange.com/questions/113544/rpi-neo-6m-neo-8m-gps-module-setup-fix-update-problems#113651
 import requests
 import serial
 import sys

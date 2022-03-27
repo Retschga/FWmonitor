@@ -210,8 +210,8 @@ SCREEN_NVERF=true
 # Layer 1
 MAP_LAYER1_URL=https://{a-c}.tile.openstreetmap.de/{z}/{x}/{y}.png
 MAP_LAYER1_ATTR=© openstreetmap
-#MAP_LAYER1_HILLSHADING_URL=https://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png 
-#MAP_LAYER1_HILLSHADING_ATTR=© wmflabs
+MAP_LAYER1_HILLSHADING_URL=undefined
+MAP_LAYER1_HILLSHADING_ATTR=undefined
 
 # Layer 2
 MAP_LAYER2_URL=https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png

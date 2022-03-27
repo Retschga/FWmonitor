@@ -46,3 +46,31 @@
         box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
     }
 }
+
+
+.statusPopup {
+    position: absolute;
+    top: 50%;  /* position the top  edge of the element at the middle of the parent */
+    left: 50%; /* position the left edge of the element at the middle of the parent */
+
+    transform: translate(-50%, -50%); /* This is a shorthand of
+                                         translateX(-50%) and translateY(-50%) */
+    text-align: center;
+    padding: 1rem;
+    background-color: var(--bg_subnavbar);
+    border: 1px solid var(--color_border);
+    font-size: 4em;
+}
+
+.statusText {
+    position: fixed;
+    bottom: 4rem;
+    font-size: 1.5em;
+    left: 0;
+    width: auto;
+    height: 1em;
+    background-color: var(--bg_subnavbar);
+    display: flex;
+    flex-direction: row;
+    padding: .2em;
+}

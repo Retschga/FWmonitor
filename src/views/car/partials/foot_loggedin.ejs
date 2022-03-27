@@ -1,6 +1,7 @@
 <!-- SCRIPT LOADER -->
 <script>
     let car_name = localStorage.getItem('car_name');
+    let car_funkname = localStorage.getItem('car_funkname');
 
     let ws_software = null;
     let ws_lastKeepAlive = new Date();
@@ -14,6 +15,9 @@
 
     const url_map_forstrettpkt = '/rettPunkte.geojson';
     const url_map_hydranten = '/api/v1/hydrant/:lat/:lng';
+
+    const url_cars_id = '/api/v1/car/:id';
+
 
     // Server Verbindungsstatus
     function serverStatus_update(val) {
@@ -168,6 +172,13 @@
                     loaderIn(undefined, undefined, 'Update');
                     hw_sendUpdate();
                 }
+
+                if (topic == 'car_status-change') {
+                    console.log(car_funkname)
+                    if(message.indexOf(car_funkname) != -1) {
+                        setFunkStatus( message.slice(-1));                        
+                    }
+                }
             };
 
             ws_software.onclose = function (e) {
@@ -203,4 +214,57 @@
             }, 15000);
         }
     }
+
+    // Lade Autodaten
+    async function carData_load() {
+        try {
+            const userrights = await fetch_get('/api/v1/user/rights', true);
+            if (DEBUG > 0) console.log('userrights', userrights);
+
+            const car_data = await fetch_get(
+                url_cars_id.replace(':id', userrights.userid),
+                true
+            );
+            if (DEBUG > 0) console.log('car_data', car_data);
+            localStorage.setItem('car_funkname', car_data.funk_name);
+            car_funkname = car_data.funk_name;
+
+            if(car_data.funk_status != -1) {
+                setFunkStatus(car_data.funk_status);
+                document.querySelector('.var_statusNr').classList.remove('hidden');
+                document.querySelector('.statusText').classList.remove('hidden');
+            }
+
+        } catch (error) {
+            console.error('carData_load', error);
+        }
+    }
+
+    function setFunkStatus(status) {
+        document.querySelector('.var_statusNr').innerHTML = 'Status ' + status;
+        document.querySelector('.var_statusNr').innerHTML = 'Status ' + status;
+        document.querySelector('.statusPopup').innerHTML = 'Status ' + status;
+        if (DEBUG > 0) console.log('Neuer Funkstatus: ' + status);
+
+        document.querySelector('.statusPopup').classList.remove('hidden');
+        setTimeout(() => {
+            document.querySelector('.statusPopup').classList.add('hidden');                            
+        }, 2000);
+
+        let statusText = "";
+        if(status == 0) statusText = 'Sprechwunsch dringend';
+        if(status == 1) statusText = 'Einsatzbereit Funk';
+        if(status == 2) statusText = 'Einsatzbereit Wache';
+        if(status == 3) statusText = 'Einsatz übernommen';
+        if(status == 4) statusText = 'Am Einsatzort';
+        if(status == 5) statusText = 'Sprechwunsch';
+        if(status == 6) statusText = 'Nicht einsatzbereit';
+        if(status == 'C') statusText = 'Einsatzauftrag erhalten';
+        if(status == 'J') statusText = 'Sprechaufforderung';
+        if(status == 'F') statusText = 'Über Tel. melden';
+
+        document.querySelector('.statusText').innerHTML = statusText;
+    }
+
+
 </script>

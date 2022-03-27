@@ -37,6 +37,12 @@ class DeviceService {
                 this.sockets[i].broadcast('diashow-change', '');
             }
         });
+
+        globalEvents.on('car_status-change', (value) => {
+            for (let i = 0; i < this.sockets.length; i++) {
+                this.sockets[i].broadcast('car_status-change', value);
+            }
+        });
     }
 
     public get_all(): SocketInfo[] {

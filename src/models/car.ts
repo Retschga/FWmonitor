@@ -10,6 +10,8 @@ interface CarRow {
     name: string;
     appBenutzer: string;
     appPasswort: string;
+    funk_name: string;
+    funk_status: string;
 }
 
 class CarModel extends Model {

@@ -188,6 +188,8 @@
                             badge_permission += `<span class="badge green">Kalender</span>`;
                         if (element.telefonliste == 1)
                             badge_permission += `<span class="badge green">Telefonbuch</span>`;
+                        if (element.car_list == 1)
+                            badge_permission += `<span class="badge green">Autoliste</span>`;
                         var_permissions.innerHTML = badge_permission;
                         if (badge_permission != '') {
                             var_permissions.classList.remove('hidden');

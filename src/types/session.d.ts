@@ -11,5 +11,6 @@ declare module 'express-session' {
         calendar_full: boolean;
         telefone: boolean;
         praesentation: boolean;
+        car_list: boolean;
     }
 }

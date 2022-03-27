@@ -1,7 +1,9 @@
 'use strict';
 
-import logging from '../utils/logging';
+import * as CarFunkstatusModel from '../models/carFunkstatus';
 import * as CarModel from '../models/car';
+
+import logging from '../utils/logging';
 
 const NAMESPACE = 'Car_Service';
 
@@ -51,14 +53,21 @@ class CarService {
         }
     }
 
-    public async update(id: number, name: string, appBenutzer: string, appPasswort?: string) {
+    public async update(
+        id: number,
+        name: string,
+        appBenutzer: string,
+        funk_name: string,
+        appPasswort?: string
+    ) {
         logging.debug(NAMESPACE, 'update', { id, name, appBenutzer, appPasswort });
 
         if (appPasswort) {
             const affectedRows = await CarModel.model.update(id, {
                 name: name,
                 appBenutzer: appBenutzer,
-                appPasswort: appPasswort
+                appPasswort: appPasswort,
+                funk_name: funk_name
             });
 
             if (affectedRows < 1) {
@@ -67,13 +76,52 @@ class CarService {
         } else {
             const affectedRows = await CarModel.model.update(id, {
                 name: name,
-                appBenutzer: appBenutzer
+                appBenutzer: appBenutzer,
+                funk_name: funk_name
             });
 
             if (affectedRows < 1) {
                 throw new Error(NAMESPACE + ' update - No rows changed');
             }
         }
+    }
+
+    public async update_FunkStatus(id: number, status: string, log: boolean = true) {
+        logging.debug(NAMESPACE, 'update', { id, status });
+
+        const affectedRows = await CarModel.model.update(id, {
+            funk_status: status
+        });
+
+        if (affectedRows < 1) {
+            throw new Error(NAMESPACE + ' update - No rows changed');
+        }
+
+        if (!log) return;
+
+        const affectedRows2 = await CarFunkstatusModel.model.insert({
+            timestamp: new Date().toISOString(),
+            auto: id,
+            status: status
+        });
+
+        if (affectedRows2 < 1) {
+            throw new Error(NAMESPACE + ' update - No rows changed');
+        }
+    }
+
+    /**
+     * Findet einen Alarm
+     */
+    public async find_FunkStatus(
+        params: Record<string, unknown> = {},
+        limit = -1,
+        offset = -1,
+        extra?: string
+    ): Promise<CarFunkstatusModel.CarFunkstatusRow[]> {
+        const response = await CarFunkstatusModel.model.find(params, limit, offset, extra);
+
+        return response;
     }
 }
 

@@ -99,6 +99,10 @@ router.get('/car_list', (req: Request, res: Response) => {
     res.render('mobile/car_list', generateParams());
 });
 
+router.get('/car_status_list', (req: Request, res: Response) => {
+    res.render('mobile/car_status_list', generateParams());
+});
+
 router.get('/calendar_groups', (req: Request, res: Response) => {
     res.render('mobile/calendar_groups', generateParams());
 });

@@ -50,12 +50,12 @@ export type DecodeResult =
 /**
  * Generiert ein neues Passwort
  */
-export function createNewPassword(): {
+export function createNewPassword(len?: number | undefined): {
     password: string;
     hash: string;
 } {
     const password = passwordGenerator.generate({
-        length: config.app.password_length,
+        length: len || config.app.password_length,
         numbers: true,
         excludeSimilarCharacters: true
     });

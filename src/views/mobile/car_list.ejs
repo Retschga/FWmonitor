@@ -15,7 +15,7 @@
             <div class="navbar flex_row">
 
                 <button class="material-icons" onclick="goBack();">chevron_left</button>
-                <h1>Auto - Bildschirme</h1>    
+                <h1>Autos</h1>    
                 
                 <div class="flex_grow"></div>
 
@@ -51,6 +51,18 @@
                                     <span class="left material-icons button_newPassword">autorenew</span>
                                     <input class="var_password" type="text" placeholder="Passwort..." disabled>                                    
                                 </div>
+
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Funkrufname</span>
+                                    <input class="var_funkname" type="text" placeholder="Name...">
+                                </div>
+                                <div class="item smallitem">
+                                    <span class="left material-icons">badge</span>
+                                    <span class="text">Funkstatus</span>
+                                    <span class="var_funkstatus text" style="text-align: right;">#</span>
+                                </div>
+
 
                                 <div class="item smallitem padding_top_1">
                                     <div class="red left item rounded button_delete">
@@ -109,11 +121,15 @@
                         const template            = document.querySelector('#template-carelement');       
                         const var_header_name     = template.content.querySelector(".var_header_name");      
                         const var_name            = template.content.querySelector(".var_name");      
+                        const var_funkname        = template.content.querySelector(".var_funkname");      
+                        const var_funkstatus      = template.content.querySelector(".var_funkstatus");      
                         const var_user            = template.content.querySelector(".var_user");
-                        const var_password        = template.content.querySelector(".var_password");          
+                        const var_password        = template.content.querySelector(".var_password");           
                         
                         var_header_name.innerHTML = car.name; 
                         var_name.value            = htmlDecode(car.name); 
+                        var_funkname.value        = car.funk_name; 
+                        var_funkstatus.innerHTML      = car.funk_status; 
                         var_user.value            = car.appBenutzer; 
                         var_password.value        = car.appPasswort; 
                         
@@ -133,8 +149,7 @@
                         button_newPassword.addEventListener("click", () => {
                             get_password_new_id(car.id);
                         });
-
-                        addFormatter(clone.querySelector(".var_user"), regexPrefix(/^AUTO/, 'AUTO'));
+                        ui_addFormatter(clone.querySelector(".var_user"), regexPrefix(/^AUTO/, 'AUTO'));
 
                     }
                 } catch (error) {
@@ -150,16 +165,17 @@
                     const carelement = document.querySelector('#car_' + id);       
 
                     const name     = carelement.querySelector('.var_name').value;
+                    const funkname = carelement.querySelector('.var_funkname').value;
                     const user     = carelement.querySelector('.var_user').value;
                     const password = carelement.querySelector('.var_password').value;
 
                     carelement.querySelector('.var_header_name').innerHTML = name;
 
                     if(password != '****') {
-                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPassword: password});
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, appPassword: password, funk_name: funkname});
                         console.log('updateCar', response);
                     } else {
-                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user});
+                        const response = await fetch_post(url_cars_update.replace(':id', id), {name: name, appBenutzer: user, funk_name: funkname});
                         console.log('updateCar', response);
                     }        
                 } catch (error) {

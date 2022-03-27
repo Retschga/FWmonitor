@@ -164,8 +164,12 @@
                     });
             }
 
-            if ($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != '')
+            if ($_GET['manuell'] != 'true' && getCookie('token') && getCookie('token') != '') {
+                setInterval(() => {                    
+                    login(true);
+                }, 15000);
                 login(true);
+            }
 
             if (!getCookie('token') || getCookie('token') == '')
                 document.getElementById('btn_token').classList.add('hidden');

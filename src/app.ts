@@ -1,5 +1,6 @@
 'use strict';
 
+import aedes, { AuthenticateError, Aedes } from 'aedes';
 import { Request, Response } from 'express';
 import session, { SessionOptions } from 'express-session';
 
@@ -37,6 +38,8 @@ import startupCheck from './utils/startupCheck';
 import tls from 'tls';
 import userService from './services/user';
 import webpushService from './services/webpush';
+import { checkPassword, createNewPassword, hashPassword } from './utils/security';
+import statusInputFe2 from './services/statusInputFe2';
 
 const NAMESPACE = 'APP';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -116,17 +119,22 @@ function init_https(sessionOptions: SessionOptions) {
     appHttps.use('/scripts', express.static('./build/scripts'));
 
     let secureContext: tls.SecureContext;
-    function reloadCert(path_key: string, path_cert: string) {
+    function reloadCert(path_key: string, path_cert: string, path_ca?: string | undefined) {
         secureContext = tls.createSecureContext({
             key: fs.readFileSync(path_key, 'utf8'),
-            cert: fs.readFileSync(path_cert, 'utf8')
+            cert: fs.readFileSync(path_cert, 'utf8'),
+            ca: path_ca && [fs.readFileSync(path_ca, 'utf8')]
         });
     }
     setInterval(() => {
         if (!config.server_https.key || !config.server_https.cert) return;
-        reloadCert(config.server_https.key, config.server_https.cert);
+        reloadCert(config.server_https.key, config.server_https.cert, config.server_https.ca);
     }, 1000 * 60 * 60 * 24);
-    reloadCert(config.server_https.key || '', config.server_https.cert || '');
+    reloadCert(
+        config.server_https.key || '',
+        config.server_https.cert || '',
+        config.server_https.ca
+    );
 
     const httpsOptions: https.ServerOptions = {
         SNICallback: function (domain, cb) {
@@ -138,7 +146,8 @@ function init_https(sessionOptions: SessionOptions) {
         },
         // must list a default key and cert because required by tls.createServer()
         key: fs.readFileSync(config.server_https.key || '', 'utf8'),
-        cert: fs.readFileSync(config.server_https.cert || '', 'utf8')
+        cert: fs.readFileSync(config.server_https.cert || '', 'utf8'),
+        ca: config.server_https.ca && [fs.readFileSync(config.server_https.ca, 'utf8')]
     };
     const httpsServer = https.createServer(httpsOptions, appHttps);
     httpsServer.listen(config.server_https.port, () =>
@@ -162,6 +171,255 @@ function init_https(sessionOptions: SessionOptions) {
     });
 
     return httpsServer;
+}
+
+function init_mqttBroker() {
+    if (
+        !config.mqtt_broker.cert ||
+        !config.mqtt_broker.key ||
+        !config.mqtt_broker.user ||
+        !config.mqtt_broker.password
+    ) {
+        logging.error(NAMESPACE, 'MQTT Broker: Einstellungen nicht konfiguriert -> Abbruch');
+        return;
+    }
+
+    config.mqtt_broker.password = hashPassword(config.mqtt_broker.password);
+    config.mqtt_broker.internalUser = createNewPassword().password;
+    const internalPassword = createNewPassword(32);
+    config.mqtt_broker.internalPassword = internalPassword.password;
+    const internalPassword_hash = internalPassword.hash;
+
+    let secureContext: tls.SecureContext;
+    function reloadCert(path_key: string, path_cert: string, path_ca?: string | undefined) {
+        secureContext = tls.createSecureContext({
+            key: fs.readFileSync(path_key, 'utf8'),
+            cert: fs.readFileSync(path_cert, 'utf8'),
+            ca: path_ca && [fs.readFileSync(path_ca, 'utf8')]
+        });
+    }
+    setInterval(() => {
+        if (!config.mqtt_broker.key || !config.mqtt_broker.cert) return;
+        reloadCert(config.mqtt_broker.key, config.mqtt_broker.cert, config.mqtt_broker.ca);
+    }, 1000 * 60 * 60 * 24);
+    reloadCert(config.mqtt_broker.key || '', config.mqtt_broker.cert || '');
+
+    const options: tls.TlsOptions = {
+        SNICallback: function (domain, cb) {
+            if (secureContext) {
+                cb(null, secureContext);
+            } else {
+                throw new Error('No keys/certificates for domain requested ' + domain);
+            }
+        },
+        // must list a default key and cert because required by tls.createServer()
+        key: fs.readFileSync(config.mqtt_broker.key || '', 'utf8'),
+        cert: fs.readFileSync(config.mqtt_broker.cert || '', 'utf8'),
+        ca: config.mqtt_broker.ca && [fs.readFileSync(config.mqtt_broker.ca, 'utf8')]
+    };
+
+    const aedesInstance: Aedes = aedes();
+
+    aedesInstance.authenticate = function (client, username, password, callback) {
+        try {
+            const text =
+                new Date().toISOString() +
+                '    ' +
+                'authenticate Client \x1b[31m' +
+                (client ? client.id : 'BROKER_' + aedesInstance.id) +
+                '\x1b[0m username: ' +
+                username +
+                '  password: ' +
+                password;
+
+            logging.info(NAMESPACE, text);
+            fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+
+            if (!config.mqtt_broker.password) throw new Error();
+            callback(
+                null,
+                (username === config.mqtt_broker.user &&
+                    checkPassword(password.toString(), config.mqtt_broker.password)) ||
+                    (username === config.mqtt_broker.internalUser &&
+                        checkPassword(password.toString(), internalPassword_hash))
+            );
+        } catch (error) {
+            const e: AuthenticateError = <AuthenticateError>new Error('Auth error');
+            e.returnCode = 4;
+            callback(e, null);
+        }
+    };
+
+    const server = tls.createServer(options, aedesInstance.handle);
+
+    server.listen(config.mqtt_broker.port, function () {
+        logging.info(
+            NAMESPACE,
+            `MQTT Broker is running ${config.mqtt_broker.hostname}:${config.mqtt_broker.port}`
+        );
+    });
+
+    aedesInstance.on('subscribe', function (subscriptions, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'MQTT client \x1b[32m' +
+            (client ? client.id : client) +
+            '\x1b[0m subscribed to topics: ' +
+            subscriptions.map((s) => s.topic).join('\n');
+        'from broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+
+    aedesInstance.on('unsubscribe', function (subscriptions, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'MQTT client \x1b[32m' +
+            (client ? client.id : client) +
+            '\x1b[0m unsubscribed to topics: ' +
+            subscriptions.join('\n');
+        'from broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+
+    // fired when a client connects
+    aedesInstance.on('client', function (client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client Connected: \x1b[33m' +
+            (client ? client.id : client) +
+            '\x1b[0m';
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('clientReady', function (client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client Ready: \x1b[33m' +
+            (client ? client.id : client) +
+            '\x1b[0m';
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('keepaliveTimeout', function (client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client keepaliveTimeout: \x1b[33m' +
+            (client ? client.id : client) +
+            '\x1b[0m';
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('connectionError', function (client, error: Error) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client connectionError: \x1b[33m' +
+            (client ? client.id : client) +
+            '\x1b[0m ' +
+            error.message +
+            ' ' +
+            error.name;
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('clientError', function (client, error: Error) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client Error: \x1b[33m' +
+            (client ? client.id : client) +
+            '\x1b[0m ' +
+            error.message +
+            ' ' +
+            error.name;
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+
+    // fired when a client disconnects
+    aedesInstance.on('clientDisconnect', function (client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client Disconnected: \x1b[31m' +
+            (client ? client.id : client) +
+            '\x1b[0m';
+        'to broker ' + aedesInstance.id;
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+
+    // fired when a message is published
+    aedesInstance.on('publish', async function (packet, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client \x1b[31m' +
+            (client ? client.id : 'BROKER_' + aedesInstance.id) +
+            '\x1b[0m has published >' +
+            packet.payload.toString() +
+            '< on >' +
+            packet.topic +
+            '< to broker >' +
+            aedesInstance.id +
+            '<';
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('connackSent', async function (packet, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client \x1b[31m' +
+            (client ? client.id : 'BROKER_' + aedesInstance.id) +
+            '\x1b[0m connackSent';
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('ping', async function (packet, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client \x1b[31m' +
+            (client ? client.id : 'BROKER_' + aedesInstance.id) +
+            '\x1b[0m ping';
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
+    aedesInstance.on('ack', async function (packet, client) {
+        const text =
+            new Date().toISOString() +
+            '    ' +
+            'Client \x1b[31m' +
+            (client ? client.id : 'BROKER_' + aedesInstance.id) +
+            '\x1b[0m ack';
+
+        logging.info(NAMESPACE, text);
+        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+    });
 }
 
 async function init() {
@@ -216,6 +474,18 @@ async function init() {
     // -------- Starte Websocket-Server für die WebApp --------
     const httpsSocket = new Websocket(httpsServer, true);
 
+    // -------- Starte MQTT Broker ----------
+    if (config.mqtt_broker.internalBroker) {
+        logging.info(
+            NAMESPACE,
+            config.mqtt_broker.internalBroker ? 'UInterner Broker' : 'ecterner broker'
+        );
+        init_mqttBroker();
+    } else {
+        config.mqtt_broker.internalUser = config.mqtt_broker.user || '';
+        config.mqtt_broker.internalPassword = config.mqtt_broker.password || '';
+    }
+
     // -------- Starte Programmkomponenten --------
     // Initialisiere DeviceService
     initDeviceService([httpSocket, httpsSocket]);
@@ -247,6 +517,9 @@ async function init() {
 
     // Starte Update Checker
     softwareupdate.init();
+
+    // Starte FE2 Auswertung
+    if (config.mqtt_broker.topic_fe2_status) statusInputFe2.init();
 
     logging.info(NAMESPACE, `INIT done`);
 }

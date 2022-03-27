@@ -48,6 +48,7 @@ interface UserRow {
     telefonliste: boolean;
     kalender: CalendarRight;
     praes: boolean;
+    car_list: boolean;
 }
 
 class UserModel extends Model {

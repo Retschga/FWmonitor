@@ -27,7 +27,24 @@ const SERVER_HTTPS = {
     port: process.env.SERVER_SSL_PORT || 443,
     key: process.env.SSL_KEY,
     cert: process.env.SSL_CERT,
+    ca: process.env.SSL_CA,
     cors: process.env.CORS
+};
+
+const MQTT_BROKER = {
+    internalBroker: process.env.MQTT_INTERNAL_BROKER
+        ? !/false/i.test(process.env.MQTT_INTERNAL_BROKER)
+        : true,
+    hostname: process.env.MQTT_SERVER_SSL_HOSTNAME || '127.0.0.1',
+    port: process.env.MQTT_BROKER_PORT || 8883,
+    key: process.env.MQTT_SSL_KEY,
+    cert: process.env.MQTT_SSL_CERT,
+    ca: process.env.MQTT_SSL_CA,
+    user: process.env.MQTT_USER,
+    password: process.env.MQTT_PASSWORD,
+    internalUser: '',
+    internalPassword: '',
+    topic_fe2_status: 'Status'
 };
 
 const APP = {
@@ -252,7 +269,7 @@ const RATE_LIMITS = {
 };
 
 const LOG = {
-    pad_namespace: 25,
+    pad_namespace: 1,
     loglevel:
         LOGLEVEL.ERROR |
         LOGLEVEL.INFO |
@@ -271,12 +288,13 @@ const UPDATE = {
 };
 
 const config = {
-    version: '3.2.1',
+    version: '3.3.1',
     version_new: '---',
     raspiversion: process.env.RASPIVERSION ? /true/i.test(process.env.RASPIVERSION) : false,
     sqlite: SQLITE,
     server_http: SERVER_HTTP,
     server_https: SERVER_HTTPS,
+    mqtt_broker: MQTT_BROKER,
     telegram: TELEGRAM,
     app: APP,
     folders: FOLDERS,

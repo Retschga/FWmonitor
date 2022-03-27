@@ -106,6 +106,15 @@
                             <span class="checkmark"></span>
                         </label>
                     </div>
+
+                    <div class="item smallitem">
+                        <span class="left material-icons">info</span>
+                        <span class="text">Autoliste</span>
+                        <label class="right checkmark_container">
+                            <input class="var_car_list" type="checkbox" />
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <button class="accordion element3" onclick="ui_accordion_switch(this)">
@@ -321,6 +330,7 @@
                     const var_printer = document.querySelector('.var_printer');
                     const var_software = document.querySelector('.var_software');
                     const var_praes = document.querySelector('.var_praes');
+                    const var_car_list = document.querySelector('.var_car_list');
 
                     var_admin.checked = user.admin == 1;
                     ui_setSelectedIndex(var_calendar, user.kalender);
@@ -328,6 +338,7 @@
                     var_printer.checked = user.drucker == 1;
                     var_software.checked = user.softwareInfo == 1;
                     var_praes.checked = user.praes == 1;
+                    var_car_list.checked = user.car_list == 1;
 
                     const calendarGroup_list = document.querySelector('.calendarGroup_list');
                     const kalGruppenArray = user.kalenderGroups.split('|');
@@ -381,6 +392,7 @@
                     const var_printer = document.querySelector('.var_printer').checked ? 1 : 0;
                     const var_software = document.querySelector('.var_software').checked ? 1 : 0;
                     const var_praes = document.querySelector('.var_praes').checked ? 1 : 0;
+                    const var_car_list = document.querySelector('.var_car_list').checked ? 1 : 0;
 
                     const var_calendarGroups = document.querySelectorAll('.var_value');
                     var calendarGroup = '';
@@ -416,7 +428,8 @@
                         stZUGF: var_ZUGF,
                         praes: var_praes,
                         name: var_nachname,
-                        vorname: var_vorname
+                        vorname: var_vorname,
+                        car_list: var_car_list
                     });
                 } catch (error) {
                     console.error('save_user', error);

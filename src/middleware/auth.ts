@@ -27,7 +27,8 @@ export const enum UserRights {
     car = 5,
     ownid = 6,
     http = 7,
-    praesentation = 8
+    praesentation = 8,
+    car_list = 9
 }
 
 /**
@@ -116,6 +117,7 @@ export async function login_app(
             req.session.telefone = user[0].telefonliste;
             req.session.car = false;
             req.session.praesentation = user[0].praes;
+            req.session.car_list = user[0].car_list;
         } else {
             // Starte neue Session
             const car = await CarService.find_by_id(userid);
@@ -134,6 +136,7 @@ export async function login_app(
             req.session.car = true;
             req.session.praesentation = false;
             req.session.name = car[0].name;
+            req.session.car_list = true;
         }
 
         // neuen JWT erzeugen und als Cookie senden
@@ -172,6 +175,7 @@ export async function login_app(
         req.session.telefone = false;
         req.session.car = false;
         req.session.praesentation = false;
+        req.session.car_list = false;
 
         // Login Cookies löschen
         req.session.destroy(() => {
@@ -214,6 +218,7 @@ export async function logout_app(
     req.session.calendar_min = false;
     req.session.calendar_full = false;
     req.session.telefone = false;
+    req.session.car_list = false;
 
     // Login Cookies löschen
     req.session.destroy(() => {
@@ -264,6 +269,7 @@ const auth = (redirect?: string, ...roles: UserRights[]) => {
             ) {
                 ok = true;
             }
+            if (roles.indexOf(UserRights.car_list) != -1 && session.car_list == true) ok = true;
 
             // Keine Session vorhanden -> Access denied
             if (!session.telegramid) ok = false;

@@ -36,7 +36,7 @@ if len(sys.argv) < 4:
     print("Aufruf: auto.py UBLOX_API_KEY SERVER_IP:PORT GPS_DEVICE")
     sys.exit()
 
-VERSION = "3.2.1"
+VERSION = "3.3.1"
 
 TOOGLE_USB_ON_NO_TETHER = True
 TIME_TILL_OFF = 60 # sekunden

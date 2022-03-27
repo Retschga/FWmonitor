@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+
+    <head>	
+
+        <%- include('partials/head') -%>	
+        <title>FWmonitor - APP</title>	
+
+        <link rel="stylesheet" href="/css/mobile_car_status_list.css" />
+
+
+    </head>	
+
+    <body>
+
+        <%- include('partials/header') -%>  
+
+            <div class="navbar flex_row">
+
+                <button class="material-icons" onclick="goBack();">chevron_left</button>
+                <h1>Stati</h1>    
+                
+                <div class="flex_grow"></div>
+
+                <button class="material-icons" onclick="location.reload()">refresh</button>
+
+            </div>
+
+            <div class="content">
+
+                <template id="template-car_funkstatus">
+                    <div class="index_container">
+                        <div>
+                            <div class="index_container_icon grey">
+                                <span class="var_funk_status"> # </span>
+                            </div>
+                        </div>
+    
+                        <div class="index_container_content grey">
+                            <div style="display: flex">
+                                <div style="flex-grow: 1">
+                                    <span class="var_funk_name"> Funkrufname </span><br />
+                                    <span class="var_funk_status_text"> Status </span>
+                                </div>
+                                <div style="text-align: right">
+                                    <span class="var_date">##.##.</span>
+                                    <span class="var_time">##:##&nbsp;</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                <div class="status_list">
+                    <button
+                        class="btn status_list_loadmore margin_top_1"
+                        onclick="load_stati(offset, limit); offset += limit;"
+                    >
+                        Weitere laden...
+                    </button>
+                </div>
+                                                   
+            </div>
+
+
+        <%- include('partials/foot') -%>
+
+        <script>
+            const limit = 5;
+            let offset = 0;
+
+            // Laden
+            async function load_stati(offset, limit) {
+                if (offset == undefined || limit == undefined) {
+                    console.log('offset & limit required');
+                    return;
+                }
+
+                try {
+                    const cars = await fetch_get(url_cars_all, true);
+                    console.log('cars', cars);
+
+                    const statusList = await fetch_get(
+                        url_cars_funkstatus_list.replace(':offset', offset).replace(':limit', limit),
+                        true
+                    );
+                    console.log('statusList', statusList);
+
+                    const target = document.querySelector('.status_list');
+                    const target_before = document.querySelector('.status_list_loadmore');
+
+                    for (let i = 0; i < statusList.length; i++) {
+                        const element = statusList[i];
+
+                        const template = document.querySelector('#template-car_funkstatus');
+                        const var_funk_status = template.content.querySelector('.var_funk_status');
+                        const var_funk_name = template.content.querySelector('.var_funk_name');
+                        const var_funk_status_text = template.content.querySelector('.var_funk_status_text');
+                        const var_date = template.content.querySelector('.var_date');
+                        const var_time = template.content.querySelector('.var_time');
+
+                        const name = cars.find(i => i.id == element.auto).name
+                        var_funk_name.innerHTML = name;
+
+                        let statusText = "";
+                        const status = element.status;
+                        if(status == 0) statusText = 'Sprechwunsch dringend';
+                        if(status == 1) statusText = 'Einsatzbereit Funk';
+                        if(status == 2) statusText = 'Einsatzbereit Wache';
+                        if(status == 3) statusText = 'Einsatz übernommen';
+                        if(status == 4) statusText = 'Am Einsatzort';
+                        if(status == 5) statusText = 'Sprechwunsch';
+                        if(status == 6) statusText = 'Nicht einsatzbereit';
+                        if(status == 'C') statusText = 'Einsatzauftrag erhalten';
+                        if(status == 'J') statusText = 'Sprechaufforderung';
+                        if(status == 'F') statusText = 'Über Tel. melden';
+                        var_funk_status_text.innerHTML = statusText;
+                        var_funk_status.innerHTML = status;
+
+                        const date = new Date(element.timestamp);
+                        var_date.innerHTML =
+                            ('0' + date.getDate()).slice(-2) +
+                            '.' +
+                            ('0' + (date.getMonth() + 1)).slice(-2) +
+                            '.';
+                        var_time.innerHTML =
+                            ('0' + date.getHours()).slice(-2) +
+                            ':' +
+                            ('0' + date.getMinutes()).slice(-2);
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        target.insertBefore(clone, target_before);
+                
+                    }
+                } catch (error) {
+                    console.error('load_stati', error);
+                    if (error.show) alert('Daten konnten nicht geladen werden.');
+                }
+            }
+
+            // Funktionsaufrufe
+            loaderFunction = () => {
+                load_stati(offset, limit);
+                offset += limit;
+            };
+            
+        </script>
+       
+    </body>
+	
+</html>

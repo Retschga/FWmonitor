@@ -52,3 +52,24 @@ function ui_setSelectedIndex(elem, val) {
     }
     return false;
 }
+
+// Input Prefixes
+// https://stackoverflow.com/questions/4535963/how-can-i-add-an-unremovable-prefix-to-an-html-input-field
+function ui_addFormatter(input, formatFn) {
+    let oldValue = input.value;
+
+    const handleInput = (event) => {
+        const result = formatFn(input.value, oldValue, event);
+        if (typeof result === 'string') {
+            input.value = result;
+        }
+
+        oldValue = input.value;
+    };
+
+    handleInput();
+    input.addEventListener('input', handleInput);
+}
+function regexPrefix(regex, prefix) {
+    return (newValue, oldValue) => (regex.test(newValue) ? newValue : newValue ? oldValue : prefix);
+}

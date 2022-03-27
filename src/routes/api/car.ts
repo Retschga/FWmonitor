@@ -1,18 +1,28 @@
 'use strict';
 
-import express from 'express';
+import * as ValidatorsCar from '../../middleware/carValidator';
+
+import { UserRights, auth_api } from '../../middleware/auth';
+
 import CarController from '../../controllers/car';
 import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import * as ValidatorsCar from '../../middleware/carValidator';
-import { auth_api, UserRights } from '../../middleware/auth';
+import express from 'express';
 
 const router = express.Router();
 
 // Liste aller angelegten Autos
 router.get(
     '/',
-    auth_api(UserRights.admin),
+    auth_api(UserRights.admin, UserRights.car_list),
     awaitHandlerFactory(CarController.get_list_all.bind(CarController))
+);
+
+// Liste aller Funkstati
+router.get(
+    '/funkstatus_list',
+    auth_api(UserRights.admin, UserRights.car_list),
+    ValidatorsCar.getStatusList,
+    awaitHandlerFactory(CarController.get_funkstatus_list_all.bind(CarController))
 );
 
 // Auto anlegen
@@ -32,7 +42,7 @@ router.get(
 // Bestimmtes Auto
 router.get(
     '/:id',
-    auth_api(UserRights.admin),
+    auth_api(UserRights.admin, UserRights.ownid),
     awaitHandlerFactory(CarController.get_id.bind(CarController))
 );
 
