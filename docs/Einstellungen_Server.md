@@ -18,7 +18,7 @@
 
 ### .env Datei bearbeiten
 
--   .env Datei mit einem Texteditor öffnen (z.B. Notepad++)
+-   .env Datei mit einem Texteditor öffnen (z.B. Notepad++ https://notepad-plus-plus.org/)
 -   Alle relevanten Einstellungen in der bearbeiten
 -   Veränderte Einstellungen erfordern immer einen Software Neustart! (`pm2 restart FWmonitorV3`)
 
@@ -96,3 +96,22 @@
 
 -   In Konsole: `./node_modules/.bin/web-push generate-vapid-keys` ausführen
 -   Werte in .env unter "VAPID" eintragen
+
+#### LKR Miesbach FE2 Eingang
+
+1. DynDns einrichten
+2. Let´s Encrypt einrichten
+3. Internen MQTT Broker in .env einrichten
+    - sicheres Passwort min 32 Zeichen: https://www.datenschutz.org/passwort-generator/
+    - MQTT_TOPIC_FE2_STATUS=Status
+    - MQTT_TOPIC_FE2_ALARM=Einsatz_JSON
+    - MQTT_TOPIC_FE2_LEBENSZEICHEN=Lebenszeichen
+4. Im Router Portweiterleitung für Port 8883 einrichten
+5. MQTT Verbindung testen (z.B. http://mqtt-explorer.com/ - Achtung: Encryption aktivieren; unter
+   Advanced > Certificates > Server Certificate https://letsencrypt.org/certs/isrgrootx1.pem
+   importieren)
+6. Dem zuständigen Ansprechpartner vom Landkreis die Zugangsdaten zukommen lassen
+    - DynDns Adresse
+    - Benutzer
+    - Passwort
+    - CA Zertifikat https://letsencrypt.org/certs/isrgrootx1.pem

@@ -53,7 +53,9 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
+                </div>
 
+                <div class="list" >
                     <div class="item">
                         <span class="left material-icons">notifications_active</span>
                         <span class="text">App</span>
@@ -68,7 +70,20 @@
                         <span class="right notificationBtn" onclick="notifications_askPermission()"
                             >Erlauben</span
                         >
-                    </div>
+                    </div>      
+                    <div class="list" id="endpoint_list" style="margin: 0;"></div>
+                    <template id="template-endpoint">
+                        <div class="item" style="flex-wrap: wrap;">
+                            <!-- <span class="left material-icons">notifications_active</span> -->
+                            <span class="text var_name">Endpunkt</span>
+                            <span class="right testBtn" style="background-color: #2196f3; padding: .3em;"
+                                >Testen</span
+                            >
+                            <span class="right deleteBtn" style="background-color: #f37775; padding: .3em;"
+                                >Löschen</span
+                            >
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -94,6 +109,36 @@
                     var_notifications_calendar.checked = user.sendRemembers == 1;
                     var_status_hidden.checked = user.statusHidden == 1;
                     var_appnotifications.checked = user.appNotifications > 0;
+
+                    let endpoints = user.appNotificationsSubscription;
+                    if(endpoints != '') endpoints = JSON.parse(endpoints); 
+                    else endpoints = [];
+                    const target = document.querySelector('#endpoint_list');
+                    target.innerHTML = '';
+
+                    for(let i = 0; i < endpoints.length; i++) {
+                        const ep = JSON.parse(endpoints[i]).endpoint;
+                        const name = ep ? ep.replace('https://', '').split('/')[0] : 'Error';
+
+                        const template = document.querySelector('#template-endpoint');
+                        const var_name = template.content.querySelector('.var_name');
+                        var_name.innerHTML = name;
+
+                        const clone = document.importNode(template.content.firstElementChild, true);
+                        clone.id = 'endpoint_' + i;
+                        target.append(clone);
+
+                        if(ep) {
+                            clone.querySelector('.testBtn').addEventListener('click', (event) => {
+                                test_settings_notifications_app(i);
+                            });
+                        }
+                        clone.querySelector('.deleteBtn').addEventListener('click', (event) => {
+                            delete_settings_notifications_app(i);
+                        });
+
+                        
+                    }
                 } catch (error) {
                     console.error('load_settings_all', error);
                     if (error.show) alert('Daten konnten nicht geladen werden.');
@@ -153,10 +198,43 @@
                 } catch (error) {
                     alert('Push Notifications konnten nicht aktiviert werden.');
                     console.error('update_settings_notifications_app', error);
-                    load_settings_all();
+                }
+                load_settings_all();
+                loaderOut();
+            }
+
+            async function delete_settings_notifications_app(subscriptionId) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(
+                        url_user_notifications_app_delete.replace(':id', user_id),
+                        {  subid: subscriptionId }
+                    );
+                } catch (error) {
+                    alert('Push Notifications konnten nicht gelöscht werden.');
+                    console.error('delete_settings_notifications_app', error);
+                }
+                load_settings_all();
+                loaderOut();
+            }
+
+            async function test_settings_notifications_app(subscriptionId) {
+                loaderIn();
+                try {
+                    const response = await fetch_post(
+                        url_user_notifications_app_test.replace(':id', user_id),
+                        {  subid: subscriptionId }
+                    );
+                } catch (error) {
+                    alert('Push Notifications konnten nicht getestet werden.');
+                    console.error('test_settings_notifications_app', error);
                 }
                 loaderOut();
             }
+
+
+
+
 
             // Hilfsfunktionen
             function isPushNotificationSupported() {

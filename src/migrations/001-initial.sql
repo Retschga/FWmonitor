@@ -84,7 +84,7 @@ CREATE TABLE "kalenderGroups" (
     PRIMARY KEY("id" AUTOINCREMENT)
 );
 
-INSERT INTO groups (name, pattern) VALUES ('Standard', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}}
+INSERT INTO groups (name, pattern) VALUES ('Standard', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}} {{UPDATES}}
 _> {{SCHLAGWORT}}_
 _> {{OBJEKT}}_
 _> {{STRASSE}}_
@@ -95,7 +95,7 @@ _> {{ORT}}_
 _{{BEMERKUNG}}_{{newline}}
 *Einsatzmittel:*
 _{{EINSATZMITTEL_EIGEN}}_');
-INSERT INTO groups (name, pattern) VALUES ('Fax', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}} {{FAX}}
+INSERT INTO groups (name, pattern) VALUES ('Fax', '   *{{EINSATZSTICHWORT}}* {{KARTE}} {{KARTE_EMG}} {{FAX}} {{UPDATES}}
 _> {{SCHLAGWORT}}_
 _> {{OBJEKT}}_
 _> {{STRASSE}}_

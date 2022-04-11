@@ -105,7 +105,8 @@ class Websocket {
 
             client.on('message', function incoming(data) {
                 try {
-                    logging.debug(NAMESPACE, 'Websocket received: ', data);
+                    const data_json = JSON.parse(String(data));
+                    logging.debug(NAMESPACE, 'Websocket received: ', data_json);
 
                     /* Beispiel
                         {
@@ -146,7 +147,6 @@ class Websocket {
                     // {"id":"15", "value": ${data}}        WebRtc Data
                     // {"id":"16", "value": ${data}}        Eingabefeld Diashow Bilddatum anzeigen
 
-                    const data_json = JSON.parse(String(data));
                     const topic = data_json.topic;
                     //const message = data_json.message;
 

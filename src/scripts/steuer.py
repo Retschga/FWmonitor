@@ -47,7 +47,7 @@ else:
     skripttype = sys.argv[5]
 
 starttime = str(datetime.datetime.now())
-version = "3.3.1"
+version = "3.3.2"
 
 bashCommand_reboot     = "sudo /sbin/shutdown -r now"
 bashCommand_screen_on  = "vcgencmd display_power 1"

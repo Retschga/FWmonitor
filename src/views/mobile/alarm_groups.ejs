@@ -212,6 +212,15 @@
                                 </label>
                             </div>
 
+                            <div class="item smallitem">
+                                <span class="left material-icons">info</span>
+                                <span class="text">Alarmupdates</span>
+                                <label class="right checkmark_container">
+                                    <input class="var_updates" type="checkbox" />
+                                    <span class="checkmark"></span>
+                                </label>
+                            </div>
+
                             <div class="item smallitem padding_top_1">
                                 <div class="flex_grow"></div>
                                 <div class="green right item rounded savebutton">
@@ -264,6 +273,7 @@
                         const var_rufnummer = template.content.querySelector('.var_rufnummer');
                         const var_patient = template.content.querySelector('.var_patient');
                         const var_einsatzplan = template.content.querySelector('.var_einsatzplan');
+                        const var_updates = template.content.querySelector('.var_updates');
 
                         const date = new Date(group.date);
 
@@ -290,6 +300,7 @@
                         var_rufnummer.checked = group.pattern.indexOf('{{RUFNUMMER}}') != -1;
                         var_patient.checked = group.pattern.indexOf('{{PATIENT}}') != -1;
                         var_einsatzplan.checked = group.pattern.indexOf('{{EINSATZPLAN}}') != -1;
+                        var_updates.checked = group.pattern.indexOf('{{UPDATES}}') != -1;
 
                         const clone = document.importNode(template.content.firstElementChild, true);
                         target.append(clone);
@@ -326,6 +337,9 @@
                     if (alarmgroup.querySelector('.var_fax').checked) {
                         pattern += ' {{FAX}}';
                     }
+                    if (alarmgroup.querySelector('.var_updates').checked) {
+                        pattern += ' {{UPDATES}}';
+                    }
                     pattern += '\n';
                     if (alarmgroup.querySelector('.var_schlagwort').checked) {
                         pattern += '_> {{SCHLAGWORT}}_' + '\n';
@@ -352,10 +366,10 @@
                         pattern += '{{newline}}' + '\n' + '*Bemerkung:*' + '\n' + '_{{BEMERKUNG}}_';
                     }
                     if (alarmgroup.querySelector('.var_einsatzplan').checked) {
-                        pattern += '\n' + '*Einsatzplan:*' + '\n' + '_{{EINSATZPLAN}}_';
+                        pattern += '{{newline}}' + '\n' + '*Einsatzplan:*' + '\n' + '_{{EINSATZPLAN}}_';
                     }
                     if (alarmgroup.querySelector('.var_hinweis').checked) {
-                        pattern += '\n' + '*Hinweis:*' + '\n' + '_{{HINWEIS}}_';
+                        pattern += '{{newline}}' + '\n' + '*Hinweis:*' + '\n' + '_{{HINWEIS}}_';
                     }
                     if (alarmgroup.querySelector('.var_car1').checked) {
                         pattern +=
@@ -366,7 +380,7 @@
                             '_{{EINSATZMITTEL_EIGEN}}_';
                     }
                     if (alarmgroup.querySelector('.var_car2').checked) {
-                        pattern += '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
+                        pattern += '{{newline}}' + '\n' + '_{{EINSATZMITTEL_ANDERE}}_';
                     }
                     if (alarmgroup.querySelector('.var_tetra').checked) {
                         pattern += '{{newline}}' + '\n' + '*Tetra:*' + '\n' + '_{{TETRA}}_';

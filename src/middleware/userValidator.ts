@@ -111,6 +111,20 @@ export const updateNotificationsApp = [
         .withMessage('value is must be numeric'),
     body('subscription').exists().withMessage('subscription is required')
 ];
+export const deleteNotificationsApp = [
+    body('subid')
+        .exists()
+        .withMessage('id is required')
+        .isNumeric()
+        .withMessage('id must be numeric')
+];
+export const testNotificationsApp = [
+    body('subid')
+        .exists()
+        .withMessage('id is required')
+        .isNumeric()
+        .withMessage('id must be numeric')
+];
 
 export const updateNotificationsCalendar = [
     body('value')

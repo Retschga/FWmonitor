@@ -336,6 +336,37 @@ class UserController {
         }
         res.send('OK');
     }
+    public async delete_user_notifications_app_id(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'delete_user_notifications_app_id', {
+            id: req.params.id,
+            subid: req.body.subid
+        });
+        checkValidation(req);
+
+        try {
+            await UserService.delete_notifications_app(
+                Number(req.params.id),
+                Number(req.body.subid)
+            );
+        } catch (error) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+        }
+        res.send('OK');
+    }
+    public async test_user_notifications_app_id(req: Request, res: Response) {
+        logging.debug(NAMESPACE, 'test_user_notifications_app_id', {
+            id: req.params.id,
+            subid: req.body.subid
+        });
+        checkValidation(req);
+
+        try {
+            await UserService.test_notifications_app(Number(req.params.id), Number(req.body.subid));
+        } catch (error) {
+            throw new HttpException(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'No rows changed');
+        }
+        res.send('OK');
+    }
 }
 
 export default new UserController();

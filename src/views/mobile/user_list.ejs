@@ -97,6 +97,10 @@
                         '<option value="">Filter: Alle</option>' +
                         '<option value="Admin">Admin</option>' +
                         '<option value="Drucker">Drucker Papierinfo</option>' +
+                        '<option value="Software-Info">Softwareinfo</option>' +
+                        '<option value="Autostatus">Autostatus</option>' +
+                        '<option value="Telefonbuch">Telefonbuch</option>' +
+                        '<option value="Kalender">Kalender</option>' +
                         '<option value="AGT">Ausbildung: Atemschutz</option>' +
                         '<option value="MA">Ausbildung: Maschinist</option>' +
                         '<option value="GRF">Ausbildung: Gruppenführer</option>' +
@@ -189,7 +193,7 @@
                         if (element.telefonliste == 1)
                             badge_permission += `<span class="badge green">Telefonbuch</span>`;
                         if (element.car_list == 1)
-                            badge_permission += `<span class="badge green">Autoliste</span>`;
+                            badge_permission += `<span class="badge green">Autostatus</span>`;
                         var_permissions.innerHTML = badge_permission;
                         if (badge_permission != '') {
                             var_permissions.classList.remove('hidden');

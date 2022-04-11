@@ -7,9 +7,10 @@ import logging from '../utils/logging';
 const NAMESPACE = 'Alarm_Model';
 const TABLENAME = 'alarms';
 
-interface AlarmRow {
+type AlarmRow = {
     id: number | undefined;
     date: string;
+    einsatznummer: string;
     einsatzstichwort: string;
     schlagwort: string;
     objekt: string;
@@ -30,7 +31,7 @@ interface AlarmRow {
     rufnummer: string;
     patient: string;
     einsatzplan: string;
-}
+};
 
 interface StatisticRow {
     einsatzstichwort: string;

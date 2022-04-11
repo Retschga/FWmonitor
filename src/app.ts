@@ -40,6 +40,8 @@ import userService from './services/user';
 import webpushService from './services/webpush';
 import { checkPassword, createNewPassword, hashPassword } from './utils/security';
 import statusInputFe2 from './services/statusInputFe2';
+import lebenszeichenFe2 from './services/lebenszeichenFe2';
+import alarmInputFe2 from './services/alarmInputFe2';
 
 const NAMESPACE = 'APP';
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
@@ -232,8 +234,9 @@ function init_mqttBroker() {
                 '  password: ' +
                 password;
 
-            logging.info(NAMESPACE, text);
-            fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+            logging.debug(NAMESPACE, text);
+            if (config.mqtt_broker.logToFile)
+                fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
 
             if (!config.mqtt_broker.password) throw new Error();
             callback(
@@ -269,8 +272,9 @@ function init_mqttBroker() {
             subscriptions.map((s) => s.topic).join('\n');
         'from broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
 
     aedesInstance.on('unsubscribe', function (subscriptions, client) {
@@ -283,8 +287,9 @@ function init_mqttBroker() {
             subscriptions.join('\n');
         'from broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
 
     // fired when a client connects
@@ -297,8 +302,9 @@ function init_mqttBroker() {
             '\x1b[0m';
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('clientReady', function (client) {
         const text =
@@ -309,8 +315,9 @@ function init_mqttBroker() {
             '\x1b[0m';
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('keepaliveTimeout', function (client) {
         const text =
@@ -321,8 +328,9 @@ function init_mqttBroker() {
             '\x1b[0m';
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('connectionError', function (client, error: Error) {
         const text =
@@ -336,8 +344,9 @@ function init_mqttBroker() {
             error.name;
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('clientError', function (client, error: Error) {
         const text =
@@ -351,8 +360,9 @@ function init_mqttBroker() {
             error.name;
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
 
     // fired when a client disconnects
@@ -365,8 +375,9 @@ function init_mqttBroker() {
             '\x1b[0m';
         'to broker ' + aedesInstance.id;
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
 
     // fired when a message is published
@@ -384,8 +395,9 @@ function init_mqttBroker() {
             aedesInstance.id +
             '<';
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('connackSent', async function (packet, client) {
         const text =
@@ -395,8 +407,9 @@ function init_mqttBroker() {
             (client ? client.id : 'BROKER_' + aedesInstance.id) +
             '\x1b[0m connackSent';
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('ping', async function (packet, client) {
         const text =
@@ -406,8 +419,9 @@ function init_mqttBroker() {
             (client ? client.id : 'BROKER_' + aedesInstance.id) +
             '\x1b[0m ping';
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
     aedesInstance.on('ack', async function (packet, client) {
         const text =
@@ -417,8 +431,9 @@ function init_mqttBroker() {
             (client ? client.id : 'BROKER_' + aedesInstance.id) +
             '\x1b[0m ack';
 
-        logging.info(NAMESPACE, text);
-        fs.appendFileSync('temp/mqttTest.txt', text + '\n');
+        logging.debug(NAMESPACE, text);
+        if (config.mqtt_broker.logToFile)
+            fs.appendFileSync(config.folders.temp + 'mqttTest.txt', text + '\n');
     });
 }
 
@@ -478,7 +493,7 @@ async function init() {
     if (config.mqtt_broker.internalBroker) {
         logging.info(
             NAMESPACE,
-            config.mqtt_broker.internalBroker ? 'UInterner Broker' : 'ecterner broker'
+            config.mqtt_broker.internalBroker ? 'Interner Broker' : 'Externer Broker'
         );
         init_mqttBroker();
     } else {
@@ -520,6 +535,8 @@ async function init() {
 
     // Starte FE2 Auswertung
     if (config.mqtt_broker.topic_fe2_status) statusInputFe2.init();
+    if (config.mqtt_broker.topic_fe2_lebenszeichen) lebenszeichenFe2.init();
+    if (config.mqtt_broker.topic_fe2_alarm) alarmInputFe2.init();
 
     logging.info(NAMESPACE, `INIT done`);
 }

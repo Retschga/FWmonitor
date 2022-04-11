@@ -6,6 +6,7 @@ import logging from '../utils/logging';
 const NAMESPACE = 'GlobalEvents';
 
 // globalEvents.on('alarm', (alarm: AlarmModel.AlarmRow) => { });
+// globalEvents.on('alarm-update', (changeReason: string) => { });
 
 // globalEvents.on('softwareinfo', (text: string) => { });
 

@@ -8,6 +8,7 @@ import HttpStatusCodes from '../utils/httpStatusCodes';
 import { SocketInfo } from '../websocket';
 import { checkValidation } from './controller';
 import config from '../utils/config';
+import lebenszeichenFe2 from '../services/lebenszeichenFe2';
 import logging from '../utils/logging';
 
 const NAMESPACE = 'Alarm_Controller';
@@ -39,6 +40,8 @@ class AlarmController {
 
         // eslint-disable-next-line prefer-const
         let response = DeviceServiceInstance.get_all();
+        if (config.mqtt_broker.topic_fe2_lebenszeichen)
+            response.unshift(lebenszeichenFe2.getStatusinfo());
         response.unshift(sw);
 
         res.send(response);

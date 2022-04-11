@@ -32,7 +32,7 @@ class StatusInputFe2 {
                 reconnectPeriod: 1000
             });
 
-            const topic = config.mqtt_broker.topic_fe2_status;
+            const topic = config.mqtt_broker.topic_fe2_status || '';
             client.on('connect', () => {
                 logging.info(NAMESPACE, 'Connected');
                 client.subscribe([topic], () => {
@@ -65,7 +65,7 @@ class StatusInputFe2 {
         }
     }
 
-    public async parseMqttStatus(str: string) {
+    private async parseMqttStatus(str: string) {
         const list = await CarService.find();
         if (!list) return;
         logging.info(NAMESPACE, str);

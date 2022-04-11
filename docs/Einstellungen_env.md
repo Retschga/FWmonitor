@@ -163,6 +163,56 @@ Optionale Einstellungen können durch ein `#` am Zeilenanfang deaktiviert werden
 
     -   Anzahl wie oft die Faxerkennung bei einem Fehler wiederholt werden soll
 
+## LKR Miesbach/FE2 Alarmeingang
+
+-   `MQTT_INTERNAL_BROKER: <boolean> optional`
+
+    -   Internen MQTT Broker verwenden (Standard: true)
+
+-   `MQTT_SERVER_SSL_HOSTNAME: <string> optional`
+
+    -   IP Adresse des MQTT Brokers (Standard: 127.0.0.1)
+
+-   `MQTT_BROKER_PORT: <number> optional`
+
+    -   Port des MQTT Brokers (Standard: 8883)
+
+-   `MQTT_SSL_KEY: <string>`
+
+    -   SSL/TLS Zertifikat Key Pfad (Nur bei internem Broker benötigt) (Lets-Encrypt: privkey.pem)
+
+-   `MQTT_SSL_CERT: <string>`
+
+    -   SSL/TLS Zertifikat Cert Pfad (Nur bei internem Broker benötigt) (Lets-Encrypt: cert.pem)
+
+-   `MQTT_SSL_CA: <string>`
+
+    -   SSL/TLS Zertifikat CA Pfad (Lets-Encrypt: fullchain.pem)
+
+-   `MQTT_USER: <string>`
+
+    -   MQTT Broker Benutzername (Bei Interem Broker: Benutzername für FE2)
+
+-   `MQTT_PASSWORD: <string>`
+
+    -   MQTT Broker Passwort (Bei Interem Broker: Passwort für FE2 - SICHERES PASSWORT VERWENDEN!)
+
+-   `MQTT_TOPIC_FE2_STATUS: <string> optional`
+
+    -   Fahrzeugstatus Topic (LKR Miesbach: Status)
+
+-   `MQTT_TOPIC_FE2_ALARM: <string> optional`
+
+    -   Alarm Topic (LKR Miesbach: Einsatz_JSON)
+
+-   `MQTT_TOPIC_FE2_LEBENSZEICHEN: <string> optional`
+
+    -   Lebenszeichen Topic (LKR Miesbach: Lebenszeichen)
+
+-   `MQTT_LOG_TO_FILE: <boolean> optional`
+
+    -   MQTT Nachrichten nach /temp/mqttTest.txt schreiben
+
 ## STANDBY Bildschirm
 
 -   `DWD_WARCELLID: <number> optional`

@@ -51,7 +51,7 @@
 /* Monatskalender */
 
 .calendar {
-    border: 1px solid #efefef;
+    border-bottom: 1px solid #efefef;
     padding: .5rem 0 .5rem 0;
     width: 100%;
 }

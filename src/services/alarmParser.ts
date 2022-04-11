@@ -1,15 +1,16 @@
 'use strict';
 
+import { fileExists, getFormattedAlarmTime } from '../utils/common';
+
 import { AlarmRow } from '../models/alarm';
+import alarmPrintService from './alarmPrint';
 import alarmService from './alarm';
 import config from '../utils/config';
 import fs from 'fs';
 import geocodeService from './geocode';
+import globalEvents from '../utils/globalEvents';
 import logging from '../utils/logging';
 import moveFile from 'move-file';
-import printingServoce from './printing';
-import puppeteer from 'puppeteer';
-import { timeout } from '../utils/common';
 
 const NAMESPACE = 'AlarmParser_Service';
 
@@ -34,6 +35,7 @@ export class AlarmFields {
     public rufnummer = '';
     public patient = '';
     public einsatzplan = '';
+    public einsatznummer = '';
 
     private removeTrailingAndLeading(str: string) {
         str = str.replace(/2{6,}/g, '');
@@ -234,6 +236,13 @@ export class AlarmFields {
 
         if (config.alarmfields.REPLACE_NEWLINE)
             this.einsatzplan = this.einsatzplan.replace(/\n/g, ' ');
+
+        this.einsatznummer =
+            this.searchElement(
+                config.alarmfields.s_EINSATZNUMMER,
+                config.alarmfields.e_EINSATZNUMMER,
+                data
+            ) || new Date().toISOString();
     }
 }
 
@@ -340,18 +349,6 @@ class AlarmParserService {
     }
 
     private async processAlarmData(alarmFields: AlarmFields, alarmdate: Date) {
-        // Geocoding
-        let geoData = { lat: '0', lng: '0', isAddress: false };
-        try {
-            geoData = await geocodeService.geocode(
-                alarmFields,
-                /\d/.test(alarmFields.STRASSE) ? true : false
-            );
-        } catch (error) {
-            logging.exception(NAMESPACE, error);
-        }
-
-        // Daten in Datenbank schreiben
         const alarmRow: AlarmRow = {
             einsatzstichwort: alarmFields.EINSATZSTICHWORT,
             schlagwort: alarmFields.SCHLAGWORT,
@@ -360,11 +357,11 @@ class AlarmParserService {
             strasse: alarmFields.STRASSE,
             ortsteil: alarmFields.ORTSTEIL,
             ort: alarmFields.ORT,
-            lat: geoData.lat,
-            lng: geoData.lng,
+            lat: '',
+            lng: '',
             cars1: alarmFields.cars1.join('|'),
             cars2: alarmFields.cars2.join('|'),
-            isAddress: geoData.isAddress,
+            isAddress: /\d/.test(alarmFields.STRASSE) ? true : false,
             kreuzung: alarmFields.kreuzung,
             hinweis: alarmFields.hinweis,
             prio: alarmFields.prio,
@@ -374,90 +371,29 @@ class AlarmParserService {
             patient: alarmFields.patient,
             einsatzplan: alarmFields.einsatzplan,
             date: alarmdate.toISOString(),
+            einsatznummer: alarmFields.einsatznummer,
             id: undefined
         };
 
-        alarmService.create(alarmRow);
-
-        await this.createPrint(alarmRow);
-    }
-
-    private async createPrint(alarmRow: AlarmRow) {
+        // Geocoding
+        let geoData = { lat: '0', lng: '0', isAddress: false };
         try {
-            const url =
-                'http://' +
-                '127.0.0.1' + //config.server_http.hostname +
-                ':' +
-                config.server_http.port +
-                '/print?varEINSATZSTICHWORT=' +
-                alarmRow.einsatzstichwort +
-                '&varSCHLAGWORT=' +
-                alarmRow.schlagwort +
-                '&varOBJEKT=' +
-                alarmRow.objekt +
-                '&varBEMERKUNG=' +
-                alarmRow.bemerkung +
-                '&varSTRASSE=' +
-                alarmRow.strasse +
-                '&varORTSTEIL=' +
-                alarmRow.ortsteil +
-                '&varORT=' +
-                alarmRow.ort +
-                '&lat=' +
-                alarmRow.lat +
-                '&lng=' +
-                alarmRow.lng +
-                '&isAddress=' +
-                (alarmRow.isAddress == true ? 1 : 0) +
-                '&noMap=' +
-                (alarmRow.strasse == '' && alarmRow.isAddress == false ? 1 : 0);
-
-            // Alarmusdruck erzeugen
-            logging.debug(NAMESPACE, 'Starte Puppeteer');
-            logging.debug(NAMESPACE, url);
-
-            const browser = await puppeteer.launch({
-                args: ['--allow-file-access-from-files', '--enable-local-file-accesses']
-            });
-            logging.debug(NAMESPACE, 'Erstelle neue Seite');
-            const page = await browser.newPage();
-
-            // Navigiere puppeteer zu Ausdruck Seite
-            logging.debug(NAMESPACE, 'Gehe zu ', url);
-            await page.goto(url, { waitUntil: 'networkidle2' });
-
-            // Warten bis gerendert
-            await timeout(10000);
-
-            logging.debug(NAMESPACE, 'Erstelle PDF und JPG...');
-
-            // Ausdruck erstellen
-            const paperFormat: puppeteer.PaperFormat = 'a4';
-            await page.pdf({
-                path: config.folders.temp + 'druck.pdf',
-                format: paperFormat,
-                margin: { top: 0, right: 0, bottom: 0, left: 0 },
-                printBackground: false
-            });
-
-            await browser.close();
-
-            logging.debug(NAMESPACE, 'Erstelle PDF und JPG... Fertig');
-
-            if (config.printing.pagecountAlarm > 0) {
-                logging.debug(NAMESPACE, 'Alarmausdruck...');
-
-                for (let i = 0; i < config.printing.pagecountAlarm; i++) {
-                    // Drucken
-                    logging.info(
-                        NAMESPACE,
-                        'Seite ' + (i + 1) + ' von ' + config.printing.pagecountAlarm
-                    );
-                    printingServoce.print(config.folders.temp + 'druck');
-                }
-            }
+            geoData = await geocodeService.geocode(alarmRow);
+            alarmRow.lat = geoData.lat;
+            alarmRow.lng = geoData.lng;
+            alarmRow.isAddress = geoData.isAddress;
         } catch (error) {
             logging.exception(NAMESPACE, error);
+        }
+
+        // Daten in Datenbank schreiben
+        alarmService.createOrUpdate(alarmRow, false);
+
+        const pdfPath =
+            config.folders.archive + '/' + getFormattedAlarmTime(new Date(alarmRow.date)) + '.pdf';
+
+        if (await fileExists(pdfPath)) {
+            globalEvents.emit('alarm-pdf', pdfPath);
         }
     }
 }

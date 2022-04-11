@@ -44,7 +44,12 @@ const MQTT_BROKER = {
     password: process.env.MQTT_PASSWORD,
     internalUser: '',
     internalPassword: '',
-    topic_fe2_status: 'Status'
+    logToFile: process.env.MQTT_LOG_TO_FILE ? /true/i.test(process.env.MQTT_LOG_TO_FILE) : false,
+    topic_fe2_status: process.env.MQTT_TOPIC_FE2_STATUS,
+    topic_fe2_alarm: process.env.MQTT_TOPIC_FE2_ALARM,
+    topic_fe2_lebenszeichen: process.env.MQTT_TOPIC_FE2_LEBENSZEICHEN,
+    topic_fe2_lebenszeichen_startdelay:
+        Number(process.env.MQTT_TOPIC_FE2_LEBENSZEICHEN_STARTDELAY) || 65
 };
 
 const APP = {
@@ -203,6 +208,8 @@ const GEOCODE = {
 };
 
 const ALARMFIELDS = {
+    s_EINSATZNUMMER: process.env.ALARMFIELDS_EINSATZNUMMER_S || 'satz-Nr.:', // Filter Beginn
+    e_EINSATZNUMMER: process.env.ALARMFIELDS_EINSATZNUMMER_E || '\n', // Filter Ende
     s_EINSATZSTICHWORT: process.env.ALARMFIELDS_EINSATZSICHWORT_S || 'Stichwort :', // Filter Beginn
     e_EINSATZSTICHWORT: process.env.ALARMFIELDS_EINSATZSICHWORT_E || '\n', // Filter Ende
     s_SCHLAGWORT: process.env.ALARMFIELDS_SCHLAGWORT_S || 'Schlagw. :', // Filter Beginn
@@ -288,7 +295,7 @@ const UPDATE = {
 };
 
 const config = {
-    version: '3.3.1',
+    version: '3.3.2',
     version_new: '---',
     raspiversion: process.env.RASPIVERSION ? /true/i.test(process.env.RASPIVERSION) : false,
     sqlite: SQLITE,

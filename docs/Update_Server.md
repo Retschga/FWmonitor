@@ -2,7 +2,7 @@
 
 ## Update von Version 2 auf 3
 
--   Achtung: Es kann nur von Version 2.4.0 einfach auf 3.0.0 geupdatet werden
+-   Achtung: Es kann nur ab Version 2.4.0 einfach auf 3.x.x geupdatet werden
 -   Achtung: Es wird Nodejs 12 vorausgesetzt; Bei Nutzung von Windows 7 am besten auf Windows 10
     updaten oder Nodejs Version v12.21.0 verwenden
 -   Zum Update auf Version 3 am besten Version 3 herunterladen und in einem neuen Verzeichnis

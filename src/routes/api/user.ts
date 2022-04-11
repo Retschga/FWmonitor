@@ -1,10 +1,12 @@
 'use strict';
 
+import * as ValidatorsUser from '../../middleware/userValidator';
+
+import { UserRights, auth_api } from '../../middleware/auth';
+
+import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
 import express from 'express';
 import userController from '../../controllers/user';
-import { awaitHandlerFactory } from '../../middleware/awaitHandlerFactory';
-import * as ValidatorsUser from '../../middleware/userValidator';
-import { auth_api, UserRights } from '../../middleware/auth';
 
 const router = express.Router();
 
@@ -60,6 +62,18 @@ router.post(
     awaitHandlerFactory(userController.update_user_statusHidden_id.bind(userController))
 );
 // App Benachrichtigungen Update
+router.post(
+    '/notifications/app/test/:id',
+    auth_api(UserRights.ownid),
+    ValidatorsUser.testNotificationsApp,
+    awaitHandlerFactory(userController.test_user_notifications_app_id.bind(userController))
+);
+router.post(
+    '/notifications/app/delete/:id',
+    auth_api(UserRights.ownid),
+    ValidatorsUser.deleteNotificationsApp,
+    awaitHandlerFactory(userController.delete_user_notifications_app_id.bind(userController))
+);
 router.post(
     '/notifications/app/:id',
     auth_api(UserRights.ownid),

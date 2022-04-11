@@ -16,7 +16,7 @@ type NotificationAction = {
     title: string;
 };
 
-type NotificationMessage = {
+export type NotificationMessage = {
     alerts: number;
     title: string;
     text: string;
@@ -204,21 +204,36 @@ class WebpushService {
         logging.debug(NAMESPACE, 'Subscriptions:', subscription.length);
 
         for (let i = 0; i < subscription.length; i++) {
-            webpush
-                .sendNotification(JSON.parse(subscription[i]), JSON.stringify(dataToSend))
-                .catch((err) => {
-                    if (err.statusCode === 404 || err.statusCode === 410) {
-                        subscription.splice(i, 1);
-                        userService.update_notifications_app(
-                            userid,
-                            0,
-                            JSON.stringify(subscription)
-                        );
-                        return false;
-                    } else {
-                        throw err;
-                    }
-                });
+            try {
+                const sub = JSON.parse(subscription[i]);
+                webpush
+                    .sendNotification(sub, JSON.stringify(dataToSend), {
+                        headers: { Urgency: 'high' }
+                    })
+                    .then(() => {
+                        logging.debug(NAMESPACE, 'Notify DONE');
+                    })
+                    .catch((err) => {
+                        if (err.statusCode === 404 || err.statusCode === 410) {
+                            subscription.splice(i, 1);
+                            userService.update_notifications_app(
+                                userid,
+                                0,
+                                JSON.stringify(subscription)
+                            );
+                            logging.debug(NAMESPACE, 'Notify error', {
+                                statuscode: err.statusCode
+                            });
+
+                            return false;
+                        } else {
+                            throw err;
+                        }
+                    });
+            } catch (error) {
+                logging.debug(NAMESPACE, 'Notify error');
+                logging.exception(NAMESPACE, error);
+            }
         }
     }
 }

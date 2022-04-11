@@ -35,6 +35,10 @@
 -   `sudo npm i puppeteer`
 -   `npm install pm2@latest -g`
 
+## Einstellungen bearbeiten
+
+-   [Einstellungen Server](Einstellungen_Server.md)
+
 ## Programmstart (manuell)
 
 -   `sudo ./start_ueberwacht.sh`

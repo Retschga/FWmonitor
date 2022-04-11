@@ -2,6 +2,7 @@
 
 import * as AlarmModel from '../models/alarm';
 
+import alarmPrintService from './alarmPrint';
 import axios from 'axios';
 import config from '../utils/config';
 import globalEvents from '../utils/globalEvents';
@@ -75,13 +76,32 @@ class AlarmService {
         if (response.length < 1) return;
         return response;
     }
+    /**
+     * Findet einen Alarm anhand der Einsatznummer
+     */
+    public async find_by_Einsatznummer(
+        einsatznummer: string
+    ): Promise<AlarmModel.AlarmRow[] | undefined> {
+        const response = await AlarmModel.model.find({ einsatznummer: einsatznummer });
+        if (response.length < 1) return;
+        return response;
+    }
 
     /**
-     * Erstellt einen neuen Alarm
+     * Erstellt oder updatet einen Alarm
      */
-    public async create(alarm: AlarmModel.AlarmRow) {
-        logging.debug(NAMESPACE, 'create', alarm);
-        const affectedRows = await AlarmModel.model.insert(alarm);
+    public async createOrUpdate(alarm: AlarmModel.AlarmRow, allowUpdate = true) {
+        logging.debug(NAMESPACE, 'createOrUpdate', alarm);
+
+        const update =
+            alarm.einsatznummer != ''
+                ? (await this.find_by_Einsatznummer(alarm.einsatznummer)) || false
+                : false;
+
+        let affectedRows = 0;
+        if (update && allowUpdate) {
+            affectedRows = await AlarmModel.model.update(update[0].id || -1, alarm);
+        } else affectedRows = await AlarmModel.model.insert(alarm);
 
         if (affectedRows < 1) {
             throw new Error(NAMESPACE + ' create - No rows changed');
@@ -92,7 +112,12 @@ class AlarmService {
             throw new Error(NAMESPACE + ' error on creating alarm');
         }
 
-        globalEvents.emit('alarm', list[0]);
+        if (!update) {
+            globalEvents.emit('alarm', list[0]);
+
+            // Ausdruck erstellen
+            await alarmPrintService.createPrint(list[0]);
+        }
     }
 
     /**

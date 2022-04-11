@@ -1,7 +1,7 @@
 'use-strict';
 
 import { Context, InlineKeyboard, InputFile } from 'grammy';
-import { fileExists, getFormattedAlarmTime, timeout } from '../utils/common';
+import { getFormattedAlarmTime, timeout } from '../utils/common';
 
 import { AlarmRow } from '../models/alarm';
 import AlarmService from '../services/alarm';
@@ -28,6 +28,8 @@ export default class BotAlarm {
         this.bot.inlineKeyboardEvents.on('KommenNein', this.bot_alarm_no.bind(this));
 
         globalEvents.on('alarm', this.alarm_send.bind(this));
+        globalEvents.on('alarm-pdf', this.alarm_sendPdf.bind(this));
+        globalEvents.on('alarm-update', this.alarm_sendUpdate.bind(this));
     }
 
     private async alarm_send(alarm: AlarmRow) {
@@ -55,23 +57,26 @@ export default class BotAlarm {
             if (!groups || groups.length < 1) {
                 throw new Error('Error: No Groups found');
             }
-            if (alarm.bemerkung == '' || alarm.bemerkung == '-/-') alarm.bemerkung = 'DONOTSEND';
-            if (alarm.hinweis == '' || alarm.hinweis == '-/-') alarm.hinweis = 'DONOTSEND';
-            if (alarm.einsatzplan == '' || alarm.einsatzplan == '-/-')
+            if (alarm.bemerkung == '' || alarm.bemerkung == config.alarmfields.EMPTY)
+                alarm.bemerkung = 'DONOTSEND';
+            if (alarm.hinweis == '' || alarm.hinweis == config.alarmfields.EMPTY)
+                alarm.hinweis = 'DONOTSEND';
+            if (alarm.einsatzplan == '' || alarm.einsatzplan == config.alarmfields.EMPTY)
                 alarm.einsatzplan = 'DONOTSEND';
-            if (alarm.tetra == '' || alarm.tetra == '-/-') alarm.tetra = 'DONOTSEND';
-            if (alarm.patient == '' || alarm.patient == '-/-') alarm.patient = 'DONOTSEND';
-            if (alarm.mitteiler == '' || alarm.mitteiler == '-/-') alarm.mitteiler = 'DONOTSEND';
+            if (alarm.tetra == '' || alarm.tetra == config.alarmfields.EMPTY)
+                alarm.tetra = 'DONOTSEND';
+            if (alarm.patient == '' || alarm.patient == config.alarmfields.EMPTY)
+                alarm.patient = 'DONOTSEND';
+            if (alarm.mitteiler == '' || alarm.mitteiler == config.alarmfields.EMPTY)
+                alarm.mitteiler = 'DONOTSEND';
+
+            logging.debug(NAMESPACE, 'Alarm:', alarm);
 
             for (let i = 0; i < users.length; i++) {
                 this.send_alarm_user(users[i], alarm, groups, pdfPath);
             }
         } catch (error) {
-            if (error instanceof Error) {
-                logging.exception(NAMESPACE, error);
-            } else {
-                logging.error(NAMESPACE, 'Unknown error', error);
-            }
+            logging.exception(NAMESPACE, error);
         }
     }
 
@@ -124,7 +129,7 @@ export default class BotAlarm {
             text = text.replace(/{{PATIENT}}/g, alarm.patient);
             text = text.replace(/{{EINSATZPLAN}}/g, alarm.einsatzplan);
 
-            const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
+            //const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
             text = text.replace(/{{FAX}}/g, '');
 
             const sendMap = text.indexOf('{{KARTE}}') != -1 ? true : false;
@@ -132,6 +137,8 @@ export default class BotAlarm {
 
             const sendMapEmg = text.indexOf('{{KARTE_EMG}}') != -1 ? true : false;
             text = text.replace(/{{KARTE_EMG}}/g, '');
+
+            text = text.replace(/{{UPDATES}}/g, '');
 
             const lines = text.split('{{newline}}');
 
@@ -171,26 +178,11 @@ export default class BotAlarm {
                 parse_mode: 'Markdown'
             });
 
-            // Fax PDF
-            if (sendFax) {
-                await timeout(500);
-
-                if (await fileExists(pdfPath)) {
-                    const faxPDF = fs.readFileSync(pdfPath);
-                    await this.bot.bot.api
-                        .sendDocument(
-                            user.telegramid,
-                            new InputFile(faxPDF, pdfPath.split(/[/\\]/g).pop())
-                        )
-                        .catch((e) => logging.exception(NAMESPACE, e));
-                }
-            }
-
             // Pattern
             for (let i = 0; i < lines.length; i++) {
                 const str = lines[i].trim();
 
-                if (/DONOTSEND/.test(str)) continue;
+                if (/DONOTSEND/.test(str) || str == '') continue;
 
                 await timeout(4000);
 
@@ -259,6 +251,57 @@ export default class BotAlarm {
         }
     }
 
+    private async alarm_sendPdf(path: string) {
+        try {
+            if (!this.bot) throw new Error('Not initialized');
+            if (!config.alarm.telegram || AlarmService.is_alarm_silence()) {
+                logging.warn(
+                    NAMESPACE,
+                    'Telegrammalarmierung deaktiviert! --> Keine Benachrichtigung'
+                );
+                return;
+            }
+
+            logging.debug(NAMESPACE, 'Sende Alarm PDF');
+
+            const users = await userService.find_all_approved();
+            if (!users || users.length < 1) {
+                throw new Error('Error: No User found');
+            }
+
+            const groups = await usergroupService.find_all();
+            if (!groups || groups.length < 1) {
+                throw new Error('Error: No Groups found');
+            }
+
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+
+                // Gruppenpattern
+                let text = groups.find((e) => e.id == user.group)?.pattern;
+                if (!text) return;
+
+                if (!this.bot) return;
+
+                const sendFax = text.indexOf('{{FAX}}') != -1 ? true : false;
+                text = text.replace(/{{FAX}}/g, '');
+
+                // Fax PDF
+                if (sendFax) {
+                    const faxPDF = fs.readFileSync(path);
+                    await this.bot.bot.api
+                        .sendDocument(
+                            user.telegramid,
+                            new InputFile(faxPDF, path.split(/[/\\]/g).pop())
+                        )
+                        .catch((e) => logging.exception(NAMESPACE, e));
+                }
+            }
+        } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+    }
+
     private async bot_alarm_yes(ctx: Context, alarmid: string) {
         try {
             if (!this.bot) throw new Error('Not initialized');
@@ -281,11 +324,7 @@ export default class BotAlarm {
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), true);
             ctx.reply('Rückmeldung: 👍 JA!');
         } catch (error) {
-            if (error instanceof Error) {
-                logging.exception(NAMESPACE, error);
-            } else {
-                logging.error(NAMESPACE, 'Unknown error', error);
-            }
+            logging.exception(NAMESPACE, error);
         }
         ctx.answerCallbackQuery();
     }
@@ -312,12 +351,69 @@ export default class BotAlarm {
             DeviceServiceInstance.broadcast_userstatus(user[0].id, Number(alarmid), false);
             ctx.reply('Rückmeldung: 👎 NEIN');
         } catch (error) {
+            logging.exception(NAMESPACE, error);
+        }
+        ctx.answerCallbackQuery();
+    }
+
+    private async alarm_sendUpdate(data: string) {
+        try {
+            if (!this.bot) throw new Error('Not initialized');
+            if (!config.alarm.telegram || AlarmService.is_alarm_silence()) {
+                logging.warn(
+                    NAMESPACE,
+                    'Telegrammalarmierung deaktiviert! --> Keine Benachrichtigung'
+                );
+                return;
+            }
+
+            logging.debug(NAMESPACE, 'Sende Alarmupdate');
+
+            const users = await userService.find_all_approved();
+            if (!users || users.length < 1) {
+                throw new Error('Error: No User found');
+            }
+
+            const groups = await usergroupService.find_all();
+            if (!groups || groups.length < 1) {
+                throw new Error('Error: No Groups found');
+            }
+
+            for (let i = 0; i < users.length; i++) {
+                this.send_alarmUpdate_user(users[i], data, groups);
+            }
+        } catch (error) {
             if (error instanceof Error) {
                 logging.exception(NAMESPACE, error);
             } else {
                 logging.error(NAMESPACE, 'Unknown error', error);
             }
         }
-        ctx.answerCallbackQuery();
+    }
+
+    private async send_alarmUpdate_user(user: UserRow, data: string, groups: GroupRow[]) {
+        try {
+            // Gruppenpattern
+            const text = groups.find((e) => e.id == user.group)?.pattern;
+            if (!text) return;
+
+            if (!this.bot) return;
+
+            logging.debug(NAMESPACE, 'Sending Alarmupdate to ' + user.telegramid + '...');
+
+            const sendUpdate = text.indexOf('{{UPDATES}}') != -1 ? true : false;
+
+            if (!sendUpdate) return;
+
+            // Alarmmeldung
+            const alarmMessage = '*ℹ️ Update:*\n' + data;
+
+            this.bot.sendMessage(user.telegramid, alarmMessage, {
+                parse_mode: 'Markdown'
+            });
+        } catch (error) {
+            logging.error(NAMESPACE, 'Error at user ID ' + user);
+            logging.exception(NAMESPACE, error);
+        }
     }
 }

@@ -226,7 +226,7 @@
                         source: new ol.source.Vector({
                             features: [routeFeature, helpline, nextMarker]
                         }),
-                        style: styleFunction
+                        style: map_styleFunction
                     });
                     map.addLayer(layer);
                 }
@@ -252,7 +252,7 @@
                                     })
                                 ]
                             }),
-                            style: styleFunction
+                            style: map_styleFunction
                         });
                         map.addLayer(layerStreet);
                     }

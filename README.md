@@ -1,13 +1,14 @@
 ﻿# ![Logo](./docs/icon.png) FWmonitor
 
-Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarmfax auf einem
+Diese Software kann bei Feuerwehren dazu verwendet werden, die Informationen des Alarms auf einem
 Bildschirm darzustellen. Insbesondere werden die Informationen so aufbereitet, dass der Einsatzort
 auf einer Karte visualisiert wird.
 
-E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
-
 ## 🔥 Funktionsumfang
 
+-   Alarmfax Auswertung
+-   FE2 Alarmeingang (LKR Miesbach)
+-   E-Mail Empfang ist zum Test verfügbar. Funktion nicht garantiert.
 -   Standby-Display mit Uhrzeit, Diashow, Kalender/Google Kalender, Verfügbarkeitsanzeige der
     Einsatzkräfte, DWD Warnungen
 -   Alarm-Display

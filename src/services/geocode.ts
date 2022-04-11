@@ -1,6 +1,6 @@
 'use strict';
 
-import { AlarmFields } from './alarmParser';
+import { AlarmRow } from '../models/alarm';
 import axios from 'axios';
 import config from '../utils/config';
 import csv from 'csv-parser';
@@ -11,11 +11,11 @@ import logging from '../utils/logging';
 const NAMESPACE = 'Geocode_Service';
 
 class GeocodeService {
-    private async geocode_bing(alarmFields: AlarmFields): Promise<{ lat: string; lng: string }> {
+    private async geocode_bing(alarmRow: AlarmRow): Promise<{ lat: string; lng: string }> {
         if (!config.geocode.bing_apikey) throw new Error('kein GeoBing API Key angegeben');
 
         const geobingUrl = encodeURI(
-            `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmFields.ORT}&addressLine=${alarmFields.STRASSE}`
+            `http://dev.virtualearth.net/REST/v1/Locations?countryRegion=${config.geocode.iso_country}&&key=${config.geocode.bing_apikey}&locality=${alarmRow.ort}&addressLine=${alarmRow.strasse}`
         );
 
         logging.debug(NAMESPACE + ' geocode_bing', geobingUrl);
@@ -120,7 +120,7 @@ class GeocodeService {
         });
     }
 
-    private async geocode_nominatim(alarmFields: AlarmFields) {
+    private async geocode_nominatim(alarmRow: AlarmRow) {
         const url = encodeURI(
             'https://nominatim.openstreetmap.org/search' +
                 '?useragent=FWmonitor' +
@@ -128,9 +128,9 @@ class GeocodeService {
                 '&format=json' +
                 '&country=DE' +
                 '&city=' +
-                alarmFields.ORT +
+                alarmRow.ort +
                 '&street=' +
-                alarmFields.STRASSE
+                alarmRow.strasse
         );
 
         logging.debug(NAMESPACE + ' geocode_nominatim', url);
@@ -143,16 +143,16 @@ class GeocodeService {
         return response;
     }
 
-    public async geocode(alarmFields: AlarmFields, isAddress: boolean) {
-        let ret = { lat: '0', lng: '0', isAddress: isAddress };
+    public async geocode(alarmRow: AlarmRow) {
+        let ret = { lat: '0', lng: '0', isAddress: alarmRow.isAddress };
         let isHighway = false;
 
         // Prio 1: Prüfe Bahnübergänge
         if (config.geocode.bahn) {
-            if (alarmFields.OBJEKT.toLowerCase().indexOf('bahn') != -1) {
+            if (alarmRow.objekt.toLowerCase().indexOf('bahn') != -1) {
                 try {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const response_bahn: any = await this.geocode_bahn(alarmFields.OBJEKT);
+                    const response_bahn: any = await this.geocode_bahn(alarmRow.objekt);
 
                     if (response_bahn) {
                         ret.lat = response_bahn['GEOGR_BREITE'].replace(',', '.');
@@ -172,8 +172,8 @@ class GeocodeService {
             if (!ret.isAddress && !isHighway) {
                 try {
                     const response_overpass = await this.geocode_overpass(
-                        alarmFields.ORT,
-                        alarmFields.OBJEKT
+                        alarmRow.ort,
+                        alarmRow.objekt
                     );
 
                     if (response_overpass.isAddress) {
@@ -190,7 +190,7 @@ class GeocodeService {
         // Prio 3: OSM Nominatim
         if (config.geocode.osm_nominatim) {
             try {
-                const response_nominatim = await this.geocode_nominatim(alarmFields);
+                const response_nominatim = await this.geocode_nominatim(alarmRow);
 
                 logging.debug(NAMESPACE + ' Nominatim', response_nominatim);
 
@@ -213,7 +213,7 @@ class GeocodeService {
                         response_nominatim[0].class == 'footway' ||
                         response_nominatim[0].class == 'sidewalk' ||
                         response_nominatim[0].class == 'cycleway') &&
-                    !isAddress
+                    !alarmRow.isAddress
                 ) {
                     ret.lat = response_nominatim[0].lat;
                     ret.lng = response_nominatim[0].lon;
@@ -238,7 +238,7 @@ class GeocodeService {
         // Prio 4: Bing Geocode
         if (config.geocode.bing) {
             try {
-                const response_bing = await this.geocode_bing(alarmFields);
+                const response_bing = await this.geocode_bing(alarmRow);
                 logging.debug(
                     NAMESPACE + ' BING',
                     'lat: ' + response_bing.lat + '  lng: ' + response_bing.lng
