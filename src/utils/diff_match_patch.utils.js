@@ -11,6 +11,7 @@ const diff_match_patch = function () {
     DIFF_DELETE = -1,
     DIFF_INSERT = 1,
     DIFF_EQUAL = 0;
+
 diff_match_patch.Diff = function (a, b) {
     this[0] = a;
     this[1] = b;
@@ -906,8 +907,8 @@ diff_match_patch.patch_obj.prototype.toString = function () {
     return a.join('').replace(/%20/g, ' ');
 };
 this.diff_match_patch = diff_match_patch;
-this.DIFF_DELETE = DIFF_DELETE;
-this.DIFF_INSERT = DIFF_INSERT;
-this.DIFF_EQUAL = DIFF_EQUAL;
+//this.DIFF_DELETE = DIFF_DELETE;
+//this.DIFF_INSERT = DIFF_INSERT;
+//this.DIFF_EQUAL = DIFF_EQUAL;
 
 export default diff_match_patch;
