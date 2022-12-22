@@ -75,7 +75,7 @@
     "imap": "^0.8.19",
     "ipp": "^2.0.1",
     "jimp": "^0.16.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mailparser": "^3.4.0",
     "mdns-js": "^1.0.3",
     "memorystore": "^1.6.7",
